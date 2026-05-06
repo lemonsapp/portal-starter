@@ -1,0 +1,18 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+.DS_Store
+dist/
+build/
+.vercel
+.next
+.cache
+*.log
+npm-debug.log*
+.vscode/
+.idea/
+
+# uploads / temp
+/tmp/
+*.tmp
