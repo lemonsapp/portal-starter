@@ -6,7 +6,7 @@ import { ToastProvider } from "./components/ToastReward.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import Topbar from "./components/Topbar.jsx";
 import PremiumFX from "./components/PremiumFX.jsx";
-import { useBranding } from "./lib/branding.js";
+import { useBranding, useFeatureFlag } from "./lib/branding.js";
 import { useEffect, useState } from "react";
 
 import Login from "./pages/Login.jsx";
@@ -43,6 +43,15 @@ function LoginOrBootstrap() {
   if (decision === "loading") return null;
   if (decision === "bootstrap") return <Navigate to="/setup-admin" replace />;
   return <Login />;
+}
+
+// Feature gate: si la feature está OFF, devuelve 404 redirect.
+// Spec § 11: 'Apagar `coins` desactiva: la página /coins, el widget de
+// balance, la tab Coins del admin, los rewards por registro/perfil/onboarding.'
+function FeatureGate({ flag, children }) {
+  const enabled = useFeatureFlag(flag);
+  if (!enabled) return <Navigate to="/inicio" replace />;
+  return children;
 }
 
 function ProfileByIdRedirect() {
@@ -150,13 +159,13 @@ export default function App() {
 
         {/* Cliente */}
         <Route path="/inicio"           element={<AuthGate><HomeClient /></AuthGate>} />
-        <Route path="/coins"            element={<AuthGate><Coins /></AuthGate>} />
+        <Route path="/coins"            element={<FeatureGate flag="coins"><AuthGate><Coins /></AuthGate></FeatureGate>} />
         <Route path="/perfil"           element={<AuthGate><ProfilePage /></AuthGate>} />
         <Route path="/perfil/:username"    element={<ProfilePage />} />
         <Route path="/perfil/id/:userId"   element={<ProfileByIdRedirect />} />
-        <Route path="/chat"             element={<AuthGate><ChatPage /></AuthGate>} />
-        <Route path="/chats"            element={<AuthGate><PrivateChatsPage /></AuthGate>} />
-        <Route path="/chats/:otherId"   element={<AuthGate><PrivateChatsPage /></AuthGate>} />
+        <Route path="/chat"             element={<FeatureGate flag="chat"><AuthGate><ChatPage /></AuthGate></FeatureGate>} />
+        <Route path="/chats"            element={<FeatureGate flag="chat"><AuthGate><PrivateChatsPage /></AuthGate></FeatureGate>} />
+        <Route path="/chats/:otherId"   element={<FeatureGate flag="chat"><AuthGate><PrivateChatsPage /></AuthGate></FeatureGate>} />
 
         {/* Staff */}
         <Route path="/admin"         element={<AuthGate allowRoles={["admin"]}><AdminPanel /></AuthGate>} />

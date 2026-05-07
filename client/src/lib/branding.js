@@ -1,21 +1,19 @@
-// useBranding — hook que aplica defaults de marca en runtime.
+// client/src/lib/branding.js
 //
-// Sprint 1 (esqueleto): lee defaults locales y los aplica como CSS vars +
-// document.title. En Sprint 2 se conecta a /api/config/public, que devuelve
-// los valores guardados por el setup wizard (con fallback a estos defaults
-// si el backend está caído o sin configurar).
+// useBranding() + useFeatureFlag() — hooks para branding y feature flags.
 //
-// Las CSS vars expuestas en :root son:
-//   --brand-primary, --brand-accent, --brand-bg, --brand-text, --brand-font
+// Ambos comparten un fetch único a /api/config/public (cacheado en módulo).
+// El primer hook que monta dispara el fetch; los siguientes reusan el cache.
 //
-// Cualquier componente que necesite el branding debe leer de ahí (CSS) o
-// del objeto retornado (JS).
+// useBranding aplica defaults inmediatos a CSS vars (sin esperar fetch),
+// y al recibir overrides remotos los re-aplica.
 
 import { useEffect, useState } from "react";
 
-// Defaults inlined — debe espejar /branding.json del repo. Sprint 2 los
-// reemplaza con fetch a /api/config/public; este import sigue como fallback.
-const DEFAULTS = {
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+// Defaults inlined — espejar /branding.json del repo.
+const BRANDING_DEFAULTS = {
   name: "Mi Portal",
   slogan: "Tu comunidad en un solo lugar",
   logo_url: "",
@@ -32,6 +30,17 @@ const DEFAULTS = {
     friendly: "Quicksand, sans-serif",
   },
 };
+const FEATURE_DEFAULTS = { chat: true, stories: true, friends: true, coins: true, webauthn: true };
+const RULE_DEFAULTS    = { signup_mode: "open", email_verify_required: true };
+
+// ── Cache singleton ──────────────────────────────────────────────────────────
+let cachedConfig = null;       // { branding, features, rules } en estado actual (defaults o remoto)
+let inflight = null;            // Promise del fetch actual (de-dup)
+const subscribers = new Set();  // listeners para notificar cuando llega remoto
+
+function notify() {
+  for (const cb of subscribers) cb(cachedConfig);
+}
 
 function applyToDOM(b) {
   if (typeof document === "undefined") return;
@@ -40,7 +49,7 @@ function applyToDOM(b) {
   root.style.setProperty("--brand-accent",  b.color_accent);
   root.style.setProperty("--brand-bg",      b.color_bg);
   root.style.setProperty("--brand-text",    b.color_text);
-  root.style.setProperty("--brand-font",    b.fonts[b.font_preset] || b.fonts.moderna);
+  root.style.setProperty("--brand-font",    BRANDING_DEFAULTS.fonts[b.font_preset] || BRANDING_DEFAULTS.fonts.moderna);
   if (b.name)        document.title = b.name;
   if (b.favicon_url) {
     let link = document.querySelector("link[rel='icon']");
@@ -49,33 +58,78 @@ function applyToDOM(b) {
   }
 }
 
-export function useBranding() {
-  const [branding, setBranding] = useState(DEFAULTS);
-
-  useEffect(() => {
-    // Aplicar defaults inmediatamente (sin esperar fetch)
-    applyToDOM(DEFAULTS);
-
-    // Pull overrides del wizard (Sprint 2). Si el backend está caído o el
-    // wizard no fue completado, mantenemos los defaults sin romper.
-    const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
-    fetch(`${API}/api/config/public`)
-      .then(r => r.ok ? r.json() : null)
-      .then(remote => {
-        if (!remote?.branding) return;
-        // Merge: cualquier campo no vacío del backend pisa al default.
-        const merged = { ...DEFAULTS };
-        for (const k of Object.keys(remote.branding)) {
-          const v = remote.branding[k];
-          if (v !== null && v !== undefined && v !== "") merged[k] = v;
-        }
-        setBranding(merged);
-        applyToDOM(merged);
-      })
-      .catch(() => { /* mantener defaults */ });
-  }, []);
-
-  return branding;
+function ensureCachedDefaults() {
+  if (cachedConfig) return;
+  cachedConfig = { branding: BRANDING_DEFAULTS, features: FEATURE_DEFAULTS, rules: RULE_DEFAULTS };
+  applyToDOM(cachedConfig.branding);
 }
 
-export const BRANDING_DEFAULTS = DEFAULTS;
+function fetchOnce() {
+  if (inflight) return inflight;
+  inflight = fetch(`${API}/api/config/public`)
+    .then(r => r.ok ? r.json() : null)
+    .then(remote => {
+      if (remote && (remote.branding || remote.features || remote.rules)) {
+        const branding = mergeDefined(BRANDING_DEFAULTS, remote.branding || {});
+        const features = { ...FEATURE_DEFAULTS, ...(remote.features || {}) };
+        const rules    = { ...RULE_DEFAULTS,    ...(remote.rules    || {}) };
+        cachedConfig = { branding, features, rules };
+        applyToDOM(branding);
+        notify();
+      }
+    })
+    .catch(() => { /* mantener defaults */ })
+    .finally(() => { inflight = null; });
+  return inflight;
+}
+
+function mergeDefined(base, overrides) {
+  const out = { ...base };
+  for (const k of Object.keys(overrides)) {
+    const v = overrides[k];
+    if (v !== null && v !== undefined && v !== "") out[k] = v;
+  }
+  return out;
+}
+
+// ── useBranding ──────────────────────────────────────────────────────────────
+export function useBranding() {
+  ensureCachedDefaults();
+  const [b, setB] = useState(cachedConfig.branding);
+  useEffect(() => {
+    const cb = (c) => setB(c.branding);
+    subscribers.add(cb);
+    fetchOnce();
+    return () => { subscribers.delete(cb); };
+  }, []);
+  return b;
+}
+
+// ── useFeatureFlag ───────────────────────────────────────────────────────────
+export function useFeatureFlag(name) {
+  ensureCachedDefaults();
+  const [enabled, setEnabled] = useState(cachedConfig.features[name] ?? true);
+  useEffect(() => {
+    const cb = (c) => setEnabled(c.features[name] ?? true);
+    subscribers.add(cb);
+    fetchOnce();
+    return () => { subscribers.delete(cb); };
+  }, [name]);
+  return enabled;
+}
+
+// ── useRules ─────────────────────────────────────────────────────────────────
+export function useRules() {
+  ensureCachedDefaults();
+  const [r, setR] = useState(cachedConfig.rules);
+  useEffect(() => {
+    const cb = (c) => setR(c.rules);
+    subscribers.add(cb);
+    fetchOnce();
+    return () => { subscribers.delete(cb); };
+  }, []);
+  return r;
+}
+
+export const KNOWN_FEATURE_FLAGS = Object.keys(FEATURE_DEFAULTS);
+export { BRANDING_DEFAULTS, FEATURE_DEFAULTS, RULE_DEFAULTS };
