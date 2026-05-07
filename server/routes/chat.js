@@ -188,9 +188,9 @@ router.get("/stories/feed", authRequired, async (req, res) => {
     // IDs de amigos (incluye yo mismo)
     const friendsQ = await db.query(
       `WITH related AS (
-         SELECT following_id AS id FROM user_follows WHERE follower_id=$1
+         SELECT followee_id AS id FROM user_follows WHERE follower_id=$1
          UNION
-         SELECT follower_id  AS id FROM user_follows WHERE following_id=$1
+         SELECT follower_id  AS id FROM user_follows WHERE followee_id=$1
          UNION
          SELECT CASE WHEN user_id=$1 THEN friend_id ELSE user_id END AS id
            FROM chat_friendships

@@ -894,8 +894,8 @@ app.post("/auth/bootstrap-admin", authLimiter, noStore, async (req, res) => {
     );
     const user = ins.rows[0];
 
-    // Crear lemon_coins balance + perfil vacío (idempotentes)
-    await db.query(`INSERT INTO lemon_coins (user_id, balance, total_earned) VALUES ($1, 0, 0) ON CONFLICT DO NOTHING`, [user.id]);
+    // Crear coins balance + perfil vacío (idempotentes)
+    await db.query(`INSERT INTO coins (user_id, balance, total_earned) VALUES ($1, 0, 0) ON CONFLICT DO NOTHING`, [user.id]);
     await db.query(`INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [user.id]);
 
     // Token directo (no hay verificación de email — admin bootstrap es trusted)
@@ -970,9 +970,9 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
       } catch (e) { console.warn("[register referrer]", e.message); }
     }
 
-    // Crear lemon_coins
+    // Crear coins
     await db.query(
-      `INSERT INTO lemon_coins (user_id, balance, total_earned) VALUES ($1, 0, 0) ON CONFLICT DO NOTHING`,
+      `INSERT INTO coins (user_id, balance, total_earned) VALUES ($1, 0, 0) ON CONFLICT DO NOTHING`,
       [user.id]
     );
 
@@ -1041,7 +1041,7 @@ app.get("/auth/verify-email", async (req, res) => {
     await db.query(`UPDATE email_verifications SET verified_at=NOW() WHERE id=$1`, [row.id]);
 
     // Dar coins de bienvenida (15 por verificar email)
-    await db.query(`UPDATE lemon_coins SET balance=balance+15, total_earned=total_earned+15 WHERE user_id=$1`, [row.user_id]);
+    await db.query(`UPDATE coins SET balance=balance+15, total_earned=total_earned+15 WHERE user_id=$1`, [row.user_id]);
     await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',15,'Bienvenido a Lemons Portal!')`, [row.user_id]);
 
     res.json({ ok: true, message: "Email verificado. Ya podés ingresar." });
@@ -1482,9 +1482,9 @@ app.get("/api/friends", authRequired, async (req, res) => {
     const userId = req.user.id;
     const q = await db.query(
       `WITH related_ids AS (
-         SELECT following_id AS other_id FROM user_follows WHERE follower_id = $1
+         SELECT followee_id AS other_id FROM user_follows WHERE follower_id = $1
          UNION
-         SELECT follower_id  AS other_id FROM user_follows WHERE following_id = $1
+         SELECT follower_id  AS other_id FROM user_follows WHERE followee_id = $1
          UNION
          SELECT CASE WHEN user_id = $1 THEN friend_id ELSE user_id END AS other_id
            FROM chat_friendships
@@ -1495,11 +1495,11 @@ app.get("/api/friends", authRequired, async (req, res) => {
               up.name_glow, up.name_grad_from, up.name_grad_to,
               EXISTS(
                 SELECT 1 FROM user_follows
-                 WHERE follower_id = $1 AND following_id = u.id
+                 WHERE follower_id = $1 AND followee_id = u.id
               ) AS i_follow,
               EXISTS(
                 SELECT 1 FROM user_follows
-                 WHERE follower_id = u.id AND following_id = $1
+                 WHERE follower_id = u.id AND followee_id = $1
               ) AS follows_me,
               EXISTS(
                 SELECT 1 FROM chat_friendships
@@ -2587,7 +2587,7 @@ app.get("/profile/u/:username", async (req, res) => {
         COALESCE(SUM(estimated_usd),0)::float as total_usd
       FROM shipments WHERE user_id=$1
     `, [uid]);
-    const { rows: coins } = await db.query("SELECT COALESCE(balance,0) as balance, COALESCE(total_earned,0) as total_earned FROM lemon_coins WHERE user_id=$1", [uid]);
+    const { rows: coins } = await db.query("SELECT COALESCE(balance,0) as balance, COALESCE(total_earned,0) as total_earned FROM coins WHERE user_id=$1", [uid]);
     const { rows: items } = await db.query("SELECT item_key FROM user_items WHERE user_id=$1", [uid]);
     const owned_items = items.map(i => i.item_key);
     res.json({ user: p, profile: { ...p, owned_items }, stats: stats[0], coins: coins[0] });
@@ -2600,7 +2600,7 @@ app.post("/api/follow/:userId", authRequired, async (req, res) => {
     const followingId = Number(req.params.userId);
     if (followingId === req.user.id) return res.status(400).json({ error: "No podés seguirte a vos mismo" });
     const result = await db.query(
-      "INSERT INTO user_follows(follower_id, following_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING id",
+      "INSERT INTO user_follows(follower_id, followee_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING id",
       [req.user.id, followingId]
     );
     // Notificación al usuario seguido
@@ -2613,7 +2613,7 @@ app.post("/api/follow/:userId", authRequired, async (req, res) => {
         [followingId, "follow", "Nuevo seguidor", `${fname} empezó a seguirte`, fusername ? `/perfil/${fusername}` : null]
       );
     }
-    const { rows } = await db.query("SELECT COUNT(*) as cnt FROM user_follows WHERE following_id=$1", [followingId]);
+    const { rows } = await db.query("SELECT COUNT(*) as cnt FROM user_follows WHERE followee_id=$1", [followingId]);
     res.json({ ok: true, followers: Number(rows[0].cnt) });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -2621,8 +2621,8 @@ app.post("/api/follow/:userId", authRequired, async (req, res) => {
 app.delete("/api/follow/:userId", authRequired, async (req, res) => {
   try {
     const followingId = Number(req.params.userId);
-    await db.query("DELETE FROM user_follows WHERE follower_id=$1 AND following_id=$2", [req.user.id, followingId]);
-    const { rows } = await db.query("SELECT COUNT(*) as cnt FROM user_follows WHERE following_id=$1", [followingId]);
+    await db.query("DELETE FROM user_follows WHERE follower_id=$1 AND followee_id=$2", [req.user.id, followingId]);
+    const { rows } = await db.query("SELECT COUNT(*) as cnt FROM user_follows WHERE followee_id=$1", [followingId]);
     res.json({ ok: true, followers: Number(rows[0].cnt) });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -2631,9 +2631,9 @@ app.get("/api/follow/:userId", authRequired, async (req, res) => {
   try {
     const userId = Number(req.params.userId);
     const [fwrs, fwing, isFollowing] = await Promise.all([
-      db.query("SELECT COUNT(*) as cnt FROM user_follows WHERE following_id=$1", [userId]),
+      db.query("SELECT COUNT(*) as cnt FROM user_follows WHERE followee_id=$1", [userId]),
       db.query("SELECT COUNT(*) as cnt FROM user_follows WHERE follower_id=$1", [userId]),
-      db.query("SELECT 1 FROM user_follows WHERE follower_id=$1 AND following_id=$2", [req.user.id, userId]),
+      db.query("SELECT 1 FROM user_follows WHERE follower_id=$1 AND followee_id=$2", [req.user.id, userId]),
     ]);
     res.json({ ok: true, followers: Number(fwrs.rows[0].cnt), following: Number(fwing.rows[0].cnt), isFollowing: isFollowing.rows.length > 0 });
   } catch(e) { res.status(500).json({ error: e.message }); }
