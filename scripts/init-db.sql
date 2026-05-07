@@ -270,6 +270,7 @@ CREATE TABLE IF NOT EXISTS webauthn_credentials (
   transports      TEXT,
   device_label    TEXT,
   last_used_at    TIMESTAMPTZ,
+  revoked_at      TIMESTAMPTZ,                          -- soft delete; NULL = activa
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

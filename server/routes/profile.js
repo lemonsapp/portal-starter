@@ -136,55 +136,36 @@ router.get("/", authRequired, async (req, res) => {
       INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING
     `, [userId]);
 
-    const [profileQ, coinsQ, userQ, itemsQ, statsQ] = await Promise.all([
+    const [profileQ, coinsQ, userQ, itemsQ] = await Promise.all([
       db.query(`SELECT * FROM user_profiles WHERE user_id=$1`, [userId]),
       db.query(`SELECT balance, total_earned, peak_balance FROM lemon_coins WHERE user_id=$1`, [userId]),
       db.query(`SELECT id, name, email, client_number, role, username, created_at FROM users WHERE id=$1`, [userId]),
       db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [userId]),
-      db.query(`
-        SELECT
-          COUNT(*) AS total_shipments,
-          COUNT(*) FILTER (WHERE status='Entregado') AS delivered,
-          COALESCE(SUM(estimated_usd) FILTER (WHERE status='Entregado'), 0) AS total_usd
-        FROM shipments WHERE user_id=$1
-      `, [userId]),
     ]);
 
     const profile = profileQ.rows[0];
     const coins   = coinsQ.rows[0] || { balance: 0, total_earned: 0 };
     const user    = userQ.rows[0];
     const items   = itemsQ.rows.map(r => r.item_key);
-    const stats   = statsQ.rows[0];
 
     // Calcular nivel
     const balance  = Number(coins.balance);
     const peak     = Number(coins.peak_balance || Math.max(balance, Number(coins.total_earned) || 0));
     const level    = peak >= 1500 ? "gold" : peak >= 500 ? "silver" : "bronze";
 
-    // Calcular insignias automáticas
-    const autoBadges = [];
-    if (Number(stats.delivered) >= 1)  autoBadges.push("badge_first");
-    if (Number(stats.delivered) >= 10) autoBadges.push("badge_x10");
-    if (Number(stats.total_usd) >= 5000) autoBadges.push("badge_whale");
-
-    // Agregar insignias automáticas al usuario si no las tiene
-    for (const badge of autoBadges) {
-      await db.query(`
-        INSERT INTO user_items (user_id, item_key) VALUES ($1, $2) ON CONFLICT DO NOTHING
-      `, [userId, badge]);
-    }
-
-    const allItems = [...new Set([...items, ...autoBadges])];
+    // Auto-badges basadas en shipments quedan deshabilitadas en el starter
+    // (no hay tabla shipments). Sprint 4+ podría reemplazarlas con badges
+    // sociales (badge_first_post, badge_active_user, etc.)
+    const allItems = items;
 
     res.json({
       user:    { ...user, level },
       profile: { ...profile, owned_items: allItems },
       coins:   { balance, total_earned: Number(coins.total_earned), peak_balance: peak },
-      stats:   {
-        total_shipments: Number(stats.total_shipments),
-        delivered:       Number(stats.delivered),
-        total_usd:       Number(stats.total_usd),
-      },
+      // stats:* legacy Lemons (envíos). Devuelvo zeros para preservar API
+      // contract con consumers que aún las leen (ProfilePage/ChatPage/Coins).
+      // Sprint 5+ podemos reemplazar por stats sociales reales.
+      stats:   { total_shipments: 0, delivered: 0, total_usd: 0 },
     });
   } catch(e) { console.error("[PROFILE GET]", e); res.status(500).json({ error: e.message }); }
 });
@@ -510,16 +491,11 @@ router.get("/ranking", async (req, res) => {
         up.name_color, up.name_glow, up.name_glow_color, up.name_grad_from, up.name_grad_to,
         up.nickname, up.nick_color, up.nick_glow, up.icon_slug, up.avatar_url, up.avatar_key,
         up.frame_key, up.badges,
-        COALESCE(s.total,0) AS total_shipments,
-        COALESCE(s.delivered,0) AS delivered
+        0 AS total_shipments,
+        0 AS delivered
       FROM users u
       JOIN lemon_coins lc ON lc.user_id = u.id
       LEFT JOIN user_profiles up ON up.user_id = u.id
-      LEFT JOIN (
-        SELECT user_id, COUNT(*) AS total,
-          COUNT(*) FILTER (WHERE status='delivered') AS delivered
-        FROM shipments GROUP BY user_id
-      ) s ON s.user_id = u.id
       WHERE u.role != 'operator'
       ORDER BY lc.total_earned DESC
       LIMIT $1
@@ -755,41 +731,32 @@ router.get("/:id", authRequired, async (req, res) => {
 
     await db.query(`INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING`, [targetId]);
 
-    const [profileQ, coinsQ, userQ, itemsQ, statsQ] = await Promise.all([
+    const [profileQ, coinsQ, userQ, itemsQ] = await Promise.all([
       db.query(`SELECT * FROM user_profiles WHERE user_id=$1`, [targetId]),
       db.query(`SELECT balance, total_earned FROM lemon_coins WHERE user_id=$1`, [targetId]),
       db.query(`SELECT id, name, email, client_number, role, username, created_at, last_seen_at FROM users WHERE id=$1`, [targetId]),
       db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [targetId]),
-      db.query(`SELECT COUNT(*) AS total_shipments, COUNT(*) FILTER (WHERE status='Entregado') AS delivered, COALESCE(SUM(estimated_usd) FILTER (WHERE status='Entregado'),0) AS total_usd FROM shipments WHERE user_id=$1`, [targetId]),
     ]);
 
     if (!userQ.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
 
     const coins  = coinsQ.rows[0] || { balance:0, total_earned:0 };
-    const stats  = statsQ.rows[0];
     const balance  = Number(coins.balance);
     const peak     = Number(coins.peak_balance || Math.max(balance, Number(coins.total_earned) || 0));
     const level    = peak >= 1500 ? "gold" : peak >= 500 ? "silver" : "bronze";
     const items    = itemsQ.rows.map(r => r.item_key);
 
-    // Auto-badges (solo si tiene shipments propios — evita errores en perfiles ajenos)
-    const autoBadges = [];
-    if (Number(stats.delivered) >= 1)    autoBadges.push("badge_first");
-    if (Number(stats.delivered) >= 10)   autoBadges.push("badge_x10");
-    if (Number(stats.total_usd) >= 5000) autoBadges.push("badge_whale");
-    for (const badge of autoBadges) {
-      await db.query(`INSERT INTO user_items (user_id,item_key) VALUES ($1,$2) ON CONFLICT DO NOTHING`, [targetId, badge]);
-    }
-
+    // Auto-badges legacy basadas en shipments quedan deshabilitadas (Sprint 4
+    // cleanup; las reemplazamos con badges sociales en Sprint 5+).
     // Sanitize: no leak email a otros users
     const userOut = { ...userQ.rows[0], level };
     if (!isOwnerOrStaff) delete userOut.email;
 
     res.json({
       user:    userOut,
-      profile: { ...profileQ.rows[0], owned_items: [...new Set([...items,...autoBadges])] },
+      profile: { ...profileQ.rows[0], owned_items: items },
       coins:   { balance, total_earned: Number(coins.total_earned), peak_balance: peak },
-      stats:   { total_shipments:Number(stats.total_shipments), delivered:Number(stats.delivered), total_usd:Number(stats.total_usd) },
+      stats:   { total_shipments: 0, delivered: 0, total_usd: 0 },  // legacy contract
     });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

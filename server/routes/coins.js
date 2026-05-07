@@ -67,35 +67,20 @@ router.get("/:userId", authRequired, async (req, res) => {
     const nextLevel   = [...LEVELS].reverse().find(l => l.min > coins.balance) ?? null;
     const coinsToNext = nextLevel ? nextLevel.min - coins.balance : null;
 
+    // Sprint 4: removida tabla shipments (Lemons-only). Las queries no
+    // joinen más; shipment_code queda como undefined en el response (los
+    // consumers ya manejan undefined gracefully).
     const txQ = await db.query(`
-      SELECT ct.*, s.code AS shipment_code
-      FROM coin_transactions ct
-      LEFT JOIN shipments s ON s.id = ct.shipment_id
-      WHERE ct.user_id = $1
-      ORDER BY ct.created_at DESC LIMIT 50
+      SELECT * FROM coin_transactions
+      WHERE user_id = $1
+      ORDER BY created_at DESC LIMIT 50
     `, [userId]);
 
     const redQ = await db.query(`
-      SELECT cr.*, s.code AS shipment_code
-      FROM coin_redemptions cr
-      LEFT JOIN shipments s ON s.id = cr.shipment_id
-      WHERE cr.user_id = $1
-      ORDER BY cr.created_at DESC LIMIT 20
+      SELECT * FROM coin_redemptions
+      WHERE user_id = $1
+      ORDER BY created_at DESC LIMIT 20
     `, [userId]);
-
-    // Verificar si tiene envíos entregados y si ya reclamó el bonus
-    const deliveredQ = await db.query(
-      `SELECT id FROM shipments WHERE user_id=$1 AND status='Entregado' LIMIT 1`,
-      [userId]
-    );
-    const userQ = await db.query(
-      `SELECT first_shipment_bonus_given FROM users WHERE id=$1`,
-      [userId]
-    );
-    const bonusClaimedTxQ = await db.query(
-      `SELECT id FROM coin_transactions WHERE user_id=$1 AND reason LIKE '%primer envío%' LIMIT 1`,
-      [userId]
-    );
 
     res.json({
       balance:               coins.balance,
@@ -106,8 +91,8 @@ router.get("/:userId", authRequired, async (req, res) => {
       rewards:               REWARDS,
       transactions:          txQ.rows,
       redemptions:           redQ.rows,
-      has_delivered_shipment: !!deliveredQ.rows[0],
-      first_bonus_claimed:   !!userQ.rows[0]?.first_shipment_bonus_given || !!bonusClaimedTxQ.rows[0],
+      has_delivered_shipment: false,    // legacy contract; el starter no tiene shipments
+      first_bonus_claimed:   true,      // legacy contract; el starter no tiene bonus de primer envío
     });
   } catch (e) {
     console.error("COINS GET USER ERROR:", e);
@@ -116,69 +101,6 @@ router.get("/:userId", authRequired, async (req, res) => {
 });
 
 // ── POST /coins/earn — otorgar coins manual ───────────────────────────────────
-router.post("/earn", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
-  try {
-    const { user_id, shipment_id, shipment_code } = req.body;
-    if (!user_id || (!shipment_id && !shipment_code)) return res.status(400).json({ error: "Faltan datos" });
-
-    // Resolver shipment por código o por ID numérico
-    const shipQ = shipment_code
-      ? await db.query(
-          `SELECT s.*, u.first_shipment_bonus_given
-           FROM shipments s JOIN users u ON u.id = s.user_id
-           WHERE UPPER(s.code) = UPPER($1)`,
-          [shipment_code.trim()])
-      : await db.query(
-          `SELECT s.*, u.first_shipment_bonus_given
-           FROM shipments s JOIN users u ON u.id = s.user_id
-           WHERE s.id = $1`,
-          [shipment_id]);
-    const ship = shipQ.rows[0];
-    if (!ship) return res.status(404).json({ error: "Envío no encontrado" });
-    const resolvedShipmentId = ship.id;
-
-    const existQ = await db.query(
-      `SELECT id FROM coin_transactions WHERE shipment_id=$1 AND type='earn' LIMIT 1`,
-      [resolvedShipmentId]
-    );
-    if (existQ.rows[0]) return res.json({ already_awarded: true });
-
-    const kg  = parseFloat(ship.weight_kg    || 0);
-    const usd = parseFloat(ship.estimated_usd || 0);
-    const coinsByKg  = Math.floor(kg * COINS_PER_KG);
-    const coinsBig   = usd >= BIG_SHIPMENT_USD ? COINS_BIG_SHIPMENT : 0;
-    // Bonus primer envío NO se otorga acá — el cliente lo reclama manualmente
-    const total      = coinsByKg + coinsBig;
-    if (total <= 0) return res.json({ earned: 0 });
-
-    await getOrCreateCoins(user_id);
-    const breakdown = [];
-    if (coinsByKg  > 0) breakdown.push(`${coinsByKg} por ${kg.toFixed(2)}kg`);
-    if (coinsBig   > 0) breakdown.push(`${coinsBig} bonus envío grande`);
-
-    await db.query(
-      `INSERT INTO coin_transactions (user_id, type, amount, reason, shipment_id)
-       VALUES ($1,'earn',$2,$3,$4)`,
-      [user_id, total, `Envío completado — ${breakdown.join(", ")}`, resolvedShipmentId]
-    );
-    await db.query(
-      `UPDATE lemon_coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW()
-       WHERE user_id=$2`,
-      [total, user_id]
-    );
-
-    const updQ = await db.query(`SELECT * FROM lemon_coins WHERE user_id=$1`, [user_id]);
-    res.json({
-      earned:    total,
-      balance:   updQ.rows[0].balance,
-      level:     getLevel(updQ.rows[0].balance),
-      breakdown: { by_kg: coinsByKg, big_shipment: coinsBig, first_bonus: 0 },
-    });
-  } catch (e) {
-    console.error("COINS EARN ERROR:", e);
-    res.status(500).json({ error: e.message });
-  }
-});
 
 // ── POST /coins/redeem — canjear coins ───────────────────────────────────────
 router.post("/redeem", authRequired, async (req, res) => {
