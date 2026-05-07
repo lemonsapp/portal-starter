@@ -3,20 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Portal Lemons - Rapido, Seguro y Confiable</title>
+    <!-- Title overrideado en runtime por useBranding(). El default acá es el del branding.json. -->
+    <title>Mi Portal</title>
 
-    <!-- Fonts — matching landing -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@300;400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
 
     <!-- PWA Meta Tags -->
-    <meta name="application-name" content="Lemons Portal" />
+    <meta name="application-name" content="Mi Portal" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Lemons" />
+    <meta name="apple-mobile-web-app-title" content="Mi Portal" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#f5e03a" />
+    <meta name="theme-color" content="#3B82F6" />
     <meta name="msapplication-TileColor" content="#04060d" />
     <meta name="msapplication-TileImage" content="/icons/icon-192.png" />
 
@@ -28,11 +29,9 @@
     <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
     <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/logo-lemons-1.png" />
+    <!-- Favicon — overrideado en runtime por useBranding() si admin sube uno. -->
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
-    <meta property="og:image" content="/logo-lemons-1.png" />
   <style>
     /* ── DESIGN TOKENS (alineados al landing) ── */
     :root {

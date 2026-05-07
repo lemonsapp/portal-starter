@@ -1,21 +1,15 @@
 {
-  "name": "Lemons Portal",
-  "short_name": "Lemons",
-  "description": "Gestión de envíos y logística internacional",
+  "name": "Mi Portal",
+  "short_name": "Portal",
+  "description": "Portal de la comunidad",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f1b2d",
-  "theme_color": "#f5e642",
+  "background_color": "#080808",
+  "theme_color": "#3B82F6",
   "orientation": "portrait-primary",
-  "lang": "es-AR",
-  "categories": ["logistics", "business"],
+  "lang": "es",
+  "categories": ["productivity", "social"],
   "icons": [
-    {
-      "src": "/logo-lemons-1.png",
-      "sizes": "any",
-      "type": "image/png",
-      "purpose": "any"
-    },
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
@@ -37,17 +31,17 @@
   ],
   "shortcuts": [
     {
-      "name": "Mis Envíos",
-      "short_name": "Envíos",
-      "description": "Ver estado de mis envíos",
-      "url": "/client/shipments",
+      "name": "Inicio",
+      "short_name": "Inicio",
+      "description": "Ir al inicio",
+      "url": "/inicio",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Panel Operador",
-      "short_name": "Operador",
-      "description": "Gestionar envíos",
-      "url": "/operator",
+      "name": "Mi perfil",
+      "short_name": "Perfil",
+      "description": "Editar mi perfil",
+      "url": "/perfil",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ],

@@ -95,24 +95,27 @@ app.set("trust proxy", 1);
 app.use(express.json({ limit: "500kb" }));
 app.use(express.urlencoded({ limit: "500kb", extended: false }));
 
-// CORS abierto mientras probás
+// CORS — orígenes permitidos. En dev permitimos localhost y Codespaces
+// (cualquier subdominio *.app.github.dev). En prod sumamos APP_URL del .env.
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://localhost",
-  "http://localhost:5173",
-  "http://localhost:5173",
-  "https://lemons-portal-w3of.vercel.app",
-];
+  "http://localhost:4173",   // vite preview
+  process.env.APP_URL,
+].filter(Boolean);
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;                            // server-to-server (curl, Postman)
+  if (allowedOrigins.includes(origin)) return true;
+  // Codespaces dev: *.app.github.dev
+  if (/^https:\/\/[a-z0-9-]+-\d+\.app\.github\.dev$/.test(origin)) return true;
+  return false;
+}
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Permitir requests sin origin (ej: Postman, server-to-server)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      else {
         return callback(new Error("Not allowed by CORS"));
       }
     },
