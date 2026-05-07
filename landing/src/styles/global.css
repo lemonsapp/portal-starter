@@ -4891,3 +4891,150 @@ html.is-loading body {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* =====================================================================
+   HEADER · CTA SOCIOS — pill button, GSAP-driven hover, animated ring
+   Sprint 14: punto de entrada al portal logueado. Reemplaza el viejo
+   icon-button "Mi cuenta". Sigue los patrones de magnetic/cursor que ya
+   usa el resto de la landing (data-magnetic, data-cursor="hover").
+   ===================================================================== */
+
+.header__socios-cta {
+    --socios-bg: #0a0d0a;
+    --socios-fg: #ffffff;
+    --socios-accent: #52b788;
+    --socios-accent-soft: rgba(82, 183, 136, 0.35);
+    --socios-accent-glow: rgba(82, 183, 136, 0.55);
+
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 22px 0 24px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--socios-bg) 0%, #15211a 100%);
+    color: var(--socios-fg);
+    text-decoration: none;
+    overflow: hidden;
+    isolation: isolate;
+    cursor: pointer;
+    will-change: transform;
+    transition: box-shadow 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+        0 4px 14px rgba(0, 0, 0, 0.35),
+        0 0 0 0 var(--socios-accent-glow);
+}
+
+/* Texto + flecha */
+.header__socios-cta__inner {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+}
+.header__socios-cta__label {
+    font-family: var(--f-title, "Archivo Black", sans-serif);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    line-height: 1;
+    color: inherit;
+    /* gradient sweep que el JS anima en hover */
+    background: linear-gradient(
+        90deg,
+        var(--socios-fg) 0%,
+        var(--socios-fg) 35%,
+        var(--socios-accent) 50%,
+        var(--socios-fg) 65%,
+        var(--socios-fg) 100%
+    );
+    background-size: 220% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: background-position 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.header__socios-cta__arrow {
+    transform: translateX(0);
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    color: var(--socios-fg);
+}
+
+/* Anillo animado expandible (idle pulse + hover boost) */
+.header__socios-cta__ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow: 0 0 0 1px var(--socios-accent-soft) inset;
+    opacity: 0.85;
+}
+
+/* Sheen sweep (luz pasando) — el JS la dispara en hover */
+.header__socios-cta__sheen {
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        100deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.08) 35%,
+        rgba(255, 255, 255, 0.22) 50%,
+        rgba(255, 255, 255, 0.08) 65%,
+        transparent 100%
+    );
+    transform: skewX(-18deg);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Hover state base (el JS amplifica con timelines) */
+.header__socios-cta:hover {
+    box-shadow:
+        0 0 0 1px var(--socios-accent-soft) inset,
+        0 8px 28px rgba(0, 0, 0, 0.45),
+        0 0 24px var(--socios-accent-glow);
+}
+.header__socios-cta:hover .header__socios-cta__label {
+    background-position: 0 0;
+}
+.header__socios-cta:hover .header__socios-cta__arrow {
+    transform: translateX(3px);
+}
+
+/* Focus accesible */
+.header__socios-cta:focus-visible {
+    outline: 2px solid var(--socios-accent);
+    outline-offset: 3px;
+}
+
+/* Reduce motion: desactiva animaciones, mantiene look estatico */
+@media (prefers-reduced-motion: reduce) {
+    .header__socios-cta,
+    .header__socios-cta__label,
+    .header__socios-cta__arrow,
+    .header__socios-cta__ring,
+    .header__socios-cta__sheen {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Mobile: el boton se mantiene visible (es la conversion mas importante). */
+@media (max-width: 720px) {
+    .header__socios-cta {
+        height: 36px;
+        padding: 0 16px;
+    }
+    .header__socios-cta__label { font-size: 11px; letter-spacing: 1.8px; }
+    .header__socios-cta__arrow { width: 12px; height: 12px; }
+}
