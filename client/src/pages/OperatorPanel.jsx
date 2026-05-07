@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import BarcodeScanner from "../components/BarcodeScanner.jsx";
 import WhatsAppCRMPanel from "../components/WhatsAppCRMPanel.jsx";
-import InstagramPanel from "../components/InstagramPanel.jsx";
-import InstagramContentPanel from "../components/InstagramContentPanel.jsx";
-import InstagramAdsPanel from "../components/InstagramAdsPanel.jsx";
 import EditorialHero from "../components/EditorialHero.jsx";
 import Skeleton from "../components/Skeleton.jsx";
 
@@ -1425,47 +1422,11 @@ export default function OperatorPanel(){
           {key:"emojis",  icon:"😀", label:"Emojis"},
           {key:"wa",      icon:"💬", label:"WhatsApp CRM"},
           {key:"ia",      icon:"🤖", label:"Control IA"},
-          {key:"ig",      icon:"📸", label:"Instagram"},
           {key:"invites", icon:"🔑", label:"Invitaciones"},
         ].filter(t => tabAllowed(t.key, scopes))}/>
       </div>
 
       {opTab==="ia"      && tabAllowed("ia", scopes)      && <AIPanel toast={toast}/>}
-      {opTab==="ig"      && tabAllowed("ig", scopes)      && (
-        <>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18, padding: "4px 0" }}>
-            {[
-              { k: "automations", icon: "🤖", label: "Automatizaciones", hint: "DMs y comentarios" },
-              { k: "content",     icon: "✨", label: "Contenido",        hint: "IA · cola · DMs en vivo" },
-              { k: "ads",         icon: "🚀", label: "Ads",              hint: "Campañas y boost" },
-            ].map(t => {
-              const active = igSubTab === t.k;
-              return (
-                <button key={t.k} onClick={() => setIgSubTab(t.k)} style={{
-                  flex: "1 1 200px", minHeight: 56, padding: "10px 18px", borderRadius: 14,
-                  border: active ? "1px solid transparent" : "1px solid rgba(255,255,255,0.08)",
-                  cursor: "pointer", textAlign: "left", transition: "all .18s",
-                  background: active ? "linear-gradient(135deg,#f5e03a,#ff5500)" : "rgba(255,255,255,0.04)",
-                  color: active ? "#0b1020" : "rgba(255,255,255,0.7)",
-                  fontFamily: "inherit",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: 14 }}>
-                    <span style={{ fontSize: 18 }}>{t.icon}</span>
-                    <span>{t.label}</span>
-                  </div>
-                  <div style={{ fontSize: 11, fontWeight: 600, opacity: active ? 0.7 : 0.5, marginTop: 2, letterSpacing: "0.5px" }}>
-                    {t.hint}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {igSubTab === "automations" && <InstagramPanel/>}
-          {igSubTab === "content"     && <InstagramContentPanel/>}
-          {igSubTab === "ads"         && <InstagramAdsPanel/>}
-        </>
-      )}
       {opTab==="wa"      && tabAllowed("wa", scopes)      && <WhatsAppCRMPanel/>}
       {opTab==="invites" && tabAllowed("invites", scopes) && <InvitePanel toast={toast}/>}
       {opTab==="lines"   && tabAllowed("lines", scopes)   && <LinesPanel toast={toast}/>}

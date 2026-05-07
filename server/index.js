@@ -24,9 +24,6 @@ const notificationsRouter = require("./routes/notifications"); // ✅ Notificaci
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
 const founderIntelligenceRouter = require("./routes/founderIntelligence");
 const waCRMRouter        = require("./routes/waCRM");
-const instagramRouter    = require("./routes/instagram");
-const instagramContentRouter = require("./routes/instagram-content");
-const instagramAdsRouter = require("./routes/instagram-ads");
 const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
 
@@ -5187,9 +5184,6 @@ app.post("/api/ai/settings/unblock-chat", async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 app.use("/api/wa/crm", waCRMRouter);
-app.use("/api/instagram", instagramRouter);
-app.use("/api/instagram-content", instagramContentRouter);
-app.use("/api/instagram-ads", instagramAdsRouter);
 app.use("/api/chat", chatRouter);
 app.use("/profile",       profileRouter);
 app.use("/auth/webauthn", webauthnRouter);
@@ -5866,42 +5860,4 @@ if (telegram.isConfigured()) {
   } catch(e) { console.error("[MIGRATION ai_settings ERROR]", e.message); }
 })();
 
-// ── Crons IG (FASE B/C) ───────────────────────────────────────────────────────
-if (process.env.NODE_ENV === "production" || process.env.IG_ENABLE_CRON === "true") {
-  try {
-    require("./jobs/content-ideas").startContentIdeasCron();
-    console.log("[IG-CONTENT] cron de ideas iniciado (TZ America/Argentina/Buenos_Aires, 7am)");
-  } catch (e) {
-    console.error("[IG-CONTENT cron init ERROR]", e.message);
-  }
-  try {
-    require("./jobs/publisher").startPublisherCron();
-    console.log("[IG-PUBLISHER] cron iniciado (cada 1 min)");
-  } catch (e) {
-    console.error("[IG-PUBLISHER cron init ERROR]", e.message);
-  }
-  try {
-    require("./jobs/stories").startStoriesCron();
-    console.log("[IG-STORIES] cron iniciado (11am BA, daily)");
-  } catch (e) {
-    console.error("[IG-STORIES cron init ERROR]", e.message);
-  }
-  try {
-    require("./jobs/ig-token-refresh").startIgTokenRefreshCron();
-    console.log("[IG-TOKEN] cron healthcheck iniciado (diario 4am BA)");
-  } catch (e) {
-    console.error("[IG-TOKEN cron init ERROR]", e.message);
-  }
-  try {
-    require("./jobs/meta-token-refresh").startMetaTokenHealthcheckCron();
-    console.log("[META-TOKEN] cron healthcheck iniciado (diario 4am UTC)");
-  } catch (e) {
-    console.error("[META-TOKEN cron init ERROR]", e.message);
-  }
-} else {
-  console.log("[IG-CONTENT] cron deshabilitado");
-  console.log("[IG-PUBLISHER] cron deshabilitado");
-  console.log("[IG-STORIES] cron deshabilitado");
-  console.log("[META-TOKEN] cron deshabilitado");
-}
 // force redeploy Sun Apr 19 00:33:45 UTC 2026
