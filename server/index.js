@@ -2701,7 +2701,21 @@ function readIndexHtml() {
 }
 app.get("/{*path}", async (req, res) => {
   const raw = readIndexHtml();
-  if (!raw) return res.status(503).send("Build no encontrado. Corré `npm run build` en client/.");
+  // Modo API-only (deploy split frontend/backend, ej. Vercel + Render): el
+  // dist del client no esta presente. Respondemos JSON descriptivo en /
+  // y JSON 404 para otras rutas — no tiramos 503 porque el server esta sano.
+  if (!raw) {
+    if (req.path === "/") {
+      return res.json({
+        ok: true,
+        service: process.env.APP_NAME || "portal-starter",
+        mode: "api-only",
+        frontend: process.env.APP_URL || null,
+        endpoints: ["/health", "/auth/*", "/profile/*", "/coins/*", "/api/config/public", "/manifest.json"],
+      });
+    }
+    return res.status(404).json({ error: "Not found", hint: "Esta es la API. El frontend vive en " + (process.env.APP_URL || "tu hosting separado") });
+  }
   try {
     const html = await brandHtml(raw);
     res.set("Cache-Control", "no-cache, must-revalidate");
