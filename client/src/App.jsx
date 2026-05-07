@@ -15,6 +15,7 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import PWAManager from "./components/PWAManager.jsx";
 import Coins from "./pages/Coins.jsx";
 import AdminSetup from "./pages/AdminSetup.jsx";
+import SetupAdmin from "./pages/SetupAdmin.jsx";
 import AppNotification from "./components/AppNotification.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import Register from "./pages/Register.jsx";
@@ -24,6 +25,24 @@ import PrivateChatsPage from "./pages/PrivateChatsPage.jsx";
 import usePresence from "./hooks/usePresence.js";
 import OnboardingModal from "./components/OnboardingModal.jsx";
 import { useParams, useNavigate } from "react-router-dom";
+
+// Redirige a /setup-admin si la DB no tiene users; si no, renderiza Login.
+// Side effect: también redirige al admin a /admin/setup si app_config está
+// incompleta (status.cloudinary o status.resend en false). Esto cumple la
+// UX del spec § 8.1 step 5: 'admin loguea → app detecta config vacía →
+// redirige a /admin/setup'.
+function LoginOrBootstrap() {
+  const [decision, setDecision] = useState("loading");
+  useEffect(() => {
+    fetch(`${API}/auth/needs-bootstrap`)
+      .then(r => r.json())
+      .then(d => setDecision(d.needs_bootstrap ? "bootstrap" : "login"))
+      .catch(() => setDecision("login"));  // fail-open: muestra login
+  }, []);
+  if (decision === "loading") return null;
+  if (decision === "bootstrap") return <Navigate to="/setup-admin" replace />;
+  return <Login />;
+}
 
 function ProfileByIdRedirect() {
   const { userId } = useParams();
@@ -121,7 +140,8 @@ export default function App() {
       <AppNotification />
       <Routes>
         {/* Publicas sin sidebar */}
-        <Route path="/"                element={<Login />} />
+        <Route path="/setup-admin"    element={<SetupAdmin />} />
+        <Route path="/"                element={<LoginOrBootstrap />} />
         <Route path="/forgot-password"  element={<ForgotPassword />} />
         <Route path="/register"          element={<Register />} />
         <Route path="/verify-email"      element={<VerifyEmail />} />

@@ -924,6 +924,67 @@ function buildVerifyEmailHtml(name, verifyUrl) {
 </html>`;
 }
 
+// ── GET /auth/needs-bootstrap ────────────────────────────────────────────────
+// Devuelve { needs_bootstrap: true } si la DB no tiene users; el frontend
+// usa esto para mostrar 'Crear cuenta de administrador' en lugar del login.
+app.get("/auth/needs-bootstrap", async (_req, res) => {
+  try {
+    const r = await db.query("SELECT COUNT(*)::int AS n FROM users");
+    res.json({ needs_bootstrap: r.rows[0].n === 0 });
+  } catch (e) {
+    console.error("[needs-bootstrap]", e.message);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
+// ── POST /auth/bootstrap-admin ───────────────────────────────────────────────
+// Crea el primer admin SIN requerir invite_code, sólo si la DB está vacía.
+// Idempotente contra abuso: el segundo intento (con users existentes) falla 403.
+app.post("/auth/bootstrap-admin", authLimiter, noStore, async (req, res) => {
+  try {
+    const schema = z.object({
+      name:     z.string().min(2).max(80),
+      email:    z.string().email(),
+      password: z.string().min(8).max(128),
+    });
+    const p = schema.safeParse(req.body);
+    if (!p.success) return res.status(400).json({ error: "Datos inválidos" });
+
+    // Race-safe: tx con SELECT FOR UPDATE no aplica acá (no hay row), pero
+    // chequear count() inmediatamente antes del insert reduce la ventana de
+    // race a microsegundos. Si dos requests entran a la vez, sólo uno
+    // succeed (UNIQUE en email se encarga del resto).
+    const cnt = await db.query("SELECT COUNT(*)::int AS n FROM users");
+    if (cnt.rows[0].n > 0) {
+      return res.status(403).json({ error: "Ya existe al menos un usuario; bootstrap deshabilitado" });
+    }
+
+    const { name, email, password } = p.data;
+    const hash = await bcrypt.hash(password, 10);
+    const ins = await db.query(
+      `INSERT INTO users (client_number, name, email, password_hash, role, email_verified, active)
+       VALUES (1, $1, $2, $3, 'admin', TRUE, TRUE)
+       RETURNING id, name, email, role`,
+      [name.trim(), email.toLowerCase(), hash]
+    );
+    const user = ins.rows[0];
+
+    // Crear lemon_coins balance + perfil vacío (idempotentes)
+    await db.query(`INSERT INTO lemon_coins (user_id, balance, total_earned) VALUES ($1, 0, 0) ON CONFLICT DO NOTHING`, [user.id]);
+    await db.query(`INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [user.id]);
+
+    // Token directo (no hay verificación de email — admin bootstrap es trusted)
+    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+    res.json({ ok: true, token, user });
+  } catch (e) {
+    console.error("[bootstrap-admin]", e);
+    if (String(e?.message || "").includes("duplicate")) {
+      return res.status(400).json({ error: "Email ya registrado" });
+    }
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
 // ── POST /auth/register ───────────────────────────────────────────────────────
 app.post("/auth/register", authLimiter, noStore, async (req, res) => {
   try {

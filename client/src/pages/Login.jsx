@@ -86,12 +86,9 @@ export default function Login() {
 
       const role = data.user?.role;
       const scopes = data.user?.scopes;
-      // Operadores con scopes restrictivos van directo al OperatorPanel (donde se filtran las pestañas).
-      // El /dashboard general requiere scope "general" y les daría 403.
-      const restrictedOperator = role === "operator" && Array.isArray(scopes) && scopes.length > 0 && !scopes.includes("*");
-      if (role === "admin" || (role === "operator" && !restrictedOperator)) navigate("/dashboard");
-      else if (restrictedOperator) navigate("/operator");
-      else navigate("/inicio");
+      if (role === "admin") { await redirectAdmin(navigate); return; }
+      // operadores y clientes: home común (Sprint 3+ podrá agregar /admin para admin)
+      navigate("/inicio");
     } catch { setMsg("Error de conexión"); }
     finally { setLoading(false); }
   }
@@ -105,10 +102,9 @@ export default function Login() {
       storage.setItem("token", data.token);
       const role = data.user?.role;
       const scopes = data.user?.scopes;
-      const restrictedOperator = role === "operator" && Array.isArray(scopes) && scopes.length > 0 && !scopes.includes("*");
-      if (role === "admin" || (role === "operator" && !restrictedOperator)) navigate("/dashboard");
-      else if (restrictedOperator) navigate("/operator");
-      else navigate("/inicio");
+      if (role === "admin") { await redirectAdmin(navigate); return; }
+      // operadores y clientes: home común (Sprint 3+ podrá agregar /admin para admin)
+      navigate("/inicio");
     } catch (e) {
       // Si falla, no muestra error grande — el form de password sigue ahí
       if (e?.message && !/Cancelaste/i.test(e.message)) {
@@ -119,15 +115,25 @@ export default function Login() {
     }
   }
 
-  function closeBiometricModalAndNavigate(userObj) {
+  async function closeBiometricModalAndNavigate(userObj) {
     setShowActivateModal(false);
     if (!userObj) { navigate("/inicio"); return; }
-    const role = userObj.role;
-    const scopes = userObj.scopes;
-    const restrictedOperator = role === "operator" && Array.isArray(scopes) && scopes.length > 0 && !scopes.includes("*");
-    if (role === "admin" || (role === "operator" && !restrictedOperator)) navigate("/dashboard");
-    else if (restrictedOperator) navigate("/operator");
-    else navigate("/inicio");
+    if (userObj.role === "admin") { await redirectAdmin(navigate); return; }
+    navigate("/inicio");
+  }
+
+  // Helper: si admin y app_config tiene wizard incompleto → redirige a /admin/setup
+  async function redirectAdmin(nav) {
+    try {
+      const tok = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const r = await fetch(`${API}/api/admin/config/status`, { headers: { Authorization: `Bearer ${tok}` } });
+      const d = await r.json();
+      // Si falta cualquiera de los pasos críticos, mandar al wizard
+      const incomplete = !d.status || !d.status.cloudinary || !d.status.resend;
+      nav(incomplete ? "/admin/setup" : "/inicio");
+    } catch {
+      nav("/admin/setup");  // fail-safe: lo mando al wizard
+    }
   }
 
   useEffect(() => {
