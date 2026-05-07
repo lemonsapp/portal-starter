@@ -15,7 +15,6 @@ const hpp = require("hpp");
 const db = require("./db");
 const { authRequired, requireRole } = require("./auth");
 const { sendEmail } = require("./mailer"); // ✅ mails
-const { sendPaymentReceipt } = require("./lib/waReceipt");
 const {
   loginSlowDown,
   noStore,
@@ -391,14 +390,6 @@ el wizard del Sprint 2/3 esté activo).
 
 // ==================== TARIFAS (defaults + helpers) ====================
 
-const DEFAULT_RATES = {
-  usa_normal:       45,
-  usa_express:      55,
-  usa_tech_premium: 75, // Tecnología Premium — solo USA
-  china_normal:     58,
-  china_express:    68,
-  europa_normal:    58, // EUROPA siempre NORMAL
-};
 
 // ── Costos reales del operador ───────────────────────────────────────────────
 const DEFAULT_OPERATOR_COSTS = {
@@ -434,50 +425,11 @@ function normalizeService(service) {
   return null;
 }
 
-function rateKeyFor(origin, service) {
-  if (origin === "EUROPA") return "europa_normal";
-  if (origin === "USA" && service === "NORMAL")       return "usa_normal";
-  if (origin === "USA" && service === "EXPRESS")      return "usa_express";
-  if (origin === "USA" && service === "TECH_PREMIUM") return "usa_tech_premium";
-  if (origin === "CHINA" && service === "NORMAL")     return "china_normal";
-  if (origin === "CHINA" && service === "EXPRESS")    return "china_express";
-  return null;
-}
 
 // Descuento por volumen según kg del envío individual
-function volumeDiscount(kg) {
-  if (kg >= 100) return 7;
-  if (kg >= 50)  return 5;
-  if (kg >= 10)  return 3;
-  return 0;
-}
 
-function applyVolumeDiscount(baseRate, kg) {
-  return Math.max(0, baseRate - volumeDiscount(kg));
-}
 
-async function getClientRatesByUserId(userId) {
-  const r = await db.query(
-    `SELECT user_id, usa_normal, usa_express, usa_tech_premium, china_normal, china_express, europa_normal, updated_at
-     FROM client_rates
-     WHERE user_id=$1`,
-    [userId]
-  );
-  return r.rows[0] || null;
-}
 
-function resolveRateUsdPerKg({ origin, service, clientRatesRow }) {
-  const key = rateKeyFor(origin, service);
-  if (!key) return null;
-
-  const v = clientRatesRow?.[key];
-  if (v !== null && v !== undefined) {
-    const n = Number(v);
-    if (Number.isFinite(n)) return n;
-  }
-
-  return DEFAULT_RATES[key];
-}
 
 function toNumOrNull(v) {
   if (v === null || v === undefined) return null;
@@ -630,197 +582,6 @@ function trackingHtml(trackingRaw) {
     style="color:#c7d2fe; font-weight:800; text-decoration:underline;">${label}</a>`;
 }
 
-function shipmentUpdateEmailHtml({
-  brand = "MI PORTAL",
-  clientName = "",
-  clientNumber = "",
-  code = "",
-  oldStatus = "",
-  newStatus = "",
-  origin = "",
-  service = "",
-  weightKg = null,
-  rateUsdKg = null,
-  estimatedUsd = null,
-  tracking = "",
-  boxCode = "",
-  ctaUrl = "",
-}) {
-  const pill = statusPillColor(newStatus);
-  const preview = `Tu envío #${code} pasó a "${newStatus}".`;
-  const showCta = Boolean(ctaUrl && String(ctaUrl).trim().length > 0);
-  const trackingBlock = trackingHtml(tracking);
-
-  return `
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <meta name="x-apple-disable-message-reformatting"/>
-  <title>${brand}</title>
-  <style>
-    @media (max-width: 600px) {
-      .container { width: 100% !important; }
-      .px { padding-left: 16px !important; padding-right: 16px !important; }
-      .grid td { display:block !important; width:100% !important; }
-      .btn { width: 100% !important; text-align:center !important; }
-    }
-  </style>
-</head>
-<body style="margin:0; padding:0; background:#0b1020;">
-  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
-    ${preview}
-  </div>
-
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0b1020; padding:24px 0;">
-    <tr>
-      <td align="center" class="px" style="padding: 0 24px;">
-        <table role="presentation" width="600" class="container" cellspacing="0" cellpadding="0" style="width:600px; max-width:600px;">
-          
-          <tr>
-            <td style="padding: 8px 0 16px 0;">
-              <div style="font-family: Arial, sans-serif; color:#c7d2fe; font-size:12px; letter-spacing:0.12em; text-transform:uppercase;">
-                ${brand}
-              </div>
-              <div style="font-family: Arial, sans-serif; color:#ffffff; font-size:22px; font-weight:800; margin-top:6px;">
-                Actualización de tu envío
-              </div>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); border-radius:16px; overflow:hidden;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                
-                <tr>
-                  <td style="padding:16px; background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(168,85,247,0.20)); border-bottom:1px solid rgba(255,255,255,0.10);">
-                    <table role="presentation" width="100%">
-                      <tr>
-                        <td style="font-family: Arial, sans-serif; color:#ffffff; font-size:14px;">
-                          Hola <b>${safeStr(clientName) || "👋"}</b>
-                          ${clientNumber ? `<span style="color:#cbd5e1;">(Cliente #${safeStr(clientNumber)})</span>` : ""}
-                        </td>
-                        <td align="right" style="font-family: Arial, sans-serif;">
-                          <span style="display:inline-block; padding:8px 10px; border-radius:999px; background:${pill}; color:#0b1020; font-weight:800; font-size:12px;">
-                            ${safeStr(newStatus)}
-                          </span>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <div style="font-family: Arial, sans-serif; color:#e5e7eb; font-size:13px; margin-top:10px;">
-                      Tu envío <b style="color:#fff;">#${safeStr(code)}</b> cambió de estado:
-                      <div style="margin-top:8px; font-size:14px;">
-                        <span style="display:inline-block; padding:6px 10px; border-radius:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.10); color:#e5e7eb;">
-                          ${safeStr(oldStatus)}
-                        </span>
-                        <span style="color:#c7d2fe; font-weight:800; margin:0 8px;">→</span>
-                        <span style="display:inline-block; padding:6px 10px; border-radius:10px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.14); color:#ffffff; font-weight:800;">
-                          ${safeStr(newStatus)}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td style="padding:16px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="grid" style="font-family: Arial, sans-serif; font-size:13px; color:#e5e7eb;">
-                      <tr>
-                        <td style="padding:10px; width:50%; vertical-align:top; background:rgba(255,255,255,0.04); border-radius:12px;">
-                          <div style="color:#94a3b8; font-size:12px;">Origen / Servicio</div>
-                          <div style="margin-top:4px; font-weight:800; color:#fff;">
-                            ${safeStr(origin) || "-"} · ${safeStr(service) || "-"}
-                          </div>
-                        </td>
-                        <td style="padding:10px; width:50%; vertical-align:top;">
-                          <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:10px;">
-                            <div style="color:#94a3b8; font-size:12px;">Peso</div>
-                            <div style="margin-top:4px; font-weight:800; color:#fff;">
-                              ${formatKg(weightKg)}
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td style="padding:10px; width:50%; vertical-align:top;">
-                          <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:10px;">
-                            <div style="color:#94a3b8; font-size:12px;">Tarifa</div>
-                            <div style="margin-top:4px; font-weight:800; color:#fff;">
-                              ${formatUsdKg(rateUsdKg)}
-                            </div>
-                          </div>
-                        </td>
-                        <td style="padding:10px; width:50%; vertical-align:top;">
-                          <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:10px;">
-                            <div style="color:#94a3b8; font-size:12px;">Estimado</div>
-                            <div style="margin-top:4px; font-weight:900; color:#fff; font-size:16px;">
-                              ${formatUsd(estimatedUsd)}
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td style="padding:10px; width:50%; vertical-align:top;">
-                          <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:10px;">
-                            <div style="color:#94a3b8; font-size:12px;">Tracking</div>
-                            <div style="margin-top:4px; font-weight:800; color:#fff;">
-                              ${trackingBlock}
-                            </div>
-                          </div>
-                        </td>
-                        <td style="padding:10px; width:50%; vertical-align:top;">
-                          <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:10px;">
-                            <div style="color:#94a3b8; font-size:12px;">Caja</div>
-                            <div style="margin-top:4px; font-weight:800; color:#fff;">
-                              ${safeStr(boxCode) || "-"}
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    </table>
-
-                    ${
-                      showCta
-                        ? `
-                      <div style="margin-top:16px;">
-                        <a class="btn" href="${ctaUrl}"
-                           style="display:inline-block; text-decoration:none; font-family: Arial, sans-serif;
-                           background: linear-gradient(135deg, #6366f1, #a855f7);
-                           color:#ffffff; padding:12px 16px; border-radius:12px; font-weight:900;">
-                          Ver mis envíos
-                        </a>
-                      </div>
-                    `
-                        : ""
-                    }
-
-                    <div style="margin-top:14px; font-family: Arial, sans-serif; color:#94a3b8; font-size:12px;">
-                      Si vos no solicitaste este aviso, podés ignorarlo.
-                    </div>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="padding: 14px 0 0 0; font-family: Arial, sans-serif; color:#64748b; font-size:12px;">
-              © ${new Date().getFullYear()} ${brand}. Todos los derechos reservados.
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `.trim();
-}
 
 
 // ==================== SHIPMENT STATUS AUTOMATION + WA ====================
@@ -842,139 +603,11 @@ async function getShipmentWithClientById(shipmentId) {
   return q.rows[0] || null;
 }
 
-async function enqueueWhatsappToClient(phone, message) {
-  const normalized = String(phone || "").replace(/\D/g, "");
-  if (!normalized || !message) return false;
 
-  await db.query(
-    `INSERT INTO wa_notifications (phone, message, status, created_at)
-     VALUES ($1, $2, 'pending', NOW())`,
-    [normalized, String(message)]
-  );
 
-  return true;
-}
 
-function addBusinessDays(baseDate, businessDays) {
-  const d = new Date(baseDate);
-  let added = 0;
-  while (added < businessDays) {
-    d.setDate(d.getDate() + 1);
-    const day = d.getDay();
-    if (day !== 0 && day !== 6) added += 1;
-  }
-  return d;
-}
 
-function nextAutoTransitionForShipment(shipment) {
-  const status = String(shipment.status || "");
-  const origin = String(shipment.origin || "").toUpperCase();
-  const service = String(shipment.service || "NORMAL").toUpperCase();
-  const lastAt = new Date(shipment.last_status_at || shipment.date_in || shipment.updated_at || Date.now());
 
-  if (status === "Recibido en depósito") {
-    return {
-      newStatus: "En preparación",
-      dueAt: new Date(lastAt.getTime() + 12 * 60 * 60 * 1000),
-    };
-  }
-
-  if (status === "En preparación") {
-    return {
-      newStatus: "En tránsito",
-      dueAt: new Date(lastAt.getTime() + 12 * 60 * 60 * 1000),
-    };
-  }
-
-  // "En tránsito" es el último estado automático — el operador avanza manualmente a "Listo para entrega"
-  if (status === "En tránsito") {
-    return null;
-  }
-
-  return null;
-}
-
-function buildShipmentWhatsappMessage({ shipment, oldStatus, newStatus }) {
-  // Mensaje especial para entrega exitosa
-  if (newStatus === "Entregado") {
-    const clientName = shipment.client_name || shipment.contact_name || "";
-    return [
-      `🍋 ¡Hola${clientName ? " " + clientName.split(" ")[0] : ""}! Tu carga *${shipment.code}* fue entregada con éxito 🎉`,
-      ``,
-      `¡Gracias por elegirnos para traer tu carga! Fue un placer trabajar con vos.`,
-      ``,
-      `💬 ¿Cómo te pareció el servicio? Tu opinión nos ayuda a mejorar — respondé este mensaje y contanos tu experiencia.`,
-      ``,
-      `¡Hasta el próximo envío! 🍋`
-    ].join("\n");
-  }
-  const code = shipment.code || shipment.id || "-";
-  const lines = [
-    `📦 Actualización de tu envío #${code}`,
-    "",
-    `Estado anterior: ${oldStatus || "Creado"}`,
-    `Nuevo estado: ${newStatus}`,
-    `Origen: ${shipment.origin || "-"}`,
-    `Servicio: ${shipment.service || "-"}`,
-  ];
-
-  if (shipment.tracking) lines.push(`Tracking: ${shipment.tracking}`);
-  if (shipment.weight_kg !== null && shipment.weight_kg !== undefined) {
-    lines.push(`Peso: ${Number(shipment.weight_kg).toFixed(2)} kg`);
-  }
-
-  if (newStatus === "Listo para entrega" && shipment.estimated_usd !== null && shipment.estimated_usd !== undefined) {
-    lines.push("");
-    lines.push(`💵 Total a abonar: USD ${Number(shipment.estimated_usd).toFixed(2)}`);
-  }
-
-  lines.push("");
-  lines.push("Cualquier duda, respondé este mensaje y te ayudamos.");
-  return lines.join("\n");
-}
-
-async function notifyShipmentStatusWhatsapp({ shipment, oldStatus, newStatus }) {
-  if (!shipment || !shipment.client_phone) return false;
-  const msg = buildShipmentWhatsappMessage({ shipment, oldStatus, newStatus });
-  return enqueueWhatsappToClient(shipment.client_phone, msg);
-}
-
-async function sendShipmentStatusEmail(shipment, oldStatus, newStatus) {
-  try {
-    if (!shipment?.client_email) return;
-
-    const code = shipment?.code || shipment?.id || "";
-    const ctaUrl =
-      process.env.APP_URL && String(process.env.APP_URL).trim()
-        ? `${String(process.env.APP_URL).replace(/\/$/, "")}/client/shipments`
-        : "";
-
-    const html = shipmentUpdateEmailHtml({
-      brand: "MI PORTAL",
-      clientName: shipment.client_name || "",
-      clientNumber: shipment.client_number || "",
-      code,
-      oldStatus,
-      newStatus,
-      origin: shipment.origin || "",
-      service: shipment.service || "",
-      weightKg: shipment.weight_kg ?? null,
-      rateUsdKg: shipment.rate_usd_per_kg ?? null,
-      estimatedUsd: shipment.estimated_usd ?? null,
-      tracking: shipment.tracking || "",
-      boxCode: shipment.box_code || "",
-      ctaUrl,
-    });
-
-    await sendEmail({
-      to: shipment.client_email,
-      subject: `Actualización de envío #${code}`,
-      html,
-    });
-  } catch (e) {
-    console.log("[MAIL] Falló envío update automático (no rompemos flujo):", e?.message || e);
-  }
-}
 
 async function applyShipmentStatusChange({ shipmentId, oldStatus, newStatus, source = "auto" }) {
   const upd = await db.query(
@@ -1004,47 +637,6 @@ async function applyShipmentStatusChange({ shipmentId, oldStatus, newStatus, sou
   return fresh;
 }
 
-async function processAutomaticShipmentStatuses() {
-  const q = await db.query(`
-    SELECT
-      s.*,
-      u.name AS client_name,
-      u.client_number,
-      u.email AS client_email,
-      u.phone AS client_phone,
-      COALESCE(last_evt.created_at, s.date_in, s.updated_at, NOW()) AS last_status_at
-    FROM shipments s
-    JOIN users u ON u.id = s.user_id
-    LEFT JOIN LATERAL (
-      SELECT created_at
-      FROM shipment_events se
-      WHERE se.shipment_id = s.id
-      ORDER BY se.created_at DESC
-      LIMIT 1
-    ) last_evt ON true
-    WHERE s.status IN ('Recibido en depósito', 'En preparación', 'En tránsito')
-    ORDER BY s.id ASC
-  `);
-
-  const now = new Date();
-
-  for (const row of q.rows) {
-    const plan = nextAutoTransitionForShipment(row);
-    if (!plan) continue;
-    if (plan.dueAt > now) continue;
-
-    try {
-      await applyShipmentStatusChange({
-        shipmentId: row.id,
-        oldStatus: row.status,
-        newStatus: plan.newStatus,
-        source: "scheduler",
-      });
-    } catch (e) {
-      console.error("[AUTO STATUS ERROR]", row.id, e?.message || e);
-    }
-  }
-}
 
 
 // ══ MISIONES AUTO-CHECK ═══════════════════════════════════════════════════════
@@ -1520,22 +1112,6 @@ app.delete("/admin/invite-codes/:id", authRequired, requireRole(["admin"]), asyn
 });
 // ═════════════════════════════════════════════════════════════════════════════
 
-function startShipmentAutomationLoop() {
-  if (global.__LEMONS_SHIPMENT_AUTOMATION_STARTED__) return;
-  global.__LEMONS_SHIPMENT_AUTOMATION_STARTED__ = true;
-
-  const run = async () => {
-    try {
-      await processAutomaticShipmentStatuses();
-    } catch (e) {
-      console.error("[AUTO STATUS LOOP ERROR]", e?.message || e);
-    }
-  };
-
-  setTimeout(run, 15000);
-  setInterval(run, 10 * 60 * 1000);
-  console.log("[AUTO STATUS] Loop iniciado");
-}
 
 // ==================== AUTH ====================
 
@@ -2364,51 +1940,6 @@ app.post(
   }
 );
 
-app.get(
-  "/operator/clients",
-  authRequired,
-  requireRole(["operator", "admin"]),
-  async (req, res) => {
-    try {
-      const n = Number(req.query.client_number);
-      if (Number.isNaN(n)) return res.status(400).json({ error: "client_number inválido" });
-
-      const q = await db.query(
-        "SELECT id, client_number, name, email, role FROM users WHERE client_number=$1",
-        [n]
-      );
-
-      const user = q.rows[0] || null;
-      if (!user) return res.json({ user: null, rates: null, defaults: DEFAULT_RATES });
-
-      let ratesRow = null;
-      try {
-        ratesRow = await getClientRatesByUserId(user.id);
-      } catch (e) {
-        console.error("GET CLIENT RATES ERROR", e);
-        return res.status(500).json({
-          error: "No se pudieron leer tarifas. Verificá que exista la tabla client_rates (migración pendiente).",
-        });
-      }
-
-      const rates = ratesRow
-        ? {
-            usa_normal: ratesRow.usa_normal,
-            usa_express: ratesRow.usa_express,
-            china_normal: ratesRow.china_normal,
-            china_express: ratesRow.china_express,
-            europa_normal: ratesRow.europa_normal,
-            updated_at: ratesRow.updated_at,
-          }
-        : null;
-
-      res.json({ user, rates, defaults: DEFAULT_RATES });
-    } catch (e) {
-      console.error("GET CLIENT ERROR", e);
-      res.status(500).json({ error: "Error interno" });
-    }
-  }
-);
 
 // ── GET /users — buscar usuario por client_number (para CoinsOperator) ──
 app.get("/users", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
@@ -2592,10 +2123,6 @@ const EXPENSE_CATEGORIES = [
 // PRESUPUESTADOR
 // ════════════════════════════════════════════════════════════════════
 
-const DEFAULT_RATES_FALLBACK = {
-  usa_normal: 45, usa_express: 55, usa_tech_premium: 75,
-  china_normal: 58, china_express: 68, europa_normal: 58,
-};
 
 
 
