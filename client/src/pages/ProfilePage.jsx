@@ -26,15 +26,18 @@ const LEVEL = {
   silver: { label:"Plata",  color:"#C0C0C0", bg:"rgba(192,192,192,.12)", icon:"🥈" },
   gold:   { label:"Oro",    color:"var(--brand-primary, #f5e03a)", bg:"rgba(var(--brand-primary-rgb),.12)",   icon:"🥇" },
 };
+// Sprint 11: achievements basados en stats sociales reales (posts/likes/
+// friends/days_active). Cada condition recibe (stats, totalCoinsEarned).
 const ACHIEVEMENTS = [
-  { key:"ach_first",    icon:"🎯", name:"Primer Envío",   desc:"Completaste tu primer envío",       condition:(s)=>s.delivered>=1,     reward:0,    rarity:"common"    },
-  { key:"ach_x5",       icon:"📦", name:"Importador",     desc:"5 envíos completados",              condition:(s)=>s.delivered>=5,     reward:50,   rarity:"common"    },
-  { key:"ach_x10",      icon:"🔟", name:"Frecuente",      desc:"10 envíos completados",             condition:(s)=>s.delivered>=10,    reward:100,  rarity:"rare"      },
-  { key:"ach_x25",      icon:"🏅", name:"Veterano",       desc:"25 envíos completados",             condition:(s)=>s.delivered>=25,    reward:300,  rarity:"epic"      },
-  { key:"ach_usd1k",    icon:"💵", name:"Mil Dólares",    desc:"Más de USD 1.000 importados",       condition:(s)=>s.total_usd>=1000,  reward:100,  rarity:"common"    },
-  { key:"ach_usd5k",    icon:"💰", name:"Ballena",        desc:"Más de USD 5.000 importados",       condition:(s)=>s.total_usd>=5000,  reward:500,  rarity:"epic"      },
-  { key:"ach_usd10k",   icon:"🐋", name:"Mega Ballena",   desc:"Más de USD 10.000 importados",      condition:(s)=>s.total_usd>=10000, reward:1000, rarity:"legendary" },
-  { key:"ach_coins500", icon:"🪙", name:"Acumulador",     desc:"500+ Coins ganados en total", condition:(s,c)=>c>=500,           reward:0,    rarity:"rare"      },
+  { key:"ach_first_post", icon:"🎯", name:"Primer Post",  desc:"Publicaste tu primer post",         condition:(s)=>s.posts>=1,        reward:0,    rarity:"common"    },
+  { key:"ach_x5_posts",   icon:"📰", name:"Activo",       desc:"5 posts publicados",                condition:(s)=>s.posts>=5,        reward:50,   rarity:"common"    },
+  { key:"ach_x25_posts",  icon:"📣", name:"Comunicador",  desc:"25 posts publicados",               condition:(s)=>s.posts>=25,       reward:300,  rarity:"epic"      },
+  { key:"ach_friends10",  icon:"👥", name:"Conector",     desc:"10 amigos en la comunidad",         condition:(s)=>s.friends>=10,     reward:100,  rarity:"rare"      },
+  { key:"ach_friends50",  icon:"🌐", name:"Influencer",   desc:"50 amigos en la comunidad",         condition:(s)=>s.friends>=50,     reward:500,  rarity:"epic"      },
+  { key:"ach_likes100",   icon:"❤️", name:"Querido",      desc:"100 likes recibidos en tus posts",  condition:(s)=>s.likes>=100,      reward:200,  rarity:"rare"      },
+  { key:"ach_loyal30",    icon:"💛", name:"Leal",         desc:"30 días en la comunidad",           condition:(s)=>s.days_active>=30, reward:0,    rarity:"common"    },
+  { key:"ach_veteran365",  icon:"🏆", name:"Veterano",    desc:"1 año en la comunidad",             condition:(s)=>s.days_active>=365,reward:1000, rarity:"legendary" },
+  { key:"ach_coins500",    icon:"🪙", name:"Acumulador",  desc:"500+ Coins ganados en total",       condition:(s,c)=>c>=500,          reward:0,    rarity:"rare"      },
 ];
 
 const BADGE_CONFIG = {
@@ -202,7 +205,12 @@ function ItemCard({ item, owned, equipped, onBuy, onEquip, loading, readOnly }) 
 function AchievementCard({ ach, unlocked, stats }) {
   const [hover, setHover] = useState(false);
   const r = RARITY[ach.rarity] || RARITY.common;
-  const pct = ach.key==="ach_x25"?Math.min(100,((stats?.delivered||0)/25)*100):ach.key==="ach_usd5k"?Math.min(100,((stats?.total_usd||0)/5000)*100):ach.key==="ach_usd10k"?Math.min(100,((stats?.total_usd||0)/10000)*100):null;
+  // Sprint 11: progress bars sobre stats sociales reales.
+  const pct = ach.key==="ach_x25_posts" ? Math.min(100, ((stats?.posts||0)/25)*100)
+            : ach.key==="ach_friends50" ? Math.min(100, ((stats?.friends||0)/50)*100)
+            : ach.key==="ach_likes100"  ? Math.min(100, ((stats?.likes||0)/100)*100)
+            : ach.key==="ach_veteran365"? Math.min(100, ((stats?.days_active||0)/365)*100)
+            : null;
   return (
     <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{ background:unlocked?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${unlocked?r.border:"rgba(237,233,224,.06)"}`,padding:18,position:"relative",overflow:"hidden",transition:"all .35s cubic-bezier(.2,.8,.2,1)",transform:hover?"translateY(-6px) scale(1.015)":"none",boxShadow:hover?(unlocked?`0 24px 60px rgba(0,0,0,.5),0 0 0 1px ${r.color}40,0 0 32px ${r.color}26`:"0 18px 48px rgba(0,0,0,.5)"):"none",opacity:unlocked?1:.6 }}>
       {unlocked&&<div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${r.color},${r.color}40,transparent)`,backgroundSize:"200% 100%",animation:hover?"shimmerBg 2s linear infinite":"none" }} />}
@@ -920,10 +928,12 @@ export default function ProfilePage() {
             {/* STATS PREMIUM */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderTop:"1px solid rgba(255,255,255,.05)",borderBottom:"1px solid rgba(255,255,255,.05)",background:"linear-gradient(180deg,rgba(var(--brand-primary-rgb),.018),transparent)"}}>
               {[
-                {ico:"📦",lbl:"Envíos totales", v:String(stats.total_shipments||0), c:"var(--brand-primary, #f5e03a)", hide:privacyLoaded&&!privacy.envios},
-                {ico:"✅",lbl:"Entregados",     v:String(stats.delivered||0),       c:"#22c55e", hide:privacyLoaded&&!privacy.envios},
-                {ico:"💵",lbl:"USD movidos",    v:"$"+(stats.total_usd||0).toLocaleString("es-AR",{maximumFractionDigits:0}), c:"#60a5fa", hide:privacyLoaded&&!privacy.envios},
-                {ico:"🪙",lbl:"Coins ganados",  v:coinsTotal.toLocaleString(),      c:"var(--brand-primary, #f5e03a)", hide:privacyLoaded&&!privacy.coins},
+                // Sprint 11: stats sociales reales (privacy.envios reusado para
+                // posts/likes/friends; el flag es generico "actividad publica").
+                {ico:"📰",lbl:"Posts",         v:String(stats.posts||0),         c:"var(--brand-primary, #f5e03a)", hide:privacyLoaded&&!privacy.envios},
+                {ico:"❤️",lbl:"Likes recibidos",v:String(stats.likes||0),         c:"#ef4444", hide:privacyLoaded&&!privacy.envios},
+                {ico:"👥",lbl:"Amigos",        v:String(stats.friends||0),       c:"#60a5fa", hide:privacyLoaded&&!privacy.envios},
+                {ico:"🪙",lbl:"Coins ganados", v:coinsTotal.toLocaleString(),    c:"var(--brand-primary, #f5e03a)", hide:privacyLoaded&&!privacy.coins},
               ].map((s,i)=>(
                 <div key={i} className="pf-stat-card" style={{padding:"22px 22px",borderRight:i<3?"1px solid rgba(255,255,255,.05)":"none",cursor:"pointer",position:"relative",overflow:"hidden",transition:"all .35s",animation:`slideUp .55s cubic-bezier(.2,.8,.2,1) ${i*70}ms both`}} onMouseEnter={e=>!s.hide&&(e.currentTarget.style.background=`${s.c}06`)} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                   <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,${s.c},transparent)`,opacity:.4}}/>

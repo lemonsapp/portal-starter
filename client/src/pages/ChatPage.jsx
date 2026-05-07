@@ -309,7 +309,8 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
         {/* Stats */}
         {profile && (
           <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,padding:"0 22px 16px",background:"#0b0f1e" }}>
-            {[{label:"Envíos",value:profile.stats?.total_shipments||0},{label:"Entregados",value:profile.stats?.delivered||0},{label:"🪙 Coins",value:profile.coins?.balance||0}].map(s=>(
+            {/* Sprint 11: stats sociales reales (posts/amigos/coins). */}
+            {[{label:"Posts",value:profile.stats?.posts||0},{label:"Amigos",value:profile.stats?.friends||0},{label:"🪙 Coins",value:profile.coins?.balance||0}].map(s=>(
               <div key={s.label} style={{ background:"rgba(255,255,255,.04)",borderRadius:10,padding:"10px 12px",textAlign:"center" }}>
                 <div style={{ fontWeight:900,fontSize:18,color:"#f1f5f9" }}>{s.value}</div>
                 <div style={{ fontSize:10,color:"#334155",marginTop:2 }}>{s.label}</div>

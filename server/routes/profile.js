@@ -66,6 +66,30 @@ async function migrate() {
   await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_logros BOOLEAN DEFAULT TRUE`).catch(() => {});
   await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_posts BOOLEAN DEFAULT TRUE`).catch(() => {});
   await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_amigos BOOLEAN DEFAULT FALSE`).catch(() => {});
+  // Sprint 11: cols del chat-style/profile-decoration que la query del
+  // ranking + endpoints de chat asumen pero no estaban en init-db.sql.
+  // Idempotentes: si ya existen no hacen nada. Sin estas cols /profile/ranking
+  // crashea con 'column up.name_color does not exist'.
+  for (const col of [
+    "name_color TEXT",
+    "name_glow INT",
+    "name_glow_color TEXT",
+    "name_grad_from TEXT",
+    "name_grad_to TEXT",
+    "nickname TEXT",
+    "nick_color TEXT",
+    "nick_glow INT",
+    "icon_slug TEXT",
+    "avatar_url TEXT",
+    "custom_name TEXT",
+    "banner_key TEXT",
+    "banner_effect TEXT",
+    "banner_color1 TEXT",
+    "banner_color2 TEXT",
+    "features_unlocked TEXT[]",
+  ]) {
+    await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS ${col}`).catch(() => {});
+  }
 
   // Seed items si no hay
   if (true) {
@@ -126,6 +150,41 @@ async function migrate() {
 }
 migrate().catch(e => console.error("[PROFILE MIGRATE]", e));
 
+// ── helper: stats sociales reales ────────────────────────────────────────────
+// Reemplaza el { total_shipments, delivered, total_usd } legacy con counts
+// que reflejan actividad social del user. Sprint 11. Si una tabla falta
+// (deploys viejos) cada count cae a 0 sin romper el endpoint.
+async function getSocialStats(userId) {
+  const queries = [
+    // Posts del user
+    db.query(`SELECT COUNT(*)::int AS c FROM user_posts WHERE user_id=$1`, [userId]).catch(() => ({ rows: [{ c: 0 }] })),
+    // Comentarios escritos por el user
+    db.query(`SELECT COUNT(*)::int AS c FROM post_comments WHERE user_id=$1`, [userId]).catch(() => ({ rows: [{ c: 0 }] })),
+    // Likes recibidos en posts del user
+    db.query(`SELECT COUNT(*)::int AS c FROM post_likes pl JOIN user_posts p ON p.id=pl.post_id WHERE p.user_id=$1`, [userId]).catch(() => ({ rows: [{ c: 0 }] })),
+    // Friends accepted (bidireccional: chequea ambos lados)
+    db.query(`SELECT COUNT(*)::int AS c FROM chat_friendships WHERE status='accepted' AND (user_id=$1 OR friend_id=$1)`, [userId]).catch(() => ({ rows: [{ c: 0 }] })),
+    // Followers / Following
+    db.query(`SELECT COUNT(*)::int AS c FROM user_follows WHERE followee_id=$1`, [userId]).catch(() => ({ rows: [{ c: 0 }] })),
+    db.query(`SELECT COUNT(*)::int AS c FROM user_follows WHERE follower_id=$1`, [userId]).catch(() => ({ rows: [{ c: 0 }] })),
+    // Dias activo en la plataforma
+    db.query(`SELECT GREATEST(0, EXTRACT(DAY FROM NOW() - created_at)::int) AS c FROM users WHERE id=$1`, [userId]).catch(() => ({ rows: [{ c: 0 }] })),
+  ];
+  const [posts, comments, likes, friends, followers, following, days] = await Promise.all(queries);
+  return {
+    posts:        posts.rows[0]?.c     || 0,
+    comments:     comments.rows[0]?.c  || 0,
+    likes:        likes.rows[0]?.c     || 0,
+    friends:      friends.rows[0]?.c   || 0,
+    followers:    followers.rows[0]?.c || 0,
+    following:    following.rows[0]?.c || 0,
+    days_active:  days.rows[0]?.c      || 0,
+    // Legacy contract — Sprint 12 los borra. Mantenerlos en 0 para no romper
+    // clients viejos que aun lean stats.total_shipments / delivered / total_usd.
+    total_shipments: 0, delivered: 0, total_usd: 0,
+  };
+}
+
 // ── GET /profile — perfil del usuario actual ──────────────────────────────────
 router.get("/", authRequired, async (req, res) => {
   try {
@@ -136,11 +195,12 @@ router.get("/", authRequired, async (req, res) => {
       INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING
     `, [userId]);
 
-    const [profileQ, coinsQ, userQ, itemsQ] = await Promise.all([
+    const [profileQ, coinsQ, userQ, itemsQ, stats] = await Promise.all([
       db.query(`SELECT * FROM user_profiles WHERE user_id=$1`, [userId]),
       db.query(`SELECT balance, total_earned, peak_balance FROM coins WHERE user_id=$1`, [userId]),
       db.query(`SELECT id, name, email, client_number, role, username, created_at FROM users WHERE id=$1`, [userId]),
       db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [userId]),
+      getSocialStats(userId),
     ]);
 
     const profile = profileQ.rows[0];
@@ -153,19 +213,16 @@ router.get("/", authRequired, async (req, res) => {
     const peak     = Number(coins.peak_balance || Math.max(balance, Number(coins.total_earned) || 0));
     const level    = peak >= 1500 ? "gold" : peak >= 500 ? "silver" : "bronze";
 
-    // Auto-badges basadas en shipments quedan deshabilitadas en el starter
-    // (no hay tabla shipments). Sprint 4+ podría reemplazarlas con badges
-    // sociales (badge_first_post, badge_active_user, etc.)
+    // Sprint 11: stats sociales reales. Auto-badges basadas en posts/likes/
+    // friends ahora que tenemos counts reales — la lista vive en ProfilePage
+    // y se evalua client-side contra stats.posts / stats.likes / etc.
     const allItems = items;
 
     res.json({
       user:    { ...user, level },
       profile: { ...profile, owned_items: allItems },
       coins:   { balance, total_earned: Number(coins.total_earned), peak_balance: peak },
-      // stats:* legacy de envíos. Devuelvo zeros para preservar API contract
-      // con consumers que aún las leen (ProfilePage/ChatPage/Coins). Sprint 7+
-      // podemos reemplazar por stats sociales reales (posts/comments count).
-      stats:   { total_shipments: 0, delivered: 0, total_usd: 0 },
+      stats,
     });
   } catch(e) { console.error("[PROFILE GET]", e); res.status(500).json({ error: e.message }); }
 });
@@ -485,14 +542,17 @@ router.patch("/banner", authRequired, async (req, res) => {
 router.get("/ranking", async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit)||20, 50);
+    // Sprint 11: ranking incluye posts_count + friends_count reales en lugar
+    // de total_shipments/delivered legacy. Subqueries son baratas (count(*)
+    // sobre indexed cols) y limit es <= 50.
     const q = await db.query(`
       SELECT u.id, u.name, u.client_number, u.role,
         lc.balance, lc.total_earned,
         up.name_color, up.name_glow, up.name_glow_color, up.name_grad_from, up.name_grad_to,
         up.nickname, up.nick_color, up.nick_glow, up.icon_slug, up.avatar_url, up.avatar_key,
         up.frame_key, up.badges,
-        0 AS total_shipments,
-        0 AS delivered
+        (SELECT COUNT(*)::int FROM user_posts      WHERE user_id = u.id) AS posts_count,
+        (SELECT COUNT(*)::int FROM chat_friendships WHERE status='accepted' AND (user_id=u.id OR friend_id=u.id)) AS friends_count
       FROM users u
       JOIN coins lc ON lc.user_id = u.id
       LEFT JOIN user_profiles up ON up.user_id = u.id
@@ -731,11 +791,12 @@ router.get("/:id", authRequired, async (req, res) => {
 
     await db.query(`INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING`, [targetId]);
 
-    const [profileQ, coinsQ, userQ, itemsQ] = await Promise.all([
+    const [profileQ, coinsQ, userQ, itemsQ, stats] = await Promise.all([
       db.query(`SELECT * FROM user_profiles WHERE user_id=$1`, [targetId]),
       db.query(`SELECT balance, total_earned FROM coins WHERE user_id=$1`, [targetId]),
       db.query(`SELECT id, name, email, client_number, role, username, created_at, last_seen_at FROM users WHERE id=$1`, [targetId]),
       db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [targetId]),
+      getSocialStats(targetId),
     ]);
 
     if (!userQ.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
@@ -746,9 +807,8 @@ router.get("/:id", authRequired, async (req, res) => {
     const level    = peak >= 1500 ? "gold" : peak >= 500 ? "silver" : "bronze";
     const items    = itemsQ.rows.map(r => r.item_key);
 
-    // Auto-badges legacy basadas en shipments quedan deshabilitadas (Sprint 4
-    // cleanup; las reemplazamos con badges sociales en Sprint 5+).
-    // Sanitize: no leak email a otros users
+    // Sprint 11: stats sociales reales (posts/comments/likes/friends/follows/days).
+    // Sanitize: no leak email a otros users.
     const userOut = { ...userQ.rows[0], level };
     if (!isOwnerOrStaff) delete userOut.email;
 
@@ -756,7 +816,7 @@ router.get("/:id", authRequired, async (req, res) => {
       user:    userOut,
       profile: { ...profileQ.rows[0], owned_items: items },
       coins:   { balance, total_earned: Number(coins.total_earned), peak_balance: peak },
-      stats:   { total_shipments: 0, delivered: 0, total_usd: 0 },  // legacy contract
+      stats,
     });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

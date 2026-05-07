@@ -607,8 +607,9 @@ function Ranking() {
               {u.nickname && <div style={{ fontSize:12,color:u.nick_color||"#555",textShadow:u.nick_glow?`0 0 ${u.nick_glow}px ${u.nick_color||"#555"}`:"none",marginBottom:4 }}>{u.nickname}</div>}
               <div style={{ display:"flex",gap:12 }}>
                 <span style={{ color:"#333",fontSize:11 }}>#{u.client_number}</span>
-                {u.total_shipments>0&&<span style={{ color:"#444",fontSize:11 }}>📦 {u.total_shipments}</span>}
-                {u.delivered>0&&<span style={{ color:"#444",fontSize:11 }}>✅ {u.delivered}</span>}
+                {/* Sprint 11: stats sociales reales en el ranking. */}
+                {u.posts_count>0   && <span style={{ color:"#444",fontSize:11 }}>📰 {u.posts_count}</span>}
+                {u.friends_count>0 && <span style={{ color:"#444",fontSize:11 }}>👥 {u.friends_count}</span>}
               </div>
             </div>
 
