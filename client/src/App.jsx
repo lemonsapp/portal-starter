@@ -13,8 +13,8 @@ import Login from "./pages/Login.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import PWAManager from "./components/PWAManager.jsx";
-import LemonCoins from "./pages/LemonCoins.jsx";
-import LemonNotification from "./components/LemonNotification.jsx";
+import Coins from "./pages/Coins.jsx";
+import AppNotification from "./components/AppNotification.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import Register from "./pages/Register.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
@@ -117,7 +117,7 @@ export default function App() {
     <BrowserRouter>
       <PremiumFX />
       <PWAManager />
-      <LemonNotification />
+      <AppNotification />
       <Routes>
         {/* Publicas sin sidebar */}
         <Route path="/"                element={<Login />} />
@@ -128,7 +128,7 @@ export default function App() {
 
         {/* Cliente */}
         <Route path="/inicio"           element={<AuthGate><HomeClient /></AuthGate>} />
-        <Route path="/coins"            element={<AuthGate><LemonCoins /></AuthGate>} />
+        <Route path="/coins"            element={<AuthGate><Coins /></AuthGate>} />
         <Route path="/perfil"           element={<AuthGate><ProfilePage /></AuthGate>} />
         <Route path="/perfil/:username"    element={<ProfilePage />} />
         <Route path="/perfil/id/:userId"   element={<ProfileByIdRedirect />} />

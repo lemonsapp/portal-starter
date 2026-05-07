@@ -706,7 +706,7 @@ function Gift({ balance, onGift }) {
 }
 
 // ── MAIN ───────────────────────────────────────────────────────────────────────
-export default function LemonCoins() {
+export default function Coins() {
   const [tab, setTab] = useState("tienda");
   const [balance, setBalance] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);

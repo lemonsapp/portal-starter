@@ -1,5 +1,5 @@
-// client/src/components/LemonNotification.jsx
-// Globito flotante del personaje LIMÓN
+// client/src/components/AppNotification.jsx
+// Globito flotante de notificación in-app (avisos del admin → users)
 import { useEffect, useState } from "react";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -23,7 +23,7 @@ function addDismissed(id) {
   localStorage.setItem(DISMISSED_KEY, JSON.stringify(arr));
 }
 
-export default function LemonNotification() {
+export default function AppNotification() {
   const [notif, setNotif]       = useState(null);
   const [visible, setVisible]   = useState(false);
   const [expanded, setExpanded] = useState(true);
