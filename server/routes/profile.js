@@ -5,13 +5,11 @@ const router  = express.Router();
 const db      = require("../db");
 const { authRequired } = require("../auth");
 const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Sprint 14 fix: el SDK de Cloudinary se configura por request leyendo
+// las API keys de configStore (DB encriptada via wizard /admin/setup),
+// no de process.env. Antes el config se hacia al require() con env vars
+// vacias en Render → "Must supply api_key" en cada upload.
+const { configureCloudinary } = require('../lib/cloudinaryConfig');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -826,6 +824,9 @@ router.post("/avatar-upload", authRequired, upload.single("avatar"), async (req,
   try {
     const userId = req.user.id;
     if (!req.file) return res.status(400).json({ error: "No se recibió ninguna imagen" });
+
+    // Sprint 14: configurar SDK por request (lee creds de configStore)
+    const cloudinary = await configureCloudinary();
 
     // Subir a Cloudinary
     const result = await new Promise((resolve, reject) => {

@@ -3,7 +3,11 @@ const router = express.Router();
 const db = require("../db");
 const { authRequired } = require("../auth");
 const multer = require("multer");
-const cloudinary = require("cloudinary").v2;
+// Sprint 14 fix: configurar Cloudinary por request leyendo creds de
+// configStore. Antes usaba cloudinary.uploader.* sin haber llamado nunca
+// a config() — funcionaba solo si profile.js (que SI configuraba con
+// process.env) cargo antes. En Render con env vacios → "Must supply api_key".
+const { configureCloudinary } = require("../lib/cloudinaryConfig");
 const { sanitizeText } = require("../security");
 
 const upload = multer({
@@ -75,6 +79,7 @@ router.post("/emojis", authRequired, upload.single("file"), async (req, res) => 
     const safeCat   = category ? sanitizeText(category, 30) : "general";
 
     const isAnim = req.file.mimetype === "image/gif" || req.file.mimetype === "image/apng";
+    const cloudinary = await configureCloudinary();
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
@@ -153,6 +158,7 @@ router.post("/stories", authRequired, uploadStory.single("file"), async (req, re
     const caption = req.body.caption ? sanitizeText(req.body.caption, 200) : null;
     const bgColor = req.body.bg_color ? sanitizeText(req.body.bg_color, 20) : null;
 
+    const cloudinary = await configureCloudinary();
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
@@ -346,7 +352,10 @@ router.delete("/emojis/:key", authRequired, async (req, res) => {
     const { key } = req.params;
     if (!/^[a-z0-9_]{2,30}$/.test(key)) return res.status(400).json({ error: "Key inválida" });
     await db.query(`DELETE FROM custom_emojis WHERE key=$1`, [key]);
-    try { await cloudinary.uploader.destroy(`portal-emojis/emoji_${key}`); } catch {}
+    try {
+      const cloudinary = await configureCloudinary();
+      await cloudinary.uploader.destroy(`portal-emojis/emoji_${key}`);
+    } catch {}
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

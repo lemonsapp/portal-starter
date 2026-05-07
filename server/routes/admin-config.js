@@ -91,6 +91,13 @@ function build({ authRequired, requireRole }) {
         } catch { /* non-fatal */ }
       }
 
+      // Si tocamos cloudinary, invalidar el SDK cache para que el proximo
+      // upload use las creds nuevas sin restart del server (Sprint 14 fix).
+      if (section === "cloudinary" && updates.length > 0) {
+        try { require("../lib/cloudinaryConfig").invalidateCache(); }
+        catch { /* non-fatal */ }
+      }
+
       res.json({
         ok: errors.length === 0,
         updates,
