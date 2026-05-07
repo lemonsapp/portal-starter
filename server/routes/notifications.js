@@ -6,8 +6,20 @@ const db      = require("../db");
 const { authRequired, requireRole } = require("../auth");
 
 async function migrate() {
+  // Sprint 7 rename: lemon_notifications → broadcast_notifications.
+  // Idempotente: si la nueva no existe pero la vieja sí, rename atómico.
+  // Tenants nuevos van directo a CREATE TABLE.
   await db.query(`
-    CREATE TABLE IF NOT EXISTS lemon_notifications (
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='broadcast_notifications')
+         AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='lemon_notifications') THEN
+        ALTER TABLE lemon_notifications RENAME TO broadcast_notifications;
+      END IF;
+    END $$;
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS broadcast_notifications (
       id          SERIAL PRIMARY KEY,
       message     TEXT NOT NULL,
       emoji       TEXT DEFAULT '🔔',
@@ -27,7 +39,7 @@ router.get("/active", authRequired, async (req, res) => {
   try {
     const role = req.user.role;
     const q = await db.query(`
-      SELECT * FROM lemon_notifications
+      SELECT * FROM broadcast_notifications
       WHERE active = TRUE
         AND (target_role = 'all' OR target_role = $1)
       ORDER BY created_at DESC
@@ -40,7 +52,7 @@ router.get("/active", authRequired, async (req, res) => {
 // GET /notifications — todas (operador/admin)
 router.get("/", authRequired, requireRole(["operator","admin"]), async (req, res) => {
   try {
-    const q = await db.query(`SELECT * FROM lemon_notifications ORDER BY created_at DESC`);
+    const q = await db.query(`SELECT * FROM broadcast_notifications ORDER BY created_at DESC`);
     res.json({ notifications: q.rows });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -53,13 +65,13 @@ router.post("/", authRequired, requireRole(["operator","admin"]), async (req, re
 
     // Desactivar las anteriores del mismo target
     await db.query(
-      `UPDATE lemon_notifications SET active=FALSE
+      `UPDATE broadcast_notifications SET active=FALSE
        WHERE target_role=$1 OR target_role='all'`,
       [target_role || "all"]
     );
 
     const q = await db.query(`
-      INSERT INTO lemon_notifications (message, emoji, type, target_role, active, created_by)
+      INSERT INTO broadcast_notifications (message, emoji, type, target_role, active, created_by)
       VALUES ($1,$2,$3,$4,TRUE,$5) RETURNING *
     `, [
       message.trim(),
@@ -77,7 +89,7 @@ router.patch("/:id", authRequired, requireRole(["operator","admin"]), async (req
   try {
     const { message, emoji, type, active, target_role } = req.body;
     const q = await db.query(`
-      UPDATE lemon_notifications SET
+      UPDATE broadcast_notifications SET
         message     = COALESCE($1, message),
         emoji       = COALESCE($2, emoji),
         type        = COALESCE($3, type),
@@ -95,7 +107,7 @@ router.patch("/:id", authRequired, requireRole(["operator","admin"]), async (req
 // DELETE /notifications/:id
 router.delete("/:id", authRequired, requireRole(["operator","admin"]), async (req, res) => {
   try {
-    await db.query(`DELETE FROM lemon_notifications WHERE id=$1`, [req.params.id]);
+    await db.query(`DELETE FROM broadcast_notifications WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

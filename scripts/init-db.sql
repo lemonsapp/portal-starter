@@ -3,7 +3,7 @@
 --
 -- Este script crea las tablas que NO se auto-crean con migraciones inline en
 -- el código. Las que sí se auto-crean (user_stories, user_profiles, profile_items,
--- coupons, referrals, announcements, lemon_notifications, custom_emojis, etc.)
+-- coupons, referrals, announcements, broadcast_notifications, custom_emojis, etc.)
 -- se crean al primer boot del server.
 --
 -- Origen de columnas: extraídas del backup de lemons-portal abril 2026 +
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS password_resets (
 );
 
 -- ── coins ────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS lemon_coins (
+CREATE TABLE IF NOT EXISTS coins (
   user_id        INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   balance        INT NOT NULL DEFAULT 0,
   total_earned   INT NOT NULL DEFAULT 0,
@@ -284,7 +284,7 @@ CREATE TABLE IF NOT EXISTS webauthn_challenges (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- ── notificaciones por usuario (distintas de lemon_notifications broadcast) ──
+-- ── notificaciones por usuario (1-a-1; las broadcast viven en broadcast_notifications) ──
 CREATE TABLE IF NOT EXISTS notifications (
   id          SERIAL PRIMARY KEY,
   user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

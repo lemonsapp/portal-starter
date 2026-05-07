@@ -35,7 +35,7 @@ function build({ authRequired, requireRole }) {
            COALESCE(lc.balance, 0)     AS balance,
            COALESCE(lc.total_earned, 0) AS total_earned
          FROM users u
-         LEFT JOIN lemon_coins lc ON lc.user_id = u.id
+         LEFT JOIN coins lc ON lc.user_id = u.id
          ${where}
          ORDER BY u.created_at DESC
          LIMIT 200`,
@@ -65,9 +65,9 @@ function build({ authRequired, requireRole }) {
       const { action, amount, reason } = p.data;
       if (action === "gift" && amount <= 0) return res.status(400).json({ error: "gift requiere amount > 0" });
 
-      // Asegurar lemon_coins row existe
+      // Asegurar coins row existe
       await db.query(
-        `INSERT INTO lemon_coins (user_id, balance, total_earned) VALUES ($1, 0, 0) ON CONFLICT DO NOTHING`,
+        `INSERT INTO coins (user_id, balance, total_earned) VALUES ($1, 0, 0) ON CONFLICT DO NOTHING`,
         [userId]
       );
 
@@ -81,7 +81,7 @@ function build({ authRequired, requireRole }) {
       // Actualizar balance + total_earned
       if (amount > 0) {
         await db.query(
-          `UPDATE lemon_coins
+          `UPDATE coins
              SET balance = balance + $1,
                  total_earned = total_earned + $1,
                  peak_balance = GREATEST(peak_balance, balance + $1),
@@ -92,7 +92,7 @@ function build({ authRequired, requireRole }) {
       } else {
         // amount negativo (sólo en adjust)
         await db.query(
-          `UPDATE lemon_coins
+          `UPDATE coins
              SET balance = GREATEST(0, balance + $1),
                  updated_at = NOW()
            WHERE user_id = $2`,
@@ -109,7 +109,7 @@ function build({ authRequired, requireRole }) {
       }
 
       // Devolver balance actualizado
-      const balR = await db.query("SELECT balance, total_earned FROM lemon_coins WHERE user_id=$1", [userId]);
+      const balR = await db.query("SELECT balance, total_earned FROM coins WHERE user_id=$1", [userId]);
       res.json({ ok: true, balance: balR.rows[0]?.balance ?? 0, total_earned: balR.rows[0]?.total_earned ?? 0 });
     } catch (e) {
       console.error("[admin-users coins]", e);

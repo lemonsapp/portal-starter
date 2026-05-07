@@ -362,7 +362,7 @@ router.get("/rooms", authRequired, async (req, res) => {
         COALESCE(lc.balance, 0) AS user_coins
       FROM chat_rooms r
       LEFT JOIN chat_room_access a ON a.room_id = r.id AND a.user_id = $1
-      LEFT JOIN lemon_coins lc ON lc.user_id = $1
+      LEFT JOIN coins lc ON lc.user_id = $1
       WHERE r.is_active = TRUE ORDER BY r.coins_required ASC
     `, [userId]);
     res.json({ ok: true, rooms: q.rows });
@@ -382,11 +382,11 @@ router.post("/rooms/:slug/join", authRequired, async (req, res) => {
     }
     const accessQ = await db.query(`SELECT id FROM chat_room_access WHERE user_id=$1 AND room_id=$2`, [userId, room.id]);
     if (accessQ.rows[0]) return res.json({ ok: true, message: "Ya tenes acceso" });
-    const coinsQ = await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId]);
+    const coinsQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId]);
     const balance = Number(coinsQ.rows[0]?.balance || 0);
     if (balance < room.coins_required)
       return res.status(400).json({ error: `Necesitas ${room.coins_required} Coins. Tenes ${balance}.` });
-    await db.query(`UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [room.coins_required, userId]);
+    await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [room.coins_required, userId]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`,
       [userId, room.coins_required, `Acceso a room: ${room.name}`]);
     await db.query(`INSERT INTO chat_room_access (user_id, room_id) VALUES ($1,$2) ON CONFLICT DO NOTHING`, [userId, room.id]);
@@ -697,7 +697,7 @@ router.get("/powers", authRequired, async (req, res) => {
         COALESCE(lc.balance, 0) AS user_coins
       FROM chat_powers p
       LEFT JOIN user_chat_powers up ON up.power_slug = p.slug AND up.user_id = $1
-      LEFT JOIN lemon_coins lc ON lc.user_id = $1
+      LEFT JOIN coins lc ON lc.user_id = $1
       WHERE p.is_active = TRUE
       ORDER BY p.category, p.coins_price
     `, [userId]);
@@ -720,13 +720,13 @@ router.post("/powers/:slug/buy", authRequired, async (req, res) => {
     if (ownQ.rows[0]) return res.status(400).json({ error: "Ya tenés este power" });
 
     // Verificar coins
-    const coinsQ = await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId]);
+    const coinsQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId]);
     const balance = Number(coinsQ.rows[0]?.balance || 0);
     if (balance < power.coins_price)
       return res.status(400).json({ error: `Necesitás ${power.coins_price} coins. Tenés ${balance}.` });
 
     // Descontar coins
-    await db.query(`UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [power.coins_price, userId]);
+    await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [power.coins_price, userId]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`,
       [userId, power.coins_price, `Power comprado: ${power.name}`]);
 

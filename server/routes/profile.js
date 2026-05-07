@@ -59,8 +59,8 @@ async function migrate() {
       UNIQUE(user_id, item_key)
     )
   `);
-  // Agregar peak_balance a lemon_coins si no existe
-  await db.query(`ALTER TABLE lemon_coins ADD COLUMN IF NOT EXISTS peak_balance INTEGER DEFAULT 0`).catch(() => {});
+  // Agregar peak_balance a coins si no existe
+  await db.query(`ALTER TABLE coins ADD COLUMN IF NOT EXISTS peak_balance INTEGER DEFAULT 0`).catch(() => {});
   await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_envios BOOLEAN DEFAULT TRUE`).catch(() => {});
   await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_coins BOOLEAN DEFAULT TRUE`).catch(() => {});
   await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_logros BOOLEAN DEFAULT TRUE`).catch(() => {});
@@ -138,7 +138,7 @@ router.get("/", authRequired, async (req, res) => {
 
     const [profileQ, coinsQ, userQ, itemsQ] = await Promise.all([
       db.query(`SELECT * FROM user_profiles WHERE user_id=$1`, [userId]),
-      db.query(`SELECT balance, total_earned, peak_balance FROM lemon_coins WHERE user_id=$1`, [userId]),
+      db.query(`SELECT balance, total_earned, peak_balance FROM coins WHERE user_id=$1`, [userId]),
       db.query(`SELECT id, name, email, client_number, role, username, created_at FROM users WHERE id=$1`, [userId]),
       db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [userId]),
     ]);
@@ -203,14 +203,14 @@ router.post("/buy", authRequired, async (req, res) => {
 
     // Verificar coins
     if (item.cost_coins > 0) {
-      await db.query(`INSERT INTO lemon_coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
-      const coinsQ = await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId]);
+      await db.query(`INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
+      const coinsQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId]);
       const balance = Number(coinsQ.rows[0]?.balance || 0);
       if (balance < item.cost_coins) {
         return res.status(400).json({ error: `Coins insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
       }
       // Descontar coins
-      await db.query(`UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [item.cost_coins, userId]);
+      await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [item.cost_coins, userId]);
       await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'redeem',$2,$3)`,
         [userId, -item.cost_coins, `Compra de perfil: ${item.name}`]);
     }
@@ -219,7 +219,7 @@ router.post("/buy", authRequired, async (req, res) => {
     await db.query(`INSERT INTO user_items (user_id, item_key) VALUES ($1, $2)`, [userId, item_key]);
 
     const newBalance = item.cost_coins > 0
-      ? (await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId])).rows[0]?.balance
+      ? (await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId])).rows[0]?.balance
       : null;
 
     res.json({ ok: true, item, new_balance: newBalance ? Number(newBalance) : null });
@@ -398,17 +398,17 @@ router.post("/unlock", authRequired, async (req, res) => {
 
     // Verificar y descontar coins
     await db.query(
-      `INSERT INTO lemon_coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`,
+      `INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`,
       [userId]
     );
-    const coinsQ = await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId]);
+    const coinsQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId]);
     const balance = Number(coinsQ.rows[0]?.balance || 0);
     if (balance < item.cost_coins) {
       return res.status(400).json({ error: `Coins insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
     }
 
     await db.query(
-      `UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`,
+      `UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`,
       [item.cost_coins, userId]
     );
 
@@ -430,7 +430,7 @@ router.post("/unlock", authRequired, async (req, res) => {
       `, [userId, data.feature || item_key]);
     }
 
-    const newBalance = (await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId])).rows[0]?.balance;
+    const newBalance = (await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId])).rows[0]?.balance;
     res.json({ ok: true, item, new_balance: Number(newBalance) });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -494,7 +494,7 @@ router.get("/ranking", async (req, res) => {
         0 AS total_shipments,
         0 AS delivered
       FROM users u
-      JOIN lemon_coins lc ON lc.user_id = u.id
+      JOIN coins lc ON lc.user_id = u.id
       LEFT JOIN user_profiles up ON up.user_id = u.id
       WHERE u.role != 'operator'
       ORDER BY lc.total_earned DESC
@@ -543,7 +543,7 @@ router.post("/spin", authRequired, async (req, res) => {
       if (i === prizes.length - 1) wonIdx = i;
     }
     const won = prizes[wonIdx];
-    await db.query(`UPDATE lemon_coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [won.coins, userId]);
+    await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [won.coins, userId]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, won.coins, 'Ruleta diaria: ' + won.label]);
     await db.query(`INSERT INTO daily_spin (user_id, coins_won, prize_label) VALUES ($1,$2,$3)`, [userId, won.coins, won.label]);
     const prizeIndex = wonIdx;
@@ -592,8 +592,8 @@ router.post("/missions/:slug/claim", authRequired, async (req, res) => {
     if (!um?.completed_at) return res.status(400).json({ error: "Misión no completada aún" });
     if (um.claimed_at) return res.status(400).json({ error: "Ya reclamaste esta misión" });
     await db.query(`UPDATE user_missions SET claimed_at=NOW() WHERE user_id=$1 AND mission_slug=$2 AND period=$3`, [userId, slug, period]);
-    await db.query(`INSERT INTO lemon_coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
-    await db.query(`UPDATE lemon_coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [mission.coins_reward, userId]);
+    await db.query(`INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
+    await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [mission.coins_reward, userId]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, mission.coins_reward, 'Misión: ' + mission.title]);
 
     // STREAK de login: cuando reclamás "daily_login", se actualiza el streak.
@@ -615,7 +615,7 @@ router.post("/missions/:slug/claim", authRequired, async (req, res) => {
       }
       // Bonus 7 días seguidos: 25 extras + reset
       if (newStreak >= 7) {
-        await db.query(`UPDATE lemon_coins SET balance=balance+25, total_earned=total_earned+25, updated_at=NOW() WHERE user_id=$1`, [userId]);
+        await db.query(`UPDATE coins SET balance=balance+25, total_earned=total_earned+25, updated_at=NOW() WHERE user_id=$1`, [userId]);
         await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',25,'Bonus 7 días seguidos')`, [userId]);
         await db.query(`UPDATE login_streaks SET streak=0 WHERE user_id=$1`, [userId]);
       }
@@ -705,10 +705,10 @@ router.post("/gift", authRequired, async (req, res) => {
     if (!toQ.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
     const toUser = toQ.rows[0];
     if (toUser.id === fromId) return res.status(400).json({ error: "No podés regalarte a vos mismo" });
-    const balQ = await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [fromId]);
+    const balQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [fromId]);
     if ((balQ.rows[0]?.balance||0) < amount) return res.status(400).json({ error: "Coins insuficientes" });
-    await db.query(`UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [amount, fromId]);
-    await db.query(`UPDATE lemon_coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);
+    await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [amount, fromId]);
+    await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`, [fromId, amount, 'Gift a ' + toUser.name]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [toUser.id, amount, 'Gift de ' + req.user.name]);
     await db.query(`INSERT INTO coin_gifts (from_user_id, to_user_id, amount, message) VALUES ($1,$2,$3,$4)`, [fromId, toUser.id, amount, message||null]);
@@ -733,7 +733,7 @@ router.get("/:id", authRequired, async (req, res) => {
 
     const [profileQ, coinsQ, userQ, itemsQ] = await Promise.all([
       db.query(`SELECT * FROM user_profiles WHERE user_id=$1`, [targetId]),
-      db.query(`SELECT balance, total_earned FROM lemon_coins WHERE user_id=$1`, [targetId]),
+      db.query(`SELECT balance, total_earned FROM coins WHERE user_id=$1`, [targetId]),
       db.query(`SELECT id, name, email, client_number, role, username, created_at, last_seen_at FROM users WHERE id=$1`, [targetId]),
       db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [targetId]),
     ]);

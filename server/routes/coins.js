@@ -4,6 +4,25 @@ const router  = express.Router();
 const db      = require("../db");
 const { authRequired, requireRole } = require("../auth");
 
+// ── Auto-migración (Sprint 7): rename lemon_coins → coins ────────────────────
+// Idempotente: si existe la vieja y NO la nueva, ALTER RENAME. Tenants nuevos
+// arrancan con `coins` directo desde init-db.sql. La columna peak_balance la
+// agrega profile.js con ALTER TABLE coins ADD COLUMN IF NOT EXISTS.
+(async () => {
+  try {
+    await db.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='coins')
+           AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='lemon_coins') THEN
+          ALTER TABLE lemon_coins RENAME TO coins;
+        END IF;
+      END $$;
+    `);
+    console.log("[MIGRATION] coins table ready");
+  } catch (e) { console.error("[MIGRATION coins ERROR]", e.message); }
+})();
+
 // ── Constantes ────────────────────────────────────────────────────────────────
 const COINS_FIRST_BONUS  = 15;
 
@@ -29,11 +48,11 @@ function getLevel(balance) {
 
 async function getOrCreateCoins(userId) {
   await db.query(
-    `INSERT INTO lemon_coins (user_id, balance, total_earned)
+    `INSERT INTO coins (user_id, balance, total_earned)
      VALUES ($1, 0, 0) ON CONFLICT (user_id) DO NOTHING`,
     [userId]
   );
-  const r = await db.query(`SELECT * FROM lemon_coins WHERE user_id=$1`, [userId]);
+  const r = await db.query(`SELECT * FROM coins WHERE user_id=$1`, [userId]);
   return r.rows[0];
 }
 
@@ -42,7 +61,7 @@ router.get("/", authRequired, requireRole(["operator", "admin"]), async (req, re
   try {
     const q = await db.query(`
       SELECT lc.*, u.name, u.client_number, u.email
-      FROM lemon_coins lc
+      FROM coins lc
       JOIN users u ON u.id = lc.user_id
       ORDER BY lc.balance DESC
     `);
@@ -121,7 +140,7 @@ router.post("/redeem", authRequired, async (req, res) => {
     }
 
     await db.query(
-      `UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`,
+      `UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`,
       [reward.coins, user_id]
     );
     await db.query(
@@ -134,7 +153,7 @@ router.post("/redeem", authRequired, async (req, res) => {
        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
       [user_id, reward_key, reward.coins, shipment_id || null, notes || null]
     );
-    const updQ = await db.query(`SELECT * FROM lemon_coins WHERE user_id=$1`, [user_id]);
+    const updQ = await db.query(`SELECT * FROM coins WHERE user_id=$1`, [user_id]);
 
     res.json({
       success:     true,
@@ -156,7 +175,7 @@ router.post("/adjust", authRequired, requireRole(["operator","admin"]), async (r
 
     await getOrCreateCoins(user_id);
     await db.query(
-      `UPDATE lemon_coins
+      `UPDATE coins
        SET balance=GREATEST(0, balance+$1),
            total_earned=CASE WHEN $1>0 THEN total_earned+$1 ELSE total_earned END,
            updated_at=NOW()
@@ -167,7 +186,7 @@ router.post("/adjust", authRequired, requireRole(["operator","admin"]), async (r
       `INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'adjust',$2,$3)`,
       [user_id, amount, reason]
     );
-    const updQ = await db.query(`SELECT * FROM lemon_coins WHERE user_id=$1`, [user_id]);
+    const updQ = await db.query(`SELECT * FROM coins WHERE user_id=$1`, [user_id]);
     res.json({ balance: updQ.rows[0].balance, level: getLevel(updQ.rows[0].balance) });
   } catch (e) {
     console.error("COINS ADJUST ERROR:", e);
@@ -187,7 +206,7 @@ router.patch("/redemptions/:id", authRequired, requireRole(["operator","admin"])
 
     if (status === "cancelled" && red.status === "pending") {
       await db.query(
-        `UPDATE lemon_coins SET balance=balance+$1, updated_at=NOW() WHERE user_id=$2`,
+        `UPDATE coins SET balance=balance+$1, updated_at=NOW() WHERE user_id=$2`,
         [red.coins_spent, red.user_id]
       );
       await db.query(
