@@ -29,6 +29,7 @@ const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
 const adminConfig        = require("./routes/admin-config");    // 🪄 Setup wizard endpoints
 const adminFeed          = require("./routes/admin-feed");      // 📰 Feed editor del admin
+const adminUsers         = require("./routes/admin-users");     // 👥 Coins manager + lista users
 
 const app = express();
 
@@ -2243,6 +2244,9 @@ app.use("/api/config/public", adminConfig.publicRouter());
 // Monta /feed (público) + /admin/feed (admin) en la raíz; mismo router maneja
 // ambos prefijos vía sus paths internos.
 app.use("/", adminFeed.build({ authRequired, requireRole }));
+
+// ── Admin users + coins manager (Sprint 3) ────────────────────────────────────
+app.use("/admin", adminUsers.build({ authRequired, requireRole }));
 
 // ── Reclamar bonus primer envío (cliente) ──────────────────────────
 
