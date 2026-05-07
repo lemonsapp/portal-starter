@@ -6,6 +6,7 @@ import { ToastProvider } from "./components/ToastReward.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import Topbar from "./components/Topbar.jsx";
 import PremiumFX from "./components/PremiumFX.jsx";
+import { useBranding } from "./lib/branding.js";
 import { useEffect, useState } from "react";
 
 import Login from "./pages/Login.jsx";
@@ -109,6 +110,7 @@ function AuthGate({ children, allowRoles }) {
 }
 
 export default function App() {
+  useBranding(); // Aplica CSS vars + document.title desde defaults (Sprint 2 los reemplaza con valores del wizard)
   return (
     <ToastProvider>
     <UserProvider>
