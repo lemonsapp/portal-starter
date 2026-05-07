@@ -11,8 +11,6 @@ import { useEffect, useState } from "react";
 import Login from "./pages/Login.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
-import QuotePublic from "./pages/QuotePublic.jsx";
-import QuoteClient from "./pages/QuoteClient.jsx";
 import PWAManager from "./components/PWAManager.jsx";
 import LemonCoins from "./pages/LemonCoins.jsx";
 import LemonNotification from "./components/LemonNotification.jsx";
@@ -121,7 +119,6 @@ export default function App() {
       <Routes>
         {/* Publicas sin sidebar */}
         <Route path="/"                element={<Login />} />
-        <Route path="/quote"           element={<QuotePublic />} />
         <Route path="/forgot-password"  element={<ForgotPassword />} />
         <Route path="/register"          element={<Register />} />
         <Route path="/verify-email"      element={<VerifyEmail />} />
@@ -129,7 +126,6 @@ export default function App() {
 
         {/* Cliente */}
         <Route path="/inicio"           element={<AuthGate><HomeClient /></AuthGate>} />
-        <Route path="/client/quote"     element={<AuthGate><QuoteClient /></AuthGate>} />
         <Route path="/coins"            element={<AuthGate><LemonCoins /></AuthGate>} />
         <Route path="/perfil"           element={<AuthGate><ProfilePage /></AuthGate>} />
         <Route path="/perfil/:username"    element={<ProfilePage />} />
