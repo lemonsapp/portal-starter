@@ -1,27 +1,59 @@
 # portal-starter
 
-Boilerplate clonable para portales web con cuentas de usuarios, coins, perfiles, chat 1-a-1, stories, amigos y panel admin con setup wizard.
+Boilerplate clonable para portales web con auth, perfiles, coins, chat 1-a-1, stories, amigos y panel admin con setup wizard runtime para que el cliente final pegue sus API keys (Cloudinary / Resend / Telegram) sin tocar archivos `.env`.
 
-## Estado del proyecto
+## Estado
 
-🚧 **En desarrollo activo** — sprint 0 (limpieza quirúrgica del copy-paste inicial).
+🚧 **En desarrollo** — sprint 1 (refactor del esqueleto: branding centralizado y limpieza de referencias hardcoded). Spec del proyecto: [`docs/superpowers/specs/2026-05-06-portal-starter-design.md`](./docs/superpowers/specs/2026-05-06-portal-starter-design.md).
 
-Spec del proyecto: [`docs/superpowers/specs/2026-05-06-portal-starter-design.md`](./docs/superpowers/specs/2026-05-06-portal-starter-design.md).
+| Sprint | Entregable | Estado |
+|---|---|---|
+| 0 | Copy-paste de lemons-portal + limpieza quirúrgica de features no aplicables (IG, WA, AI, cargas, founder, cash) | ✅ |
+| 1 | Branding centralizado (CSS vars + branding.json), sacar refs hardcoded, auth verificado, primer deploy esqueleto | 🚧 |
+| 2 | Setup wizard + configStore + encriptación AES-256-GCM | ⏳ |
+| 3 | Coins admin + chat + stories + friends + feed editor | ⏳ |
+| 4 | WebAuthn + PWA + onboarding + feature flags wired | ⏳ |
+| 5 | Deploy primer cliente + handoff + docs | ⏳ |
 
 ## Stack
 
-| Pieza | Tecnología | Hosting |
+| Pieza | Tecnología | Hosting (sugerido) |
 |---|---|---|
-| Frontend | React + Vite | Vercel |
-| Backend | Node + Express | Render |
-| Base de datos | Postgres serverless | Neon |
-| Almacenamiento de imágenes | Cloudinary | (configurable runtime) |
-| Emails | Resend | (configurable runtime) |
+| Frontend | React 19 + Vite 5 | Vercel (free tier) |
+| Backend | Node + Express 5 | Render Starter (~$7/mes) |
+| Base de datos | Postgres serverless | Neon (free tier) |
+| Imágenes | Cloudinary | (config runtime via wizard) |
+| Emails | Resend | (config runtime via wizard) |
+| Realtime | Socket.io 4 | (incluido en Render) |
+| Auth biométrico | WebAuthn nativo | — |
 
-## Cómo crear un cliente nuevo
+## Setup local (dev)
 
-(Documentación en [`docs/DEPLOY.md`](./docs/DEPLOY.md) — pendiente de escribir al final del proyecto)
+```bash
+# 1. Clonar
+git clone https://github.com/<tu-org>/portal-starter.git
+cd portal-starter
+
+# 2. Crear .env en la raíz (ver .env.example)
+cp .env.example .env
+# Llenar DATABASE_URL (Neon), JWT_SECRET, MASTER_KEY:
+#   openssl rand -hex 32   # para JWT_SECRET y MASTER_KEY
+
+# 3. Instalar deps (dos workspaces)
+cd client && npm install && cd ..
+cd server && npm install && cd ..
+
+# 4. Aplicar schema base a la DB (pendiente — ver docs/SCHEMA.md cuando exista)
+
+# 5. Arrancar en dos terminales
+cd server && node index.js     # http://localhost:4000
+cd client && npm run dev       # http://localhost:5173
+```
+
+## Customización
+
+El branding por defecto vive en [`branding.json`](./branding.json) (raíz del repo). El primer admin puede sobrescribirlo desde el setup wizard una vez que esté implementado el config-store (Sprint 2).
 
 ## Origen
 
-Extraído del núcleo "social" del portal de [Lemons](https://lemonsarg.com), refactorizado como producto reutilizable para proyectos de agencia.
+Extraído del núcleo social de [`lemons-portal`](https://github.com/lemonsapp/lemons-portal) (privado), refactorizado como producto agencia-vendible. Todo el código específico de Lemons (logística USA→AR, herramientas IG/WhatsApp, dashboards founder, AI generativa) fue removido en Sprint 0.
