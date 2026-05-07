@@ -30,6 +30,7 @@ const webauthnRouter     = require("./routes/webauthn");
 const adminConfig        = require("./routes/admin-config");    // 🪄 Setup wizard endpoints
 const adminFeed          = require("./routes/admin-feed");      // 📰 Feed editor del admin
 const adminUsers         = require("./routes/admin-users");     // 👥 Coins manager + lista users
+const { requireFeature } = require("./lib/featureFlags");        // 🚦 Toggle de features
 
 const app = express();
 
@@ -2224,7 +2225,7 @@ const EXPENSE_CATEGORIES = [
 // ════════════════════════════════════════════════════════════════════
 // ✅ COINS ROUTER
 // ════════════════════════════════════════════════════════════════════
-app.use("/coins",         coinsRouter);
+app.use("/coins",         requireFeature("coins"), coinsRouter);
 app.use("/notifications", notificationsRouter);
 
 
@@ -2232,9 +2233,9 @@ app.use("/notifications", notificationsRouter);
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-app.use("/api/chat", chatRouter);
+app.use("/api/chat", requireFeature("chat"), chatRouter);
 app.use("/profile",       profileRouter);
-app.use("/auth/webauthn", webauthnRouter);
+app.use("/auth/webauthn", requireFeature("webauthn"), webauthnRouter);
 
 // ── Setup wizard endpoints (Sprint 2) ────────────────────────────────────────
 app.use("/api/admin/config", adminConfig.build({ authRequired, requireRole }));
