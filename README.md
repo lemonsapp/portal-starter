@@ -13,7 +13,7 @@ Boilerplate clonable para portales web con auth, perfiles, coins, chat 1-a-1, st
 | 2 | Setup wizard + configStore + encriptación AES-256-GCM + schema bootstrap | ✅ |
 | 3 | First-admin bootstrap + AdminPanel (Coins/Feed/Settings) + feature flags wired | ✅ |
 | 4 | HomeClient refactor + email branding dinámico + WebAuthn + cleanup migrations + assets purge | ✅ |
-| 5 | Deploy primer cliente + handoff + docs | ⏳ |
+| 5 | Wizard guiado paso a paso + scripts/setup-new-client.js + docs CONFIGURACION+ARQUITECTURA | ✅ |
 
 ## Stack
 
