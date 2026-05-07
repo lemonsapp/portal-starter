@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext.jsx";
 import { useNavigate } from "react-router-dom";
-import LinesStatusWidget from "./LinesStatusWidget.jsx";
 import { CountUp } from "./MotionPop.jsx";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -152,7 +151,6 @@ export default function Topbar() {
 
           {/* Right: estado líneas + notif + usuario + salir */}
           <div style={{ display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
-            {me && <LinesStatusWidget />}
             {me && (
               <button onClick={()=>navigate("/chats")}
                 title={privUnread > 0 ? `${privUnread} mensajes sin leer` : "Mensajes privados"}

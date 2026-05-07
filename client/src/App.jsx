@@ -9,8 +9,6 @@ import PremiumFX from "./components/PremiumFX.jsx";
 import { useEffect, useState } from "react";
 
 import Login from "./pages/Login.jsx";
-import OperatorPanel from "./pages/OperatorPanel.jsx";
-import ClientShipments from "./pages/ClientShipments.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import CashRegister from "./pages/CashRegister.jsx";
@@ -19,7 +17,6 @@ import QuoteClient from "./pages/QuoteClient.jsx";
 import PWAManager from "./components/PWAManager.jsx";
 import LemonCoins from "./pages/LemonCoins.jsx";
 import CoinsOperator from "./pages/CoinsOperator.jsx";
-import ExternalCargo from "./pages/ExternalCargo.jsx";
 import LemonNotification from "./components/LemonNotification.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import Register from "./pages/Register.jsx";
@@ -110,7 +107,7 @@ function AuthGate({ children, allowRoles }) {
   );
 
   if (status === "fail") return <Navigate to="/" replace state={{ from: location.pathname }} />;
-  if (allowRoles && !allowRoles.includes(me.role)) return <Navigate to="/client/shipments" replace />;
+  if (allowRoles && !allowRoles.includes(me.role)) return <Navigate to="/inicio" replace />;
 
   return <AppLayout me={me} refreshMe={(u) => setMe(u)}>{children}</AppLayout>;
 }
@@ -134,7 +131,6 @@ export default function App() {
 
         {/* Cliente */}
         <Route path="/inicio"           element={<AuthGate><HomeClient /></AuthGate>} />
-        <Route path="/client/shipments" element={<AuthGate><ClientShipments /></AuthGate>} />
         <Route path="/client/quote"     element={<AuthGate><QuoteClient /></AuthGate>} />
         <Route path="/coins"            element={<AuthGate><LemonCoins /></AuthGate>} />
         <Route path="/perfil"           element={<AuthGate><ProfilePage /></AuthGate>} />
@@ -145,10 +141,8 @@ export default function App() {
         <Route path="/chats/:otherId"   element={<AuthGate><PrivateChatsPage /></AuthGate>} />
 
         {/* Staff */}
-        <Route path="/operator"      element={<AuthGate allowRoles={["operator","admin"]}><OperatorPanel /></AuthGate>} />
         <Route path="/caja"          element={<AuthGate allowRoles={["operator","admin"]}><CashRegister /></AuthGate>} />
         <Route path="/coins/operator"element={<AuthGate allowRoles={["operator","admin"]}><CoinsOperator /></AuthGate>} />
-        <Route path="/external"      element={<AuthGate allowRoles={["operator","admin"]}><ExternalCargo /></AuthGate>} />
 
         {/* Fallbacks */}
         <Route path="/client" element={<Navigate to="/inicio" replace />} />

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext.jsx";
-import LinesStatusCard from "../components/LinesStatusCard.jsx";
 import FriendsPanel from "../components/FriendsPanel.jsx";
 import Stories from "../components/Stories.jsx";
 import { Pop, FadeUp, Jumbo, CountUp } from "../components/MotionPop.jsx";
@@ -272,8 +271,6 @@ export default function HomeClient() {
             <EmptyFeatured nextDelivery={nextDelivery} />
           )}
 
-          {/* Lines status */}
-          <LinesStatusCard />
         </div>
 
         {/* ROW 2: announcements feed + shipments preview */}
