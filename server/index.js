@@ -20,7 +20,6 @@ const {
   sanitizeRichText,
 } = require("./security");
 const coinsRouter         = require("./routes/coins");         // ✅ Lemon Coins
-const externalRouter      = require("./routes/external");      // ✅ Cargas Externas
 const notificationsRouter = require("./routes/notifications"); // ✅ Notificaciones LIMÓN (broadcast)
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
 const founderIntelligenceRouter = require("./routes/founderIntelligence");
@@ -5103,7 +5102,6 @@ app.get(
 // ✅ LEMON COINS ROUTER
 // ════════════════════════════════════════════════════════════════════
 app.use("/coins",         coinsRouter);
-app.use("/external",      externalRouter);
 app.use("/notifications", notificationsRouter);
 app.use("/",             founderIntelligenceRouter);
 // ── Rutas AI settings — JWT operador/admin (van ANTES del aiRouter) ──────────
