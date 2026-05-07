@@ -120,69 +120,81 @@ app.use(
 const PORT = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 
-app.get("/", (req, res) => res.send("LEMON's API OK ✅ — probá /health"));
+// Lee branding.json de la raíz (canonical). Sprint 2 va a poder leer
+// overrides desde la tabla app_config (lo que pegó el cliente en el wizard).
+let BRANDING = { name: "Mi Portal", color_primary: "#3B82F6", color_accent: "#F59E0B" };
+try { BRANDING = require("../branding.json"); } catch (e) { /* fallback in-memory */ }
 
-app.get("/health", (req, res) => res.json({ ok: true }));
+app.get("/", (_req, res) => res.send(`${BRANDING.name} API OK — probá /health`));
+
+app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.get("/privacy", (_req, res) => {
   res.set("Content-Type", "text/html; charset=utf-8");
+  const today = new Date().toISOString().slice(0, 10);
   res.send(`<!doctype html>
 <html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Política de Privacidad — Lemon's Portal</title>
+<title>Política de Privacidad — ${BRANDING.name}</title>
 <style>
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6}
   main{max-width:720px;margin:0 auto;padding:48px 24px}
-  h1{color:#f5e03a;font-size:32px;margin:0 0 8px}
+  h1{color:${BRANDING.color_primary};font-size:32px;margin:0 0 8px}
   .sub{color:#888;font-size:14px;margin-bottom:32px}
   h2{color:#fff;font-size:20px;margin:32px 0 8px}
   p,li{color:#d4d4d4}
-  a{color:#f5e03a}
+  a{color:${BRANDING.color_primary}}
   hr{border:none;border-top:1px solid #222;margin:32px 0}
+  .placeholder{padding:14px 18px;border:1px dashed #444;border-radius:8px;color:#999;font-size:13px;background:#111;margin:18px 0}
   footer{color:#666;font-size:12px;text-align:center;margin-top:48px}
 </style></head>
 <body><main>
 <h1>Política de Privacidad</h1>
-<div class="sub">Lemon's Portal · Última actualización: 1 de mayo de 2026</div>
+<div class="sub">${BRANDING.name} · Última actualización: ${today}</div>
+
+<div class="placeholder">
+⚠ Plantilla genérica. Reemplazá con tu propia política antes de salir a
+producción. El admin puede editar este texto en /admin/settings (cuando
+el wizard del Sprint 2/3 esté activo).
+</div>
 
 <h2>1. Quiénes somos</h2>
-<p>Lemon's Portal es una plataforma operada por Lemon's Logística Internacional para la gestión interna de envíos courier (China, Estados Unidos, Europa) y la administración del marketing digital de la marca @lemonsarg en Instagram y Meta.</p>
+<p>${BRANDING.name} es una plataforma de comunidad/portal para usuarios registrados.</p>
 
 <h2>2. Datos que recopilamos</h2>
 <ul>
-<li><b>Datos de cuenta:</b> email, nombre, rol (cliente / operador / admin) y número de cliente.</li>
-<li><b>Datos operativos:</b> envíos, paquetes, cobros, gastos y métricas de logística que el usuario o el operador cargan al portal.</li>
-<li><b>Datos de Meta:</b> tokens de acceso, métricas de campañas publicitarias, interacciones de Instagram (DMs, comentarios, publicaciones) y datos de WhatsApp Business asociados a cuentas que el administrador conecta voluntariamente desde el panel.</li>
+<li><b>Datos de cuenta:</b> email, nombre, rol (cliente / operador / admin).</li>
+<li><b>Datos de uso:</b> mensajes, posts, fotos de perfil, interacciones sociales (likes, follows, comentarios) que cargás voluntariamente.</li>
+<li><b>Datos técnicos:</b> dirección IP, user agent, timestamps de actividad para detección de abuso y métricas básicas.</li>
 </ul>
 
 <h2>3. Uso de los datos</h2>
 <p>Los datos se utilizan exclusivamente para:</p>
 <ul>
-<li>Operación interna del portal (cotizaciones, seguimiento de envíos, cobros).</li>
-<li>Comunicación con clientes a través de los canales conectados (email, Instagram, WhatsApp).</li>
-<li>Gestión y reporte de campañas publicitarias en Meta Ads.</li>
+<li>Operar el portal (autenticación, perfiles, mensajería entre usuarios).</li>
+<li>Notificaciones por email transaccionales (verificación, reset de contraseña).</li>
+<li>Métricas internas para mejorar el producto (sin venta a terceros).</li>
 </ul>
 <p>No vendemos, alquilamos ni compartimos datos personales con terceros para fines comerciales.</p>
 
 <h2>4. Almacenamiento y seguridad</h2>
-<p>Los datos se almacenan en una base de datos PostgreSQL alojada en Neon (región sa-east-1) con cifrado en tránsito (TLS) y en reposo. Los tokens de acceso de Meta se guardan cifrados y se rotan periódicamente. El acceso al portal está protegido con autenticación JWT, control de roles y permisos granulares por scope.</p>
+<p>Los datos se almacenan en una base de datos PostgreSQL con cifrado en tránsito (TLS) y en reposo. El acceso al portal está protegido con autenticación JWT y control de roles. Las API keys de proveedores externos están cifradas con AES-256-GCM en la base de datos.</p>
 
 <h2>5. Servicios de terceros</h2>
-<p>Para operar el portal usamos los siguientes proveedores: Neon (base de datos), Cloudinary (almacenamiento de imágenes), Resend (envío de emails transaccionales), Meta Platforms Inc. (Instagram Graph API, Marketing API, WhatsApp Business API). Cada uno aplica sus propias políticas de privacidad.</p>
+<p>Según las features que el admin tenga habilitadas, podemos usar: Neon (base de datos), Cloudinary (imágenes), Resend (emails transaccionales). Cada uno aplica sus propias políticas de privacidad.</p>
 
 <h2>6. Derechos del usuario</h2>
-<p>Tenés derecho a acceder, rectificar o eliminar tus datos personales en cualquier momento. Para ejercer estos derechos, escribinos a <a href="mailto:contacto@lemonsarg.com">contacto@lemonsarg.com</a>.</p>
+<p>Tenés derecho a acceder, rectificar o eliminar tus datos personales en cualquier momento. Para ejercer estos derechos, contactá al administrador del portal.</p>
 
 <h2>7. Eliminación de datos</h2>
-<p>Si querés que eliminemos tu cuenta y todos los datos asociados, escribinos a <a href="mailto:contacto@lemonsarg.com">contacto@lemonsarg.com</a> con el asunto "Eliminación de datos". Procesamos la solicitud dentro de los 30 días.</p>
+<p>Podés solicitar la eliminación de tu cuenta y todos los datos asociados al administrador del portal. Procesamos la solicitud dentro de los 30 días.</p>
 
 <h2>8. Contacto</h2>
-<p>Lemon's Logística Internacional<br>
-Email: <a href="mailto:contacto@lemonsarg.com">contacto@lemonsarg.com</a><br>
-Sitio: <a href="https://lemonsarg.com">lemonsarg.com</a></p>
+<p>Administrador de ${BRANDING.name}.<br>
+<i>Reemplazá este bloque con datos de contacto reales antes de producción.</i></p>
 
 <hr>
-<footer>© 2026 Lemon's Logística Internacional</footer>
+<footer>© ${new Date().getFullYear()} ${BRANDING.name}</footer>
 </main></body></html>`);
 });
 
