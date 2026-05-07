@@ -6,7 +6,7 @@ const STORAGE_KEY = "lemons_onboarding_v1_dismissed";
 const STEPS = [
   {
     icon: "📦",
-    eyebrow: "Bienvenido a Lemon's",
+    eyebrow: "Bienvenido",
     title: "Acá ves todos tus envíos",
     desc: "Cada paquete que importás aparece acá con tracking en tiempo real, estado, costos y documentos. Hacé click en cada envío para ver el detalle completo.",
     cta: { label: "Ver mis envíos", href: "/client/shipments" },
@@ -14,7 +14,7 @@ const STEPS = [
   {
     icon: "🍋",
     eyebrow: "Programa de fidelidad",
-    title: "Sumás Lemon Coins en cada envío",
+    title: "Sumás Coins en cada envío",
     desc: "3 🍋 por kg. Bonus por monto y por primer envío. Canjealos por descuentos, kilos gratis o envíos completos sin costo. Cuanto más importás, más ganás.",
     cta: { label: "Ver mis Coins", href: "/coins" },
   },

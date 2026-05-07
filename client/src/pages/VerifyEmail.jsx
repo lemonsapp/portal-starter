@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-const API = import.meta.env.VITE_API_URL || "https://api.lemonsarg.com";
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export default function VerifyEmail() {
   const [params] = useSearchParams();
@@ -111,7 +111,7 @@ export default function VerifyEmail() {
         {msg && <div className="vf-msg">{msg}</div>}
 
         {status === "ok" && (
-          <div className="vf-coins">🍋 <b>+15</b> Lemon Coins acreditados</div>
+          <div className="vf-coins">🍋 <b>+15</b> Coins acreditados</div>
         )}
 
         {status !== "loading" && (

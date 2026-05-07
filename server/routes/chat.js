@@ -378,7 +378,7 @@ router.post("/rooms/:slug/join", authRequired, async (req, res) => {
     const coinsQ = await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId]);
     const balance = Number(coinsQ.rows[0]?.balance || 0);
     if (balance < room.coins_required)
-      return res.status(400).json({ error: `Necesitas ${room.coins_required} Lemon Coins. Tenes ${balance}.` });
+      return res.status(400).json({ error: `Necesitas ${room.coins_required} Coins. Tenes ${balance}.` });
     await db.query(`UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [room.coins_required, userId]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`,
       [userId, room.coins_required, `Acceso a room: ${room.name}`]);

@@ -249,7 +249,7 @@ export default function HomeClient() {
               <div style={{ fontSize: 28 }}>🍋</div>
               <div>
                 <CountUp value={balance} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, lineHeight: 1, color: "var(--brand-primary, #f5e03a)", letterSpacing: 1, display: "block" }}>{balance.toLocaleString()}</CountUp>
-                <div style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", letterSpacing: 1.5, color: "rgba(255,255,255,.4)", textTransform: "uppercase" }}>Lemon Coins</div>
+                <div style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", letterSpacing: 1.5, color: "rgba(255,255,255,.4)", textTransform: "uppercase" }}>Coins</div>
               </div>
             </Pop>
           </div>
@@ -283,7 +283,7 @@ export default function HomeClient() {
                   📰 Novedades
                 </div>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, letterSpacing: 1.2, color: "#fff", lineHeight: 1 }}>
-                  Lo último de Lemon's
+                  Últimas novedades
                 </div>
               </div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: 1.5, color: "rgba(255,255,255,.35)" }}>

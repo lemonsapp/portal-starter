@@ -5,7 +5,7 @@
 
 const TOKEN   = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-const APP_NAME = process.env.APP_NAME || "Lemon's Portal";
+const APP_NAME = process.env.APP_NAME || "Mi Portal";
 
 // Throttle: evita spam si un endpoint tira 500 muchas veces seguidas.
 const recent = new Map(); // key -> ts

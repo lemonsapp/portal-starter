@@ -126,7 +126,7 @@ export default function AppNotification() {
                   background:`${style.accent}20`, border:`1px solid ${style.accent}40`,
                   display:"grid", placeItems:"center", fontSize:14,
                 }}>🍋</div>
-                <span style={{ fontWeight:800, fontSize:13, color:style.accent }}>LIMÓN</span>
+                <span style={{ fontWeight:800, fontSize:13, color:style.accent }}>AVISO</span>
               </div>
               <button onClick={dismiss} style={{
                 background:"rgba(255,255,255,0.08)", border:"none", borderRadius:6,

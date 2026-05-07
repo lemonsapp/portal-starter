@@ -34,7 +34,7 @@ const ACHIEVEMENTS = [
   { key:"ach_usd1k",    icon:"💵", name:"Mil Dólares",    desc:"Más de USD 1.000 importados",       condition:(s)=>s.total_usd>=1000,  reward:100,  rarity:"common"    },
   { key:"ach_usd5k",    icon:"💰", name:"Ballena",        desc:"Más de USD 5.000 importados",       condition:(s)=>s.total_usd>=5000,  reward:500,  rarity:"epic"      },
   { key:"ach_usd10k",   icon:"🐋", name:"Mega Ballena",   desc:"Más de USD 10.000 importados",      condition:(s)=>s.total_usd>=10000, reward:1000, rarity:"legendary" },
-  { key:"ach_coins500", icon:"🍋", name:"Acumulador",     desc:"500+ Lemon Coins ganados en total", condition:(s,c)=>c>=500,           reward:0,    rarity:"rare"      },
+  { key:"ach_coins500", icon:"🍋", name:"Acumulador",     desc:"500+ Coins ganados en total", condition:(s,c)=>c>=500,           reward:0,    rarity:"rare"      },
 ];
 
 const BADGE_CONFIG = {
@@ -524,7 +524,7 @@ export default function ProfilePage() {
 
   async function handleBuy(item) {
     const d=item.data||{}; if(d.grantOnly){showToast("Solo puede ser otorgada por el equipo","var(--brand-accent, #ff5500)");return;}
-    if(item.cost_coins>0&&!confirm(`Gastar ${item.cost_coins} Lemon Coins en ${item.name}?`))return;
+    if(item.cost_coins>0&&!confirm(`Gastar ${item.cost_coins} Coins en ${item.name}?`))return;
     setBuying(item.key);
     try { const res=await fetch(API+"/profile/buy",{method:"POST",headers:{...getHdrs(),"Content-Type":"application/json"},body:JSON.stringify({item_key:item.key})}); const data=await res.json(); if(!res.ok)setMsg(data.error||"Error"); else{showToast("🎉 "+item.name+" desbloqueado!");await load();reloadCtx&&reloadCtx();} } catch{setMsg("Error de red");}
     setBuying(null);
@@ -859,7 +859,7 @@ export default function ProfilePage() {
                     {usernameInput!==username&&<button onClick={saveUsername} disabled={savingUsername} style={{background:"rgba(245,224,58,.15)",border:"1px solid rgba(245,224,58,.3)",borderRadius:7,color:"var(--brand-primary, #f5e03a)",fontSize:10,fontWeight:900,padding:"3px 10px",cursor:"pointer"}}>{savingUsername?"...":"Guardar"}</button>}
                   </div>
                   <PhoneEditor profile={profile} showToast={showToast}/>
-                  {username&&<a href={"/perfil/"+username} target="_blank" style={{fontSize:10,color:"rgba(255,255,255,.3)",textDecoration:"none",fontWeight:700}}>app.lemonsarg.com/perfil/{username} ↗</a>}
+                  {username&&<a href={"/perfil/"+username} target="_blank" style={{fontSize:10,color:"rgba(255,255,255,.3)",textDecoration:"none",fontWeight:700}}>/perfil/{username} ↗</a>}
                   {usernameMsg&&<span style={{fontSize:11,color:usernameMsg.startsWith("✓")?"#22c55e":"#f87171",fontWeight:700}}>{usernameMsg}</span>}
                 </div>
               )}
@@ -882,7 +882,7 @@ export default function ProfilePage() {
                   <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,rgba(245,224,58,.15),transparent)",backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",pointerEvents:"none"}}/>
                   <span style={{fontSize:20,filter:"drop-shadow(0 0 8px rgba(245,224,58,.5))",position:"relative",zIndex:1}}>🍋</span>
                   <div style={{position:"relative",zIndex:1}}>
-                    <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(245,224,58,.5)",lineHeight:1}}>Lemon Coins</div>
+                    <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(245,224,58,.5)",lineHeight:1}}>Coins</div>
                     <CountUp value={profile?.coins?.balance||0} style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1.1,marginTop:2,display:"block"}}>{(profile?.coins?.balance||0).toLocaleString()}</CountUp>
                   </div>
                 </div>
@@ -1159,7 +1159,7 @@ export default function ProfilePage() {
                       <div><div style={{fontSize:13,fontWeight:800,color:"#e2e8f0"}}>Visibilidad del perfil</div><div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:2}}>Controlá qué ven los demás cuando visitan tu perfil</div></div>
                     </div>
                     <PrivacyToggle label="Mis envíos" desc="Cantidad de envíos totales, entregados y monto USD importado" icon="📦" iconBg="rgba(96,165,250,.1)" iconBorder="rgba(96,165,250,.18)" value={privacy.envios} onChange={async()=>{const v=!privacy.envios;setPrivacy(p=>({...p,envios:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_envios:v})});}catch(e){console.error(e);}}}/>
-                    <PrivacyToggle label="Lemon Coins" desc="Balance actual y total de coins ganados" icon="🍋" iconBg="rgba(245,224,58,.1)" iconBorder="rgba(245,224,58,.18)" value={privacy.coins} onChange={async()=>{const v=!privacy.coins;setPrivacy(p=>({...p,coins:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_coins:v})});}catch(e){console.error(e);}}}/>
+                    <PrivacyToggle label="Coins" desc="Balance actual y total de coins ganados" icon="🍋" iconBg="rgba(245,224,58,.1)" iconBorder="rgba(245,224,58,.18)" value={privacy.coins} onChange={async()=>{const v=!privacy.coins;setPrivacy(p=>({...p,coins:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_coins:v})});}catch(e){console.error(e);}}}/>
                     <PrivacyToggle label="Logros" desc="Insignias desbloqueadas y progreso de achievements" icon="🏆" iconBg="rgba(245,224,58,.1)" iconBorder="rgba(245,224,58,.18)" value={privacy.logros} onChange={async()=>{const v=!privacy.logros;setPrivacy(p=>({...p,logros:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_logros:v})});}catch(e){console.error(e);}}}/>
                     <PrivacyToggle label="Posts" desc="Feed de publicaciones y actividad reciente" icon="📝" iconBg="rgba(167,139,250,.1)" iconBorder="rgba(167,139,250,.18)" value={privacy.posts} onChange={async()=>{const v=!privacy.posts;setPrivacy(p=>({...p,posts:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_posts:v})});}catch(e){console.error(e);}}}/>
                     <PrivacyToggle label="Lista de amigos" desc="Quién puede ver tus conexiones y amigos" icon="👥" iconBg="rgba(34,197,94,.1)" iconBorder="rgba(34,197,94,.18)" value={privacy.amigos} onChange={async()=>{const v=!privacy.amigos;setPrivacy(p=>({...p,amigos:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_amigos:v})});}catch(e){console.error(e);}}}/>

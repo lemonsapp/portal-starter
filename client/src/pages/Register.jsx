@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-const API = import.meta.env.VITE_API_URL || "https://api.lemonsarg.com";
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -181,7 +181,7 @@ export default function Register() {
               <div className="rg-success-desc">
                 Te enviamos un email de verificación.<br/>Revisá tu bandeja de entrada para activar la cuenta.
               </div>
-              <div className="rg-coins-pill">🍋 <b>+15</b> Lemon Coins de bienvenida al verificar</div>
+              <div className="rg-coins-pill">🍋 <b>+15</b> Coins de bienvenida al verificar</div>
               <button onClick={() => navigate("/")} className="rg-btn">
                 <span>Ir al login</span><span className="arr">→</span>
               </button>
@@ -264,12 +264,12 @@ export default function Register() {
             </h2>
           </div>
           <p className="rg-pitch-sub">
-            Acceso completo a tus envíos, perfil, comunidad, notificaciones y Lemon Coins. Todo en un solo lugar.
+            Acceso completo a tus envíos, perfil, comunidad, notificaciones y Coins. Todo en un solo lugar.
           </p>
 
           <div className="rg-perks">
             <div className="rg-perk"><b>01</b> Tracking en tiempo real <span className="rg-perk-line" /></div>
-            <div className="rg-perk"><b>02</b> Lemon Coins automáticos <span className="rg-perk-line" /></div>
+            <div className="rg-perk"><b>02</b> Coins automáticos <span className="rg-perk-line" /></div>
             <div className="rg-perk"><b>03</b> Notificaciones por WhatsApp <span className="rg-perk-line" /></div>
             <div className="rg-perk"><b>04</b> Soporte directo del equipo <span className="rg-perk-line" /></div>
           </div>

@@ -1,4 +1,4 @@
-// server/routes/profile.js — Sistema de perfiles con Lemon Coins
+// server/routes/profile.js — Sistema de perfiles con Coins
 "use strict";
 const express = require("express");
 const router  = express.Router();
@@ -656,7 +656,7 @@ router.get("/referrals", authRequired, async (req, res) => {
     const userId = req.user.id;
     const userQ = await db.query(`SELECT username FROM users WHERE id=$1`, [userId]);
     const username = userQ.rows[0]?.username;
-    const base = process.env.APP_URL || "https://app.lemonsarg.com";
+    const base = process.env.APP_URL || "http://localhost:5173";
     const link = username ? `${base}/register?r=${username}` : null;
 
     const refsQ = await db.query(

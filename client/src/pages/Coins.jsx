@@ -3,7 +3,7 @@ import { useToast } from "../components/ToastReward.jsx";
 import { Pop, FadeUp, Pulse, Jumbo, CountUp } from "../components/MotionPop.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API = import.meta.env.VITE_API_URL || "https://api.lemonsarg.com";
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 const hdrs = () => ({ Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" });
 const ICONS_MAP = { gold:"🥇", diamond:"💎", crown:"👑" };
@@ -178,7 +178,7 @@ function SpinModal({ onClose, onWin }) {
             {result.coins>0 ? <>
               <div style={{ color:"var(--brand-primary, #f5e03a)",fontSize:12,marginBottom:4,letterSpacing:2,fontWeight:800,textTransform:"uppercase" }}>¡Ganaste!</div>
               <div style={{ fontWeight:900,fontSize:52,color:"var(--brand-primary, #f5e03a)",textShadow:"0 0 30px var(--brand-primary, #f5e03a)88" }}>+{result.coins} 🍋</div>
-              <div style={{ color:"#888",fontSize:13,marginTop:4 }}>Lemon Coins acreditados</div>
+              <div style={{ color:"#888",fontSize:13,marginTop:4 }}>Coins acreditados</div>
             </> : <>
               <div style={{ color:"#64748b",fontSize:13,marginBottom:4,letterSpacing:1,textTransform:"uppercase" }}>¡Suerte la próxima!</div>
               <div style={{ fontWeight:900,fontSize:24,color:"#475569" }}>Seguí participando</div>
@@ -191,7 +191,7 @@ function SpinModal({ onClose, onWin }) {
             <div style={{ fontWeight:900,fontSize:36,color:"var(--brand-primary, #f5e03a)",fontVariantNumeric:"tabular-nums",textShadow:"0 0 20px var(--brand-primary, #f5e03a)66" }}>{timeLeft}</div>
           </div>
         ) : !errorMsg && (
-          <div style={{ textAlign:"center",color:"#666",fontSize:13 }}>¡Girá para ganar hasta 1000 Lemon Coins!</div>
+          <div style={{ textAlign:"center",color:"#666",fontSize:13 }}>¡Girá para ganar hasta 1000 Coins!</div>
         )}
 
         <button onClick={spin} disabled={!canSpin||spinning}
@@ -246,7 +246,7 @@ function Store({ balance, onBuy }) {
 
   const buy = async (item) => {
     if (item.cat==="powers" && ownedPowers.includes(item.id.replace("power_",""))) return;
-    if (!confirm(`Gastar ${item.cost} Lemon Coins en ${item.name}?`)) return;
+    if (!confirm(`Gastar ${item.cost} Coins en ${item.name}?`)) return;
     setBuying(item.id); setMsg(null);
     try {
       let url, body={};
@@ -386,7 +386,7 @@ function ReferralCard() {
             style={{ padding: "8px 14px", background: copied ? "#22c55e" : "linear-gradient(135deg,#a78bfa,#ec4899)", color: "#000", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0 }}>
             {copied ? "✓ Copiado" : "📋 Copiar link"}
           </Pop>
-          <Pop as="a" href={`https://wa.me/?text=${encodeURIComponent(`Te paso mi link de Lemon's: ${link} — te doy 25 LC con tu primer envío 🍋`)}`} target="_blank" rel="noreferrer"
+          <Pop as="a" href={`https://wa.me/?text=${encodeURIComponent(`Te paso mi link: ${link} — te doy 25 LC con tu primer envío 🍋`)}`} target="_blank" rel="noreferrer"
             style={{ padding: "8px 14px", background: "rgba(34,197,94,.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,.4)", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0, textDecoration: "none" }}>
             💬 WA
           </Pop>
@@ -471,7 +471,7 @@ function Missions({ onClaim }) {
       setMissions(p=>p.map(m=>m.slug===slug?{...m,claimed_at:new Date().toISOString()}:m));
       onClaim?.(d.coins_earned);
       const mission = missions.find(m=>m.slug===slug);
-      showToast({ title: mission?.title || "Mision completada", subtitle: `+${d.coins_earned} Lemon Coins acreditados`, icon: mission?.icon || "🍋", color: "var(--brand-primary, #f5e03a)" });
+      showToast({ title: mission?.title || "Mision completada", subtitle: `+${d.coins_earned} Coins acreditados`, icon: mission?.icon || "🍋", color: "var(--brand-primary, #f5e03a)" });
     } else alert(d.error);
     setClaiming(null);
   };
@@ -651,7 +651,7 @@ function Gift({ balance, onGift }) {
         <div style={{ position:"absolute",top:-40,right:-40,fontSize:180,opacity:0.03,userSelect:"none",pointerEvents:"none" }}>🎁</div>
         <div style={{ textAlign:"center",marginBottom:32 }}>
           <div style={{ fontSize:64,marginBottom:12,filter:"drop-shadow(0 0 20px var(--brand-primary, #f5e03a)66)",display:"inline-block",animation:"wiggle 3s ease-in-out infinite" }}>🎁</div>
-          <div style={{ fontWeight:900,fontSize:26,color:"#fff",marginBottom:6 }}>Regalar Lemon Coins</div>
+          <div style={{ fontWeight:900,fontSize:26,color:"#fff",marginBottom:6 }}>Regalar Coins</div>
           <div style={{ color:"#555",fontSize:14 }}>Compartí tu amor con la comunidad 🍋</div>
         </div>
 
@@ -795,7 +795,7 @@ export default function Coins() {
             <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:24,position:"relative",zIndex:2 }}>
               <div>
                 <div style={{ fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:"3.5px",textTransform:"uppercase",color:"var(--orange)",display:"flex",alignItems:"center",gap:12,marginBottom:14 }}>
-                  <span style={{ width:28,height:1,background:"var(--orange)" }}/>Lemon Coins
+                  <span style={{ width:28,height:1,background:"var(--orange)" }}/>Coins
                 </div>
                 <div style={{ fontFamily:"'Bebas Neue',sans-serif",fontSize:"clamp(56px,7vw,96px)",lineHeight:.84,letterSpacing:"-1.5px",color:"var(--text)",marginBottom:6 }}>
                   TU <em style={{ fontStyle:"normal",color:"var(--lemon)" }}>BALANCE</em>

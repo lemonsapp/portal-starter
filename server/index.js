@@ -23,8 +23,8 @@ const {
   sanitizeText,
   sanitizeRichText,
 } = require("./security");
-const coinsRouter         = require("./routes/coins");         // ✅ Lemon Coins
-const notificationsRouter = require("./routes/notifications"); // ✅ Notificaciones LIMÓN (broadcast)
+const coinsRouter         = require("./routes/coins");         // ✅ Coins
+const notificationsRouter = require("./routes/notifications"); // ✅ Notificaciones in-app (broadcast)
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
 const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
@@ -94,10 +94,10 @@ app.use(express.urlencoded({ limit: "500kb", extended: false }));
 
 // CORS abierto mientras probás
 const allowedOrigins = [
-  "https://lemonsarg.com",
-  "https://www.lemonsarg.com",
-  "https://app.lemonsarg.com",
-  "https://redes.lemonsarg.com",
+  "http://localhost:5173",
+  "https://localhost",
+  "http://localhost:5173",
+  "http://localhost:5173",
   "https://lemons-portal-w3of.vercel.app",
 ];
 
@@ -630,7 +630,7 @@ function trackingHtml(trackingRaw) {
 }
 
 function shipmentUpdateEmailHtml({
-  brand = "LEMON'S PORTAL",
+  brand = "MI PORTAL",
   clientName = "",
   clientNumber = "",
   code = "",
@@ -949,7 +949,7 @@ async function sendShipmentStatusEmail(shipment, oldStatus, newStatus) {
         : "";
 
     const html = shipmentUpdateEmailHtml({
-      brand: "LEMON'S PORTAL",
+      brand: "MI PORTAL",
       clientName: shipment.client_name || "",
       clientNumber: shipment.client_number || "",
       code,
@@ -1300,12 +1300,12 @@ function buildVerifyEmailHtml(name, verifyUrl) {
     <table width="480" cellspacing="0" cellpadding="0" style="width:480px;max-width:480px;">
       <tr><td style="padding-bottom:32px;text-align:center;">
         <div style="font-family:Arial,sans-serif;font-size:28px;margin-bottom:8px;">🍋</div>
-        <div style="font-family:Arial,sans-serif;color:#f5a623;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Lemon's Portal</div>
+        <div style="font-family:Arial,sans-serif;color:#f5a623;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Mi Portal</div>
       </td></tr>
       <tr><td style="background:rgba(245,166,35,0.06);border:2px solid rgba(245,166,35,0.2);border-radius:20px;overflow:hidden;">
         <div style="padding:32px;background:linear-gradient(135deg,rgba(245,166,35,0.1),transparent);border-bottom:1px solid rgba(245,166,35,0.1);">
           <div style="font-family:Arial,sans-serif;color:#fff;font-size:22px;font-weight:900;margin-bottom:8px;">Bienvenido, ${name}! 👋</div>
-          <div style="font-family:Arial,sans-serif;color:rgba(255,255,255,0.6);font-size:14px;">Ya casi estás listo para importar con Lemon's.</div>
+          <div style="font-family:Arial,sans-serif;color:rgba(255,255,255,0.6);font-size:14px;">Ya casi estás listo para usar el portal.</div>
         </div>
         <div style="padding:28px 32px;">
           <p style="font-family:Arial,sans-serif;color:#ccc;font-size:14px;line-height:1.6;margin:0 0 24px 0;">
@@ -1322,7 +1322,7 @@ function buildVerifyEmailHtml(name, verifyUrl) {
         </div>
       </td></tr>
       <tr><td style="padding:20px 0 0;text-align:center;font-family:Arial,sans-serif;color:#333;font-size:12px;">
-        © ${new Date().getFullYear()} Lemon's Portal
+        © ${new Date().getFullYear()} Mi Portal
       </td></tr>
     </table>
   </td></tr>
@@ -1413,12 +1413,12 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
     );
 
     // Enviar email de verificación
-    const base = process.env.APP_URL || "https://app.lemonsarg.com";
+    const base = process.env.APP_URL || "http://localhost:5173";
     const verifyUrl = `${base}/verify-email?token=${token}`;
     try {
       await sendEmail({
         to: user.email,
-        subject: "Verificá tu cuenta — Lemon's Portal",
+        subject: "Verificá tu cuenta — Mi Portal",
         html: buildVerifyEmailHtml(name, verifyUrl),
       });
     } catch(e) {
@@ -2154,7 +2154,7 @@ app.post("/auth/forgot-password", forgotLimiter, async (req, res) => {
     try {
       await sendEmail({
         to: user.email,
-        subject: "Restablecer tu contraseña — Lemon's Portal",
+        subject: "Restablecer tu contraseña — Mi Portal",
         html: `<!doctype html>
 <html lang="es">
 <head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
@@ -2164,7 +2164,7 @@ app.post("/auth/forgot-password", forgotLimiter, async (req, res) => {
     <table width="480" cellspacing="0" cellpadding="0" style="width:480px;max-width:480px;">
       <tr><td style="padding-bottom:32px;text-align:center;">
         <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#ffd200,#ff8a00);display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;">🍋</div>
-        <div style="font-family:Arial,sans-serif;color:#ffd200;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Lemon's Portal</div>
+        <div style="font-family:Arial,sans-serif;color:#ffd200;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Mi Portal</div>
       </td></tr>
       <tr><td style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);border-radius:20px;overflow:hidden;">
         <div style="padding:32px 32px 24px;background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(168,85,247,0.15));border-bottom:1px solid rgba(255,255,255,0.08);">
@@ -2190,7 +2190,7 @@ app.post("/auth/forgot-password", forgotLimiter, async (req, res) => {
         </div>
       </td></tr>
       <tr><td style="padding:20px 0 0;text-align:center;font-family:Arial,sans-serif;color:#334155;font-size:12px;">
-        © ${new Date().getFullYear()} Lemon's Portal. Todos los derechos reservados.
+        © ${new Date().getFullYear()} Mi Portal. Todos los derechos reservados.
       </td></tr>
     </table>
   </td></tr>
@@ -2251,12 +2251,12 @@ app.post("/auth/resend-verification", authLimiter, async (req, res) => {
       [user.id, tokenHash, expires]
     );
 
-    const base = process.env.APP_URL || "https://app.lemonsarg.com";
+    const base = process.env.APP_URL || "http://localhost:5173";
     const verifyUrl = `${base}/verify-email?token=${token}`;
     try {
       await sendEmail({
         to: user.email,
-        subject: "Verificá tu cuenta — Lemon's Portal",
+        subject: "Verificá tu cuenta — Mi Portal",
         html: buildVerifyEmailHtml(user.name || "", verifyUrl),
       });
     } catch (e) {
@@ -2631,7 +2631,7 @@ const DEFAULT_RATES_FALLBACK = {
 
 
 // ════════════════════════════════════════════════════════════════════
-// ✅ LEMON COINS ROUTER
+// ✅ COINS ROUTER
 // ════════════════════════════════════════════════════════════════════
 app.use("/coins",         coinsRouter);
 app.use("/notifications", notificationsRouter);
@@ -3168,7 +3168,7 @@ app.use((err, req, res, next) => {
 
 // Aviso al boot — confirma config
 if (telegram.isConfigured()) {
-  telegram.notify(`✅ <b>${process.env.APP_NAME || "Lemon's Portal"}</b> backend iniciado · ${new Date().toISOString()}`).catch(()=>{});
+  telegram.notify(`✅ <b>${process.env.APP_NAME || "Mi Portal"}</b> backend iniciado · ${new Date().toISOString()}`).catch(()=>{});
 } else {
   console.warn("[telegram] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID no seteados — notificaciones desactivadas.");
 }

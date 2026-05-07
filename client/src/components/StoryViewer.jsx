@@ -281,7 +281,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
                 <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${story.color}25`, border: `1px solid ${story.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{story.emoji}</div>
                 <div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: "2px", color: story.color, textTransform: "uppercase", fontWeight: 700 }}>
-                    Lemon's {story.kind === "tip" ? "Tip" : "anuncia"}
+                    Mi Portal {story.kind === "tip" ? "Tip" : "anuncia"}
                   </div>
                 </div>
               </>

@@ -81,7 +81,7 @@ export default function OnboardingModal({ user, onComplete }) {
 
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--brand-accent, #ff8c2a)", marginBottom: 8, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ width: 22, height: 1, background: "var(--brand-accent, #ff8c2a)" }} />
-              Bienvenido a Lemon's
+              Bienvenido
             </div>
 
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, lineHeight: .95, letterSpacing: "1.5px", color: "#fff", marginBottom: 12 }}>

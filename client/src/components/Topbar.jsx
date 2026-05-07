@@ -203,7 +203,7 @@ export default function Topbar() {
                                 <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:800,padding:"2px 8px",color:annStyle.color,background:annStyle.bg,border:`1px solid ${annStyle.border}`,borderRadius:4,textTransform:"uppercase"}}>
                                   📢 {annStyle.label}
                                 </span>
-                                <span style={{fontSize:10,color:"rgba(255,255,255,.35)",fontFamily:"'DM Mono',monospace",letterSpacing:"1px"}}>Lemon's</span>
+                                <span style={{fontSize:10,color:"rgba(255,255,255,.35)",fontFamily:"'DM Mono',monospace",letterSpacing:"1px"}}>Mi Portal</span>
                               </div>
                             ) : (n.actor_name && (
                               <span style={{fontSize:13,fontWeight:800,color:n.actor_name_color||"var(--brand-primary, #f5e03a)",textShadow:n.actor_glow>0&&n.actor_glow_color?`0 0 ${n.actor_glow*2}px ${n.actor_glow_color}`:"none",marginRight:6}}>
@@ -264,7 +264,7 @@ export default function Topbar() {
                       </div>
                     </div>
                     <a href={me?.username ? `/perfil/${me.username}` : "/perfil"} className="tb-drop-item" onClick={() => setUserDrop(false)}>👤 Mi Perfil</a>
-                    <a href="/coins"  className="tb-drop-item" onClick={() => setUserDrop(false)}>🍋 Lemon Coins</a>
+                    <a href="/coins"  className="tb-drop-item" onClick={() => setUserDrop(false)}>🍋 Coins</a>
                     {isStaff && <a href="/dashboard" className="tb-drop-item" onClick={() => setUserDrop(false)}>📊 Dashboard</a>}
                     <button className="tb-drop-item" style={{ color:"rgba(239,68,68,0.8)" }} onClick={() => { setUserDrop(false); logout(); }}>🚪 Cerrar sesión</button>
                   </div>

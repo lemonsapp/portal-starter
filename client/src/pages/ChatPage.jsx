@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 import { BannerCanvas } from "./ProfileStudio.jsx";
 import { Pop, Jumbo } from "../components/MotionPop.jsx";
 
-const API = import.meta.env.VITE_API_URL || "https://api.lemonsarg.com";
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 const ROOM_META = {

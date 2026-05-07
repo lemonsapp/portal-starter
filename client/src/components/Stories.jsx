@@ -16,7 +16,7 @@ const CAT_CFG = {
 const TIPS = [
   { title: "Antes de comprar consultá",   body: "Cada producto tiene reglas aduaneras distintas. Mandá link por WhatsApp y te decimos si conviene importarlo.", emoji: "💡", color: "#fbbf24" },
   { title: "Express vs Normal",            body: "Express USA llega en 72 hs; Normal 7-10 días. La diferencia se justifica en mercadería sensible al tiempo.", emoji: "⚡", color: "var(--brand-accent, #ff8c2a)" },
-  { title: "Lemon Coins acumulan",         body: "Cada envío te suma LC. Canjealos por descuentos, items premium del perfil o powers del chat.",                  emoji: "🍋", color: "var(--brand-primary, #f5e03a)" },
+  { title: "Coins acumulan",         body: "Cada envío te suma LC. Canjealos por descuentos, items premium del perfil o powers del chat.",                  emoji: "🍋", color: "var(--brand-primary, #f5e03a)" },
   { title: "Invitá amigos · 25 LC",        body: "Mandá tu link de referido. Cuando hacen su primer envío, vos ganás 25 LC y ellos 25.",                            emoji: "🎁", color: "#a78bfa" },
 ];
 

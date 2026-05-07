@@ -1,5 +1,5 @@
 // server/routes/notifications.js
-// Sistema de notificaciones del personaje LIMÓN
+// Sistema de notificaciones del sistema
 const express = require("express");
 const router  = express.Router();
 const db      = require("../db");

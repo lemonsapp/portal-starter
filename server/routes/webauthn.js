@@ -12,9 +12,9 @@ const {
 } = require("@simplewebauthn/server");
 
 // ── Configuración WebAuthn ───────────────────────────────────────────────────
-const RP_ID = process.env.WEBAUTHN_RP_ID || "lemonsarg.com";
-const RP_NAME = "Lemon's Portal";
-const EXPECTED_ORIGIN = (process.env.WEBAUTHN_ORIGIN || "https://app.lemonsarg.com").replace(/\/$/, "");
+const RP_ID = process.env.WEBAUTHN_RP_ID || "localhost";
+const RP_NAME = "Mi Portal";
+const EXPECTED_ORIGIN = (process.env.WEBAUTHN_ORIGIN || "http://localhost:5173").replace(/\/$/, "");
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 min
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 if (!process.env.JWT_SECRET) {

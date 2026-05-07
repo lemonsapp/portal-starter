@@ -155,8 +155,8 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
 
   useEffect(()=>{
     const token=getToken(); if(!token)return;
-    fetch((import.meta.env.VITE_API_URL||"https://api.lemonsarg.com")+"/api/chat/powers",{headers:{Authorization:"Bearer "+token}}).then(r=>r.json()).then(d=>{if(d.ok)setChatPowers(d.powers.filter(p=>p.owned));});
-    fetch((import.meta.env.VITE_API_URL||"https://api.lemonsarg.com")+"/api/chat/config",{headers:{Authorization:"Bearer "+token}}).then(r=>r.json()).then(d=>{if(d.ok)setChatConfig(d.config||{});});
+    fetch((import.meta.env.VITE_API_URL||"http://localhost:4000")+"/api/chat/powers",{headers:{Authorization:"Bearer "+token}}).then(r=>r.json()).then(d=>{if(d.ok)setChatPowers(d.powers.filter(p=>p.owned));});
+    fetch((import.meta.env.VITE_API_URL||"http://localhost:4000")+"/api/chat/config",{headers:{Authorization:"Bearer "+token}}).then(r=>r.json()).then(d=>{if(d.ok)setChatConfig(d.config||{});});
   },[]);
 
   const [bannerFx,  setBannerFx]  = useState(profile?.banner_effect||"none");
@@ -423,7 +423,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
 
               <button onClick={async()=>{
                 setChatSaving(true); setMsg("");
-                try{const token=getToken();const r=await fetch((import.meta.env.VITE_API_URL||"https://api.lemonsarg.com")+"/api/chat/config",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({name_color:chatConfig.name_color||null,name_glow_color:chatConfig.name_glow_color||null,name_glow:chatConfig.name_glow||null,name_grad_from:chatConfig.name_grad_from||null,name_grad_to:chatConfig.name_grad_to||null,nickname:chatConfig.nickname||null,nick_color:chatConfig.nick_color||null,nick_glow:chatConfig.nick_glow||null,nick_glow_color:chatConfig.nick_glow_color||null,icon_slug:chatConfig.icon_slug||null})});const d=await r.json();if(r.ok){setMsg("Config del chat guardada");setTimeout(()=>window.location.reload(),800);}else setMsg(d.error||"Error");}catch{setMsg("Error de red");}
+                try{const token=getToken();const r=await fetch((import.meta.env.VITE_API_URL||"http://localhost:4000")+"/api/chat/config",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({name_color:chatConfig.name_color||null,name_glow_color:chatConfig.name_glow_color||null,name_glow:chatConfig.name_glow||null,name_grad_from:chatConfig.name_grad_from||null,name_grad_to:chatConfig.name_grad_to||null,nickname:chatConfig.nickname||null,nick_color:chatConfig.nick_color||null,nick_glow:chatConfig.nick_glow||null,nick_glow_color:chatConfig.nick_glow_color||null,icon_slug:chatConfig.icon_slug||null})});const d=await r.json();if(r.ok){setMsg("Config del chat guardada");setTimeout(()=>window.location.reload(),800);}else setMsg(d.error||"Error");}catch{setMsg("Error de red");}
                 setChatSaving(false);
               }} disabled={chatSaving} style={{fontSize:13,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",padding:"12px 24px",borderRadius:8,border:"none",background:"#c8f53a",color:"#04060d",cursor:"pointer",opacity:chatSaving?.6:1}}>
                 {chatSaving?"Guardando...":"💬 Guardar config del chat"}
