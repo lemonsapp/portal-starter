@@ -28,6 +28,7 @@ const profileRouter       = require("./routes/profile");         // 👤 Perfil 
 const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
 const adminConfig        = require("./routes/admin-config");    // 🪄 Setup wizard endpoints
+const adminFeed          = require("./routes/admin-feed");      // 📰 Feed editor del admin
 
 const app = express();
 
@@ -2237,6 +2238,11 @@ app.use("/auth/webauthn", webauthnRouter);
 // ── Setup wizard endpoints (Sprint 2) ────────────────────────────────────────
 app.use("/api/admin/config", adminConfig.build({ authRequired, requireRole }));
 app.use("/api/config/public", adminConfig.publicRouter());
+
+// ── Feed editor (Sprint 3) ────────────────────────────────────────────────────
+// Monta /feed (público) + /admin/feed (admin) en la raíz; mismo router maneja
+// ambos prefijos vía sus paths internos.
+app.use("/", adminFeed.build({ authRequired, requireRole }));
 
 // ── Reclamar bonus primer envío (cliente) ──────────────────────────
 
