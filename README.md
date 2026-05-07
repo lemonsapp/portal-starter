@@ -4,7 +4,7 @@ Boilerplate clonable para portales web con auth, perfiles, coins, chat 1-a-1, st
 
 ## Estado
 
-🚧 **En desarrollo** — sprint 1 (refactor del esqueleto: branding centralizado y limpieza de referencias hardcoded). Spec del proyecto: [`docs/superpowers/specs/2026-05-06-portal-starter-design.md`](./docs/superpowers/specs/2026-05-06-portal-starter-design.md).
+✅ **Listo para deploy** — 7 sprints cerrados, build/boot/tests verde, refs Lemons en código vivo: 0. Spec: [`docs/superpowers/specs/2026-05-06-portal-starter-design.md`](./docs/superpowers/specs/2026-05-06-portal-starter-design.md).
 
 | Sprint | Entregable | Estado |
 |---|---|---|
@@ -14,6 +14,7 @@ Boilerplate clonable para portales web con auth, perfiles, coins, chat 1-a-1, st
 | 3 | First-admin bootstrap + AdminPanel (Coins/Feed/Settings) + feature flags wired | ✅ |
 | 4 | HomeClient refactor + email branding dinámico + WebAuthn + cleanup migrations + assets purge | ✅ |
 | 5 | Wizard guiado paso a paso + scripts/setup-new-client.js + docs CONFIGURACION+ARQUITECTURA | ✅ |
+| 6 | Branding-aware rgba (CSS vars derivadas) + cleanup final Lemons-flavored (🍋→🪙, animations rename, sala general seed, copy genérico) | ✅ |
 
 ## Stack
 
