@@ -10,7 +10,7 @@ const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("
 
 const CAT_CFG = {
   urgente: { label: "Urgente",  emoji: "🚨", color: "#ef4444", bg: "rgba(239,68,68,.08)",  bd: "rgba(239,68,68,.3)" },
-  linea:   { label: "Líneas",   emoji: "🌐", color: "#f5e03a", bg: "rgba(245,224,58,.08)", bd: "rgba(245,224,58,.3)" },
+  linea:   { label: "Líneas",   emoji: "🌐", color: "var(--brand-primary, #f5e03a)", bg: "rgba(245,224,58,.08)", bd: "rgba(245,224,58,.3)" },
   feriado: { label: "Feriado",  emoji: "🎌", color: "#60a5fa", bg: "rgba(96,165,250,.08)", bd: "rgba(96,165,250,.3)" },
   tip:     { label: "Tip",      emoji: "💡", color: "#fbbf24", bg: "rgba(251,191,36,.08)", bd: "rgba(251,191,36,.3)" },
   novedad: { label: "Novedad",  emoji: "✨", color: "#a78bfa", bg: "rgba(167,139,250,.08)",bd: "rgba(167,139,250,.3)" },
@@ -81,7 +81,7 @@ export default function HomeClient() {
   const totalShips = shipments.length;
   const balance = profile?.coins?.balance || 0;
   const displayName = userCtx?.displayName || me?.name || "";
-  const nameStyle = userCtx?.nameStyle || { color: "#f5e03a" };
+  const nameStyle = userCtx?.nameStyle || { color: "var(--brand-primary, #f5e03a)" };
 
   const nextDelivery = activeShips
     .map(s => ({ ...s, etaDate: s.estimated_delivery_date ? new Date(s.estimated_delivery_date) : null }))
@@ -98,7 +98,7 @@ export default function HomeClient() {
         @keyframes hcShimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
         .hc-fade{animation:hcFadeUp .6s cubic-bezier(.2,.8,.2,1) both}
         .hc-card{background:rgba(8,9,16,.85);border:1px solid rgba(245,224,58,.12);border-radius:18px;position:relative;overflow:hidden}
-        .hc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--ac,#f5e03a),transparent);background-size:200% 100%;animation:hcBarGlow 3s linear infinite}
+        .hc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--ac,var(--brand-primary, #f5e03a)),transparent);background-size:200% 100%;animation:hcBarGlow 3s linear infinite}
         .hc-cat-chip{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:4px;display:inline-flex;align-items:center;gap:5px}
         .hc-quick-btn{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);padding:18px;border-radius:14px;cursor:pointer;text-align:left;transition:all .25s;display:flex;align-items:center;gap:14px;color:#ede9e0;text-decoration:none;width:100%;font-family:inherit}
         .hc-quick-btn:hover{background:rgba(245,224,58,.06);border-color:rgba(245,224,58,.22);transform:translateY(-2px)}
@@ -241,14 +241,14 @@ export default function HomeClient() {
             <Pop as="button" onClick={() => navigate("/client/shipments")} className="hc-quick-btn" style={{ width: 160, padding: "14px 16px" }}>
               <div style={{ fontSize: 28 }}>📦</div>
               <div>
-                <CountUp value={activeShips.length} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, lineHeight: 1, color: "#f5e03a", letterSpacing: 1, display: "block" }}>{activeShips.length}</CountUp>
+                <CountUp value={activeShips.length} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, lineHeight: 1, color: "var(--brand-primary, #f5e03a)", letterSpacing: 1, display: "block" }}>{activeShips.length}</CountUp>
                 <div style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", letterSpacing: 1.5, color: "rgba(255,255,255,.4)", textTransform: "uppercase" }}>Activos · {totalShips} total</div>
               </div>
             </Pop>
             <Pop as="button" onClick={() => navigate("/coins")} className="hc-quick-btn" style={{ width: 160, padding: "14px 16px" }}>
               <div style={{ fontSize: 28 }}>🍋</div>
               <div>
-                <CountUp value={balance} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, lineHeight: 1, color: "#f5e03a", letterSpacing: 1, display: "block" }}>{balance.toLocaleString()}</CountUp>
+                <CountUp value={balance} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, lineHeight: 1, color: "var(--brand-primary, #f5e03a)", letterSpacing: 1, display: "block" }}>{balance.toLocaleString()}</CountUp>
                 <div style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", letterSpacing: 1.5, color: "rgba(255,255,255,.4)", textTransform: "uppercase" }}>Lemon Coins</div>
               </div>
             </Pop>
@@ -332,7 +332,7 @@ export default function HomeClient() {
                 <div style={{ fontSize: 36, marginBottom: 8, opacity: .4 }}>🍋</div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)" }}>Sin envíos activos</div>
                 <button onClick={() => navigate("/client/quote")}
-                  style={{ marginTop: 14, padding: "10px 18px", background: "#f5e03a", color: "#020307", border: "none", fontWeight: 700, fontFamily: "'DM Mono',monospace", letterSpacing: 1.5, fontSize: 11, cursor: "pointer", textTransform: "uppercase" }}>
+                  style={{ marginTop: 14, padding: "10px 18px", background: "var(--brand-primary, #f5e03a)", color: "#020307", border: "none", fontWeight: 700, fontFamily: "'DM Mono',monospace", letterSpacing: 1.5, fontSize: 11, cursor: "pointer", textTransform: "uppercase" }}>
                   💬 Cotizar nuevo →
                 </button>
               </div>
@@ -424,14 +424,14 @@ function FeaturedAnnouncement({ ann }) {
 function EmptyFeatured({ nextDelivery }) {
   return (
     <div style={{ background: "linear-gradient(135deg,rgba(245,224,58,.05),rgba(8,9,16,.85))", border: "1px solid rgba(245,224,58,.18)", borderRadius: 18, padding: "32px", position: "relative", overflow: "hidden", minHeight: 280, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,transparent,#f5e03a,#ff5500,#f5e03a,transparent)", backgroundSize: "200% 100%", animation: "hcBarGlow 3s linear infinite" }} />
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,transparent,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a),transparent)", backgroundSize: "200% 100%", animation: "hcBarGlow 3s linear infinite" }} />
       <div style={{ position: "absolute", top: -10, right: -10, fontSize: 200, opacity: .04, lineHeight: 1, transform: "rotate(-12deg)" }}>🍋</div>
 
-      <div className="hc-cat-chip" style={{ color: "#f5e03a", background: "rgba(245,224,58,.06)", border: "1px solid rgba(245,224,58,.25)", marginBottom: 16, alignSelf: "flex-start" }}>
+      <div className="hc-cat-chip" style={{ color: "var(--brand-primary, #f5e03a)", background: "rgba(245,224,58,.06)", border: "1px solid rgba(245,224,58,.25)", marginBottom: 16, alignSelf: "flex-start" }}>
         ✨ Bienvenido
       </div>
       <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: "clamp(32px,3.5vw,48px)", lineHeight: .95, letterSpacing: 1, color: "#fff", marginBottom: 14, position: "relative" }}>
-        TU PORTAL<br /><span style={{ color: "#f5e03a" }}>EN VIVO</span>
+        TU PORTAL<br /><span style={{ color: "var(--brand-primary, #f5e03a)" }}>EN VIVO</span>
       </div>
       <div style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,.6)", maxWidth: 480, position: "relative", marginBottom: 18 }}>
         {nextDelivery
@@ -463,7 +463,7 @@ function AnnRow({ ann }) {
             {cat.label}
           </span>
           {ann.pinned && (
-            <span className="hc-cat-chip" style={{ color: "#f5e03a", background: "rgba(245,224,58,.08)", border: "1px solid rgba(245,224,58,.3)" }}>
+            <span className="hc-cat-chip" style={{ color: "var(--brand-primary, #f5e03a)", background: "rgba(245,224,58,.08)", border: "1px solid rgba(245,224,58,.3)" }}>
               📌 Destacado
             </span>
           )}
@@ -485,8 +485,8 @@ function AnnRow({ ann }) {
 function ShipmentRow({ ship, onClick }) {
   const status = ship.status || "Recibido";
   const STATUS_C = {
-    "Recibido en depósito": "#f5e03a",
-    "En preparación":      "#ff8c2a",
+    "Recibido en depósito": "var(--brand-primary, #f5e03a)",
+    "En preparación":      "var(--brand-accent, #ff8c2a)",
     "Despachado":          "#60a5fa",
     "En tránsito":         "#c084fc",
     "Listo para entrega":  "#34d399",

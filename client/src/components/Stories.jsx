@@ -7,7 +7,7 @@ const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("
 
 const CAT_CFG = {
   urgente: { color: "#ef4444", emoji: "🚨" },
-  linea:   { color: "#f5e03a", emoji: "🌐" },
+  linea:   { color: "var(--brand-primary, #f5e03a)", emoji: "🌐" },
   feriado: { color: "#60a5fa", emoji: "🎌" },
   tip:     { color: "#fbbf24", emoji: "💡" },
   novedad: { color: "#a78bfa", emoji: "✨" },
@@ -15,8 +15,8 @@ const CAT_CFG = {
 };
 const TIPS = [
   { title: "Antes de comprar consultá",   body: "Cada producto tiene reglas aduaneras distintas. Mandá link por WhatsApp y te decimos si conviene importarlo.", emoji: "💡", color: "#fbbf24" },
-  { title: "Express vs Normal",            body: "Express USA llega en 72 hs; Normal 7-10 días. La diferencia se justifica en mercadería sensible al tiempo.", emoji: "⚡", color: "#ff8c2a" },
-  { title: "Lemon Coins acumulan",         body: "Cada envío te suma LC. Canjealos por descuentos, items premium del perfil o powers del chat.",                  emoji: "🍋", color: "#f5e03a" },
+  { title: "Express vs Normal",            body: "Express USA llega en 72 hs; Normal 7-10 días. La diferencia se justifica en mercadería sensible al tiempo.", emoji: "⚡", color: "var(--brand-accent, #ff8c2a)" },
+  { title: "Lemon Coins acumulan",         body: "Cada envío te suma LC. Canjealos por descuentos, items premium del perfil o powers del chat.",                  emoji: "🍋", color: "var(--brand-primary, #f5e03a)" },
   { title: "Invitá amigos · 25 LC",        body: "Mandá tu link de referido. Cuando hacen su primer envío, vos ganás 25 LC y ellos 25.",                            emoji: "🎁", color: "#a78bfa" },
 ];
 
@@ -77,7 +77,7 @@ export default function Stories({ announcements = [] }) {
         title: a.title,
         body: a.body || "",
         emoji: a.emoji || (CAT_CFG[a.category]?.emoji || "📢"),
-        color: CAT_CFG[a.category]?.color || "#f5e03a",
+        color: CAT_CFG[a.category]?.color || "var(--brand-primary, #f5e03a)",
         link_url: a.link_url,
         link_label: a.link_label,
         pinned: a.pinned,
@@ -128,14 +128,14 @@ export default function Stories({ announcements = [] }) {
         .st-row::-webkit-scrollbar{display:none}
         .st-circle{flex-shrink:0;width:72px;cursor:pointer;text-align:center;font-family:inherit;background:none;border:none;color:inherit;padding:4px 0;position:relative}
         .st-ring{width:64px;height:64px;border-radius:50%;padding:2.5px;margin:0 auto 6px;position:relative;transition:transform .25s}
-        .st-ring.unread{background:conic-gradient(from 0deg,#a78bfa,#ec4899,#ff5500,#f5e03a,#a78bfa)}
+        .st-ring.unread{background:conic-gradient(from 0deg,#a78bfa,#ec4899,var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a),#a78bfa)}
         .st-ring.viewed{background:rgba(255,255,255,.12)}
         .st-ring.lemons{background:conic-gradient(from 0deg,var(--c1),var(--c2),var(--c1))}
         .st-circle:hover .st-ring{transform:scale(1.06)}
         .st-inner{width:100%;height:100%;border-radius:50%;background:#03040c;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden}
         .st-inner img{width:100%;height:100%;object-fit:cover}
         .st-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px}
-        .st-pin{position:absolute;top:-2px;right:-2px;background:#f5e03a;color:#000;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;border:2px solid #03040c}
+        .st-pin{position:absolute;top:-2px;right:-2px;background:var(--brand-primary, #f5e03a);color:#000;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;border:2px solid #03040c}
         .st-add{position:absolute;bottom:-2px;right:-2px;background:#22c55e;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:14px;border:2.5px solid #03040c;font-weight:900}
       `}</style>
 
@@ -198,7 +198,7 @@ export default function Stories({ announcements = [] }) {
           const cat = CAT_CFG[a.category] || CAT_CFG.general;
           return (
             <button key={`ann-${a.id}`} className="st-circle" onClick={() => openBucketByKey(`ann-${a.id}`)}>
-              <div className="st-ring lemons" style={{ "--c1": cat.color, "--c2": "#ff5500", position: "relative" }}>
+              <div className="st-ring lemons" style={{ "--c1": cat.color, "--c2": "var(--brand-accent, #ff5500)", position: "relative" }}>
                 <div className="st-inner">{a.emoji || cat.emoji}</div>
                 {a.pinned && <span className="st-pin">📌</span>}
               </div>

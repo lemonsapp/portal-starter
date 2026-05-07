@@ -7,20 +7,20 @@ const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("
 
 const NAV_STAFF = [
   { path: "/inicio",         label: "Inicio",      icon: "🏠", color: "#22c55e" },
-  { path: "/dashboard",      label: "Dashboard",   icon: "📊", color: "#f5e03a" },
-  { path: "/operator",       label: "Operador",    icon: "🗂️",  color: "#f5e03a" },
+  { path: "/dashboard",      label: "Dashboard",   icon: "📊", color: "var(--brand-primary, #f5e03a)" },
+  { path: "/operator",       label: "Operador",    icon: "🗂️",  color: "var(--brand-primary, #f5e03a)" },
   { path: "/caja",           label: "Caja",        icon: "💵", color: "#22c55e" },
   { path: "/external",       label: "Cargas",      icon: "📦", color: "#60a5fa" },
-  { path: "/coins/operator", label: "Coins",       icon: "🍋", color: "#f5e03a" },
+  { path: "/coins/operator", label: "Coins",       icon: "🍋", color: "var(--brand-primary, #f5e03a)" },
   { path: "/chat",           label: "Chat",        icon: "💬", color: "#a78bfa" },
 ];
 
 const NAV_CLIENT = [
-  { path: "/inicio",           label: "Inicio",       icon: "🏠", color: "#f5e03a" },
-  { path: "/client/shipments", label: "Mis Envíos",   icon: "📦", color: "#f5e03a" },
+  { path: "/inicio",           label: "Inicio",       icon: "🏠", color: "var(--brand-primary, #f5e03a)" },
+  { path: "/client/shipments", label: "Mis Envíos",   icon: "📦", color: "var(--brand-primary, #f5e03a)" },
   { path: "/perfil",           label: "Mi Perfil",    icon: "👤", color: "#60a5fa" },
   { path: "/client/quote",     label: "Presupuesto",  icon: "🧮", color: "#22c55e" },
-  { path: "/coins",            label: "Coins",        icon: "🍋", color: "#f5e03a" },
+  { path: "/coins",            label: "Coins",        icon: "🍋", color: "var(--brand-primary, #f5e03a)" },
   { path: "/chat",             label: "Chat",         icon: "💬", color: "#a78bfa" },
 ];
 

@@ -499,7 +499,7 @@ body.fxPartyMode { animation: fxPartyShake .25s ease-in-out 3; }
   font-family: 'Bebas Neue', sans-serif;
   font-size: clamp(60px, 14vw, 200px);
   letter-spacing: .15em;
-  background: linear-gradient(135deg, #f5e03a, #ff8c2a, #ff5500, #f5e03a);
+  background: linear-gradient(135deg, var(--brand-primary, #f5e03a), var(--brand-accent, #ff8c2a), var(--brand-accent, #ff5500), var(--brand-primary, #f5e03a));
   background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;

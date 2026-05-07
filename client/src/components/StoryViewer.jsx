@@ -358,7 +358,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
                   style={{ flex: 1, minWidth: 0, padding: "9px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 10, color: "#fff", fontSize: 13, outline: "none" }}
                 />
                 <button onClick={sendReply} disabled={!replyText.trim() || replySending}
-                  style={{ padding: "9px 12px", borderRadius: 10, background: replyText.trim() ? "rgba(245,224,58,.18)" : "rgba(255,255,255,.06)", border: `1px solid ${replyText.trim() ? "rgba(245,224,58,.45)" : "rgba(255,255,255,.1)"}`, color: replyText.trim() ? "#f5e03a" : "rgba(255,255,255,.4)", fontSize: 14, cursor: replyText.trim() && !replySending ? "pointer" : "default", flexShrink: 0 }}>
+                  style={{ padding: "9px 12px", borderRadius: 10, background: replyText.trim() ? "rgba(245,224,58,.18)" : "rgba(255,255,255,.06)", border: `1px solid ${replyText.trim() ? "rgba(245,224,58,.45)" : "rgba(255,255,255,.1)"}`, color: replyText.trim() ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.4)", fontSize: 14, cursor: replyText.trim() && !replySending ? "pointer" : "default", flexShrink: 0 }}>
                   {replySending ? "…" : "→"}
                 </button>
                 <button onClick={toggleLike}
@@ -370,7 +370,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
               </>
             ) : (
               <button onClick={openLikers}
-                style={{ flex: 1, padding: "10px 14px", borderRadius: 10, background: "rgba(245,224,58,.08)", border: "1px solid rgba(245,224,58,.22)", color: "#f5e03a", fontFamily: "'DM Mono',monospace", fontSize: 11, letterSpacing: 1.4, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
+                style={{ flex: 1, padding: "10px 14px", borderRadius: 10, background: "rgba(245,224,58,.08)", border: "1px solid rgba(245,224,58,.22)", color: "var(--brand-primary, #f5e03a)", fontFamily: "'DM Mono',monospace", fontSize: 11, letterSpacing: 1.4, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
                 ❤ {ls.count} {ls.count === 1 ? "like" : "likes"} · ver quién
               </button>
             )}

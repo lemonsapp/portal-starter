@@ -11,7 +11,7 @@ export function ToastProvider({ children }) {
 
   const showToast = useCallback(({ title, subtitle, icon, color }) => {
     const id = Date.now() + Math.random();
-    setToasts(prev => [...prev, { id, title, subtitle, icon, color: color || "#f5e03a" }]);
+    setToasts(prev => [...prev, { id, title, subtitle, icon, color: color || "var(--brand-primary, #f5e03a)" }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
   }, []);
 
@@ -92,7 +92,7 @@ function ToastItem({ toast, onRemove }) {
           {toast.icon || "🍋"}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: "#f5e03a", fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>
+          <div style={{ color: "var(--brand-primary, #f5e03a)", fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>
             🎉 Felicidades!
           </div>
           <div style={{ color: "#fff", fontWeight: 900, fontSize: 15, marginBottom: 2, lineHeight: 1.3 }}>

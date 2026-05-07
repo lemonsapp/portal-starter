@@ -55,26 +55,26 @@ export default function OnboardingBanner({ onClose }) {
         .ob-root.ob-out{opacity:0}
         .ob-card{position:relative;width:100%;max-width:560px;background:linear-gradient(135deg,#07090f 0%,#020307 100%);border:1px solid rgba(245,224,58,.18);padding:42px 40px 36px;transform:translateY(20px) scale(.96);transition:transform .45s cubic-bezier(.34,1.56,.64,1);overflow:hidden}
         .ob-root.ob-in .ob-card{transform:translateY(0) scale(1)}
-        .ob-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#f5e03a,#ff5500,#f5e03a);background-size:200% 100%;animation:obBar 3s linear infinite}
+        .ob-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a));background-size:200% 100%;animation:obBar 3s linear infinite}
         @keyframes obBar{from{background-position:0 0}to{background-position:200% 0}}
         .ob-card::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(245,224,58,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(245,224,58,.018) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;opacity:.5}
         .ob-skip{position:absolute;top:16px;right:16px;background:transparent;border:none;color:rgba(240,236,227,.45);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;padding:6px 10px;transition:color .2s;z-index:2}
-        .ob-skip:hover{color:#f5e03a}
+        .ob-skip:hover{color:var(--brand-primary, #f5e03a)}
         .ob-icon-wrap{position:relative;z-index:1;width:96px;height:96px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;font-size:48px;background:radial-gradient(circle,rgba(245,224,58,.12) 0%,transparent 70%);animation:obFloat 4s ease-in-out infinite}
         @keyframes obFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-        .ob-eyebrow{position:relative;z-index:1;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#ff5500;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px}
-        .ob-eyebrow::before,.ob-eyebrow::after{content:'';width:24px;height:1px;background:#ff5500}
+        .ob-eyebrow{position:relative;z-index:1;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:var(--brand-accent, #ff5500);display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px}
+        .ob-eyebrow::before,.ob-eyebrow::after{content:'';width:24px;height:1px;background:var(--brand-accent, #ff5500)}
         .ob-title{position:relative;z-index:1;font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,52px);line-height:.95;letter-spacing:-1px;color:#f0ece3;text-align:center;margin-bottom:18px}
         .ob-desc{position:relative;z-index:1;font-size:15px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.75;text-align:center;max-width:440px;margin:0 auto 32px}
         .ob-actions{position:relative;z-index:1;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
         .ob-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;border:none;padding:14px 28px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:8px}
-        .ob-btn.primary{background:#f5e03a;color:#000}
-        .ob-btn.primary:hover{background:#fff7a0;transform:translateY(-2px);box-shadow:0 12px 32px rgba(245,224,58,.22)}
+        .ob-btn.primary{background:var(--brand-primary, #f5e03a);color:#000}
+        .ob-btn.primary:hover{background:var(--brand-primary, #fff7a0);transform:translateY(-2px);box-shadow:0 12px 32px rgba(245,224,58,.22)}
         .ob-btn.secondary{background:transparent;color:rgba(240,236,227,.55);border:1px solid rgba(240,236,227,.12)}
-        .ob-btn.secondary:hover{border-color:rgba(245,224,58,.3);color:#f5e03a}
+        .ob-btn.secondary:hover{border-color:rgba(245,224,58,.3);color:var(--brand-primary, #f5e03a)}
         .ob-dots{position:relative;z-index:1;display:flex;gap:8px;justify-content:center;margin-bottom:6px}
         .ob-dot{width:24px;height:3px;background:rgba(240,236,227,.1);transition:background .3s,width .3s}
-        .ob-dot.on{background:#f5e03a;width:36px;box-shadow:0 0 8px rgba(245,224,58,.4)}
+        .ob-dot.on{background:var(--brand-primary, #f5e03a);width:36px;box-shadow:0 0 8px rgba(245,224,58,.4)}
         .ob-counter{position:relative;z-index:1;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,236,227,.3);text-align:center}
         @media(max-width:600px){
           .ob-card{padding:36px 24px 28px}

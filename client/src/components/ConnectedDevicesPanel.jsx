@@ -145,7 +145,7 @@ export default function ConnectedDevicesPanel() {
 
 const panel = { padding: 24, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(240,236,227,0.08)", marginTop: 24 };
 const header = { marginBottom: 18 };
-const title = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, letterSpacing: -0.5, color: "#f5e03a", marginBottom: 4 };
+const title = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, letterSpacing: -0.5, color: "var(--brand-primary, #f5e03a)", marginBottom: 4 };
 const subtitle = { fontSize: 13, color: "rgba(240,236,227,.45)" };
 const errStyle = { marginBottom: 14, padding: "10px 14px", background: "rgba(255,85,0,.06)", border: "1px solid rgba(255,85,0,.18)", color: "#ffb07a", fontSize: 13 };
 const empty = { padding: "32px 16px", textAlign: "center", color: "rgba(240,236,227,.4)", fontSize: 13, lineHeight: 1.6 };
@@ -154,6 +154,6 @@ const labelStyle = { fontFamily: "'Barlow',sans-serif", fontSize: 15, fontWeight
 const meta = { fontSize: 11, color: "rgba(240,236,227,.4)", fontFamily: "'DM Mono',monospace", marginTop: 4 };
 const input = { width: "100%", background: "rgba(255,255,255,.04)", border: "1px solid rgba(245,224,58,0.3)", color: "#f0ece3", padding: "8px 10px", fontFamily: "'Barlow',sans-serif", fontSize: 14, outline: "none" };
 const actions = { display: "flex", gap: 6, flexShrink: 0 };
-const btnSm = { padding: "6px 12px", background: "#f5e03a", color: "#000", border: "none", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer" };
+const btnSm = { padding: "6px 12px", background: "var(--brand-primary, #f5e03a)", color: "#000", border: "none", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer" };
 const btnSmGhost = { padding: "6px 12px", background: "transparent", color: "rgba(240,236,227,.6)", border: "1px solid rgba(240,236,227,0.15)", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, cursor: "pointer" };
 const btnSmDanger = { padding: "6px 12px", background: "rgba(255,85,0,0.1)", color: "#ffb07a", border: "1px solid rgba(255,85,0,0.3)", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer" };

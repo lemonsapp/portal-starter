@@ -9,8 +9,8 @@ const AVATAR_EMOJI = {
   avatar_diamond: "💎", avatar_fire: "🔥", avatar_crown: "👑",
 };
 const AVATAR_BG = {
-  avatar_lemon: "#f5e03a", avatar_rocket: "#3b82f6", avatar_globe: "#22c55e",
-  avatar_diamond: "#a78bfa", avatar_fire: "#ff5500", avatar_crown: "#f5e03a",
+  avatar_lemon: "var(--brand-primary, #f5e03a)", avatar_rocket: "#3b82f6", avatar_globe: "#22c55e",
+  avatar_diamond: "#a78bfa", avatar_fire: "var(--brand-accent, #ff5500)", avatar_crown: "var(--brand-primary, #f5e03a)",
 };
 
 function relativeSeen(iso) {
@@ -42,7 +42,7 @@ function nameStyleFromUser(u) {
 
 function FriendCard({ f, onClick, online }) {
   const emoji = AVATAR_EMOJI[f.avatar_key] || "🍋";
-  const bg = AVATAR_BG[f.avatar_key] || "#f5e03a";
+  const bg = AVATAR_BG[f.avatar_key] || "var(--brand-primary, #f5e03a)";
   const dotColor = online ? "#22c55e" : "#6b7280";
   const ring = online ? "rgba(34,197,94,.55)" : "rgba(255,255,255,.06)";
   return (

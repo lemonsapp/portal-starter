@@ -85,36 +85,36 @@ export default function Register() {
 
         .rg-card{width:100%;max-width:460px;opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1) .25s}
         .rg-card.in{opacity:1;transform:translateY(0)}
-        .rg-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#ff5500;display:flex;align-items:center;gap:12px;margin-bottom:18px}
-        .rg-eyebrow::before{content:'';width:28px;height:1px;background:#ff5500}
+        .rg-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:var(--brand-accent, #ff5500);display:flex;align-items:center;gap:12px;margin-bottom:18px}
+        .rg-eyebrow::before{content:'';width:28px;height:1px;background:var(--brand-accent, #ff5500)}
         .rg-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,6vw,72px);line-height:.9;letter-spacing:-1px;color:#f0ece3;margin-bottom:8px}
-        .rg-title em{font-style:normal;color:#f5e03a}
+        .rg-title em{font-style:normal;color:var(--brand-primary, #f5e03a)}
         .rg-desc{font-size:14px;font-weight:300;color:rgba(240,236,227,.5);line-height:1.7;margin-bottom:32px}
 
         .rg-field{margin-bottom:16px}
         .rg-field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(240,236,227,.4);margin-bottom:9px}
-        .rg-field label.hot{color:#f5e03a}
+        .rg-field label.hot{color:var(--brand-primary, #f5e03a)}
         .rg-input{width:100%;background:rgba(255,255,255,.025);border:1px solid rgba(240,236,227,.08);color:#f0ece3;font-family:'Barlow',sans-serif;font-size:15px;padding:14px 18px;outline:none;transition:all .25s;border-radius:0}
         .rg-input:focus{border-color:rgba(245,224,58,.5);background:rgba(245,224,58,.04);box-shadow:0 0 0 1px rgba(245,224,58,.2)}
         .rg-input::placeholder{color:rgba(240,236,227,.18)}
         .rg-input.code{font-family:'DM Mono',monospace;font-size:18px;font-weight:700;letter-spacing:4px;text-align:center;border-color:rgba(245,224,58,.25);background:rgba(245,224,58,.02)}
-        .rg-input.code:focus{border-color:#f5e03a;background:rgba(245,224,58,.06)}
+        .rg-input.code:focus{border-color:var(--brand-primary, #f5e03a);background:rgba(245,224,58,.06)}
 
-        .rg-btn{width:100%;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;background:#f5e03a;color:#000;border:none;padding:18px 28px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;position:relative}
-        .rg-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(245,224,58,.18);background:#fff7a0}
+        .rg-btn{width:100%;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;background:var(--brand-primary, #f5e03a);color:#000;border:none;padding:18px 28px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;position:relative}
+        .rg-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(245,224,58,.18);background:var(--brand-primary, #fff7a0)}
         .rg-btn:active{transform:translateY(0)}
         .rg-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
         .rg-btn .arr{transition:transform .3s}
         .rg-btn:hover .arr{transform:translateX(4px)}
 
         .rg-err{margin-bottom:18px;padding:12px 16px;background:rgba(255,85,0,.06);border:1px solid rgba(255,85,0,.18);color:#ffb07a;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
-        .rg-err::before{content:'⚠';color:#ff5500;font-size:14px}
+        .rg-err::before{content:'⚠';color:var(--brand-accent, #ff5500);font-size:14px}
 
         .rg-divider{display:flex;align-items:center;gap:14px;margin:30px 0 20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,236,227,.25)}
         .rg-divider::before,.rg-divider::after{content:'';flex:1;height:1px;background:rgba(240,236,227,.07)}
         .rg-back{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:rgba(240,236,227,.4)}
-        .rg-back a{color:#f5e03a;font-weight:700;text-decoration:none;border-bottom:1px solid transparent;transition:border .2s;cursor:pointer}
-        .rg-back a:hover{border-bottom-color:#f5e03a}
+        .rg-back a{color:var(--brand-primary, #f5e03a);font-weight:700;text-decoration:none;border-bottom:1px solid transparent;transition:border .2s;cursor:pointer}
+        .rg-back a:hover{border-bottom-color:var(--brand-primary, #f5e03a)}
 
         /* SUCCESS */
         .rg-success{text-align:center;padding:24px 0}
@@ -123,7 +123,7 @@ export default function Register() {
         .rg-success-title{font-family:'Bebas Neue',sans-serif;font-size:56px;line-height:.92;letter-spacing:-.5px;margin-bottom:14px}
         .rg-success-title em{font-style:normal;color:#22c55e}
         .rg-success-desc{font-size:14px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:18px}
-        .rg-coins-pill{display:inline-flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;background:rgba(245,224,58,.06);border:1px solid rgba(245,224,58,.2);color:#f5e03a;margin-bottom:30px}
+        .rg-coins-pill{display:inline-flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;background:rgba(245,224,58,.06);border:1px solid rgba(245,224,58,.2);color:var(--brand-primary, #f5e03a);margin-bottom:30px}
         .rg-coins-pill b{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px}
 
         /* RIGHT — branding panel */
@@ -136,15 +136,15 @@ export default function Register() {
 
         .rg-top{display:flex;align-items:center;justify-content:space-between}
         .rg-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:5px;display:flex;align-items:center;gap:10px}
-        .rg-logo .y{color:#f5e03a}
-        .rg-dot{width:6px;height:6px;border-radius:50%;background:#ff5500;animation:rgdot 2s ease-in-out infinite}
+        .rg-logo .y{color:var(--brand-primary, #f5e03a)}
+        .rg-dot{width:6px;height:6px;border-radius:50%;background:var(--brand-accent, #ff5500);animation:rgdot 2s ease-in-out infinite}
         @keyframes rgdot{0%,100%{opacity:1}50%{opacity:.2}}
         .rg-back-link{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,236,227,.4);text-decoration:none;cursor:pointer;border:none;background:none}
-        .rg-back-link:hover{color:#f5e03a}
+        .rg-back-link:hover{color:var(--brand-primary, #f5e03a)}
 
         .rg-pitch{position:relative}
         .rg-pitch h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,9vw,140px);line-height:.82;letter-spacing:-3px;margin:0;color:#f0ece3}
-        .rg-pitch .yl{color:#f5e03a}
+        .rg-pitch .yl{color:var(--brand-primary, #f5e03a)}
         .rg-pitch-line{overflow:hidden;display:block}
         .rg-pitch-line span{display:inline-block;transform:translateY(110%);transition:transform 1s cubic-bezier(.2,.8,.2,1)}
         .rg-pitch.in .rg-pitch-line:nth-child(1) span{transform:translateY(0);transition-delay:.05s}
@@ -154,7 +154,7 @@ export default function Register() {
 
         .rg-perks{display:flex;flex-direction:column;gap:14px}
         .rg-perk{display:flex;align-items:center;gap:14px;font-size:13px;color:rgba(240,236,227,.55);font-weight:300}
-        .rg-perk b{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#f5e03a;font-weight:400;min-width:54px}
+        .rg-perk b{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);font-weight:400;min-width:54px}
         .rg-perk-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(245,224,58,.25),rgba(245,224,58,0))}
 
         @media (max-width: 980px){
@@ -190,7 +190,7 @@ export default function Register() {
                   <span>Mail reenviado{resendCooldown > 0 ? `. Podés reintentar en ${resendCooldown}s.` : "."}</span>
                 ) : (
                   <button type="button" onClick={resendVerification} disabled={resendStatus === "sending"}
-                    style={{ background: "none", border: "none", color: "#f5e03a", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>
+                    style={{ background: "none", border: "none", color: "var(--brand-primary, #f5e03a)", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>
                     {resendStatus === "sending" ? "Reenviando..." : "¿No te llegó? Reenviar mail"}
                   </button>
                 )}

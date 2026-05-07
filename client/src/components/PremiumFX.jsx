@@ -372,7 +372,7 @@ export default function PremiumFX() {
     resize();
     window.addEventListener("resize", resize);
 
-    const colors = ["#f5e03a", "#fff9b0", "#ff8c2a", "#ff5500", "#ffffff"];
+    const colors = ["var(--brand-primary, #f5e03a)", "#fff9b0", "var(--brand-accent, #ff8c2a)", "var(--brand-accent, #ff5500)", "#ffffff"];
     const burst = (x, y, count = 80) => {
       const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
       if (reduced) return;

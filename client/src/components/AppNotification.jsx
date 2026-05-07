@@ -6,8 +6,8 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 const TYPE_STYLES = {
-  info:    { bg:"linear-gradient(135deg,#1a2540,#0f1628)", accent:"#f5e03a", icon:"🍋" },
-  warning: { bg:"linear-gradient(135deg,#2a1a0f,#1a0f00)", accent:"#ff5500", icon:"⚠" },
+  info:    { bg:"linear-gradient(135deg,#1a2540,#0f1628)", accent:"var(--brand-primary, #f5e03a)", icon:"🍋" },
+  warning: { bg:"linear-gradient(135deg,#2a1a0f,#1a0f00)", accent:"var(--brand-accent, #ff5500)", icon:"⚠" },
   promo:   { bg:"linear-gradient(135deg,#0d2a1a,#071a10)", accent:"#4ade80", icon:"🎉" },
   update:  { bg:"linear-gradient(135deg,#0d1a2a,#071018)", accent:"#60a5fa", icon:"🆕" },
 };

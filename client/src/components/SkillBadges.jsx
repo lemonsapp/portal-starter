@@ -54,7 +54,7 @@ export default function SkillBadges({ skills, dim = false }) {
               borderRadius: 999,
               background: dim ? "rgba(245,224,58,0.06)" : "rgba(245,224,58,0.12)",
               border: "1px solid rgba(245,224,58,0.25)",
-              color: dim ? "rgba(245,224,58,0.7)" : "#f5e03a",
+              color: dim ? "rgba(245,224,58,0.7)" : "var(--brand-primary, #f5e03a)",
               fontSize: 11,
               fontWeight: 600,
               fontFamily: "'DM Mono', monospace",

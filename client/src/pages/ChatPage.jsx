@@ -664,7 +664,7 @@ function PowersInline({ token }) {
             : <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>{p.cost} 🍋</span>}
         </div>
       ))}
-      <a href="/coins" style={{ display:"block", textAlign:"center", padding:"12px", background:"linear-gradient(135deg,#f5e03a,#ff5500)", color:"#000", borderRadius:12, fontWeight:900, fontSize:14, textDecoration:"none", marginTop:8 }}>
+      <a href="/coins" style={{ display:"block", textAlign:"center", padding:"12px", background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))", color:"#000", borderRadius:12, fontWeight:900, fontSize:14, textDecoration:"none", marginTop:8 }}>
         🍋 Ver tienda de Coins
       </a>
     </div>

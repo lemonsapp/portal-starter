@@ -8,10 +8,10 @@
 
 :root {
   /* Brand — exact match with landing */
-  --lemon:    #f5e03a;
+  --lemon:    var(--brand-primary, #f5e03a);
   --lemon2:   #fff9b0;
-  --orange:   #ff5500;
-  --orange2:  #ff8c2a;
+  --orange:   var(--brand-accent, #ff5500);
+  --orange2:  var(--brand-accent, #ff8c2a);
 
   /* Dark base — exact match with landing */
   --void:     #04060d;

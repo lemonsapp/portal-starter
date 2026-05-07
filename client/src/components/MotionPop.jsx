@@ -43,7 +43,7 @@ export function FadeUp({ children, delay = 0, y = 12, duration = 0.45, style = {
   );
 }
 
-export function Pulse({ children, color = "#f5e03a", intensity = 16, duration = 2.4, style = {}, ...rest }) {
+export function Pulse({ children, color = "var(--brand-primary, #f5e03a)", intensity = 16, duration = 2.4, style = {}, ...rest }) {
   return (
     <motion.div
       animate={{
@@ -81,7 +81,7 @@ export function Jumbo({ children, style = {}, ...rest }) {
  * Uso:
  *   <CountUp value={balance}>{balance}</CountUp>
  */
-export function CountUp({ value, children, color = "#f5e03a", style = {}, ...rest }) {
+export function CountUp({ value, children, color = "var(--brand-primary, #f5e03a)", style = {}, ...rest }) {
   return (
     <motion.span
       key={value}

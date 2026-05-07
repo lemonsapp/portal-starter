@@ -64,7 +64,7 @@ export default function PrivateChatsPage() {
             {showList && (
             <div style={{ background: "rgba(8,9,16,.85)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 16, overflow: "hidden", maxHeight: isMobile ? "calc(100vh - 200px)" : "calc(100vh - 160px)", display: "flex", flexDirection: "column" }}>
               <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9.5, letterSpacing: 2, color: "#f5e03a", fontWeight: 700, textTransform: "uppercase" }}>💬 Conversaciones</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9.5, letterSpacing: 2, color: "var(--brand-primary, #f5e03a)", fontWeight: 700, textTransform: "uppercase" }}>💬 Conversaciones</span>
                 <button onClick={loadConvs} title="Recargar"
                   style={{ background: "transparent", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.5)", borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", fontFamily: "'DM Mono',monospace" }}>↻</button>
               </div>
@@ -78,7 +78,7 @@ export default function PrivateChatsPage() {
                   </div>
                 ) : convs.map(c => (
                   <div key={c.other_id}
-                    style={{ width: "100%", display: "flex", gap: 10, padding: "11px 14px", borderBottom: "1px solid rgba(255,255,255,.03)", background: activeId === c.other_id ? "rgba(245,224,58,.06)" : "transparent", borderLeft: activeId === c.other_id ? "3px solid #f5e03a" : "3px solid transparent", alignItems: "center" }}>
+                    style={{ width: "100%", display: "flex", gap: 10, padding: "11px 14px", borderBottom: "1px solid rgba(255,255,255,.03)", background: activeId === c.other_id ? "rgba(245,224,58,.06)" : "transparent", borderLeft: activeId === c.other_id ? "3px solid var(--brand-primary, #f5e03a)" : "3px solid transparent", alignItems: "center" }}>
                     <button
                       onClick={(e) => { e.stopPropagation(); if (c.username) navigate(`/perfil/${c.username}`); }}
                       title={c.username ? `Ver perfil de ${c.name}` : ""}
@@ -106,7 +106,7 @@ export default function PrivateChatsPage() {
                         {c.reply_to_story_id && c.reply_story_image_url && (
                           <img src={c.reply_story_image_url} alt="story" style={{ width: 26, height: 32, borderRadius: 4, objectFit: "cover", flexShrink: 0, border: "1px solid rgba(245,224,58,.4)" }} />
                         )}
-                        <div style={{ fontSize: 12, color: c.reply_to_story_id ? "#f5e03a" : "rgba(255,255,255,.55)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1, lineHeight: 1.3 }}>
+                        <div style={{ fontSize: 12, color: c.reply_to_story_id ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.55)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1, lineHeight: 1.3 }}>
                           {c.reply_to_story_id ? (
                             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9.5, letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 700 }}>
                               ↩ {c.last_from === c.other_id ? "Respondió tu historia" : "Respondiste su historia"}
@@ -114,7 +114,7 @@ export default function PrivateChatsPage() {
                           ) : c.last_message}
                         </div>
                         {c.unread > 0 && (
-                          <span style={{ background: "#f5e03a", color: "#000", fontSize: 10, fontWeight: 800, padding: "1px 7px", borderRadius: 999, flexShrink: 0 }}>{c.unread}</span>
+                          <span style={{ background: "var(--brand-primary, #f5e03a)", color: "#000", fontSize: 10, fontWeight: 800, padding: "1px 7px", borderRadius: 999, flexShrink: 0 }}>{c.unread}</span>
                         )}
                       </div>
                     </button>
@@ -208,7 +208,7 @@ function PrivateThread({ otherId, onSent, isMobile, onBack }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: target?.name_color || "#fff", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{target?.name || "Mensajes privados"}</div>
-          {target?.username && <a href={`/perfil/${target.username}`} style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "#f5e03a", textDecoration: "none", letterSpacing: 1.2 }}>@{target.username}</a>}
+          {target?.username && <a href={`/perfil/${target.username}`} style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--brand-primary, #f5e03a)", textDecoration: "none", letterSpacing: 1.2 }}>@{target.username}</a>}
         </div>
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: 14, display: "flex", flexDirection: "column", gap: 8, minHeight: 0 }}>
@@ -243,14 +243,14 @@ function PrivateThread({ otherId, onSent, isMobile, onBack }) {
                 )}
                 {/* Quoted story DENTRO de la burbuja, arriba del mensaje */}
                 {m.reply_to_story_id && (
-                  <div style={{ display: "flex", gap: 8, alignItems: "stretch", padding: 6, marginBottom: 6, background: "rgba(0,0,0,.35)", borderLeft: "3px solid #f5e03a", borderRadius: 8 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "stretch", padding: 6, marginBottom: 6, background: "rgba(0,0,0,.35)", borderLeft: "3px solid var(--brand-primary, #f5e03a)", borderRadius: 8 }}>
                     {m.reply_story_image_url ? (
                       <img src={m.reply_story_image_url} alt="story" style={{ width: 42, height: 56, objectFit: "cover", borderRadius: 4, flexShrink: 0 }} />
                     ) : (
-                      <div style={{ width: 42, height: 56, borderRadius: 4, background: "linear-gradient(135deg,#f5e03a33,#ff550033)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>📷</div>
+                      <div style={{ width: 42, height: 56, borderRadius: 4, background: "linear-gradient(135deg,var(--brand-primary, #f5e03a)33,var(--brand-accent, #ff5500)33)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>📷</div>
                     )}
                     <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0, flex: 1 }}>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: "#f5e03a", letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 700, lineHeight: 1.3 }}>↩ {replyLabel}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: "var(--brand-primary, #f5e03a)", letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 700, lineHeight: 1.3 }}>↩ {replyLabel}</span>
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "rgba(255,255,255,.55)", lineHeight: 1.3, marginTop: 2 }}>tu historia · 24h</span>
                     </div>
                   </div>
@@ -271,7 +271,7 @@ function PrivateThread({ otherId, onSent, isMobile, onBack }) {
           enterKeyHint="send"
           style={{ flex: 1, padding: "11px 13px", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 10, color: "#fff", fontSize: 14, outline: "none", minWidth: 0 }} />
         <button onClick={send} disabled={!text.trim() || sending}
-          style={{ padding: "10px 18px", borderRadius: 10, background: text.trim() ? "#f5e03a" : "rgba(255,255,255,.06)", color: text.trim() ? "#000" : "rgba(255,255,255,.4)", border: "none", fontWeight: 800, cursor: text.trim() && !sending ? "pointer" : "default", fontSize: 16, flexShrink: 0 }}>
+          style={{ padding: "10px 18px", borderRadius: 10, background: text.trim() ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.06)", color: text.trim() ? "#000" : "rgba(255,255,255,.4)", border: "none", fontWeight: 800, cursor: text.trim() && !sending ? "pointer" : "default", fontSize: 16, flexShrink: 0 }}>
           {sending ? "…" : "→"}
         </button>
       </div>

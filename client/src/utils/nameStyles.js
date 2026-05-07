@@ -10,7 +10,7 @@ export function buildNameStyle(u) {
   const role = u?.role || u?.user_role;
   const isStaff = ["admin","operator"].includes(role);
   // Admin → rojo · Operator → naranja · default → lemon
-  const fallback = role === "admin" ? "#ef4444" : role === "operator" ? "#fb923c" : "#f5e03a";
+  const fallback = role === "admin" ? "#ef4444" : role === "operator" ? "#fb923c" : "var(--brand-primary, #f5e03a)";
   const color = u?.name_color || fallback;
   const style = { color };
   if (u?.name_glow) style.textShadow = `0 0 ${u.name_glow}px ${u.name_glow_color || color}`;
@@ -34,8 +34,8 @@ export function getAvatarEmoji(avatarKey) {
 
 export function getAvatarBg(avatarKey) {
   const map = {
-    avatar_lemon: "#f5e03a", avatar_rocket: "#3b82f6", avatar_globe: "#22c55e",
-    avatar_diamond: "#a78bfa", avatar_fire: "#ff5500", avatar_crown: "#f5e03a", avatar_lemon_fly: "#f5e03a",
+    avatar_lemon: "var(--brand-primary, #f5e03a)", avatar_rocket: "#3b82f6", avatar_globe: "#22c55e",
+    avatar_diamond: "#a78bfa", avatar_fire: "var(--brand-accent, #ff5500)", avatar_crown: "var(--brand-primary, #f5e03a)", avatar_lemon_fly: "var(--brand-primary, #f5e03a)",
   };
-  return map[avatarKey] || "#f5e03a";
+  return map[avatarKey] || "var(--brand-primary, #f5e03a)";
 }

@@ -84,7 +84,7 @@ const modal = {
 const icon = { fontSize: 48, marginBottom: 12 };
 const title = {
   fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, letterSpacing: -1,
-  marginBottom: 14, color: "#f5e03a",
+  marginBottom: 14, color: "var(--brand-primary, #f5e03a)",
 };
 const desc = {
   fontSize: 14, color: "rgba(240,236,227,.55)", lineHeight: 1.6, marginBottom: 24,
@@ -96,7 +96,7 @@ const errStyle = {
 };
 const btnPrimary = {
   width: "100%", padding: "16px 20px", marginBottom: 10,
-  background: "#f5e03a", color: "#000", border: "none",
+  background: "var(--brand-primary, #f5e03a)", color: "#000", border: "none",
   fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, fontWeight: 800,
   letterSpacing: 2, textTransform: "uppercase", cursor: "pointer",
 };

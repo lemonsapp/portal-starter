@@ -74,13 +74,13 @@ export default function OnboardingModal({ user, onComplete }) {
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
             style={{ width: "100%", maxWidth: 460, background: "linear-gradient(180deg,rgba(8,9,16,.98),rgba(2,3,7,.98))", border: "1px solid rgba(245,224,58,.22)", borderRadius: 22, padding: "32px 28px 28px", position: "relative", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}
           >
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,#f5e03a,#ff5500,#f5e03a)", backgroundSize: "200% 100%", animation: "obBar 3s linear infinite" }} />
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a))", backgroundSize: "200% 100%", animation: "obBar 3s linear infinite" }} />
             <style>{`@keyframes obBar{from{background-position:0 0}to{background-position:200% 0}}`}</style>
 
             <div style={{ fontSize: 56, marginBottom: 18, lineHeight: 1, filter: "drop-shadow(0 0 16px rgba(245,224,58,.5))" }}>🍋</div>
 
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "#ff8c2a", marginBottom: 8, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ width: 22, height: 1, background: "#ff8c2a" }} />
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--brand-accent, #ff8c2a)", marginBottom: 8, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ width: 22, height: 1, background: "var(--brand-accent, #ff8c2a)" }} />
               Bienvenido a Lemon's
             </div>
 
@@ -141,7 +141,7 @@ export default function OnboardingModal({ user, onComplete }) {
             )}
 
             <Pop as="button" onClick={save} disabled={!valid || saving}
-              style={{ width: "100%", padding: "14px", background: valid ? "linear-gradient(135deg,#f5e03a,#ff8c00)" : "rgba(255,255,255,.05)", color: valid ? "#000" : "#444", border: "none", borderRadius: 12, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700, cursor: valid ? "pointer" : "not-allowed", boxShadow: valid ? "0 8px 24px rgba(245,224,58,.4)" : "none" }}>
+              style={{ width: "100%", padding: "14px", background: valid ? "linear-gradient(135deg,var(--brand-primary, #f5e03a),#ff8c00)" : "rgba(255,255,255,.05)", color: valid ? "#000" : "#444", border: "none", borderRadius: 12, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700, cursor: valid ? "pointer" : "not-allowed", boxShadow: valid ? "0 8px 24px rgba(245,224,58,.4)" : "none" }}>
               {saving ? "Guardando…" : "Guardar y continuar →"}
             </Pop>
 

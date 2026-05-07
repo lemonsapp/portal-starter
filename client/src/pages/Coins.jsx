@@ -13,7 +13,7 @@ import { buildNameStyle } from "../utils/nameStyles.js";
 
 function Avatar({ u, size=44 }) {
   const isStaff = ["admin","operator"].includes(u?.role);
-  const color = u?.name_color||(isStaff?"#ef4444":"#f5e03a");
+  const color = u?.name_color||(isStaff?"#ef4444":"var(--brand-primary, #f5e03a)");
   const emoji = u?.avatar_key?(AVATAR_EMOJI[u.avatar_key]||"🍋"):"🍋";
   if (u?.avatar_url) return (
     <div style={{ width:size,height:size,borderRadius:"50%",overflow:"hidden",border:`2px solid ${color}88`,flexShrink:0,boxShadow:`0 0 16px ${color}44` }}>
@@ -30,7 +30,7 @@ function ConfettiExplosion({ active }) {
     id:i,
     x: 20+Math.random()*60,
     y: 10+Math.random()*80,
-    color:["#f5e03a","#f5e03a","#ff5500","#22c55e","#60a5fa","#a78bfa","#f87171","#ffffff"][i%8],
+    color:["var(--brand-primary, #f5e03a)","var(--brand-primary, #f5e03a)","var(--brand-accent, #ff5500)","#22c55e","#60a5fa","#a78bfa","#f87171","#ffffff"][i%8],
     size: 4+Math.random()*12,
     delay: Math.random()*1.2,
     shape: Math.random()>0.5?"circle":"square",
@@ -64,11 +64,11 @@ function SpinModal({ onClose, onWin }) {
     { label:"😢 Mañana", coins:0,    color:"#1a1a2e", accent:"#64748b" },
     { label:"5 🍋",      coins:5,    color:"#0a2a0a", accent:"#4ade80" },
     { label:"10 🍋",     coins:10,   color:"#0a1a3a", accent:"#60a5fa" },
-    { label:"50 🍋",     coins:50,   color:"#2a1a00", accent:"#f5e03a" },
+    { label:"50 🍋",     coins:50,   color:"#2a1a00", accent:"var(--brand-primary, #f5e03a)" },
     { label:"100 🍋",    coins:100,  color:"#0a2a10", accent:"#34d399" },
     { label:"200 🍋",    coins:200,  color:"#2a0a0a", accent:"#f87171" },
     { label:"500 🍋",    coins:500,  color:"#1a0a3a", accent:"#a78bfa" },
-    { label:"1000 🍋",   coins:1000, color:"#2a1500", accent:"#f5e03a" },
+    { label:"1000 🍋",   coins:1000, color:"#2a1500", accent:"var(--brand-primary, #f5e03a)" },
   ];
 
   useEffect(() => {
@@ -127,21 +127,21 @@ function SpinModal({ onClose, onWin }) {
     <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.95)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)" }}
       onClick={e=>e.target===e.currentTarget&&!spinning&&onClose()}>
       <ConfettiExplosion active={showConfetti} />
-      <div style={{ background:"linear-gradient(145deg,#0d0d0d,#1a0a00)",border:"2px solid #f5e03a44",borderRadius:32,padding:"40px",display:"flex",flexDirection:"column",alignItems:"center",gap:20,boxShadow:"0 0 100px #f5e03a22, inset 0 1px 0 #f5e03a22",maxWidth:"95vw",position:"relative" }}>
-        <div style={{ position:"absolute",inset:0,borderRadius:32,background:"radial-gradient(ellipse at top,#f5e03a08,transparent 60%)",pointerEvents:"none" }}/>
+      <div style={{ background:"linear-gradient(145deg,#0d0d0d,#1a0a00)",border:"2px solid var(--brand-primary, #f5e03a)44",borderRadius:32,padding:"40px",display:"flex",flexDirection:"column",alignItems:"center",gap:20,boxShadow:"0 0 100px var(--brand-primary, #f5e03a)22, inset 0 1px 0 var(--brand-primary, #f5e03a)22",maxWidth:"95vw",position:"relative" }}>
+        <div style={{ position:"absolute",inset:0,borderRadius:32,background:"radial-gradient(ellipse at top,var(--brand-primary, #f5e03a)08,transparent 60%)",pointerEvents:"none" }}/>
         <button onClick={onClose} disabled={spinning} style={{ position:"absolute",top:16,right:16,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",color:"#666",cursor:spinning?"not-allowed":"pointer",fontSize:18,borderRadius:10,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s" }}
           onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
           onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.05)"}>✕</button>
 
         <div style={{ textAlign:"center" }}>
-          <div style={{ fontSize:11,fontWeight:800,color:"#f5e03a",letterSpacing:4,textTransform:"uppercase",marginBottom:4 }}>🎰 Ruleta Diaria</div>
-          <div style={{ fontSize:26,fontWeight:900,color:"#fff",textShadow:"0 0 30px #f5e03a66" }}>Girá y Ganás 🍋</div>
+          <div style={{ fontSize:11,fontWeight:800,color:"var(--brand-primary, #f5e03a)",letterSpacing:4,textTransform:"uppercase",marginBottom:4 }}>🎰 Ruleta Diaria</div>
+          <div style={{ fontSize:26,fontWeight:900,color:"#fff",textShadow:"0 0 30px var(--brand-primary, #f5e03a)66" }}>Girá y Ganás 🍋</div>
         </div>
 
         <div style={{ position:"relative",width:SIZE+200,height:SIZE+60,display:"flex",alignItems:"center",justifyContent:"center" }}>
-          <img src="/limon-mascota.png" alt="" style={{ position:"absolute",left:-30,bottom:0,width:180,height:190,objectFit:"contain",filter:"drop-shadow(0 0 20px #f5e03a66)",zIndex:10,pointerEvents:"none" }}/>
-          <div style={{ position:"absolute",width:SIZE+40,height:SIZE+40,borderRadius:"50%",background:"conic-gradient(#f5a62233,#f5e03a22,#ff550022,#f5a62233)",animation:"rotateSlow 4s linear infinite",filter:"blur(16px)" }}/>
-          <svg width={SIZE} height={SIZE} style={{ transform:`rotate(${rotation}deg)`,transition:spinning?`transform 6.5s cubic-bezier(0.08,0.82,0.17,1)`:"none",filter:"drop-shadow(0 0 40px #f5e03a33)",zIndex:2 }}>
+          <img src="/limon-mascota.png" alt="" style={{ position:"absolute",left:-30,bottom:0,width:180,height:190,objectFit:"contain",filter:"drop-shadow(0 0 20px var(--brand-primary, #f5e03a)66)",zIndex:10,pointerEvents:"none" }}/>
+          <div style={{ position:"absolute",width:SIZE+40,height:SIZE+40,borderRadius:"50%",background:"conic-gradient(#f5a62233,var(--brand-primary, #f5e03a)22,var(--brand-accent, #ff5500)22,#f5a62233)",animation:"rotateSlow 4s linear infinite",filter:"blur(16px)" }}/>
+          <svg width={SIZE} height={SIZE} style={{ transform:`rotate(${rotation}deg)`,transition:spinning?`transform 6.5s cubic-bezier(0.08,0.82,0.17,1)`:"none",filter:"drop-shadow(0 0 40px var(--brand-primary, #f5e03a)33)",zIndex:2 }}>
             {PRIZES.map((p,i) => {
               const a1=(i*360/n-90)*Math.PI/180, a2=((i+1)*360/n-90)*Math.PI/180;
               const x1=cx+R*Math.cos(a1),y1=cy+R*Math.sin(a1),x2=cx+R*Math.cos(a2),y2=cy+R*Math.sin(a2);
@@ -155,13 +155,13 @@ function SpinModal({ onClose, onWin }) {
                 </g>
               );
             })}
-            <circle cx={cx} cy={cy} r={R} fill="none" stroke="#f5e03a" strokeWidth="3" opacity="0.5"/>
-            <circle cx={cx} cy={cy} r={R-4} fill="none" stroke="#f5e03a" strokeWidth="1" opacity="0.2"/>
-            <circle cx={cx} cy={cy} r="32" fill="#0d0d0d" stroke="#f5e03a" strokeWidth="3"/>
+            <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--brand-primary, #f5e03a)" strokeWidth="3" opacity="0.5"/>
+            <circle cx={cx} cy={cy} r={R-4} fill="none" stroke="var(--brand-primary, #f5e03a)" strokeWidth="1" opacity="0.2"/>
+            <circle cx={cx} cy={cy} r="32" fill="#0d0d0d" stroke="var(--brand-primary, #f5e03a)" strokeWidth="3"/>
             <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle" fontSize="24">🍋</text>
           </svg>
-          <div style={{ position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",zIndex:10,filter:"drop-shadow(0 0 12px #f5e03a)" }}>
-            <svg width="28" height="42" viewBox="0 0 28 42"><polygon points="0,0 28,0 14,42" fill="#f5e03a"/><polygon points="6,0 22,0 14,36" fill="#f5e03a"/></svg>
+          <div style={{ position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",zIndex:10,filter:"drop-shadow(0 0 12px var(--brand-primary, #f5e03a))" }}>
+            <svg width="28" height="42" viewBox="0 0 28 42"><polygon points="0,0 28,0 14,42" fill="var(--brand-primary, #f5e03a)"/><polygon points="6,0 22,0 14,36" fill="var(--brand-primary, #f5e03a)"/></svg>
           </div>
         </div>
 
@@ -173,11 +173,11 @@ function SpinModal({ onClose, onWin }) {
           </div>
         )}
         {result && !errorMsg ? (
-          <div style={{ textAlign:"center",background:result.coins>0?"linear-gradient(135deg,rgba(245,224,58,0.2),rgba(245,224,58,0.08))":"linear-gradient(135deg,rgba(100,116,139,0.1),transparent)",border:`2px solid ${result.coins>0?"#f5e03a":"#334155"}`,borderRadius:20,padding:"24px 48px",animation:"popInBounce 0.7s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:result.coins>0?"0 0 60px #f5e03a33":"none" }}>
+          <div style={{ textAlign:"center",background:result.coins>0?"linear-gradient(135deg,rgba(245,224,58,0.2),rgba(245,224,58,0.08))":"linear-gradient(135deg,rgba(100,116,139,0.1),transparent)",border:`2px solid ${result.coins>0?"var(--brand-primary, #f5e03a)":"#334155"}`,borderRadius:20,padding:"24px 48px",animation:"popInBounce 0.7s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:result.coins>0?"0 0 60px var(--brand-primary, #f5e03a)33":"none" }}>
             <div style={{ fontSize:52,marginBottom:8 }}>{result.coins>0?"🎉":"😢"}</div>
             {result.coins>0 ? <>
-              <div style={{ color:"#f5e03a",fontSize:12,marginBottom:4,letterSpacing:2,fontWeight:800,textTransform:"uppercase" }}>¡Ganaste!</div>
-              <div style={{ fontWeight:900,fontSize:52,color:"#f5e03a",textShadow:"0 0 30px #f5e03a88" }}>+{result.coins} 🍋</div>
+              <div style={{ color:"var(--brand-primary, #f5e03a)",fontSize:12,marginBottom:4,letterSpacing:2,fontWeight:800,textTransform:"uppercase" }}>¡Ganaste!</div>
+              <div style={{ fontWeight:900,fontSize:52,color:"var(--brand-primary, #f5e03a)",textShadow:"0 0 30px var(--brand-primary, #f5e03a)88" }}>+{result.coins} 🍋</div>
               <div style={{ color:"#888",fontSize:13,marginTop:4 }}>Lemon Coins acreditados</div>
             </> : <>
               <div style={{ color:"#64748b",fontSize:13,marginBottom:4,letterSpacing:1,textTransform:"uppercase" }}>¡Suerte la próxima!</div>
@@ -188,16 +188,16 @@ function SpinModal({ onClose, onWin }) {
           <div style={{ textAlign:"center",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:20,padding:"20px 40px" }}>
             <div style={{ fontSize:32,marginBottom:6 }}>⏳</div>
             <div style={{ fontWeight:800,fontSize:15,color:"#94a3b8",marginBottom:4 }}>Próximo giro en</div>
-            <div style={{ fontWeight:900,fontSize:36,color:"#f5e03a",fontVariantNumeric:"tabular-nums",textShadow:"0 0 20px #f5e03a66" }}>{timeLeft}</div>
+            <div style={{ fontWeight:900,fontSize:36,color:"var(--brand-primary, #f5e03a)",fontVariantNumeric:"tabular-nums",textShadow:"0 0 20px var(--brand-primary, #f5e03a)66" }}>{timeLeft}</div>
           </div>
         ) : !errorMsg && (
           <div style={{ textAlign:"center",color:"#666",fontSize:13 }}>¡Girá para ganar hasta 1000 Lemon Coins!</div>
         )}
 
         <button onClick={spin} disabled={!canSpin||spinning}
-          style={{ background:canSpin&&!spinning?"linear-gradient(135deg,#f5e03a,#f5e03a,#ff5500)":"rgba(255,255,255,0.04)",backgroundSize:"200% 200%",color:canSpin&&!spinning?"#000":"#334155",border:"none",borderRadius:16,padding:"18px 64px",fontWeight:900,fontSize:20,cursor:canSpin&&!spinning?"pointer":"not-allowed",transition:"all .3s",boxShadow:canSpin&&!spinning?"0 8px 40px #f5e03a66,0 0 0 1px #f5e03a33":"none",letterSpacing:2,textTransform:"uppercase",animation:canSpin&&!spinning?"btnPulse 2s ease-in-out infinite":"none" }}
-          onMouseEnter={e=>{ if(canSpin&&!spinning){e.currentTarget.style.transform="scale(1.05)";e.currentTarget.style.boxShadow="0 12px 60px #f5e03a88,0 0 0 2px #f5e03a55";}}}
-          onMouseLeave={e=>{ e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=canSpin&&!spinning?"0 8px 40px #f5e03a66,0 0 0 1px #f5e03a33":"none"; }}>
+          style={{ background:canSpin&&!spinning?"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))":"rgba(255,255,255,0.04)",backgroundSize:"200% 200%",color:canSpin&&!spinning?"#000":"#334155",border:"none",borderRadius:16,padding:"18px 64px",fontWeight:900,fontSize:20,cursor:canSpin&&!spinning?"pointer":"not-allowed",transition:"all .3s",boxShadow:canSpin&&!spinning?"0 8px 40px var(--brand-primary, #f5e03a)66,0 0 0 1px var(--brand-primary, #f5e03a)33":"none",letterSpacing:2,textTransform:"uppercase",animation:canSpin&&!spinning?"btnPulse 2s ease-in-out infinite":"none" }}
+          onMouseEnter={e=>{ if(canSpin&&!spinning){e.currentTarget.style.transform="scale(1.05)";e.currentTarget.style.boxShadow="0 12px 60px var(--brand-primary, #f5e03a)88,0 0 0 2px var(--brand-primary, #f5e03a)55";}}}
+          onMouseLeave={e=>{ e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=canSpin&&!spinning?"0 8px 40px var(--brand-primary, #f5e03a)66,0 0 0 1px var(--brand-primary, #f5e03a)33":"none"; }}>
           {spinning?"⚡ Girando...":canSpin?"🎰 GIRAR":"Ya giraste hoy"}
         </button>
       </div>
@@ -223,7 +223,7 @@ function Store({ balance, onBuy }) {
     { id:"redeem_envio_gratis",icon:"✈️",name:"Envío Gratis",   desc:"Un envío completo sin costo",      detail:"Válido para 1 envío de cualquier peso.", cost:9500,cat:"envios",    color:"#3b82f6",badge:"PREMIUM" },
     { id:"redeem_5kg_gratis",  icon:"📦",name:"5kg Gratis",      desc:"5kg de carga sin cargo",           detail:"Se descuentan 5kg del peso cobrable.",   cost:4500,cat:"envios",    color:"#22c55e",badge:"POPULAR" },
     { id:"redeem_usd15",       icon:"💵",name:"USD 15 Off",       desc:"Descuento en próximo envío",       detail:"Crédito de USD 15 en tu próxima liq.",   cost:500, cat:"descuentos",color:"#a78bfa" },
-    { id:"redeem_usd8",        icon:"💸",name:"USD 8 Off",        desc:"Descuento express",                detail:"Crédito de USD 8 en tu próxima liq.",    cost:100, cat:"descuentos",color:"#f5e03a",badge:"FACIL" },
+    { id:"redeem_usd8",        icon:"💸",name:"USD 8 Off",        desc:"Descuento express",                detail:"Crédito de USD 8 en tu próxima liq.",    cost:100, cat:"descuentos",color:"var(--brand-primary, #f5e03a)",badge:"FACIL" },
     { id:"power_namecolor",    icon:"🎨",name:"Name Color",       desc:"Color personalizado en el chat",   detail:"Elegí cualquier color para tu nombre.",  cost:20,  cat:"powers",   color:"#ec4899" },
     { id:"power_nameglow",     icon:"✨",name:"Name Glow",        desc:"Aura brillante en tu nombre",      detail:"Efecto glow en tu nombre del chat.",     cost:20,  cat:"powers",   color:"#8b5cf6" },
     { id:"power_namegrad",     icon:"🌈",name:"Name Gradient",    desc:"Gradiente de colores",             detail:"Tu nombre con degradado de 2 colores.",  cost:20,  cat:"powers",   color:"#06b6d4" },
@@ -232,7 +232,7 @@ function Store({ balance, onBuy }) {
     { id:"power_nickglow",     icon:"✨",name:"Nick Glow",        desc:"Brillo en el status",              detail:"Efecto glow en tu texto de status.",     cost:20,  cat:"powers",   color:"#d946ef" },
     { id:"power_gold",         icon:"🥇",name:"Gold",             desc:"Icono dorado exclusivo",           detail:"Medalla dorada al lado de tu nombre.",   cost:20,  cat:"powers",   color:"#eab308" },
     { id:"power_diamond",      icon:"💎",name:"Diamond",          desc:"Icono diamante",                   detail:"Diamante al lado de tu nombre.",         cost:20,  cat:"powers",   color:"#67e8f9" },
-    { id:"power_crown",        icon:"👑",name:"Crown",            desc:"Corona — el mas exclusivo",        detail:"El icono mas exclusivo del chat.",       cost:20,  cat:"powers",   color:"#f5e03a",badge:"RARO" },
+    { id:"power_crown",        icon:"👑",name:"Crown",            desc:"Corona — el mas exclusivo",        detail:"El icono mas exclusivo del chat.",       cost:20,  cat:"powers",   color:"var(--brand-primary, #f5e03a)",badge:"RARO" },
   ];
 
   const FILTERS = [
@@ -271,8 +271,8 @@ function Store({ balance, onBuy }) {
       <div style={{ display:"flex",gap:8,marginBottom:24,flexWrap:"wrap" }}>
         {FILTERS.map(f=>(
           <Pop as="button" key={f.id} onClick={()=>setFilter(f.id)}
-            style={{ background:filter===f.id?"linear-gradient(135deg,#f5e03a,#f5e03a)":"rgba(255,255,255,0.04)",border:`1px solid ${filter===f.id?"transparent":"rgba(255,255,255,0.08)"}`,borderRadius:24,padding:"10px 24px",color:filter===f.id?"#000":"#666",cursor:"pointer",fontSize:13,fontWeight:800,transition:"all .2s",boxShadow:filter===f.id?"0 4px 20px #f5e03a44":"none",transform:filter===f.id?"scale(1.05)":"scale(1)" }}
-            onMouseEnter={e=>{ if(filter!==f.id){e.currentTarget.style.background="rgba(245,224,58,0.1)";e.currentTarget.style.color="#f5e03a";e.currentTarget.style.borderColor="rgba(245,224,58,0.3)"; }}}
+            style={{ background:filter===f.id?"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))":"rgba(255,255,255,0.04)",border:`1px solid ${filter===f.id?"transparent":"rgba(255,255,255,0.08)"}`,borderRadius:24,padding:"10px 24px",color:filter===f.id?"#000":"#666",cursor:"pointer",fontSize:13,fontWeight:800,transition:"all .2s",boxShadow:filter===f.id?"0 4px 20px var(--brand-primary, #f5e03a)44":"none",transform:filter===f.id?"scale(1.05)":"scale(1)" }}
+            onMouseEnter={e=>{ if(filter!==f.id){e.currentTarget.style.background="rgba(245,224,58,0.1)";e.currentTarget.style.color="var(--brand-primary, #f5e03a)";e.currentTarget.style.borderColor="rgba(245,224,58,0.3)"; }}}
             onMouseLeave={e=>{ if(filter!==f.id){e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="#666";e.currentTarget.style.borderColor="rgba(255,255,255,0.08)"; }}}>
             {f.icon} {f.label}
           </Pop>
@@ -301,7 +301,7 @@ function Store({ balance, onBuy }) {
                 <div style={{ fontWeight:900,color:"#fff",fontSize:17,marginBottom:4 }}>{item.name}</div>
                 <div style={{ color:"#666",fontSize:12,lineHeight:1.5,marginBottom:14 }}>{item.desc}</div>
                 <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-                  <div style={{ fontWeight:900,fontSize:20,color:"#f5e03a",textShadow:"0 0 10px #f5e03a44" }}>🍋 {item.cost.toLocaleString()}</div>
+                  <div style={{ fontWeight:900,fontSize:20,color:"var(--brand-primary, #f5e03a)",textShadow:"0 0 10px var(--brand-primary, #f5e03a)44" }}>🍋 {item.cost.toLocaleString()}</div>
                   <Pop as="button" onClick={e=>{ e.stopPropagation(); buy(item); }} disabled={isOwned||!canAfford||buying===item.id}
                     hoverScale={(!isOwned&&canAfford)?1.08:1}
                     style={{ background:isOwned?"rgba(34,197,94,0.15)":canAfford?`linear-gradient(135deg,${item.color},${item.color}cc)`:"rgba(255,255,255,0.05)",color:isOwned?"#22c55e":canAfford?"#000":"#444",border:isOwned?"1px solid rgba(34,197,94,0.4)":"none",borderRadius:10,padding:"8px 18px",fontWeight:900,cursor:isOwned||!canAfford?"not-allowed":"pointer",fontSize:13,boxShadow:(!isOwned&&canAfford)?`0 4px 20px ${item.color}55`:"none" }}>
@@ -357,7 +357,7 @@ function ReferralCard() {
             <span style={{ width: 18, height: 1, background: "#a78bfa" }} />Programa de referidos
           </div>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, letterSpacing: "1px", color: "#fff", lineHeight: 1 }}>
-            Invitá amigos · ganá <span style={{ color: "#f5e03a" }}>25 LC</span>
+            Invitá amigos · ganá <span style={{ color: "var(--brand-primary, #f5e03a)" }}>25 LC</span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginTop: 6, lineHeight: 1.5 }}>
             Tu amigo recibe 25 LC al hacer su primer envío. Vos también ganás 25 LC.
@@ -373,7 +373,7 @@ function ReferralCard() {
             <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>Activos</div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <CountUp value={stats.total_coins_earned || 0} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: "#f5e03a", lineHeight: 1, display: "block" }}>{stats.total_coins_earned || 0}</CountUp>
+            <CountUp value={stats.total_coins_earned || 0} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: "var(--brand-primary, #f5e03a)", lineHeight: 1, display: "block" }}>{stats.total_coins_earned || 0}</CountUp>
             <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>LC ganados</div>
           </div>
         </div>
@@ -392,7 +392,7 @@ function ReferralCard() {
           </Pop>
         </div>
       ) : (
-        <div style={{ padding: "12px 14px", background: "rgba(255,140,42,.08)", border: "1px solid rgba(255,140,42,.3)", borderRadius: 10, fontSize: 12, color: "#ff8c2a", fontWeight: 600 }}>
+        <div style={{ padding: "12px 14px", background: "rgba(255,140,42,.08)", border: "1px solid rgba(255,140,42,.3)", borderRadius: 10, fontSize: 12, color: "var(--brand-accent, #ff8c2a)", fontWeight: 600 }}>
           Configurá un @ usuario en tu perfil para tener tu link único.
         </div>
       )}
@@ -411,14 +411,14 @@ function LoginStreak({ refreshKey }) {
   const week = data.week || [];
   return (
     <FadeUp style={{ background:"linear-gradient(135deg,rgba(245,224,58,.06),rgba(255,85,0,.04))", border:"1px solid rgba(245,224,58,.22)", borderRadius:18, padding:"20px 24px", position:"relative", overflow:"hidden", display:"block" }}>
-      <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,#f5e03a,#ff5500,#f5e03a,transparent)", backgroundSize:"200% 100%", animation:"shimmerLoad 3s linear infinite" }}/>
+      <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a),transparent)", backgroundSize:"200% 100%", animation:"shimmerLoad 3s linear infinite" }}/>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16, marginBottom:14 }}>
         <div>
-          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"2.5px", textTransform:"uppercase", color:"#ff8c2a", fontWeight:600, marginBottom:6, display:"flex", alignItems:"center", gap:10 }}>
-            <span style={{ width:18, height:1, background:"#ff8c2a" }}/>Racha de login
+          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"2.5px", textTransform:"uppercase", color:"var(--brand-accent, #ff8c2a)", fontWeight:600, marginBottom:6, display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ width:18, height:1, background:"var(--brand-accent, #ff8c2a)" }}/>Racha de login
           </div>
           <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:32, letterSpacing:"1px", color:"#fff", lineHeight:1, display:"flex", alignItems:"baseline", gap:8 }}>
-            <CountUp value={streak} style={{ color:"#f5e03a", fontSize:42 }}>{streak}</CountUp>
+            <CountUp value={streak} style={{ color:"var(--brand-primary, #f5e03a)", fontSize:42 }}>{streak}</CountUp>
             <span style={{ fontSize:18, color:"rgba(255,255,255,.4)" }}>{streak===1 ? "día" : "días"} seguidos</span>
             <span style={{ fontSize:24 }}>{streak >= 7 ? "🔥🔥" : streak >= 3 ? "🔥" : "✨"}</span>
           </div>
@@ -436,7 +436,7 @@ function LoginStreak({ refreshKey }) {
             border: `1px solid ${d.claimed ? "rgba(245,224,58,.4)" : d.is_today ? "rgba(245,224,58,.25)" : "rgba(255,255,255,.05)"}`,
             borderRadius: 10, position:"relative",
           }}>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, letterSpacing:"1px", color: d.claimed ? "#f5e03a" : "rgba(255,255,255,.3)", fontWeight:700, marginBottom:4 }}>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, letterSpacing:"1px", color: d.claimed ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.3)", fontWeight:700, marginBottom:4 }}>
               {d.day_short}
             </div>
             <div style={{ fontSize:18, lineHeight:1 }}>
@@ -471,7 +471,7 @@ function Missions({ onClaim }) {
       setMissions(p=>p.map(m=>m.slug===slug?{...m,claimed_at:new Date().toISOString()}:m));
       onClaim?.(d.coins_earned);
       const mission = missions.find(m=>m.slug===slug);
-      showToast({ title: mission?.title || "Mision completada", subtitle: `+${d.coins_earned} Lemon Coins acreditados`, icon: mission?.icon || "🍋", color: "#f5e03a" });
+      showToast({ title: mission?.title || "Mision completada", subtitle: `+${d.coins_earned} Lemon Coins acreditados`, icon: mission?.icon || "🍋", color: "var(--brand-primary, #f5e03a)" });
     } else alert(d.error);
     setClaiming(null);
   };
@@ -483,9 +483,9 @@ function Missions({ onClaim }) {
   );
 
   const groups = [
-    { type:"daily",   label:"Misiones Diarias",   icon:"🌅", color:"#f5e03a", desc:"Se resetean cada dia" },
+    { type:"daily",   label:"Misiones Diarias",   icon:"🌅", color:"var(--brand-primary, #f5e03a)", desc:"Se resetean cada dia" },
     { type:"weekly",  label:"Misiones Semanales",  icon:"📆", color:"#a78bfa", desc:"Se resetean cada semana" },
-    { type:"onetime", label:"Logros Especiales",   icon:"🏆", color:"#f5e03a", desc:"Una sola vez — recompensas grandes" },
+    { type:"onetime", label:"Logros Especiales",   icon:"🏆", color:"var(--brand-primary, #f5e03a)", desc:"Una sola vez — recompensas grandes" },
   ];
 
   return (
@@ -536,7 +536,7 @@ function Missions({ onClaim }) {
                       )}
                     </div>
                     <div style={{ flexShrink:0,textAlign:"right" }}>
-                      <div style={{ color:"#f5e03a",fontWeight:900,fontSize:18,marginBottom:8,textShadow:"0 0 10px #f5e03a44" }}>+{m.coins_reward} 🍋</div>
+                      <div style={{ color:"var(--brand-primary, #f5e03a)",fontWeight:900,fontSize:18,marginBottom:8,textShadow:"0 0 10px var(--brand-primary, #f5e03a)44" }}>+{m.coins_reward} 🍋</div>
                       {claimed ? <div style={{ color:"#22c55e",fontSize:12,fontWeight:800,background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.3)",borderRadius:8,padding:"4px 10px" }}>✓ Listo</div>
                       : done2 ? <Pop as="button" onClick={()=>claim(m.slug)} disabled={claiming===m.slug}
                           hoverScale={1.08}
@@ -572,9 +572,9 @@ function Ranking() {
     </div>
   );
 
-  const PODIUM_COLORS = ["#f5e03a","#94a3b8","#b45309"];
+  const PODIUM_COLORS = ["var(--brand-primary, #f5e03a)","#94a3b8","#b45309"];
   const MEDALS = ["🥇","🥈","🥉"];
-  const PODIUM_GLOW = ["#f5e03a","#94a3b8","#b45309"];
+  const PODIUM_GLOW = ["var(--brand-primary, #f5e03a)","#94a3b8","#b45309"];
 
   return (
     <div style={{ display:"flex",flexDirection:"column",gap:10 }}>
@@ -650,7 +650,7 @@ function Gift({ balance, onGift }) {
       <div style={{ background:"linear-gradient(145deg,rgba(245,224,58,0.06),rgba(0,0,0,0.95))",border:"2px solid rgba(245,224,58,0.2)",borderRadius:28,padding:"36px 32px",boxShadow:"0 0 80px rgba(245,224,58,0.06)",position:"relative",overflow:"hidden" }}>
         <div style={{ position:"absolute",top:-40,right:-40,fontSize:180,opacity:0.03,userSelect:"none",pointerEvents:"none" }}>🎁</div>
         <div style={{ textAlign:"center",marginBottom:32 }}>
-          <div style={{ fontSize:64,marginBottom:12,filter:"drop-shadow(0 0 20px #f5e03a66)",display:"inline-block",animation:"wiggle 3s ease-in-out infinite" }}>🎁</div>
+          <div style={{ fontSize:64,marginBottom:12,filter:"drop-shadow(0 0 20px var(--brand-primary, #f5e03a)66)",display:"inline-block",animation:"wiggle 3s ease-in-out infinite" }}>🎁</div>
           <div style={{ fontWeight:900,fontSize:26,color:"#fff",marginBottom:6 }}>Regalar Lemon Coins</div>
           <div style={{ color:"#555",fontSize:14 }}>Compartí tu amor con la comunidad 🍋</div>
         </div>
@@ -659,21 +659,21 @@ function Gift({ balance, onGift }) {
 
         <div style={{ display:"flex",flexDirection:"column",gap:20 }}>
           <div>
-            <label style={{ color:"#f5e03a",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>Numero de cliente</label>
+            <label style={{ color:"var(--brand-primary, #f5e03a)",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>Numero de cliente</label>
             <input value={clientNum} onChange={e=>setClientNum(e.target.value)} placeholder="Ej: 42" type="number" min="1"
               style={{ width:"100%",background:"rgba(255,255,255,0.04)",border:"2px solid rgba(255,255,255,0.08)",borderRadius:14,color:"#fff",fontSize:18,padding:"15px 18px",outline:"none",boxSizing:"border-box",transition:"all .2s" }}
-              onFocus={e=>{e.target.style.borderColor="#f5e03a";e.target.style.boxShadow="0 0 20px #f5e03a22";}}
+              onFocus={e=>{e.target.style.borderColor="var(--brand-primary, #f5e03a)";e.target.style.boxShadow="0 0 20px var(--brand-primary, #f5e03a)22";}}
               onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.08)";e.target.style.boxShadow="none";}} />
           </div>
 
           <div>
-            <label style={{ color:"#f5e03a",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>
+            <label style={{ color:"var(--brand-primary, #f5e03a)",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>
               Cantidad · <span style={{ color:"#fff" }}>{balance.toLocaleString()} disponibles</span>
             </label>
             <div style={{ display:"flex",gap:8,flexWrap:"wrap",marginBottom:12 }}>
               {quick.map(a=>(
                 <Pop as="button" key={a} onClick={()=>setAmount(a)}
-                  style={{ background:amount===a?"linear-gradient(135deg,#f5e03a,#f5e03a)":"rgba(255,255,255,0.04)",border:`1px solid ${amount===a?"transparent":"rgba(255,255,255,0.08)"}`,borderRadius:10,padding:"9px 18px",color:amount===a?"#000":"#666",cursor:"pointer",fontSize:14,fontWeight:900,boxShadow:amount===a?"0 4px 16px #f5e03a44":"none" }}>
+                  style={{ background:amount===a?"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))":"rgba(255,255,255,0.04)",border:`1px solid ${amount===a?"transparent":"rgba(255,255,255,0.08)"}`,borderRadius:10,padding:"9px 18px",color:amount===a?"#000":"#666",cursor:"pointer",fontSize:14,fontWeight:900,boxShadow:amount===a?"0 4px 16px var(--brand-primary, #f5e03a)44":"none" }}>
                   {a}
                 </Pop>
               ))}
@@ -681,22 +681,22 @@ function Gift({ balance, onGift }) {
             <div style={{ background:"rgba(255,255,255,0.04)",border:"2px solid rgba(245,224,58,0.2)",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12 }}>
               <span style={{ fontSize:26 }}>🍋</span>
               <input type="number" value={amount} onChange={e=>setAmount(Math.max(10,Math.min(balance,parseInt(e.target.value)||10)))} min={10} max={balance}
-                style={{ flex:1,background:"none",border:"none",color:"#f5e03a",fontSize:28,fontWeight:900,outline:"none" }}/>
+                style={{ flex:1,background:"none",border:"none",color:"var(--brand-primary, #f5e03a)",fontSize:28,fontWeight:900,outline:"none" }}/>
               <span style={{ color:"#333",fontSize:12 }}>LC</span>
             </div>
           </div>
 
           <div>
-            <label style={{ color:"#f5e03a",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>Mensaje (opcional)</label>
+            <label style={{ color:"var(--brand-primary, #f5e03a)",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>Mensaje (opcional)</label>
             <input value={message} onChange={e=>setMessage(e.target.value)} placeholder="Un regalo para vos! 🍋" maxLength={100}
               style={{ width:"100%",background:"rgba(255,255,255,0.04)",border:"2px solid rgba(255,255,255,0.08)",borderRadius:14,color:"#fff",fontSize:14,padding:"15px 18px",outline:"none",boxSizing:"border-box",transition:"all .2s" }}
-              onFocus={e=>{e.target.style.borderColor="#f5e03a";e.target.style.boxShadow="0 0 20px #f5e03a22";}}
+              onFocus={e=>{e.target.style.borderColor="var(--brand-primary, #f5e03a)";e.target.style.boxShadow="0 0 20px var(--brand-primary, #f5e03a)22";}}
               onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.08)";e.target.style.boxShadow="none";}}/>
           </div>
 
           <Pop as="button" onClick={send} disabled={sending||!clientNum||amount>balance||amount<10}
             hoverScale={1.02}
-            style={{ background:(!sending&&clientNum&&amount<=balance&&amount>=10)?"linear-gradient(135deg,#f5e03a,#f5e03a,#ff5500)":"rgba(255,255,255,0.04)",color:(!sending&&clientNum&&amount<=balance&&amount>=10)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&clientNum&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&clientNum&&amount<=balance)?"0 8px 40px #f5e03a55":"none",letterSpacing:1 }}>
+            style={{ background:(!sending&&clientNum&&amount<=balance&&amount>=10)?"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))":"rgba(255,255,255,0.04)",color:(!sending&&clientNum&&amount<=balance&&amount>=10)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&clientNum&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&clientNum&&amount<=balance)?"0 8px 40px var(--brand-primary, #f5e03a)55":"none",letterSpacing:1 }}>
             {sending?"Enviando...":`🎁 Regalar ${amount.toLocaleString()} LC`}
           </Pop>
         </div>
@@ -731,16 +731,16 @@ export default function Coins() {
   const LC = {
     bronze:{ c:"#b45309", g:"linear-gradient(135deg,#b45309,#d97706)", l:"Bronce", i:"🥉", n:500 },
     silver:{ c:"#94a3b8", g:"linear-gradient(135deg,#64748b,#94a3b8)", l:"Plata",  i:"🥈", n:2000 },
-    gold:  { c:"#f5e03a", g:"linear-gradient(135deg,#f5e03a,#f5e03a)", l:"Oro",    i:"🥇", n:null },
+    gold:  { c:"var(--brand-primary, #f5e03a)", g:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))", l:"Oro",    i:"🥇", n:null },
   };
   const lc = LC[level]||LC.bronze;
   const pct = lc.n ? Math.min(100,(totalEarned/lc.n)*100) : 100;
 
   const TABS = [
-    { id:"tienda",   icon:"🛍️", label:"Tienda",   color:"#f5e03a" },
+    { id:"tienda",   icon:"🛍️", label:"Tienda",   color:"var(--brand-primary, #f5e03a)" },
     { id:"ruleta",   icon:"🎰", label:"Ruleta",   color:"#a78bfa" },
     { id:"misiones", icon:"🎯", label:"Misiones", color:"#22c55e" },
-    { id:"ranking",  icon:"🏆", label:"Ranking",  color:"#f5e03a" },
+    { id:"ranking",  icon:"🏆", label:"Ranking",  color:"var(--brand-primary, #f5e03a)" },
     { id:"regalar",  icon:"🎁", label:"Regalar",  color:"#ec4899" },
   ];
 
@@ -756,9 +756,9 @@ export default function Coins() {
           @keyframes confettiBlast{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}100%{transform:translate(var(--dx,30px),var(--dy,-200px)) rotate(var(--rot,360deg)) scale(0.3);opacity:0}}
           @keyframes shimmerLoad{0%{background-position:-400px 0}100%{background-position:400px 0}}
           @keyframes slideDown{0%{opacity:0;transform:translateY(-10px)}100%{opacity:1;transform:translateY(0)}}
-          @keyframes btnPulse{0%,100%{box-shadow:0 8px 40px #f5e03a66,0 0 0 1px #f5e03a33}50%{box-shadow:0 8px 60px #f5e03a88,0 0 0 3px #f5e03a55}}
+          @keyframes btnPulse{0%,100%{box-shadow:0 8px 40px var(--brand-primary, #f5e03a)66,0 0 0 1px var(--brand-primary, #f5e03a)33}50%{box-shadow:0 8px 60px var(--brand-primary, #f5e03a)88,0 0 0 3px var(--brand-primary, #f5e03a)55}}
           @keyframes wiggle{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
-          @keyframes heroGlow{0%,100%{box-shadow:0 0 40px #f5e03a15,inset 0 1px 0 rgba(245,224,58,0.1)}50%{box-shadow:0 0 80px #f5e03a25,inset 0 1px 0 rgba(245,224,58,0.2)}}
+          @keyframes heroGlow{0%,100%{box-shadow:0 0 40px var(--brand-primary, #f5e03a)15,inset 0 1px 0 rgba(245,224,58,0.1)}50%{box-shadow:0 0 80px var(--brand-primary, #f5e03a)25,inset 0 1px 0 rgba(245,224,58,0.2)}}
           @keyframes numberPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
           .tab-btn:hover { transform: scale(1.05) !important; }
         `}</style>
