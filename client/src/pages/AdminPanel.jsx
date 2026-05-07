@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useBranding } from "../lib/branding.js";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -79,11 +80,13 @@ export default function AdminPanel() {
         <div style={styles.tabs}>
           <button style={styles.tab(tab === "coins")}    onClick={() => setTab("coins")}>🪙 Coins</button>
           <button style={styles.tab(tab === "feed")}     onClick={() => setTab("feed")}>📰 Feed</button>
+          <button style={styles.tab(tab === "branding")} onClick={() => setTab("branding")}>🎨 Branding</button>
           <button style={styles.tab(tab === "settings")} onClick={() => setTab("settings")}>⚙️ Configuración</button>
         </div>
 
         {tab === "coins"    && <CoinsTab />}
         {tab === "feed"     && <FeedTab />}
+        {tab === "branding" && <BrandingTab />}
         {tab === "settings" && <SettingsTab />}
       </div>
     </div>
@@ -291,6 +294,229 @@ function FeedTab() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ── Tab: Branding ───────────────────────────────────────────────────────────
+// Vista read-only del branding aplicado + mockups de "donde se ve" para que
+// el admin entienda el alcance de cambiar `name` / `slogan` / `logo` /
+// `colors`. La edicion real vive en el wizard (/admin/setup), boton al final.
+function BrandingTab() {
+  const branding = useBranding();
+  const [manifestPreview, setManifestPreview] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch(`${API}/manifest.json`).then(r => r.ok ? r.json() : null).then(setManifestPreview).catch(() => {});
+  }, [branding.name]); // refetch si cambia el branding
+
+  const propagationTargets = [
+    { icon: "🌐", title: "Browser title",       desc: "<title> en cada tab abierta del portal",                              source: "name" },
+    { icon: "📱", title: "PWA install prompt",  desc: "Cuando un usuario instala el portal en su pantalla de inicio",         source: "name + short_name + logo + theme_color" },
+    { icon: "🔗", title: "Link previews",       desc: "Cuando alguien comparte el link en WhatsApp/Twitter/Facebook/Discord", source: "name + slogan + logo (Open Graph + Twitter Cards)" },
+    { icon: "🔐", title: "Prompt biométrico",   desc: "Cuando un usuario registra Touch ID / Face ID / Windows Hello",        source: "name (WebAuthn rpName)" },
+    { icon: "🎨", title: "Sidebar + Topbar",    desc: "Logo + nombre visibles dentro del portal logueado",                    source: "name + logo + colors" },
+    { icon: "📨", title: "Emails",              desc: "Bienvenida, reset password, verificación, broadcasts admin",            source: "name + logo + color_primary" },
+    { icon: "🔔", title: "Alertas internas",    desc: "Notificaciones a Telegram cuando el portal explota o hay registros",   source: "name (APP_NAME)" },
+    { icon: "🎨", title: "Tile color (Windows)",desc: "Color de fondo de la app instalada en Windows",                        source: "color_bg" },
+  ];
+
+  const fontStack = (b => {
+    const fonts = { moderna: "Inter, sans-serif", clasica: "Georgia, serif", tech: "JetBrains Mono, monospace", friendly: "Quicksand, sans-serif" };
+    return fonts[b.font_preset] || fonts.moderna;
+  })(branding);
+
+  return (
+    <div>
+      {/* Resumen actual */}
+      <div style={styles.card}>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Branding actual</div>
+        <div style={{ fontSize: 12, color: "rgba(237,233,224,.5)", marginBottom: 16 }}>Sólo lectura. Para editar, abrí el wizard de configuración.</div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <BrandingField label="Nombre"   value={branding.name} mono />
+          <BrandingField label="Slogan"   value={branding.slogan} />
+          <BrandingField label="Logo URL" value={branding.logo_url} mono ellipsis />
+          <BrandingField label="Favicon"  value={branding.favicon_url} mono ellipsis />
+          <BrandingField label="Font"     value={`${branding.font_preset} (${fontStack})`} />
+        </div>
+
+        {/* Swatches */}
+        <div style={{ marginTop: 18 }}>
+          <div style={{ ...styles.label, marginTop: 0 }}>Paleta</div>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <Swatch hex={branding.color_primary} label="primary" />
+            <Swatch hex={branding.color_accent}  label="accent"  />
+            <Swatch hex={branding.color_bg}      label="bg"      />
+            <Swatch hex={branding.color_text}    label="text"    />
+          </div>
+        </div>
+      </div>
+
+      {/* Live previews */}
+      <div style={styles.card}>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Cómo se ve tu portal</div>
+        <div style={{ fontSize: 12, color: "rgba(237,233,224,.5)", marginBottom: 16 }}>Mockups que reflejan el branding actual (datos reales del backend).</div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14 }}>
+          {/* Browser tab */}
+          <PreviewCard title="Browser tab">
+            <div style={{ background: "#1f2025", borderRadius: 8, padding: 8, display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+              {branding.favicon_url
+                ? <img src={branding.favicon_url} alt="" style={{ width: 14, height: 14, objectFit: "contain", background: "rgba(255,255,255,.1)", borderRadius: 2, padding: 1 }} onError={e => { e.target.style.display = "none"; }} />
+                : <div style={{ width: 14, height: 14, background: branding.color_primary, borderRadius: 2 }} />}
+              <span style={{ color: "rgba(255,255,255,.85)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{branding.name}</span>
+              <span style={{ marginLeft: "auto", color: "rgba(255,255,255,.4)" }}>×</span>
+            </div>
+          </PreviewCard>
+
+          {/* PWA install */}
+          <PreviewCard title="PWA install prompt">
+            <div style={{ background: "#fff", color: "#000", borderRadius: 12, padding: 14, fontFamily: fontStack }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <div style={{ width: 48, height: 48, background: branding.color_bg, borderRadius: 10, display: "grid", placeItems: "center", overflow: "hidden" }}>
+                  {branding.logo_url
+                    ? <img src={branding.logo_url} alt="" style={{ width: 36, height: 36, objectFit: "contain" }} onError={e => { e.target.outerHTML = `<div style="color:${branding.color_primary};font-weight:800;font-size:18px">${(branding.name||"?").charAt(0)}</div>`; }} />
+                    : <div style={{ color: branding.color_primary, fontWeight: 800, fontSize: 18 }}>{(branding.name || "?").charAt(0)}</div>}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#000" }}>{manifestPreview?.short_name || branding.name}</div>
+                  <div style={{ fontSize: 11, color: "#666", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{manifestPreview?.description || branding.slogan}</div>
+                </div>
+              </div>
+              <div style={{ marginTop: 10, padding: "8px 0", borderTop: "1px solid #eee", display: "flex", gap: 8, fontSize: 12 }}>
+                <button style={{ flex: 1, padding: "6px 10px", border: "none", background: "#eee", color: "#444", borderRadius: 6, fontWeight: 600 }} disabled>Cancelar</button>
+                <button style={{ flex: 1, padding: "6px 10px", border: "none", background: branding.color_primary, color: "#fff", borderRadius: 6, fontWeight: 700 }} disabled>Instalar</button>
+              </div>
+            </div>
+          </PreviewCard>
+
+          {/* OG / Twitter card */}
+          <PreviewCard title="Link preview (WhatsApp / Twitter / Discord)">
+            <div style={{ background: "#fff", borderRadius: 8, overflow: "hidden", border: "1px solid #e1e8ed" }}>
+              <div style={{ background: branding.color_bg, height: 100, display: "grid", placeItems: "center" }}>
+                {branding.logo_url
+                  ? <img src={branding.logo_url} alt="" style={{ maxWidth: "60%", maxHeight: 70, objectFit: "contain" }} onError={e => { e.target.style.display = "none"; }} />
+                  : <div style={{ color: branding.color_primary, fontWeight: 800, fontSize: 24 }}>{branding.name}</div>}
+              </div>
+              <div style={{ padding: 10, color: "#000" }}>
+                <div style={{ fontSize: 10, color: "#888", textTransform: "uppercase" }}>{(typeof window !== "undefined" && window.location.hostname) || "tudominio.com"}</div>
+                <div style={{ fontWeight: 700, fontSize: 13, marginTop: 2 }}>{branding.name}</div>
+                <div style={{ fontSize: 12, color: "#444", marginTop: 2 }}>{branding.slogan}</div>
+              </div>
+            </div>
+          </PreviewCard>
+
+          {/* WebAuthn biometric prompt */}
+          <PreviewCard title="Prompt biométrico (Touch ID / Hello)">
+            <div style={{ background: "rgba(255,255,255,.97)", color: "#000", borderRadius: 14, padding: 16, fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif" }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>🔐</div>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>Iniciar sesión en <span style={{ color: "#0070f3" }}>{branding.name}</span></div>
+                <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>Usá Touch ID para iniciar sesión.</div>
+              </div>
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #ddd", display: "flex", gap: 8 }}>
+                <button style={{ flex: 1, padding: "6px", background: "transparent", border: "none", color: "#0070f3", fontSize: 13 }} disabled>Cancelar</button>
+                <button style={{ flex: 1, padding: "6px", background: "transparent", border: "none", color: "#0070f3", fontSize: 13, fontWeight: 600 }} disabled>Continuar</button>
+              </div>
+            </div>
+          </PreviewCard>
+
+          {/* Telegram alert */}
+          <PreviewCard title="Alerta Telegram">
+            <div style={{ background: "#17212b", color: "#fff", borderRadius: 8, padding: 12, fontFamily: "-apple-system, sans-serif", fontSize: 13 }}>
+              <div style={{ color: "#5eb6f7", fontWeight: 700, fontSize: 12 }}>{branding.name} bot</div>
+              <div style={{ marginTop: 6, lineHeight: 1.4 }}>
+                🚨 <b>Error en {branding.name}</b><br />
+                <span style={{ color: "rgba(255,255,255,.7)" }}>POST /auth/login → 500</span><br />
+                <span style={{ color: "rgba(255,255,255,.5)", fontSize: 11 }}>{new Date().toLocaleString("es-AR")}</span>
+              </div>
+            </div>
+          </PreviewCard>
+
+          {/* Email */}
+          <PreviewCard title="Email (bienvenida / reset)">
+            <div style={{ background: "#fff", color: "#000", borderRadius: 6, overflow: "hidden", border: "1px solid #ddd" }}>
+              <div style={{ background: branding.color_bg, padding: "12px", display: "flex", alignItems: "center", gap: 8 }}>
+                {branding.logo_url
+                  ? <img src={branding.logo_url} alt="" style={{ height: 22, objectFit: "contain" }} onError={e => { e.target.style.display = "none"; }} />
+                  : null}
+                <div style={{ color: branding.color_text, fontWeight: 700, fontSize: 14 }}>{branding.name}</div>
+              </div>
+              <div style={{ padding: 14, fontSize: 13, lineHeight: 1.5 }}>
+                <div style={{ fontWeight: 700, marginBottom: 8 }}>¡Hola, [Nombre]!</div>
+                <div style={{ color: "#444" }}>Bienvenido a {branding.name}. Tu cuenta ya está lista.</div>
+                <div style={{ marginTop: 10 }}>
+                  <span style={{ display: "inline-block", padding: "8px 14px", background: branding.color_primary, color: "#fff", borderRadius: 6, fontWeight: 700, fontSize: 12 }}>Ir al portal</span>
+                </div>
+              </div>
+            </div>
+          </PreviewCard>
+        </div>
+      </div>
+
+      {/* Propagación */}
+      <div style={styles.card}>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Se aplica automáticamente en {propagationTargets.length} lugares</div>
+        <div style={{ fontSize: 12, color: "rgba(237,233,224,.5)", marginBottom: 14 }}>Cuando edités <code style={{ background: "rgba(255,255,255,.08)", padding: "1px 5px", borderRadius: 3 }}>name</code> / <code style={{ background: "rgba(255,255,255,.08)", padding: "1px 5px", borderRadius: 3 }}>logo</code> / <code style={{ background: "rgba(255,255,255,.08)", padding: "1px 5px", borderRadius: 3 }}>colors</code>, se propaga al instante (cache 30s).</div>
+
+        <div style={{ display: "grid", gap: 8 }}>
+          {propagationTargets.map(t => (
+            <div key={t.title} style={{ display: "flex", gap: 12, padding: "10px 12px", background: "rgba(255,255,255,.02)", borderRadius: 6, alignItems: "flex-start" }}>
+              <div style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.2 }}>{t.icon}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>{t.title}</div>
+                <div style={{ fontSize: 11, color: "rgba(237,233,224,.55)", marginTop: 2 }}>{t.desc}</div>
+                <div style={{ fontSize: 10, color: "rgba(237,233,224,.35)", marginTop: 3, fontFamily: "monospace" }}>← {t.source}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.08)" }}>
+          <button style={styles.btn(true)} onClick={() => navigate("/admin/setup?section=branding")}>✏️ Editar branding en el wizard →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BrandingField({ label, value, mono = false, ellipsis = false }) {
+  return (
+    <div>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.4)", marginBottom: 4 }}>{label}</div>
+      <div style={{
+        fontSize: 13,
+        fontFamily: mono ? "monospace" : "inherit",
+        color: value ? "rgba(237,233,224,.9)" : "rgba(237,233,224,.35)",
+        ...(ellipsis ? { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } : {}),
+      }}>{value || "(vacío)"}</div>
+    </div>
+  );
+}
+
+function Swatch({ hex, label }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    if (!navigator?.clipboard) return;
+    navigator.clipboard.writeText(hex).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1200); }).catch(() => {});
+  }
+  return (
+    <button onClick={copy} title="Click para copiar"
+      style={{ background: "transparent", border: "1px solid rgba(255,255,255,.08)", borderRadius: 8, padding: 8, display: "flex", flexDirection: "column", gap: 4, cursor: "pointer", fontFamily: "inherit", color: "inherit" }}>
+      <div style={{ width: 60, height: 40, background: hex, borderRadius: 4, border: "1px solid rgba(0,0,0,.2)" }} />
+      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.5)" }}>{label}</div>
+      <div style={{ fontSize: 11, fontFamily: "monospace", color: "rgba(237,233,224,.85)" }}>{copied ? "copiado!" : hex}</div>
+    </button>
+  );
+}
+
+function PreviewCard({ title, children }) {
+  return (
+    <div style={{ background: "rgba(0,0,0,.3)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 8, padding: 12 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.45)", marginBottom: 10 }}>{title}</div>
+      {children}
     </div>
   );
 }
