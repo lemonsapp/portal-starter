@@ -210,11 +210,10 @@ el wizard del Sprint 2/3 esté activo).
 
 
 
-// ── Auto-migración al arrancar ────────────────────────────────────────────────
-
-// ── Auto-migración: cash bot integration (gastos/ingresos con receipt + media en wa_messages)
-
-// ── Auto-migración: tabla ai_settings ────────────────────────────────────────
+// ── Auto-migraciones inline al arrancar ─────────────────────────────────────
+// Las migrations principales viven en scripts/init-db.sql (se aplica una vez
+// en setup). Estas inline son ALTER/CREATE idempotentes para tablas que
+// pueden no existir todavía en clones viejos.
 
 // ── Auto-migración: tabla user_stories (24h) ─────────────────────────────────
 (async () => {
