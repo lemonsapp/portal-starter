@@ -13,7 +13,6 @@ import OperatorPanel from "./pages/OperatorPanel.jsx";
 import ClientShipments from "./pages/ClientShipments.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
-import Dashboard from "./pages/Dashboard";
 import CashRegister from "./pages/CashRegister.jsx";
 import QuotePublic from "./pages/QuotePublic.jsx";
 import QuoteClient from "./pages/QuoteClient.jsx";
@@ -147,7 +146,6 @@ export default function App() {
 
         {/* Staff */}
         <Route path="/operator"      element={<AuthGate allowRoles={["operator","admin"]}><OperatorPanel /></AuthGate>} />
-        <Route path="/dashboard"     element={<AuthGate allowRoles={["operator","admin"]}><Dashboard /></AuthGate>} />
         <Route path="/caja"          element={<AuthGate allowRoles={["operator","admin"]}><CashRegister /></AuthGate>} />
         <Route path="/coins/operator"element={<AuthGate allowRoles={["operator","admin"]}><CoinsOperator /></AuthGate>} />
         <Route path="/external"      element={<AuthGate allowRoles={["operator","admin"]}><ExternalCargo /></AuthGate>} />

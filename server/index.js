@@ -22,7 +22,6 @@ const {
 const coinsRouter         = require("./routes/coins");         // ✅ Lemon Coins
 const notificationsRouter = require("./routes/notifications"); // ✅ Notificaciones LIMÓN (broadcast)
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
-const founderIntelligenceRouter = require("./routes/founderIntelligence");
 const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
 
@@ -5099,7 +5098,6 @@ app.get(
 // ════════════════════════════════════════════════════════════════════
 app.use("/coins",         coinsRouter);
 app.use("/notifications", notificationsRouter);
-app.use("/",             founderIntelligenceRouter);
 // ── Rutas AI settings — JWT operador/admin (van ANTES del aiRouter) ──────────
 function verifyJwtOperator(req) {
   const auth = req.headers["authorization"] || "";
