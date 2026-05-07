@@ -1,0 +1,114 @@
+---
+import BentoCard from "./BentoCard.astro";
+---
+<section class="bento" id="otros">
+    <div class="bento__container">
+
+        <div class="bento__row bento__row--1" id="linea-elite">
+            <BentoCard
+                variant="light"
+                size="hero"
+                titleStrong="LÍNEA"
+                titleEm="Elite"
+                sub="Fertilizante premium de alta concentración."
+                image="/assets/productos/elite.png"
+                alt="Línea Elite"
+            />
+            <BentoCard
+                variant="dark"
+                size="tall"
+                titleStrong="MEDIDOR"
+                titleEm="pH"
+                sub="Control preciso del agua de riego"
+                image="/assets/productos/medidorph.png"
+                alt="Medidor de pH"
+            />
+        </div>
+
+        <div class="bento__row bento__row--2" id="bio-estimulante">
+            <BentoCard
+                variant="dark"
+                titleStrong="BIO"
+                titleEm="Estimulante"
+                sub="Orgánico. Raíces, follaje y defensas."
+                image="/assets/productos/holbio.png"
+                alt="Bio Estimulante"
+            />
+            <BentoCard
+                variant="light"
+                titleStrong="DAY"
+                titleEm="0"
+                sub="Tratamiento final previo a cosecha."
+                image="/assets/productos/day0250ml-1.jpg"
+                alt="Day-0"
+            />
+        </div>
+
+        <div class="bento__row bento__row--3">
+            <BentoCard
+                variant="light"
+                size="hero"
+                titleStrong="CLONER"
+                titleEm="Gel"
+                sub="Enraizante para esquejes."
+                image="/assets/productos/cloner2.png"
+                alt="Cloner"
+            />
+
+            <div class="bento__stack">
+                <BentoCard
+                    variant="dark"
+                    size="mini"
+                    titleStrong="MACETAS"
+                    titleEm="Tela"
+                    image="/assets/productos/macetas.png"
+                    alt="Macetas"
+                />
+                <BentoCard
+                    variant="dark"
+                    size="mini"
+                    titleStrong="FILTRO"
+                    titleEm="Carbón"
+                    image="/assets/productos/filtro.jpg"
+                    alt="Filtro de carbón"
+                />
+            </div>
+        </div>
+
+        <div class="bento__row bento__row--4" id="linea-pro">
+            <BentoCard
+                variant="light"
+                size="small"
+                titleStrong="PRO"
+                titleEm="25gr"
+                image="/assets/productos/juntos25g.jpg"
+                alt="Línea Pro 25gr"
+            />
+            <BentoCard
+                variant="light"
+                size="small"
+                titleStrong="PRO"
+                titleEm="100gr"
+                image="/assets/productos/juntos100g.jpg"
+                alt="Línea Pro 100gr"
+            />
+            <BentoCard
+                variant="light"
+                size="small"
+                titleStrong="PRO"
+                titleEm="500gr"
+                image="/assets/productos/juntos500gr.jpg"
+                alt="Línea Pro 500gr"
+            />
+            <BentoCard
+                variant="light"
+                size="small"
+                titleStrong="PRO"
+                titleEm="1kg"
+                image="/assets/productos/kit1kg.jpg"
+                alt="Línea Pro 1kg"
+            />
+        </div>
+
+    </div>
+</section>

@@ -1,7 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
+// Sprint 13: deploy unificado con landing Astro.
+// En produccion, el portal vive bajo /portal/ (la landing Astro toma el /).
+// En dev (vite), seguimos en / para que `npm run dev` funcione tal cual.
+// Vercel rewrite manda /login, /inicio, /admin, etc. → /portal/index.html;
+// los assets generados por Vite (chunks JS/CSS) usan paths /portal/assets/*
+// que matchean la estructura final del dist mergeado.
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/portal/' : '/',
   plugins: [react()],
   server: {
     // Bind a 0.0.0.0 para que Codespaces / Docker / LAN puedan conectarse
@@ -34,4 +41,4 @@ export default defineConfig({
     // Subimos el limit de warning (estos vendors son normales, no error real).
     chunkSizeWarningLimit: 600,
   },
-})
+}))

@@ -1,0 +1,30 @@
+---
+const {
+    variant = "light",
+    size = "default",
+    titleStrong,
+    titleEm,
+    sub,
+    image,
+    alt,
+} = Astro.props;
+
+const sizeClass = {
+    default: "",
+    hero: "bento__card--hero",
+    tall: "bento__card--tall",
+    small: "bento__card--small",
+    mini: "bento__card--mini",
+}[size] ?? "";
+---
+<article class:list={["bento__card", `bento__card--${variant}`, sizeClass]}>
+    <div class="bento__head">
+        <h3 class="bento__title">
+            <strong>{titleStrong}</strong> <em>{titleEm}</em>
+        </h3>
+        {sub && <p class="bento__sub">{sub}</p>}
+    </div>
+    <div class="bento__media">
+        <img src={image} alt={alt} />
+    </div>
+</article>

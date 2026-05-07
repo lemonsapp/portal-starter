@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "bash scripts/build-vercel.sh",
+  "outputDirectory": "dist",
+  "installCommand": "echo 'install handled by build script'",
+  "framework": null,
+  "rewrites": [
+    { "source": "/login",                 "destination": "/portal/index.html" },
+    { "source": "/register",              "destination": "/portal/index.html" },
+    { "source": "/registro",              "destination": "/portal/index.html" },
+    { "source": "/setup-admin",           "destination": "/portal/index.html" },
+    { "source": "/forgot-password",       "destination": "/portal/index.html" },
+    { "source": "/reset-password",        "destination": "/portal/index.html" },
+    { "source": "/verify-email",          "destination": "/portal/index.html" },
+    { "source": "/inicio",                "destination": "/portal/index.html" },
+    { "source": "/coins",                 "destination": "/portal/index.html" },
+    { "source": "/perfil",                "destination": "/portal/index.html" },
+    { "source": "/perfil/:path*",         "destination": "/portal/index.html" },
+    { "source": "/admin",                 "destination": "/portal/index.html" },
+    { "source": "/admin/:path*",          "destination": "/portal/index.html" },
+    { "source": "/chats",                 "destination": "/portal/index.html" },
+    { "source": "/chats/:path*",          "destination": "/portal/index.html" },
+    { "source": "/chat",                  "destination": "/portal/index.html" }
+  ]
+}

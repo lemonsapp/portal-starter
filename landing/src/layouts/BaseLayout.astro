@@ -1,0 +1,37 @@
+---
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import "../styles/global.css";
+
+const {
+    title = "Holistic Growshop — Productos para cultivo",
+    description = "Holistic Growshop: fertilizantes Línea Elite, Línea Pro, Bio Estimulantes y accesorios. Asesoramiento para cultivadores.",
+} = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <link rel="icon" type="image/svg+xml" href="/assets/productos/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    />
+</head>
+<body>
+    <Header />
+    <slot />
+    <Footer />
+
+    <script>
+        import "../scripts/animations.js";
+    </script>
+</body>
+</html>
