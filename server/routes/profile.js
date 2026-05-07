@@ -72,48 +72,48 @@ async function migrate() {
     await db.query(`
       INSERT INTO profile_items (key, type, name, description, emoji, cost_coins, rarity, data) VALUES
       -- Avatares
-      ('avatar_lemon',    'avatar', 'Limón Dorado',    'El clásico de Lemon''s',           '🍋', 0,    'common',    '{"bg":"#f5e03a","emoji":"🍋"}'),
+      ('avatar_lemon',    'avatar', 'Coin Dorado',     'El clásico del portal',             '🪙', 0,    'common',    '{"bg":"#f5e03a","emoji":"🪙"}'),
       ('avatar_rocket',   'avatar', 'Rocketero',       'Para los que van rápido',           '🚀', 200,  'common',    '{"bg":"#3b82f6","emoji":"🚀"}'),
       ('avatar_globe',    'avatar', 'Viajero Global',  'Conectado al mundo',                '🌍', 300,  'common',    '{"bg":"#22c55e","emoji":"🌍"}'),
-      ('avatar_diamond',  'avatar', 'Diamante',        'Importador de lujo',                '💎', 800,  'rare',      '{"bg":"#a78bfa","emoji":"💎"}'),
+      ('avatar_diamond',  'avatar', 'Diamante',        'Estilo de lujo',                    '💎', 800,  'rare',      '{"bg":"#a78bfa","emoji":"💎"}'),
       ('avatar_fire',     'avatar', 'On Fire',         'Siempre activo',                    '🔥', 500,  'rare',      '{"bg":"#ff6200","emoji":"🔥"}'),
-      ('avatar_crown',    'avatar', 'La Corona',       'Para los reyes del comercio',       '👑', 2000, 'epic',      '{"bg":"#f5e03a","emoji":"👑"}'),
-      ('avatar_lemon_fly','avatar', 'Limón Volador',   'Edición especial Lemon''s',         '🍋', 5000, 'legendary', '{"bg":"linear-gradient(135deg,#f5e03a,#ff6200)","emoji":"🍋✈️"}'),
+      ('avatar_crown',    'avatar', 'La Corona',       'Para los reyes',                    '👑', 2000, 'epic',      '{"bg":"#f5e03a","emoji":"👑"}'),
+      ('avatar_lemon_fly','avatar', 'Coin Volador',    'Edición especial limitada',         '🪙', 5000, 'legendary', '{"bg":"linear-gradient(135deg,#f5e03a,#ff6200)","emoji":"🪙✈️"}'),
       -- Marcos
       ('frame_gold',      'frame',  'Marco Dorado',    'Un clásico elegante',               '⭐', 400,  'rare',      '{"border":"2px solid #f5e03a","shadow":"0 0 12px rgba(245,224,58,.5)"}'),
       ('frame_fire',      'frame',  'Marco Llamas',    'Ardiente y poderoso',               '🔥', 600,  'rare',      '{"border":"2px solid #ff6200","shadow":"0 0 14px rgba(255,98,0,.6)"}'),
       ('frame_rainbow',   'frame',  'Marco Arcoíris',  'Edición colorida',                  '🌈', 1200, 'epic',      '{"border":"2px solid transparent","gradient":"linear-gradient(45deg,#f5e03a,#ff6200,#a78bfa,#22c55e)"}'),
       ('frame_diamond',   'frame',  'Marco Diamante',  'Solo para los mejores',             '💎', 3000, 'legendary', '{"border":"2px solid #a78bfa","shadow":"0 0 20px rgba(167,139,250,.7)","pulse":true}'),
       -- Títulos
-      ('title_importer',  'title',  'Importador Pro',  'Para los que ya tienen experiencia','📦', 300,  'common',    '{"color":"#ede9e0"}'),
-      ('title_fast',      'title',  'Velocista',       'Siempre en Express',                '⚡', 500,  'rare',      '{"color":"#f5e03a"}'),
-      ('title_global',    'title',  'Global Trader',   'Compra en todo el mundo',           '🌍', 800,  'rare',      '{"color":"#60a5fa"}'),
-      ('title_legend',    'title',  'Leyenda Lemon''s','El título más exclusivo',           '🏆', 4000, 'legendary', '{"color":"#f5e03a","gradient":true}'),
+      ('title_importer',  'title',  'Pro',             'Para los que ya tienen experiencia','📦', 300,  'common',    '{"color":"#ede9e0"}'),
+      ('title_fast',      'title',  'Velocista',       'Siempre rápido',                    '⚡', 500,  'rare',      '{"color":"#f5e03a"}'),
+      ('title_global',    'title',  'Global',          'Conectado al mundo',                '🌍', 800,  'rare',      '{"color":"#60a5fa"}'),
+      ('title_legend',    'title',  'Leyenda',         'El título más exclusivo',           '🏆', 4000, 'legendary', '{"color":"#f5e03a","gradient":true}'),
       -- Insignias
-      ('badge_first',     'badge',  'Primer Envío',    'Completaste tu primer envío',       '🎯', 0,    'common',    '{"color":"#f5e03a"}'),
-      ('badge_x10',       'badge',  '10 Envíos',       'Importador frecuente',              '📦', 0,    'rare',      '{"color":"#22c55e"}'),
-      ('badge_whale',     'badge',  'Ballena',         'Más de USD 5000 importados',        '🐋', 0,    'epic',      '{"color":"#3b82f6"}'),
-      ('badge_loyal',     'badge',  'Cliente Leal',    'Más de 1 año con Lemon''s',         '💛', 0,    'rare',      '{"color":"#f5e03a"}'),
-      ('badge_express',   'badge',  'Experto Express', '5 envíos Express completados',      '⚡', 150,  'common',    '{"color":"#f5e03a"}')
+      ('badge_first',     'badge',  'Bienvenida',      'Completaste tu primer paso',        '🎯', 0,    'common',    '{"color":"#f5e03a"}'),
+      ('badge_x10',       'badge',  '10 Posts',        'Activo en el feed',                 '📦', 0,    'rare',      '{"color":"#22c55e"}'),
+      ('badge_whale',     'badge',  'Ballena',         'Top contribuidor',                  '🐋', 0,    'epic',      '{"color":"#3b82f6"}'),
+      ('badge_loyal',     'badge',  'Leal',            'Más de 1 año en la comunidad',      '💛', 0,    'rare',      '{"color":"#f5e03a"}'),
+      ('badge_express',   'badge',  'Experto',         'Acción frecuente en el portal',     '⚡', 150,  'common',    '{"color":"#f5e03a"}')
       ON CONFLICT (key) DO NOTHING
     `);
     // Badges especiales animadas
     await db.query(`
       INSERT INTO profile_items (key, type, name, description, emoji, cost_coins, rarity, data) VALUES
-      ('badge_creator',  'badge', 'CREATOR',    'Creador de Lemon''s ARG',           '⚡', 0,    'legendary', '{"color":"#f5e03a","animated":true,"effect":"lightning","grantOnly":true}'),
+      ('badge_creator',  'badge', 'CREATOR',    'Creador del portal',                  '⚡', 0,    'legendary', '{"color":"#f5e03a","animated":true,"effect":"lightning","grantOnly":true}'),
       ('badge_mod',      'badge', 'MOD',         'Moderador oficial',                  '🛡️', 0,    'legendary', '{"color":"#60a5fa","animated":true,"effect":"shield","grantOnly":true}'),
-      ('badge_bot',      'badge', 'BOT',         'Agente automatizado de Lemon''s',    '🤖', 0,    'legendary', '{"color":"#a78bfa","animated":true,"effect":"pulse","grantOnly":true}'),
+      ('badge_bot',      'badge', 'BOT',         'Agente automatizado',                '🤖', 0,    'legendary', '{"color":"#a78bfa","animated":true,"effect":"pulse","grantOnly":true}'),
       ('badge_beta',     'badge', 'BETA',        'Early adopter — primeros meses',     '🧪', 0,    'legendary', '{"color":"#22c55e","animated":true,"effect":"glow","claimable":true}'),
-      ('badge_vip',      'badge', 'VIP',         'Cliente VIP de Lemon''s',            '💎', 2000, 'legendary', '{"color":"#f5e03a","animated":true,"effect":"sparkle"}'),
-      ('badge_thunder',  'badge', 'THUNDER',     'Importador veloz — siempre Express', '⚡', 800,  'epic',      '{"color":"#fbbf24","animated":true,"effect":"lightning"}'),
-      ('badge_phantom',  'badge', 'PHANTOM',     'El que importa en silencio',         '👻', 600,  'epic',      '{"color":"#818cf8","animated":true,"effect":"float"}'),
-      ('badge_gold_star','badge', 'GOLD STAR',   'Excelencia en cada envío',           '🌟', 1500, 'legendary', '{"color":"#f5e03a","animated":true,"effect":"spin"}')
+      ('badge_vip',      'badge', 'VIP',         'Miembro VIP',                        '💎', 2000, 'legendary', '{"color":"#f5e03a","animated":true,"effect":"sparkle"}'),
+      ('badge_thunder',  'badge', 'THUNDER',     'Veloz — siempre rápido',             '⚡', 800,  'epic',      '{"color":"#fbbf24","animated":true,"effect":"lightning"}'),
+      ('badge_phantom',  'badge', 'PHANTOM',     'El que actúa en silencio',           '👻', 600,  'epic',      '{"color":"#818cf8","animated":true,"effect":"float"}'),
+      ('badge_gold_star','badge', 'GOLD STAR',   'Excelencia en cada acción',          '🌟', 1500, 'legendary', '{"color":"#f5e03a","animated":true,"effect":"spin"}')
       ON CONFLICT (key) DO NOTHING
     `);
     // Banners preset
     await db.query(`
       INSERT INTO profile_items (key, type, name, description, emoji, cost_coins, rarity, data) VALUES
-      ('banner_lemon_rain', 'banner', 'Lluvia de Limones', 'El banner oficial de Lemon''s', '🍋', 3,   'common',    '{"effect":"lemon_rain","color1":"#f5e03a","color2":"#ff6200","category":"lemons"}'),
+      ('banner_lemon_rain', 'banner', 'Lluvia de Coins',    'Banner animado clásico',     '🪙', 3,   'common',    '{"effect":"lemon_rain","color1":"#f5e03a","color2":"#ff6200","category":"classic"}'),
       ('banner_lightning',  'banner', 'Tormenta Eléctrica','Energía pura en tu perfil',     '⚡', 5,   'rare',      '{"effect":"lightning","color1":"#f5e03a","color2":"#fbbf24","category":"tech"}'),
       ('banner_fire',       'banner', 'Llamas',            'El poder del fuego',            '🔥', 5,   'rare',      '{"effect":"fire","color1":"#ff6200","color2":"#f5e03a","category":"tech"}'),
       ('banner_matrix',     'banner', 'Matrix',            'Estilo hacker futurista',       '👾', 7,   'epic',      '{"effect":"matrix","color1":"#22c55e","color2":"#14532d","category":"tech"}'),
@@ -162,9 +162,9 @@ router.get("/", authRequired, async (req, res) => {
       user:    { ...user, level },
       profile: { ...profile, owned_items: allItems },
       coins:   { balance, total_earned: Number(coins.total_earned), peak_balance: peak },
-      // stats:* legacy Lemons (envíos). Devuelvo zeros para preservar API
-      // contract con consumers que aún las leen (ProfilePage/ChatPage/Coins).
-      // Sprint 5+ podemos reemplazar por stats sociales reales.
+      // stats:* legacy de envíos. Devuelvo zeros para preservar API contract
+      // con consumers que aún las leen (ProfilePage/ChatPage/Coins). Sprint 7+
+      // podemos reemplazar por stats sociales reales (posts/comments count).
       stats:   { total_shipments: 0, delivered: 0, total_usd: 0 },
     });
   } catch(e) { console.error("[PROFILE GET]", e); res.status(500).json({ error: e.message }); }
@@ -770,7 +770,7 @@ router.post("/avatar-upload", authRequired, upload.single("avatar"), async (req,
     // Subir a Cloudinary
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
-        { folder: "lemons-avatars", public_id: `avatar_${userId}`, overwrite: true, transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }] },
+        { folder: "portal-avatars", public_id: `avatar_${userId}`, overwrite: true, transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }] },
         (error, result) => { if (error) reject(error); else resolve(result); }
       );
       stream.end(req.file.buffer);

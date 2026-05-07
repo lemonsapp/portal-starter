@@ -42,6 +42,19 @@ function notify() {
   for (const cb of subscribers) cb(cachedConfig);
 }
 
+// "#f5e03a" → "245, 224, 58" (formato listo para usar dentro de rgba()).
+// Acepta también #fff (3 dígitos). Si el input es inválido devuelve null.
+function hexToRgbTriplet(hex) {
+  if (!hex || typeof hex !== "string") return null;
+  let h = hex.trim().replace(/^#/, "");
+  if (h.length === 3) h = h.split("").map(c => c + c).join("");
+  if (!/^[0-9a-f]{6}$/i.test(h)) return null;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
 function applyToDOM(b) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
@@ -50,6 +63,12 @@ function applyToDOM(b) {
   root.style.setProperty("--brand-bg",      b.color_bg);
   root.style.setProperty("--brand-text",    b.color_text);
   root.style.setProperty("--brand-font",    BRANDING_DEFAULTS.fonts[b.font_preset] || BRANDING_DEFAULTS.fonts.moderna);
+  // RGB triplets para componer rgba() en CSS sin perder customización.
+  // Uso: rgba(var(--brand-primary-rgb), 0.5)
+  const primaryRgb = hexToRgbTriplet(b.color_primary);
+  const accentRgb  = hexToRgbTriplet(b.color_accent);
+  if (primaryRgb) root.style.setProperty("--brand-primary-rgb", primaryRgb);
+  if (accentRgb)  root.style.setProperty("--brand-accent-rgb",  accentRgb);
   if (b.name)        document.title = b.name;
   if (b.favicon_url) {
     let link = document.querySelector("link[rel='icon']");

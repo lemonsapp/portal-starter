@@ -66,7 +66,7 @@ function ProfileByIdRedirect() {
       })
       .catch(() => navigate("/inicio", { replace: true }));
   }, [userId, navigate]);
-  return <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#080808", color: "rgba(245,224,58,.4)", fontFamily: "monospace", fontSize: 12, letterSpacing: 2 }}>CARGANDO PERFIL...</div>;
+  return <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#080808", color: "rgba(var(--brand-primary-rgb),.4)", fontFamily: "monospace", fontSize: 12, letterSpacing: 2 }}>CARGANDO PERFIL...</div>;
 }
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -102,7 +102,7 @@ function AppLayout({ children, me, refreshMe }) {
       {/* Sidebar bottom en mobile — visible en todas las rutas autenticadas incluso /coins/operator */}
       {/* Sidebar bottom en mobile */}
       {isMobile && (
-        <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:400, background:"rgba(5,5,5,0.98)", borderTop:"1px solid rgba(245,224,58,0.1)", display:"flex", justifyContent:"space-around", padding:"6px 0 max(6px,env(safe-area-inset-bottom))" }}>
+        <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:400, background:"rgba(5,5,5,0.98)", borderTop:"1px solid rgba(var(--brand-primary-rgb),0.1)", display:"flex", justifyContent:"space-around", padding:"6px 0 max(6px,env(safe-area-inset-bottom))" }}>
           <Sidebar mobile />
         </div>
       )}
@@ -128,7 +128,7 @@ function AuthGate({ children, allowRoles }) {
   }, []);
 
   if (status === "loading") return (
-    <div style={{ minHeight:"100vh", display:"grid", placeItems:"center", background:"#080808", color:"rgba(245,224,58,0.4)", fontFamily:"monospace", fontSize:12, letterSpacing:"2px" }}>
+    <div style={{ minHeight:"100vh", display:"grid", placeItems:"center", background:"#080808", color:"rgba(var(--brand-primary-rgb),0.4)", fontFamily:"monospace", fontSize:12, letterSpacing:"2px" }}>
       CARGANDO...
     </div>
   );

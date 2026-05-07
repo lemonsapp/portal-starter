@@ -9,7 +9,7 @@
  */
 const sharedStyle = `
   @keyframes lemonSkel{0%{background-position:-300% 0}100%{background-position:300% 0}}
-  .skel{background:linear-gradient(90deg,rgba(255,255,255,.025) 0%,rgba(245,224,58,.06) 50%,rgba(255,255,255,.025) 100%);background-size:300% 100%;animation:lemonSkel 1.6s linear infinite}
+  .skel{background:linear-gradient(90deg,rgba(255,255,255,.025) 0%,rgba(var(--brand-primary-rgb),.06) 50%,rgba(255,255,255,.025) 100%);background-size:300% 100%;animation:lemonSkel 1.6s linear infinite}
   .skel-fade{animation:lemonSkel 1.6s linear infinite, fadeInSkel .4s ease both}
   @keyframes fadeInSkel{from{opacity:0}to{opacity:1}}
 `;

@@ -89,7 +89,7 @@ function ToastItem({ toast, onRemove }) {
           boxShadow: `0 0 20px ${toast.color}44`,
           animation: "toastIconPop 0.6s cubic-bezier(0.34,1.56,0.64,1)",
         }}>
-          {toast.icon || "🍋"}
+          {toast.icon || "🪙"}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ color: "var(--brand-primary, #f5e03a)", fontSize: 10, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>

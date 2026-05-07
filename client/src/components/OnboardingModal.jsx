@@ -72,12 +72,12 @@ export default function OnboardingModal({ user, onComplete }) {
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: .94, opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            style={{ width: "100%", maxWidth: 460, background: "linear-gradient(180deg,rgba(8,9,16,.98),rgba(2,3,7,.98))", border: "1px solid rgba(245,224,58,.22)", borderRadius: 22, padding: "32px 28px 28px", position: "relative", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}
+            style={{ width: "100%", maxWidth: 460, background: "linear-gradient(180deg,rgba(8,9,16,.98),rgba(2,3,7,.98))", border: "1px solid rgba(var(--brand-primary-rgb),.22)", borderRadius: 22, padding: "32px 28px 28px", position: "relative", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}
           >
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a))", backgroundSize: "200% 100%", animation: "obBar 3s linear infinite" }} />
             <style>{`@keyframes obBar{from{background-position:0 0}to{background-position:200% 0}}`}</style>
 
-            <div style={{ fontSize: 56, marginBottom: 18, lineHeight: 1, filter: "drop-shadow(0 0 16px rgba(245,224,58,.5))" }}>🍋</div>
+            <div style={{ fontSize: 56, marginBottom: 18, lineHeight: 1, filter: "drop-shadow(0 0 16px rgba(var(--brand-primary-rgb),.5))" }}>🪙</div>
 
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--brand-accent, #ff8c2a)", marginBottom: 8, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ width: 22, height: 1, background: "var(--brand-accent, #ff8c2a)" }} />
@@ -101,7 +101,7 @@ export default function OnboardingModal({ user, onComplete }) {
                 <label style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,.4)", display: "block", marginBottom: 6, fontWeight: 600 }}>
                   Tu @ usuario *
                 </label>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "rgba(255,255,255,.03)", border: "1px solid rgba(245,224,58,.22)", borderRadius: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "rgba(255,255,255,.03)", border: "1px solid rgba(var(--brand-primary-rgb),.22)", borderRadius: 12 }}>
                   <span style={{ color: "rgba(255,255,255,.4)", fontSize: 16 }}>@</span>
                   <input
                     autoFocus
@@ -120,7 +120,7 @@ export default function OnboardingModal({ user, onComplete }) {
                 <label style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,.4)", display: "block", marginBottom: 6, fontWeight: 600 }}>
                   Tu teléfono *
                 </label>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "rgba(255,255,255,.03)", border: "1px solid rgba(245,224,58,.22)", borderRadius: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "rgba(255,255,255,.03)", border: "1px solid rgba(var(--brand-primary-rgb),.22)", borderRadius: 12 }}>
                   <span style={{ color: "rgba(255,255,255,.4)", fontSize: 16 }}>📞</span>
                   <input
                     autoFocus={!needsUsername}
@@ -141,7 +141,7 @@ export default function OnboardingModal({ user, onComplete }) {
             )}
 
             <Pop as="button" onClick={save} disabled={!valid || saving}
-              style={{ width: "100%", padding: "14px", background: valid ? "linear-gradient(135deg,var(--brand-primary, #f5e03a),#ff8c00)" : "rgba(255,255,255,.05)", color: valid ? "#000" : "#444", border: "none", borderRadius: 12, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700, cursor: valid ? "pointer" : "not-allowed", boxShadow: valid ? "0 8px 24px rgba(245,224,58,.4)" : "none" }}>
+              style={{ width: "100%", padding: "14px", background: valid ? "linear-gradient(135deg,var(--brand-primary, #f5e03a),#ff8c00)" : "rgba(255,255,255,.05)", color: valid ? "#000" : "#444", border: "none", borderRadius: 12, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700, cursor: valid ? "pointer" : "not-allowed", boxShadow: valid ? "0 8px 24px rgba(var(--brand-primary-rgb),.4)" : "none" }}>
               {saving ? "Guardando…" : "Guardar y continuar →"}
             </Pop>
 

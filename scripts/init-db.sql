@@ -335,4 +335,11 @@ CREATE TABLE IF NOT EXISTS feed_posts (
 CREATE INDEX IF NOT EXISTS idx_feed_posts_created  ON feed_posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_feed_posts_expires  ON feed_posts(expires_at) WHERE expires_at IS NOT NULL;
 
+-- ─── Seed mínimo ──────────────────────────────────────────────────────────────
+-- Sala default para que el chat funcione out-of-the-box. El admin puede crear
+-- más salas desde el panel; el frontend usa slug='general' como sala principal.
+INSERT INTO chat_rooms (slug, name, description, icon, coins_required, is_active)
+VALUES ('general', 'Sala general', 'Charlá con toda la comunidad', '💬', 0, TRUE)
+ON CONFLICT (slug) DO NOTHING;
+
 COMMIT;

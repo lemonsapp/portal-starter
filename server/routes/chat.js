@@ -41,7 +41,14 @@ const upload = multer({
     await db.query(`ALTER TABLE chat_private_messages ADD COLUMN IF NOT EXISTS reply_to_story_id INT`);
     await db.query(`ALTER TABLE chat_private_messages ADD COLUMN IF NOT EXISTS reply_story_image_url TEXT`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ`);
-    console.log("[MIGRATION] custom_emojis + story_likes + reply_to_story ready");
+    // Seed sala default 'general' para que el chat funcione out-of-the-box
+    // (init-db.sql ya la incluye, pero esto cubre tenants migrados desde antes).
+    await db.query(`
+      INSERT INTO chat_rooms (slug, name, description, icon, coins_required, is_active)
+      VALUES ('general', 'Sala general', 'Charlá con toda la comunidad', '💬', 0, TRUE)
+      ON CONFLICT (slug) DO NOTHING
+    `);
+    console.log("[MIGRATION] custom_emojis + story_likes + reply_to_story + general room ready");
   } catch (e) { console.error("[MIGRATION chat ERROR]", e.message); }
 })();
 
@@ -71,7 +78,7 @@ router.post("/emojis", authRequired, upload.single("file"), async (req, res) => 
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
-          folder: "lemons-emojis",
+          folder: "portal-emojis",
           public_id: `emoji_${key}`,
           overwrite: true,
           resource_type: "image",
@@ -149,7 +156,7 @@ router.post("/stories", authRequired, uploadStory.single("file"), async (req, re
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
-          folder: "lemons-stories",
+          folder: "portal-stories",
           public_id: `story_${userId}_${Date.now()}`,
           resource_type: "image",
           transformation: [{ width: 1080, height: 1920, crop: "limit", quality: "auto" }],
@@ -339,7 +346,7 @@ router.delete("/emojis/:key", authRequired, async (req, res) => {
     const { key } = req.params;
     if (!/^[a-z0-9_]{2,30}$/.test(key)) return res.status(400).json({ error: "Key inválida" });
     await db.query(`DELETE FROM custom_emojis WHERE key=$1`, [key]);
-    try { await cloudinary.uploader.destroy(`lemons-emojis/emoji_${key}`); } catch {}
+    try { await cloudinary.uploader.destroy(`portal-emojis/emoji_${key}`); } catch {}
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

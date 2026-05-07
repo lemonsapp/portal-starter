@@ -81,7 +81,7 @@ export default function Register() {
 
         /* LEFT — form */
         .rg-left{position:relative;display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:#020307;border-right:1px solid rgba(240,236,227,.07)}
-        .rg-num{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:90px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(245,224,58,.05);pointer-events:none;user-select:none;top:14px;left:14px}
+        .rg-num{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:90px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.05);pointer-events:none;user-select:none;top:14px;left:14px}
 
         .rg-card{width:100%;max-width:460px;opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1) .25s}
         .rg-card.in{opacity:1;transform:translateY(0)}
@@ -95,19 +95,19 @@ export default function Register() {
         .rg-field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(240,236,227,.4);margin-bottom:9px}
         .rg-field label.hot{color:var(--brand-primary, #f5e03a)}
         .rg-input{width:100%;background:rgba(255,255,255,.025);border:1px solid rgba(240,236,227,.08);color:#f0ece3;font-family:'Barlow',sans-serif;font-size:15px;padding:14px 18px;outline:none;transition:all .25s;border-radius:0}
-        .rg-input:focus{border-color:rgba(245,224,58,.5);background:rgba(245,224,58,.04);box-shadow:0 0 0 1px rgba(245,224,58,.2)}
+        .rg-input:focus{border-color:rgba(var(--brand-primary-rgb),.5);background:rgba(var(--brand-primary-rgb),.04);box-shadow:0 0 0 1px rgba(var(--brand-primary-rgb),.2)}
         .rg-input::placeholder{color:rgba(240,236,227,.18)}
-        .rg-input.code{font-family:'DM Mono',monospace;font-size:18px;font-weight:700;letter-spacing:4px;text-align:center;border-color:rgba(245,224,58,.25);background:rgba(245,224,58,.02)}
-        .rg-input.code:focus{border-color:var(--brand-primary, #f5e03a);background:rgba(245,224,58,.06)}
+        .rg-input.code{font-family:'DM Mono',monospace;font-size:18px;font-weight:700;letter-spacing:4px;text-align:center;border-color:rgba(var(--brand-primary-rgb),.25);background:rgba(var(--brand-primary-rgb),.02)}
+        .rg-input.code:focus{border-color:var(--brand-primary, #f5e03a);background:rgba(var(--brand-primary-rgb),.06)}
 
         .rg-btn{width:100%;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;background:var(--brand-primary, #f5e03a);color:#000;border:none;padding:18px 28px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;position:relative}
-        .rg-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(245,224,58,.18);background:var(--brand-primary, #fff7a0)}
+        .rg-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(var(--brand-primary-rgb),.18);background:var(--brand-primary, #fff7a0)}
         .rg-btn:active{transform:translateY(0)}
         .rg-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
         .rg-btn .arr{transition:transform .3s}
         .rg-btn:hover .arr{transform:translateX(4px)}
 
-        .rg-err{margin-bottom:18px;padding:12px 16px;background:rgba(255,85,0,.06);border:1px solid rgba(255,85,0,.18);color:#ffb07a;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
+        .rg-err{margin-bottom:18px;padding:12px 16px;background:rgba(var(--brand-accent-rgb),.06);border:1px solid rgba(var(--brand-accent-rgb),.18);color:#ffb07a;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
         .rg-err::before{content:'⚠';color:var(--brand-accent, #ff5500);font-size:14px}
 
         .rg-divider{display:flex;align-items:center;gap:14px;margin:30px 0 20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,236,227,.25)}
@@ -123,15 +123,15 @@ export default function Register() {
         .rg-success-title{font-family:'Bebas Neue',sans-serif;font-size:56px;line-height:.92;letter-spacing:-.5px;margin-bottom:14px}
         .rg-success-title em{font-style:normal;color:#22c55e}
         .rg-success-desc{font-size:14px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:18px}
-        .rg-coins-pill{display:inline-flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;background:rgba(245,224,58,.06);border:1px solid rgba(245,224,58,.2);color:var(--brand-primary, #f5e03a);margin-bottom:30px}
+        .rg-coins-pill{display:inline-flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;background:rgba(var(--brand-primary-rgb),.06);border:1px solid rgba(var(--brand-primary-rgb),.2);color:var(--brand-primary, #f5e03a);margin-bottom:30px}
         .rg-coins-pill b{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px}
 
         /* RIGHT — branding panel */
         .rg-right{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px;background:linear-gradient(135deg,#07090f 0%,#020307 70%)}
-        .rg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,224,58,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(245,224,58,.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
-        .rg-watermark{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-8px;color:transparent;-webkit-text-stroke:1px rgba(245,224,58,.04);pointer-events:none;z-index:1;bottom:-60px;left:-40px;user-select:none}
+        .rg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
+        .rg-watermark{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-8px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;bottom:-60px;left:-40px;user-select:none}
         .rg-logo-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;max-width:520px;opacity:.06;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
-        .rg-glow{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(245,224,58,.04) 0%,transparent 70%);top:50%;right:-180px;transform:translateY(-50%);z-index:1;pointer-events:none}
+        .rg-glow{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(var(--brand-primary-rgb),.04) 0%,transparent 70%);top:50%;right:-180px;transform:translateY(-50%);z-index:1;pointer-events:none}
         .rg-right-inner{position:relative;z-index:3;display:flex;flex-direction:column;height:100%;justify-content:space-between}
 
         .rg-top{display:flex;align-items:center;justify-content:space-between}
@@ -155,7 +155,7 @@ export default function Register() {
         .rg-perks{display:flex;flex-direction:column;gap:14px}
         .rg-perk{display:flex;align-items:center;gap:14px;font-size:13px;color:rgba(240,236,227,.55);font-weight:300}
         .rg-perk b{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);font-weight:400;min-width:54px}
-        .rg-perk-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(245,224,58,.25),rgba(245,224,58,0))}
+        .rg-perk-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--brand-primary-rgb),.25),rgba(var(--brand-primary-rgb),0))}
 
         @media (max-width: 980px){
           .rg-root{grid-template-columns:1fr}
@@ -181,7 +181,7 @@ export default function Register() {
               <div className="rg-success-desc">
                 Te enviamos un email de verificación.<br/>Revisá tu bandeja de entrada para activar la cuenta.
               </div>
-              <div className="rg-coins-pill">🍋 <b>+15</b> Coins de bienvenida al verificar</div>
+              <div className="rg-coins-pill">🪙 <b>+15</b> Coins de bienvenida al verificar</div>
               <button onClick={() => navigate("/")} className="rg-btn">
                 <span>Ir al login</span><span className="arr">→</span>
               </button>

@@ -11,7 +11,7 @@ const NAV_STAFF = [
   { path: "/operator",       label: "Operador",    icon: "🗂️",  color: "var(--brand-primary, #f5e03a)" },
   { path: "/caja",           label: "Caja",        icon: "💵", color: "#22c55e" },
   { path: "/external",       label: "Cargas",      icon: "📦", color: "#60a5fa" },
-  { path: "/coins/operator", label: "Coins",       icon: "🍋", color: "var(--brand-primary, #f5e03a)" },
+  { path: "/coins/operator", label: "Coins",       icon: "🪙", color: "var(--brand-primary, #f5e03a)" },
   { path: "/chat",           label: "Chat",        icon: "💬", color: "#a78bfa" },
 ];
 
@@ -20,7 +20,7 @@ const NAV_CLIENT = [
   { path: "/client/shipments", label: "Mis Envíos",   icon: "📦", color: "var(--brand-primary, #f5e03a)" },
   { path: "/perfil",           label: "Mi Perfil",    icon: "👤", color: "#60a5fa" },
   { path: "/client/quote",     label: "Presupuesto",  icon: "🧮", color: "#22c55e" },
-  { path: "/coins",            label: "Coins",        icon: "🍋", color: "var(--brand-primary, #f5e03a)" },
+  { path: "/coins",            label: "Coins",        icon: "🪙", color: "var(--brand-primary, #f5e03a)" },
   { path: "/chat",             label: "Chat",         icon: "💬", color: "#a78bfa" },
 ];
 
@@ -77,7 +77,7 @@ export default function Sidebar({ mobile = false }) {
           content: '';
           position: absolute;
           top: 0; left: 0; right: 0; height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(245,224,58,.4), transparent);
+          background: linear-gradient(90deg, transparent, rgba(var(--brand-primary-rgb),.4), transparent);
         }
         .sb-btn {
           display: flex;
@@ -102,10 +102,10 @@ export default function Sidebar({ mobile = false }) {
           to { opacity: 1; transform: translateX(0); }
         }
         .sb-btn:hover {
-          background: rgba(245,224,58,0.06) !important;
+          background: rgba(var(--brand-primary-rgb),0.06) !important;
           color: var(--c) !important;
           transform: translateY(-2px) !important;
-          border-color: rgba(245,224,58,.18) !important;
+          border-color: rgba(var(--brand-primary-rgb),.18) !important;
         }
         .sb-btn.active {
           color: var(--c);

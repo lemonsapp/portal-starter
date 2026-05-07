@@ -14,7 +14,7 @@ const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("
  *   { kind: "user"|"announcement"|"tip", key, user?, stories: [...] }
  *
  * Features:
- *   - Auto-advance (5s user / 6s lemons), tap dentro del bucket / swipe entre buckets.
+ *   - Auto-advance (5s user / 6s admin (broadcast)), tap dentro del bucket / swipe entre buckets.
  *   - Click en avatar/nombre del header → navega al perfil (/perfil/:username).
  *   - Indicador "online" si bucket.user.online === true.
  *   - Like ❤ por story (count visible para todos, lista de likers sólo si soy owner).
@@ -358,7 +358,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
                   style={{ flex: 1, minWidth: 0, padding: "9px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 10, color: "#fff", fontSize: 13, outline: "none" }}
                 />
                 <button onClick={sendReply} disabled={!replyText.trim() || replySending}
-                  style={{ padding: "9px 12px", borderRadius: 10, background: replyText.trim() ? "rgba(245,224,58,.18)" : "rgba(255,255,255,.06)", border: `1px solid ${replyText.trim() ? "rgba(245,224,58,.45)" : "rgba(255,255,255,.1)"}`, color: replyText.trim() ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.4)", fontSize: 14, cursor: replyText.trim() && !replySending ? "pointer" : "default", flexShrink: 0 }}>
+                  style={{ padding: "9px 12px", borderRadius: 10, background: replyText.trim() ? "rgba(var(--brand-primary-rgb),.18)" : "rgba(255,255,255,.06)", border: `1px solid ${replyText.trim() ? "rgba(var(--brand-primary-rgb),.45)" : "rgba(255,255,255,.1)"}`, color: replyText.trim() ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.4)", fontSize: 14, cursor: replyText.trim() && !replySending ? "pointer" : "default", flexShrink: 0 }}>
                   {replySending ? "…" : "→"}
                 </button>
                 <button onClick={toggleLike}
@@ -370,7 +370,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
               </>
             ) : (
               <button onClick={openLikers}
-                style={{ flex: 1, padding: "10px 14px", borderRadius: 10, background: "rgba(245,224,58,.08)", border: "1px solid rgba(245,224,58,.22)", color: "var(--brand-primary, #f5e03a)", fontFamily: "'DM Mono',monospace", fontSize: 11, letterSpacing: 1.4, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
+                style={{ flex: 1, padding: "10px 14px", borderRadius: 10, background: "rgba(var(--brand-primary-rgb),.08)", border: "1px solid rgba(var(--brand-primary-rgb),.22)", color: "var(--brand-primary, #f5e03a)", fontFamily: "'DM Mono',monospace", fontSize: 11, letterSpacing: 1.4, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
                 ❤ {ls.count} {ls.count === 1 ? "like" : "likes"} · ver quién
               </button>
             )}
@@ -390,7 +390,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
             <motion.div
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 26, stiffness: 280 }}
-              style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: "40%", background: "rgba(8,9,16,.98)", backdropFilter: "blur(20px)", borderRadius: "20px 20px 0 0", borderTop: "1px solid rgba(245,224,58,.2)", zIndex: 20, overflow: "hidden", display: "flex", flexDirection: "column" }}
+              style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: "40%", background: "rgba(8,9,16,.98)", backdropFilter: "blur(20px)", borderRadius: "20px 20px 0 0", borderTop: "1px solid rgba(var(--brand-primary-rgb),.2)", zIndex: 20, overflow: "hidden", display: "flex", flexDirection: "column" }}
               onClick={(e) => e.stopPropagation()}
             >
               <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,.06)" }}>

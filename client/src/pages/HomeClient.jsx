@@ -2,7 +2,7 @@
 //
 // Home base post-login para users no-staff. Spec § 7.2: 'home base con feed
 // del admin + widgets sociales'. Reescrito en Sprint 4 para sacar todo lo
-// que era cargas-específico del original Lemons (shipments, cotizar, ETA,
+// que era legacy de envíos (shipments, cotizar, ETA,
 // tracking, ShipmentRow, etc.).
 //
 // Layout:

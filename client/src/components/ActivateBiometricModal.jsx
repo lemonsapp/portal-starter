@@ -75,7 +75,7 @@ const overlay = {
 };
 
 const modal = {
-  background: "#0a0c14", border: "1px solid rgba(245,224,58,0.18)",
+  background: "#0a0c14", border: "1px solid rgba(var(--brand-primary-rgb),0.18)",
   maxWidth: 400, width: "100%", padding: "32px 28px",
   fontFamily: "'Barlow',sans-serif", color: "#f0ece3",
   textAlign: "center",
@@ -91,7 +91,7 @@ const desc = {
 };
 const errStyle = {
   marginBottom: 16, padding: "10px 14px",
-  background: "rgba(255,85,0,.06)", border: "1px solid rgba(255,85,0,.18)",
+  background: "rgba(var(--brand-accent-rgb),.06)", border: "1px solid rgba(var(--brand-accent-rgb),.18)",
   color: "#ffb07a", fontSize: 13,
 };
 const btnPrimary = {

@@ -8,16 +8,14 @@ import { Pop, Jumbo } from "../components/MotionPop.jsx";
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
+// Metadata visual para salas. La sala "general" (default seed) está acá;
+// salas custom que cree el admin caen en el fallback `{accent:"#c8f53a", icon: room.icon || "💬"}`.
 const ROOM_META = {
-  "mundo-limon":  { accent: "#c8f53a", icon: "🍋" },
-  "importadores": { accent: "#60a5fa", icon: "📦" },
-  "compra-venta": { accent: "#fb923c", icon: "💰" },
-  "vip":          { accent: "#e879f9", icon: "👑" },
-  "cursos":       { accent: "#34d399", icon: "📚" },
+  "general": { accent: "var(--brand-primary, #c8f53a)", icon: "💬" },
 };
 
 const ICONS = { gold: "🥇", diamond: "💎", crown: "👑" };
-const AVATAR_EMOJIS = { avatar_lemon:"🍋", avatar_fire:"🔥", avatar_diamond:"💎", avatar_star:"⭐", avatar_crown:"👑", avatar_rocket:"🚀" };
+const AVATAR_EMOJIS = { avatar_lemon:"🪙", avatar_fire:"🔥", avatar_diamond:"💎", avatar_star:"⭐", avatar_crown:"👑", avatar_rocket:"🚀" };
 
 // ── XAT-style SMILES (códigos → emoji) ────────────────────────────────────────
 const SMILES_MAP = {
@@ -25,9 +23,9 @@ const SMILES_MAP = {
   ":(": "😢", ":-(": "😢", ":'(": "😭", ";)": "😉", ";-)": "😉",
   ":o": "😮", ":O": "😮", ":|": "😐", ":/": "😕", "xD": "😆", "XD": "😆",
   "<3": "❤️", "</3": "💔", ":*": "😘", "B)": "😎",
-  "(L)": "🍋", "(Y)": "👍", "(N)": "👎", "(H)": "😎", "(K)": "💋", "(F)": "🌹",
+  "(L)": "🪙", "(Y)": "👍", "(N)": "👎", "(H)": "😎", "(K)": "💋", "(F)": "🌹",
   "(*)": "⭐", "(fire)": "🔥", "(crown)": "👑", "(star)": "⭐", "(diamond)": "💎",
-  "(heart)": "❤️", "(rocket)": "🚀", "(party)": "🎉", "(lemon)": "🍋",
+  "(heart)": "❤️", "(rocket)": "🚀", "(party)": "🎉", "(lemon)": "🪙",
   "(coin)": "🪙", "(box)": "📦", "(plane)": "✈️", "(wave)": "👋", "(clap)": "👏",
   "(eyes)": "👀", "(mind)": "🤯", "(100)": "💯", "(ok)": "👌", "(pray)": "🙏",
 };
@@ -37,7 +35,7 @@ const SMILE_PICKER = [
   { c:"😐", k:":|" }, { c:"😕", k:":/" }, { c:"🤯", k:"(mind)" }, { c:"😢", k:":(" },
   { c:"😭", k:":'(" },
   { c:"❤️", k:"<3" }, { c:"💔", k:"</3" }, { c:"💋", k:"(K)" }, { c:"🌹", k:"(F)" },
-  { c:"🍋", k:"(L)" }, { c:"⭐", k:"(*)" }, { c:"🔥", k:"(fire)" }, { c:"👑", k:"(crown)" },
+  { c:"🪙", k:"(L)" }, { c:"⭐", k:"(*)" }, { c:"🔥", k:"(fire)" }, { c:"👑", k:"(crown)" },
   { c:"💎", k:"(diamond)" }, { c:"🚀", k:"(rocket)" }, { c:"🎉", k:"(party)" },
   { c:"💯", k:"(100)" }, { c:"👍", k:"(Y)" }, { c:"👎", k:"(N)" }, { c:"👌", k:"(ok)" },
   { c:"📦", k:"(box)" }, { c:"✈️", k:"(plane)" }, { c:"🪙", k:"(coin)" },
@@ -93,7 +91,7 @@ function getPawn(user) {
   if (user.chat_role === "owner" || user.chat_role === "main_owner")
     return { ico: "👑", c: "#fbbf24", lbl: "OWNER" };
   if (user.chat_role === "mod")      return { ico: "🛡️", c: "#60a5fa", lbl: "MOD" };
-  return { ico: "🍋", c: "#c8f53a", lbl: "MEMBER" };
+  return { ico: "🪙", c: "#c8f53a", lbl: "MEMBER" };
 }
 
 // ── Sound ping (Web Audio, sin asset externo) ────────────────────────────────
@@ -144,7 +142,7 @@ function UserName({ user, size=13 }) {
   return (
     <span style={{ fontWeight:700, fontSize:size, display:"inline-flex", alignItems:"center", gap:3, ...style }}>
       {user?.icon_slug && ICONS[user.icon_slug] && <span>{ICONS[user.icon_slug]}</span>}
-      {isStaff && <span>🍋</span>}
+      {isStaff && <span>🪙</span>}
       <span>{user?.user_name||user?.name}</span>
       {user?.chat_role && user.chat_role!=="member" && !isStaff && <span style={{ fontSize:size-3, color:"#60a5fa" }}>[{user.chat_role.toUpperCase()}]</span>}
       {isStaff && <span style={{ fontSize:size-3, color:"#ef4444", opacity:0.7 }}>ADMIN</span>}
@@ -203,7 +201,7 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
   const nameColor = user.name_color || (["admin","operator"].includes(user.user_role) ? "#ef4444" : "#c8f53a");
   const level = profile?.user?.level || "bronze";
   const bannerGrad = level==="gold"
-    ? "linear-gradient(135deg,rgba(245,224,58,.3),rgba(255,85,0,.2))"
+    ? "linear-gradient(135deg,rgba(var(--brand-primary-rgb),.3),rgba(var(--brand-accent-rgb),.2))"
     : level==="silver" ? "linear-gradient(135deg,rgba(192,192,192,.2),rgba(96,165,250,.15))"
     : "linear-gradient(135deg,rgba(99,102,241,.2),rgba(168,85,247,.15))";
 
@@ -311,7 +309,7 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
         {/* Stats */}
         {profile && (
           <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,padding:"0 22px 16px",background:"#0b0f1e" }}>
-            {[{label:"Envíos",value:profile.stats?.total_shipments||0},{label:"Entregados",value:profile.stats?.delivered||0},{label:"🍋 Coins",value:profile.coins?.balance||0}].map(s=>(
+            {[{label:"Envíos",value:profile.stats?.total_shipments||0},{label:"Entregados",value:profile.stats?.delivered||0},{label:"🪙 Coins",value:profile.coins?.balance||0}].map(s=>(
               <div key={s.label} style={{ background:"rgba(255,255,255,.04)",borderRadius:10,padding:"10px 12px",textAlign:"center" }}>
                 <div style={{ fontWeight:900,fontSize:18,color:"#f1f5f9" }}>{s.value}</div>
                 <div style={{ fontSize:10,color:"#334155",marginTop:2 }}>{s.label}</div>
@@ -366,7 +364,7 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
               <div style={{ fontSize:11,color:"#334155" }}>Vista previa:</div>
               <span style={{ fontWeight:800, fontSize:14, ...(cfg.name_grad_from&&cfg.name_grad_to ? {background:`linear-gradient(90deg,${cfg.name_grad_from},${cfg.name_grad_to})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"} : {color:cfg.name_color||"#c8f53a",textShadow:cfg.name_glow?`0 0 ${cfg.name_glow}px ${cfg.name_glow_color||cfg.name_color||"#c8f53a"}`:"none"}) }}>
                 {cfg.icon_slug&&ICONS[cfg.icon_slug]&&<span style={{marginRight:3}}>{ICONS[cfg.icon_slug]}</span>}
-                🍋 {currentUser?.name}
+                🪙 {currentUser?.name}
               </span>
               {cfg.nickname && <span style={{ fontSize:11,color:cfg.nick_color||"#64748b",textShadow:cfg.nick_glow?`0 0 ${cfg.nick_glow}px ${cfg.nick_color||"#64748b"}`:"none" }}>{cfg.nickname}</span>}
             </div>
@@ -477,7 +475,7 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
             {!has("namecolor")&&!has("nameglow")&&!has("nickname")&&!has("gold") && (
               <div style={{ textAlign:"center",padding:24,color:"#334155" }}>
                 <div style={{ fontSize:32,marginBottom:8 }}>⚡</div>
-                <div style={{ fontSize:12 }}>Comprá Lemon Powers en la tienda del chat</div>
+                <div style={{ fontSize:12 }}>Comprá Powers en la tienda del chat</div>
               </div>
             )}
             {(has("namecolor")||has("nameglow")||has("nickname")||has("gold")) && (
@@ -651,7 +649,7 @@ function PowersInline({ token }) {
 
   return (
     <div style={{ padding:"16px", display:"flex", flexDirection:"column", gap:10 }}>
-      <div style={{ fontSize:13, fontWeight:800, color:"#c8f53a", marginBottom:8 }}>⚡ Lemon Powers</div>
+      <div style={{ fontSize:13, fontWeight:800, color:"#c8f53a", marginBottom:8 }}>⚡ Powers</div>
       {powers.length === 0 && <div style={{ color:"rgba(255,255,255,0.3)", fontSize:13, textAlign:"center", padding:20 }}>No tenés powers todavía. Comprá en la tienda de Coins!</div>}
       {powers.map(p => (
         <div key={p.slug} style={{ padding:"12px 16px", background: p.owned ? "rgba(200,245,58,0.08)" : "rgba(255,255,255,0.03)", border:`1px solid ${p.owned ? "rgba(200,245,58,0.2)" : "rgba(255,255,255,0.06)"}`, borderRadius:12, display:"flex", alignItems:"center", gap:12 }}>
@@ -661,11 +659,11 @@ function PowersInline({ token }) {
             <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>{p.description}</div>
           </div>
           {p.owned ? <span style={{ fontSize:11, fontWeight:800, color:"#c8f53a", background:"rgba(200,245,58,0.1)", padding:"3px 10px", borderRadius:20 }}>✓ ACTIVO</span>
-            : <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>{p.cost} 🍋</span>}
+            : <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>{p.cost} 🪙</span>}
         </div>
       ))}
       <a href="/coins" style={{ display:"block", textAlign:"center", padding:"12px", background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))", color:"#000", borderRadius:12, fontWeight:900, fontSize:14, textDecoration:"none", marginTop:8 }}>
-        🍋 Ver tienda de Coins
+        🪙 Ver tienda de Coins
       </a>
     </div>
   );
@@ -686,7 +684,7 @@ function SmilePicker({ accent, customEmojis, onPickSmile, onPickCustom, onClose 
           </button>
           <button onClick={()=>setTab("custom")} disabled={customEmojis.length===0}
             style={{ background:tab==="custom"?accent+"22":"transparent",border:`1px solid ${tab==="custom"?accent+"55":"transparent"}`,color:customEmojis.length===0?"#1e293b":tab==="custom"?accent:"#475569",padding:"4px 10px",fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:700,cursor:customEmojis.length===0?"not-allowed":"pointer",borderRadius:5,textTransform:"uppercase" }}>
-            🍋 Custom · {customEmojis.length}
+            🪙 Custom · {customEmojis.length}
           </button>
         </div>
         <button onClick={onClose} style={{ background:"none",border:"none",color:"#475569",cursor:"pointer",fontSize:12 }}>✕</button>
@@ -762,7 +760,7 @@ function SystemMessage({ icon = "👋", text, accent = "#c8f53a" }) {
 // ── Main ChatPage ─────────────────────────────────────────────────────────────
 export default function ChatPage() {
   const [rooms, setRooms] = useState([]);
-  const [activeRoom, setActiveRoom] = useState(null); // sala activa (mundo-limon por default)
+  const [activeRoom, setActiveRoom] = useState(null); // sala activa (general por default)
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [socket, setSocket] = useState(null);
@@ -833,11 +831,11 @@ export default function ChatPage() {
     return()=>s.disconnect();
   },[]);
 
-  // Auto-entrar a mundo-limon cuando carguen las rooms
+  // Auto-entrar a la sala general cuando carguen las rooms
   useEffect(()=>{
     if(rooms.length>0 && !activeRoom && socket) {
-      const main = rooms.find(r=>r.slug==="mundo-limon");
-      if(main) enterRoom("mundo-limon");
+      const main = rooms.find(r=>r.slug==="general");
+      if(main) enterRoom("general");
     }
   },[rooms, socket]);
 
@@ -958,7 +956,7 @@ export default function ChatPage() {
     setSelectedUser(isOwn ? {...normalUser,...currentProfile,user_id:currentUser.id,user_name:currentUser.name,user_role:currentUser.role} : normalUser);
   };
 
-  const premiumRooms = rooms.filter(r=>r.slug!=="mundo-limon");
+  const premiumRooms = rooms.filter(r=>r.slug!=="general");
   const [isMobile] = useState(() => window.innerWidth <= 768);
   const [mobileView, setMobileView] = useState("chat"); // "rooms" | "chat" | "users"
   const pendingFriends = friends.filter(f=>f.status==="pending");
@@ -973,9 +971,9 @@ export default function ChatPage() {
       @keyframes xatPanelIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
       .xat-panel{animation:xatPanelIn .22s cubic-bezier(.2,.8,.2,1)}
       .xat-smile-btn{transition:transform .15s,background .15s}
-      .xat-smile-btn:hover{transform:scale(1.18) translateY(-2px);background:rgba(245,224,58,.1)!important}
+      .xat-smile-btn:hover{transform:scale(1.18) translateY(-2px);background:rgba(var(--brand-primary-rgb),.1)!important}
       .xat-icon-btn{transition:all .2s;cursor:pointer;display:flex;align-items:center;justify-content:center;border:1px solid transparent}
-      .xat-icon-btn:hover{background:rgba(245,224,58,.08)!important;border-color:rgba(245,224,58,.2)!important;color:#c8f53a!important}
+      .xat-icon-btn:hover{background:rgba(var(--brand-primary-rgb),.08)!important;border-color:rgba(var(--brand-primary-rgb),.2)!important;color:#c8f53a!important}
       .xat-welcome{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;animation:xatWelIn .5s cubic-bezier(.34,1.56,.64,1) both,xatWelOut .4s ease 4s forwards}
       @keyframes xatWelIn{from{opacity:0;transform:translateX(-50%) translateY(-12px) scale(.9)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
       @keyframes xatWelOut{to{opacity:0;transform:translateX(-50%) translateY(-8px) scale(.95)}}
@@ -1029,9 +1027,9 @@ export default function ChatPage() {
         {/* Header sala activa — editorial */}
         <div className="xc-header" style={{ padding:"14px 18px", borderBottom:`1px solid ${accent}15`, display:"flex", alignItems:"center", gap:14, flexShrink:0, background:"linear-gradient(135deg,#08101e 0%,#04060d 100%)", position:"relative", overflow:"hidden" }}>
           <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,${accent},transparent)` }}/>
-          <span className="xc-room-icon" style={{ fontSize:22, filter:`drop-shadow(0 0 10px ${accent}66)` }}>{activeRoom ? ROOM_META[activeRoom.slug]?.icon : "🍋"}</span>
+          <span className="xc-room-icon" style={{ fontSize:22, filter:`drop-shadow(0 0 10px ${accent}66)` }}>{activeRoom ? ROOM_META[activeRoom.slug]?.icon : "🪙"}</span>
           <div style={{ display:"flex", flexDirection:"column", lineHeight:1 }}>
-            <div className="xc-header-eye" style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"2.5px", textTransform:"uppercase", color:"rgba(245,224,58,.4)", marginBottom:4 }}>Sala activa</div>
+            <div className="xc-header-eye" style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"2.5px", textTransform:"uppercase", color:"rgba(var(--brand-primary-rgb),.4)", marginBottom:4 }}>Sala activa</div>
             <div className="xc-room-name" style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, letterSpacing:"3px", color:"#f0ece3", textTransform:"uppercase" }}>{activeRoom?.name || "Cargando…"}</div>
           </div>
           <div className="xc-online-badge" style={{ display:"inline-flex", alignItems:"center", gap:6, marginLeft:8, padding:"4px 10px", background:"rgba(34,197,94,.06)", border:"1px solid rgba(34,197,94,.2)", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"2px", color:"#22c55e" }}>
@@ -1057,7 +1055,7 @@ export default function ChatPage() {
           {showWelcome && activeRoom && (
             <div key={"w-"+activeRoom.slug} className="xat-welcome">
               <div style={{ display:"flex",alignItems:"center",gap:10,padding:"10px 18px",background:`linear-gradient(135deg,${accent}18,rgba(7,12,24,.95))`,border:`1px solid ${accent}40`,boxShadow:`0 12px 40px ${accent}22`,backdropFilter:"blur(12px)" }}>
-                <span style={{ fontSize:18,filter:`drop-shadow(0 0 8px ${accent})` }}>{ROOM_META[activeRoom.slug]?.icon||"🍋"}</span>
+                <span style={{ fontSize:18,filter:`drop-shadow(0 0 8px ${accent})` }}>{ROOM_META[activeRoom.slug]?.icon||"🪙"}</span>
                 <div>
                   <div style={{ fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"2px",color:accent,textTransform:"uppercase" }}>Bienvenido a</div>
                   <div style={{ fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:"3px",color:"#f0ece3",textTransform:"uppercase",lineHeight:1 }}>{activeRoom.name}</div>
@@ -1071,7 +1069,7 @@ export default function ChatPage() {
             <div style={{ textAlign:"center",color:"#1e293b",marginTop:40,fontSize:13 }}>Cargando...</div>
           ) : messages.length===0 ? (
             <div style={{ textAlign:"center",marginTop:60 }}>
-              <div style={{ fontSize:40,marginBottom:8 }}>{ROOM_META[activeRoom?.slug]?.icon||"🍋"}</div>
+              <div style={{ fontSize:40,marginBottom:8 }}>{ROOM_META[activeRoom?.slug]?.icon||"🪙"}</div>
               <div style={{ fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:"4px",color:"#475569",marginBottom:6 }}>SILENCIO ABSOLUTO</div>
               <div style={{ fontFamily:"'DM Mono',monospace",fontSize:10,color:"#1e293b",letterSpacing:"2px",textTransform:"uppercase" }}>Sé el primero · Tipeá :) (L) (fire)</div>
             </div>
@@ -1111,7 +1109,7 @@ export default function ChatPage() {
                 style={{ background:input.trim()?accent:"#1a2540",color:input.trim()?"#000":"#334155",border:"none",borderRadius:8,padding:"8px 16px",fontWeight:800,cursor:input.trim()?"pointer":"default",fontSize:13,flexShrink:0 }}>→</Pop>
             </div>
             <div className="xc-hints" style={{ marginTop:6,fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"1.5px",color:"#334155",textTransform:"uppercase",display:"flex",gap:10,flexWrap:"wrap" }}>
-              <span>:) → 😊</span><span>(L) → 🍋</span><span>(fire) → 🔥</span><span>{`<3 → ❤️`}</span><span>(crown) → 👑</span>
+              <span>:) → 😊</span><span>(L) → 🪙</span><span>(fire) → 🔥</span><span>{`<3 → ❤️`}</span><span>(crown) → 👑</span>
             </div>
           </div>
         )}
@@ -1124,10 +1122,10 @@ export default function ChatPage() {
         <div style={{ borderBottom:"1px solid #0d1424",padding:"8px 6px" }}>
           <div style={{ fontSize:9,color:"#1e293b",fontWeight:700,letterSpacing:1,textTransform:"uppercase",padding:"0 6px 6px" }}>Salas</div>
           {/* Sala principal */}
-          <div onClick={()=>enterRoom("mundo-limon")}
-            style={{ display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,cursor:"pointer",background:activeRoom?.slug==="mundo-limon"?`${ROOM_META["mundo-limon"].accent}15`:"transparent",border:activeRoom?.slug==="mundo-limon"?`1px solid ${ROOM_META["mundo-limon"].accent}25`:"1px solid transparent",marginBottom:3 }}>
-            <span style={{ fontSize:14 }}>🍋</span>
-            <span style={{ fontSize:11,fontWeight:700,color:activeRoom?.slug==="mundo-limon"?"#c8f53a":"#64748b" }}>Mundo Limón</span>
+          <div onClick={()=>enterRoom("general")}
+            style={{ display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,cursor:"pointer",background:activeRoom?.slug==="general"?"rgba(var(--brand-primary-rgb),0.08)":"transparent",border:activeRoom?.slug==="general"?"1px solid rgba(var(--brand-primary-rgb),0.15)":"1px solid transparent",marginBottom:3 }}>
+            <span style={{ fontSize:14 }}>💬</span>
+            <span style={{ fontSize:11,fontWeight:700,color:activeRoom?.slug==="general"?"var(--brand-primary, #c8f53a)":"#64748b" }}>Sala general</span>
           </div>
           {/* Salas premium */}
           {premiumRooms.map(room=>{
@@ -1141,7 +1139,7 @@ export default function ChatPage() {
                 <span style={{ fontSize:14 }}>{meta.icon}</span>
                 <div style={{ flex:1,minWidth:0 }}>
                   <div style={{ fontSize:11,fontWeight:700,color:isActive?meta.accent:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{room.name}</div>
-                  {!hasAccess && <div style={{ fontSize:9,color:"#334155" }}>🔒 {room.coins_required} 🍋</div>}
+                  {!hasAccess && <div style={{ fontSize:9,color:"#334155" }}>🔒 {room.coins_required} 🪙</div>}
                 </div>
                 {joining===room.id && <span style={{ fontSize:9,color:"#334155" }}>...</span>}
               </div>

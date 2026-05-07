@@ -5,10 +5,10 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 const hdrs = () => ({ Authorization: "Bearer " + getToken(), "Content-Type": "application/json" });
 const PALETTE = ["var(--brand-primary, #f5e03a)","var(--brand-accent, #ff5500)","#ff3300","#22c55e","#60a5fa","#a78bfa","#f472b6","#e11d48","#0ea5e9","#14b8a6","#06b6d4","#ffffff","#ede9e0","#000000"];
-const EMOJIS  = ["⚡","🔥","🍋","💎","👑","🌟","🏆","💀","🐋","🌈","❄","🚀","🎯","💜","🖤","⭐","🌀","👾","🎮","🎪"];
+const EMOJIS  = ["⚡","🔥","🪙","💎","👑","🌟","🏆","💀","🐋","🌈","❄","🚀","🎯","💜","🖤","⭐","🌀","👾","🎮","🎪"];
 const BANNER_EFFECTS = [
   { id:"none",       name:"Ninguno",    icon:"⬜" },
-  { id:"lemon_rain", name:"Limones",    icon:"🍋" },
+  { id:"lemon_rain", name:"Limones",    icon:"🪙" },
   { id:"lightning",  name:"Tormenta",   icon:"⚡" },
   { id:"fire",       name:"Fuego",      icon:"🔥" },
   { id:"snow",       name:"Nieve",      icon:"❄"  },
@@ -70,7 +70,7 @@ export function BannerCanvas({ effect, color1, color2, height=120 }) {
         t++; p.x+=p.vx; p.y+=p.vy; p.phase+=p.speed; p.angle+=.02;
         if(p.y>h+16)p.y=-16; if(p.y<-16)p.y=h+16; if(p.x>w+16)p.x=-16; if(p.x<-16)p.x=w+16;
         const a=(Math.sin(p.phase)*.3+.7)*p.opacity; ctx.globalAlpha=a;
-        if(effect==="lemon_rain"){ctx.font=`${p.size}px serif`;ctx.fillText("🍋",p.x,p.y);}
+        if(effect==="lemon_rain"){ctx.font=`${p.size}px serif`;ctx.fillText("🪙",p.x,p.y);}
         else if(effect==="lightning"){ctx.strokeStyle=color1;ctx.lineWidth=Math.random()<.03?2:.5;ctx.shadowColor=color1;ctx.shadowBlur=6;ctx.beginPath();let lx=p.x,ly=0;for(let s=0;s<8;s++){const nx=lx+(Math.random()-.5)*28,ny=ly+h/8;ctx.moveTo(lx,ly);ctx.lineTo(nx,ny);lx=nx;ly=ny;}ctx.stroke();ctx.shadowBlur=0;}
         else if(effect==="fire"){const fr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,12+Math.sin(p.phase*3)*6);fr.addColorStop(0,"var(--brand-primary, #f5e03a)");fr.addColorStop(.5,"var(--brand-accent, #ff5500)");fr.addColorStop(1,"transparent");ctx.fillStyle=fr;ctx.beginPath();ctx.arc(p.x,p.y,14,0,Math.PI*2);ctx.fill();}
         else if(effect==="snow"){ctx.fillStyle="#bae6fd";ctx.beginPath();ctx.arc(p.x,p.y,p.size/5,0,Math.PI*2);ctx.fill();}
@@ -113,8 +113,8 @@ function LockOverlay({ cost, label, onUnlock, coins, loading }) {
     <div style={{position:"absolute",inset:0,borderRadius:"inherit",background:"rgba(4,6,13,.85)",backdropFilter:"blur(4px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:10,gap:12}}>
       <div style={{fontSize:32}}>🔒</div>
       <div style={{fontSize:18,fontWeight:800,color:"#ede9e0",textAlign:"center"}}>{label}</div>
-      <div style={{fontSize:11,color:ok?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.35)"}}>🍋 {cost} coins</div>
-      {!ok&&<div style={{fontSize:9,color:"rgba(255,85,0,.7)"}}>Te faltan {cost-coins} coins</div>}
+      <div style={{fontSize:11,color:ok?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.35)"}}>🪙 {cost} coins</div>
+      {!ok&&<div style={{fontSize:9,color:"rgba(var(--brand-accent-rgb),.7)"}}>Te faltan {cost-coins} coins</div>}
       <button onClick={onUnlock} disabled={!ok||loading} style={{fontSize:12,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",padding:"10px 24px",borderRadius:8,border:"none",background:ok?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.1)",color:ok?"#04060d":"rgba(237,233,224,.3)",cursor:ok?"pointer":"not-allowed",opacity:loading?.7:1}}>
         {loading?"Desbloqueando...":ok?"⚡ Desbloquear":"Sin coins"}
       </button>
@@ -124,10 +124,10 @@ function LockOverlay({ cost, label, onUnlock, coins, loading }) {
 
 const BADGE_FX = {
   lightning:{css:(c)=>`@keyframes lb_${c.replace("#","")}{ 0%,100%{box-shadow:0 0 8px ${c},0 0 22px ${c}88}50%{box-shadow:0 0 4px ${c},0 0 10px ${c}44}}@keyframes lf{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.3}95%{opacity:1}}`,wrap:(c)=>({animation:`lb_${c.replace("#","")} 1.6s ease-in-out infinite`,background:`linear-gradient(135deg,${c}22,${c}08)`,border:`1.5px solid ${c}70`}),text:(c)=>({animation:"lf 3s linear infinite",color:c}),emoji:"none"},
-  fire:{css:()=>`@keyframes fg{0%,100%{box-shadow:0 0 8px var(--brand-accent, #ff5500)aa,0 0 20px var(--brand-accent, #ff5500)55}50%{box-shadow:0 0 16px var(--brand-accent, #ff5500)cc}}@keyframes fw{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.08)}}`,wrap:()=>({animation:"fg 1.8s ease-in-out infinite",background:"linear-gradient(135deg,rgba(255,85,0,.2),rgba(245,224,58,.08))",border:"1.5px solid rgba(255,85,0,.6)"}),text:()=>({background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))",backgroundClip:"text",WebkitBackgroundClip:"text",color:"transparent"}),emoji:"fw 1.5s ease-in-out infinite"},
+  fire:{css:()=>`@keyframes fg{0%,100%{box-shadow:0 0 8px var(--brand-accent, #ff5500)aa,0 0 20px var(--brand-accent, #ff5500)55}50%{box-shadow:0 0 16px var(--brand-accent, #ff5500)cc}}@keyframes fw{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.08)}}`,wrap:()=>({animation:"fg 1.8s ease-in-out infinite",background:"linear-gradient(135deg,rgba(var(--brand-accent-rgb),.2),rgba(var(--brand-primary-rgb),.08))",border:"1.5px solid rgba(var(--brand-accent-rgb),.6)"}),text:()=>({background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))",backgroundClip:"text",WebkitBackgroundClip:"text",color:"transparent"}),emoji:"fw 1.5s ease-in-out infinite"},
   glow:{css:(c)=>`@keyframes gl_${c.replace("#","")}{ 0%,100%{box-shadow:0 0 8px ${c}66,0 0 16px ${c}33}50%{box-shadow:0 0 16px ${c}99,0 0 32px ${c}55}}`,wrap:(c)=>({animation:`gl_${c.replace("#","")} 2s ease-in-out infinite`,background:`${c}15`,border:`1.5px solid ${c}50`}),text:(c)=>({color:c}),emoji:"none"},
-  sparkle:{css:()=>`@keyframes sp{0%,100%{box-shadow:0 0 8px var(--brand-primary, #f5e03a)55,0 0 20px var(--brand-accent, #ff5500)33}33%{box-shadow:0 0 12px #a78bfa55}66%{box-shadow:0 0 10px var(--brand-primary, #f5e03a)77}}@keyframes spr{from{transform:rotate(0)}to{transform:rotate(360deg)}}`,wrap:()=>({animation:"sp 2.5s ease-in-out infinite",background:"linear-gradient(135deg,rgba(245,224,58,.15),rgba(255,85,0,.1))",border:"1.5px solid rgba(245,224,58,.45)"}),text:()=>({background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a))",backgroundClip:"text",WebkitBackgroundClip:"text",color:"transparent"}),emoji:"spr 4s linear infinite"},
-  rainbow:{css:()=>`@keyframes rbf{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}@keyframes rbg{0%,100%{box-shadow:0 0 10px var(--brand-primary, #f5e03a)44}33%{box-shadow:0 0 10px #a78bfa44}66%{box-shadow:0 0 10px #22c55e44}}`,wrap:()=>({background:"linear-gradient(270deg,var(--brand-primary, #f5e03a)22,var(--brand-accent, #ff5500)22,#a78bfa22,#60a5fa22,#22c55e22,var(--brand-primary, #f5e03a)22)",backgroundSize:"400% 400%",animation:"rbf 4s ease infinite,rbg 3s ease-in-out infinite",border:"1.5px solid rgba(245,224,58,.3)"}),text:()=>({background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),#a78bfa,#60a5fa,#22c55e)",backgroundClip:"text",WebkitBackgroundClip:"text",color:"transparent"}),emoji:"none"},
+  sparkle:{css:()=>`@keyframes sp{0%,100%{box-shadow:0 0 8px var(--brand-primary, #f5e03a)55,0 0 20px var(--brand-accent, #ff5500)33}33%{box-shadow:0 0 12px #a78bfa55}66%{box-shadow:0 0 10px var(--brand-primary, #f5e03a)77}}@keyframes spr{from{transform:rotate(0)}to{transform:rotate(360deg)}}`,wrap:()=>({animation:"sp 2.5s ease-in-out infinite",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.15),rgba(var(--brand-accent-rgb),.1))",border:"1.5px solid rgba(var(--brand-primary-rgb),.45)"}),text:()=>({background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a))",backgroundClip:"text",WebkitBackgroundClip:"text",color:"transparent"}),emoji:"spr 4s linear infinite"},
+  rainbow:{css:()=>`@keyframes rbf{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}@keyframes rbg{0%,100%{box-shadow:0 0 10px var(--brand-primary, #f5e03a)44}33%{box-shadow:0 0 10px #a78bfa44}66%{box-shadow:0 0 10px #22c55e44}}`,wrap:()=>({background:"linear-gradient(270deg,var(--brand-primary, #f5e03a)22,var(--brand-accent, #ff5500)22,#a78bfa22,#60a5fa22,#22c55e22,var(--brand-primary, #f5e03a)22)",backgroundSize:"400% 400%",animation:"rbf 4s ease infinite,rbg 3s ease-in-out infinite",border:"1.5px solid rgba(var(--brand-primary-rgb),.3)"}),text:()=>({background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),#a78bfa,#60a5fa,#22c55e)",backgroundClip:"text",WebkitBackgroundClip:"text",color:"transparent"}),emoji:"none"},
   glitch:{css:(c)=>`@keyframes gg_${c.replace("#","")}{ 0%,100%{box-shadow:0 0 8px ${c}88,-2px 0 #ff000033,2px 0 #00ffff33}50%{box-shadow:0 0 16px ${c}aa,2px 0 #ff000055,-2px 0 #00ffff55}}`,wrap:(c)=>({animation:`gg_${c.replace("#","")} 0.8s ease-in-out infinite`,background:`${c}10`,border:`1.5px solid ${c}60`}),text:(c)=>({color:c}),emoji:"none"},
   lemon_rain:{css:(c)=>`@keyframes lr{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-4px) rotate(12deg)}}@keyframes lg_${c.replace("#","")}{ 0%,100%{box-shadow:0 0 10px ${c}88}50%{box-shadow:0 0 18px ${c}aa}}`,wrap:(c)=>({animation:`lg_${c.replace("#","")} 2s ease-in-out infinite`,background:`${c}15`,border:`1.5px solid ${c}55`}),text:(c)=>({color:c}),emoji:"lr 1.8s ease-in-out infinite"},
 };
@@ -211,19 +211,19 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
 
   const card=(children,style={})=>(<div style={{background:"#0b0f1e",border:"1px solid rgba(237,233,224,.08)",borderRadius:16,padding:"22px",...style}}>{children}</div>);
   const lbl=(t)=>(<div style={{fontSize:9,letterSpacing:"3px",textTransform:"uppercase",color:"var(--brand-accent, #ff5500)",marginBottom:14,display:"flex",alignItems:"center",gap:10}}><span style={{width:20,height:1,background:"var(--brand-accent, #ff5500)",display:"block"}}/>{t}</div>);
-  const tabBtn=(id,icon,label)=>(<button onClick={()=>{setTab(id);setMsg("");}} style={{fontSize:12,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",padding:"8px 16px",borderRadius:8,cursor:"pointer",transition:"all .2s",background:tab===id?"rgba(245,224,58,.12)":"transparent",border:`1px solid ${tab===id?"rgba(245,224,58,.3)":"rgba(237,233,224,.08)"}`,color:tab===id?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.45)"}}>{icon} {label}</button>);
+  const tabBtn=(id,icon,label)=>(<button onClick={()=>{setTab(id);setMsg("");}} style={{fontSize:12,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",padding:"8px 16px",borderRadius:8,cursor:"pointer",transition:"all .2s",background:tab===id?"rgba(var(--brand-primary-rgb),.12)":"transparent",border:`1px solid ${tab===id?"rgba(var(--brand-primary-rgb),.3)":"rgba(237,233,224,.08)"}`,color:tab===id?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.45)"}}>{icon} {label}</button>);
 
   return (
     <div>
       <style>{`
-        @keyframes studioshine{0%,100%{box-shadow:0 0 20px rgba(245,224,58,.06)}50%{box-shadow:0 0 40px rgba(245,224,58,.14)}}
+        @keyframes studioshine{0%,100%{box-shadow:0 0 20px rgba(var(--brand-primary-rgb),.06)}50%{box-shadow:0 0 40px rgba(var(--brand-primary-rgb),.14)}}
         input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:100px;background:rgba(237,233,224,.1);outline:none;width:100%}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--brand-primary, #f5e03a);cursor:pointer;box-shadow:0 0 8px rgba(245,224,58,.5)}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--brand-primary, #f5e03a);cursor:pointer;box-shadow:0 0 8px rgba(var(--brand-primary-rgb),.5)}
         .eff-btn{transition:all .2s;cursor:pointer}.eff-btn:hover{transform:translateY(-2px)}
         .bp{transition:all .2s;cursor:pointer}.bp:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
       `}</style>
 
-      <div style={{padding:"18px 22px",background:"linear-gradient(135deg,rgba(245,224,58,.06),rgba(255,85,0,.03))",border:"1px solid rgba(245,224,58,.12)",borderRadius:14,marginBottom:20,display:"flex",alignItems:"center",gap:14,animation:"studioshine 3s ease-in-out infinite"}}>
+      <div style={{padding:"18px 22px",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.06),rgba(var(--brand-accent-rgb),.03))",border:"1px solid rgba(var(--brand-primary-rgb),.12)",borderRadius:14,marginBottom:20,display:"flex",alignItems:"center",gap:14,animation:"studioshine 3s ease-in-out infinite"}}>
         <div style={{fontSize:32}}>⚡</div>
         <div style={{flex:1}}>
           <div style={{fontSize:22,fontWeight:900,letterSpacing:3,color:"var(--brand-primary, #f5e03a)"}}>PROFILE STUDIO</div>
@@ -231,7 +231,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
         </div>
         <div style={{fontSize:10,color:"var(--brand-primary, #f5e03a)",textAlign:"right"}}>
           <div style={{fontSize:9,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(237,233,224,.35)",marginBottom:2}}>Saldo</div>
-          <div>🍋 {balance.toLocaleString()}</div>
+          <div>🪙 {balance.toLocaleString()}</div>
         </div>
       </div>
 
@@ -241,7 +241,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
         {isAdmin&&tabBtn("badges","⚡","Crear Badge")}
       </div>
 
-      {msg&&<div style={{marginBottom:16,padding:"11px 16px",borderRadius:10,background:msg.includes("Error")||msg.includes("error")?"rgba(255,85,0,.1)":"rgba(34,197,94,.1)",border:"1px solid "+(msg.includes("Error")||msg.includes("error")?"rgba(255,85,0,.25)":"rgba(34,197,94,.25)"),color:msg.includes("Error")||msg.includes("error")?"var(--brand-accent, #ff8c2a)":"#4ade80",fontSize:14,fontWeight:700}}>{msg}</div>}
+      {msg&&<div style={{marginBottom:16,padding:"11px 16px",borderRadius:10,background:msg.includes("Error")||msg.includes("error")?"rgba(var(--brand-accent-rgb),.1)":"rgba(34,197,94,.1)",border:"1px solid "+(msg.includes("Error")||msg.includes("error")?"rgba(var(--brand-accent-rgb),.25)":"rgba(34,197,94,.25)"),color:msg.includes("Error")||msg.includes("error")?"var(--brand-accent, #ff8c2a)":"#4ade80",fontSize:14,fontWeight:700}}>{msg}</div>}
 
       {tab==="banners"&&(
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
@@ -251,7 +251,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
                 {lbl("Efecto del banner")}
                 <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:14}}>
                   {BANNER_EFFECTS.map(ef=>(
-                    <div key={ef.id} className="eff-btn" onClick={()=>setBannerFx(ef.id)} style={{padding:"10px 6px",borderRadius:8,border:`1px solid ${bannerFx===ef.id?"rgba(245,224,58,.4)":"rgba(237,233,224,.07)"}`,background:bannerFx===ef.id?"rgba(245,224,58,.08)":"rgba(255,255,255,.02)",textAlign:"center"}}>
+                    <div key={ef.id} className="eff-btn" onClick={()=>setBannerFx(ef.id)} style={{padding:"10px 6px",borderRadius:8,border:`1px solid ${bannerFx===ef.id?"rgba(var(--brand-primary-rgb),.4)":"rgba(237,233,224,.07)"}`,background:bannerFx===ef.id?"rgba(var(--brand-primary-rgb),.08)":"rgba(255,255,255,.02)",textAlign:"center"}}>
                       <div style={{fontSize:18,marginBottom:3}}>{ef.icon}</div>
                       <div style={{fontSize:7,letterSpacing:"1px",textTransform:"uppercase",color:bannerFx===ef.id?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.35)"}}>{ef.name}</div>
                     </div>
@@ -274,15 +274,15 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                 {bannerPresets.map(banner=>{
                   const owned=ownedBanners.includes(banner.key); const data=banner.data||{};
-                  return (<div key={banner.key} className="bp" style={{borderRadius:12,overflow:"hidden",border:`1px solid ${owned?"rgba(245,224,58,.25)":"rgba(237,233,224,.07)"}`,background:owned?"rgba(245,224,58,.04)":"rgba(255,255,255,.02)"}}>
+                  return (<div key={banner.key} className="bp" style={{borderRadius:12,overflow:"hidden",border:`1px solid ${owned?"rgba(var(--brand-primary-rgb),.25)":"rgba(237,233,224,.07)"}`,background:owned?"rgba(var(--brand-primary-rgb),.04)":"rgba(255,255,255,.02)"}}>
                     <div style={{height:60,overflow:"hidden",position:"relative"}}><BannerCanvas effect={data.effect||"stars"} color1={data.color1||"var(--brand-primary, #f5e03a)"} color2={data.color2||"var(--brand-accent, #ff5500)"} height={60}/></div>
                     <div style={{padding:"10px 12px"}}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                         <span style={{fontSize:12,fontWeight:800,letterSpacing:".5px",textTransform:"uppercase"}}>{banner.name}</span>
-                        <span style={{fontSize:8,padding:"1px 6px",borderRadius:100,background:{legendary:"rgba(245,224,58,.1)",epic:"rgba(167,139,250,.1)",rare:"rgba(96,165,250,.1)",common:"rgba(237,233,224,.05)"}[banner.rarity],color:{legendary:"var(--brand-primary, #f5e03a)",epic:"#a78bfa",rare:"#60a5fa",common:"#ede9e0"}[banner.rarity]}}>{banner.rarity}</span>
+                        <span style={{fontSize:8,padding:"1px 6px",borderRadius:100,background:{legendary:"rgba(var(--brand-primary-rgb),.1)",epic:"rgba(167,139,250,.1)",rare:"rgba(96,165,250,.1)",common:"rgba(237,233,224,.05)"}[banner.rarity],color:{legendary:"var(--brand-primary, #f5e03a)",epic:"#a78bfa",rare:"#60a5fa",common:"#ede9e0"}[banner.rarity]}}>{banner.rarity}</span>
                       </div>
-                      {owned?(<button onClick={()=>equipBanner(banner.key)} disabled={saving} style={{width:"100%",height:28,fontSize:10,fontWeight:800,letterSpacing:"1px",textTransform:"uppercase",background:"rgba(245,224,58,.12)",border:"1px solid rgba(245,224,58,.28)",color:"var(--brand-primary, #f5e03a)",borderRadius:6,cursor:"pointer"}}>✓ Equipar</button>):(
-                        <button onClick={()=>buyBannerPreset(banner)} disabled={saving||balance<banner.cost_coins} style={{width:"100%",height:28,fontSize:10,fontWeight:800,letterSpacing:"1px",textTransform:"uppercase",background:balance>=banner.cost_coins?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.05)",border:"none",color:balance>=banner.cost_coins?"#04060d":"rgba(237,233,224,.3)",borderRadius:6,cursor:balance>=banner.cost_coins?"pointer":"not-allowed"}}>🍋 {banner.cost_coins}</button>
+                      {owned?(<button onClick={()=>equipBanner(banner.key)} disabled={saving} style={{width:"100%",height:28,fontSize:10,fontWeight:800,letterSpacing:"1px",textTransform:"uppercase",background:"rgba(var(--brand-primary-rgb),.12)",border:"1px solid rgba(var(--brand-primary-rgb),.28)",color:"var(--brand-primary, #f5e03a)",borderRadius:6,cursor:"pointer"}}>✓ Equipar</button>):(
+                        <button onClick={()=>buyBannerPreset(banner)} disabled={saving||balance<banner.cost_coins} style={{width:"100%",height:28,fontSize:10,fontWeight:800,letterSpacing:"1px",textTransform:"uppercase",background:balance>=banner.cost_coins?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.05)",border:"none",color:balance>=banner.cost_coins?"#04060d":"rgba(237,233,224,.3)",borderRadius:6,cursor:balance>=banner.cost_coins?"pointer":"not-allowed"}}>🪙 {banner.cost_coins}</button>
                       )}
                     </div>
                   </div>);
@@ -297,7 +297,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
               <div style={{borderRadius:12,overflow:"hidden",border:"1px solid rgba(237,233,224,.08)",marginBottom:14}}>
                 <BannerCanvas effect={bannerFx} color1={bannerC1} color2={bannerC2} height={120}/>
                 <div style={{background:"#0b0f1e",padding:"12px 16px",display:"flex",alignItems:"center",gap:12}}>
-                  <div style={{width:46,height:46,borderRadius:"50%",background:"var(--brand-primary, #f5e03a)",display:"grid",placeItems:"center",fontSize:22,flexShrink:0}}>🍋</div>
+                  <div style={{width:46,height:46,borderRadius:"50%",background:"var(--brand-primary, #f5e03a)",display:"grid",placeItems:"center",fontSize:22,flexShrink:0}}>🪙</div>
                   <div>
                     <div style={{fontSize:20,fontWeight:900,letterSpacing:2,color:"#ede9e0"}}>{me?.name||"TU NOMBRE"}</div>
                     <div style={{fontSize:9,color:"rgba(237,233,224,.25)",letterSpacing:"1px",textTransform:"uppercase",marginTop:2}}>#{me?.client_number}</div>
@@ -312,7 +312,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
                 ].map(f=>(
                   <div key={f.label} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 12px",borderRadius:8,background:f.has?"rgba(34,197,94,.06)":"rgba(255,255,255,.02)",border:`1px solid ${f.has?"rgba(34,197,94,.18)":"rgba(237,233,224,.06)"}`,marginBottom:6}}>
                     <span style={{fontSize:12,fontWeight:700,color:f.has?"#4ade80":"rgba(237,233,224,.45)"}}>{f.has?"✅":"🔒"} {f.label}</span>
-                    {!f.has&&f.cost>0&&<span style={{fontSize:10,color:"var(--brand-primary, #f5e03a)"}}>🍋 {f.cost}</span>}
+                    {!f.has&&f.cost>0&&<span style={{fontSize:10,color:"var(--brand-primary, #f5e03a)"}}>🪙 {f.cost}</span>}
                   </div>
                 ))}
               </div>
@@ -326,7 +326,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
           {chatPowers.length===0?(
             <div style={{textAlign:"center",padding:40,color:"rgba(237,233,224,.3)",fontSize:13}}>
               <div style={{fontSize:36,marginBottom:12}}>⚡</div>
-              <div>No tenés Lemon Powers comprados todavía.</div>
+              <div>No tenés Powers comprados todavía.</div>
               <div style={{marginTop:8,fontSize:11}}>Comprá powers en el Chat</div>
             </div>
           ):(
@@ -440,7 +440,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
               {lbl("Efecto")}
               <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:18}}>
                 {Object.keys(BADGE_FX).map(id=>(
-                  <div key={id} className="eff-btn" onClick={()=>setBadgeFx(id)} style={{padding:"10px 6px",borderRadius:10,border:`1px solid ${badgeFx===id?"rgba(245,224,58,.4)":"rgba(237,233,224,.07)"}`,background:badgeFx===id?"rgba(245,224,58,.08)":"rgba(255,255,255,.02)",textAlign:"center"}}>
+                  <div key={id} className="eff-btn" onClick={()=>setBadgeFx(id)} style={{padding:"10px 6px",borderRadius:10,border:`1px solid ${badgeFx===id?"rgba(var(--brand-primary-rgb),.4)":"rgba(237,233,224,.07)"}`,background:badgeFx===id?"rgba(var(--brand-primary-rgb),.08)":"rgba(255,255,255,.02)",textAlign:"center"}}>
                     <div style={{fontSize:9,letterSpacing:"1px",textTransform:"uppercase",color:badgeFx===id?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.4)"}}>{id}</div>
                   </div>
                 ))}
@@ -448,7 +448,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
               {lbl("Color y emoji")}
               <div style={{marginBottom:14}}><ColorPicker value={badgeColor} onChange={setBadgeColor}/></div>
               <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:18}}>
-                {EMOJIS.map(e=><div key={e} onClick={()=>setBadgeEmoji(e)} style={{width:30,height:30,borderRadius:7,display:"grid",placeItems:"center",fontSize:16,cursor:"pointer",background:badgeEmoji===e?"rgba(245,224,58,.12)":"rgba(255,255,255,.03)",border:`1px solid ${badgeEmoji===e?"rgba(245,224,58,.3)":"rgba(237,233,224,.07)"}`,transition:"all .15s"}}>{e}</div>)}
+                {EMOJIS.map(e=><div key={e} onClick={()=>setBadgeEmoji(e)} style={{width:30,height:30,borderRadius:7,display:"grid",placeItems:"center",fontSize:16,cursor:"pointer",background:badgeEmoji===e?"rgba(var(--brand-primary-rgb),.12)":"rgba(255,255,255,.03)",border:`1px solid ${badgeEmoji===e?"rgba(var(--brand-primary-rgb),.3)":"rgba(237,233,224,.07)"}`,transition:"all .15s"}}>{e}</div>)}
               </div>
             </>)}
             {card(<>

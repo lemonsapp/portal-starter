@@ -1,17 +1,25 @@
 /* =========================================================
-   LEMONS — UNIFIED DARK THEME
-   Matching landing: Bebas Neue + Barlow + DM Mono
-   Industrial-futuristic dark with lemon/orange accents
+   PORTAL — UNIFIED DARK THEME
+   Brand colors comen via --brand-primary / --brand-accent
+   (settearas vía useBranding desde /api/config/public).
+   Los fallback hex son valores de starter; en runtime los
+   override el tenant.
    ========================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@300;400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
 :root {
-  /* Brand — exact match with landing */
+  /* Brand */
   --lemon:    var(--brand-primary, #f5e03a);
   --lemon2:   #fff9b0;
   --orange:   var(--brand-accent, #ff5500);
   --orange2:  var(--brand-accent, #ff8c2a);
+
+  /* RGB triplets para componer rgba() — los setea useBranding.
+     Si JS aún no corrió, el fallback (= color brand starter)
+     mantiene visualmente la marca por defecto. */
+  --brand-primary-rgb: 245, 224, 58;
+  --brand-accent-rgb:  255, 85, 0;
 
   /* Dark base — exact match with landing */
   --void:     #04060d;
@@ -51,10 +59,10 @@
 
   /* Gradients */
   --grad:      linear-gradient(135deg, var(--lemon), var(--orange));
-  --grad-soft: linear-gradient(135deg, rgba(245,224,58,0.15), rgba(255,85,0,0.10));
+  --grad-soft: linear-gradient(135deg, rgba(var(--brand-primary-rgb),0.15), rgba(var(--brand-accent-rgb),0.10));
 
   /* Focus ring */
-  --ring: 0 0 0 3px rgba(245,224,58,0.2);
+  --ring: 0 0 0 3px rgba(var(--brand-primary-rgb),0.2);
 }
 
 /* ── Reset ── */
@@ -85,8 +93,8 @@ body::before {
   content: '';
   position: fixed; inset: -240px; pointer-events: none;
   background:
-    radial-gradient(900px 600px at 20% 10%, rgba(245,224,58,0.07), transparent 60%),
-    radial-gradient(900px 600px at 80% 22%, rgba(255,85,0,0.06), transparent 60%),
+    radial-gradient(900px 600px at 20% 10%, rgba(var(--brand-primary-rgb),0.07), transparent 60%),
+    radial-gradient(900px 600px at 80% 22%, rgba(var(--brand-accent-rgb),0.06), transparent 60%),
     radial-gradient(900px 600px at 50% 85%, rgba(11,42,107,0.10), transparent 62%);
   filter: blur(2px); z-index: 0;
 }
@@ -181,8 +189,8 @@ body::before {
   padding: 3px 8px; border-radius: 100px;
   font-family: 'DM Mono', monospace;
   font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
-  background: rgba(245,224,58,0.1);
-  border: 1px solid rgba(245,224,58,0.22);
+  background: rgba(var(--brand-primary-rgb),0.1);
+  border: 1px solid rgba(var(--brand-primary-rgb),0.22);
   color: var(--lemon);
 }
 
@@ -351,7 +359,7 @@ body::before {
 }
 .input::placeholder { color: var(--muted2); }
 .input:focus {
-  border-color: rgba(245,224,58,0.4);
+  border-color: rgba(var(--brand-primary-rgb),0.4);
   box-shadow: var(--ring);
   background: rgba(255,255,255,0.06);
 }
@@ -388,11 +396,11 @@ select { height: 42px; border-radius: var(--r-md); }
   border: none;
   background: var(--lemon);
   color: var(--void);
-  box-shadow: 0 8px 24px rgba(245,224,58,0.15);
+  box-shadow: 0 8px 24px rgba(var(--brand-primary-rgb),0.15);
 }
 .btnPrimary:hover {
   background: var(--lemon2);
-  box-shadow: 0 12px 32px rgba(245,224,58,0.25);
+  box-shadow: 0 12px 32px rgba(var(--brand-primary-rgb),0.25);
 }
 
 .btnSmall { height: 34px; padding: 7px 12px; font-size: 12px; }
@@ -423,7 +431,7 @@ select { height: 42px; border-radius: var(--r-md); }
   border-bottom: 1px solid var(--border);
   color: var(--text); font-size: 13px; vertical-align: top;
 }
-.table tbody tr:hover td { background: rgba(245,224,58,0.03); }
+.table tbody tr:hover td { background: rgba(var(--brand-primary-rgb),0.03); }
 
 /* Pills */
 .pill {
@@ -448,8 +456,8 @@ select { height: 42px; border-radius: var(--r-md); }
 /* Banner */
 .banner {
   margin-top: 12px; padding: 10px 14px; border-radius: var(--r-md);
-  border: 1px solid rgba(255,85,0,0.3);
-  background: rgba(255,85,0,0.08);
+  border: 1px solid rgba(var(--brand-accent-rgb),0.3);
+  background: rgba(var(--brand-accent-rgb),0.08);
   color: var(--text); font-weight: 700;
 }
 
@@ -501,8 +509,8 @@ select { height: 42px; border-radius: var(--r-md); }
   min-height: 100vh; display: grid; place-items: center; padding: 22px;
   background: var(--void);
   background-image:
-    radial-gradient(ellipse 80% 60% at 60% 40%, rgba(255,85,0,.08) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 70% at 10% 90%, rgba(245,224,58,.05) 0%, transparent 55%);
+    radial-gradient(ellipse 80% 60% at 60% 40%, rgba(var(--brand-accent-rgb),.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 10% 90%, rgba(var(--brand-primary-rgb),.05) 0%, transparent 55%);
 }
 
 .loginCard {
@@ -565,7 +573,7 @@ select { height: 42px; border-radius: var(--r-md); }
   color: var(--ghost); text-decoration: none; transition: all .2s;
 }
 .loginFooter .link:hover {
-  border-color: rgba(245,224,58,.28); background: var(--faint);
+  border-color: rgba(var(--brand-primary-rgb),.28); background: var(--faint);
   color: var(--text);
 }
 
@@ -582,11 +590,11 @@ select { height: 42px; border-radius: var(--r-md); }
 }
 .dot { width: 7px; height: 7px; border-radius: 50%; }
 
-.badge--received { background: rgba(245,224,58,.1); color: var(--text); border-color: rgba(245,224,58,.25); }
-.badge--received .dot { background: var(--lemon); box-shadow: 0 0 8px rgba(245,224,58,.5); }
+.badge--received { background: rgba(var(--brand-primary-rgb),.1); color: var(--text); border-color: rgba(var(--brand-primary-rgb),.25); }
+.badge--received .dot { background: var(--lemon); box-shadow: 0 0 8px rgba(var(--brand-primary-rgb),.5); }
 
-.badge--prep { background: rgba(255,85,0,.1); color: var(--text); border-color: rgba(255,85,0,.25); }
-.badge--prep .dot { background: var(--orange); box-shadow: 0 0 8px rgba(255,85,0,.5); }
+.badge--prep { background: rgba(var(--brand-accent-rgb),.1); color: var(--text); border-color: rgba(var(--brand-accent-rgb),.25); }
+.badge--prep .dot { background: var(--orange); box-shadow: 0 0 8px rgba(var(--brand-accent-rgb),.5); }
 
 .badge--sent { background: rgba(59,130,246,.1); color: var(--text); border-color: rgba(59,130,246,.25); }
 .badge--sent .dot { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,.45); }
@@ -599,6 +607,6 @@ select { height: 42px; border-radius: var(--r-md); }
 
 .badge--delivered {
   background: var(--lemon); color: var(--void);
-  border: none; box-shadow: 0 8px 20px rgba(245,224,58,.2);
+  border: none; box-shadow: 0 8px 20px rgba(var(--brand-primary-rgb),.2);
 }
 .badge--delivered .dot { background: var(--void); }

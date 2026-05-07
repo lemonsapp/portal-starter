@@ -6,7 +6,7 @@
 .ptb.off{color:rgba(237,233,224,.4);border-bottom:2px solid transparent}
 .ptb.off:hover{color:rgba(237,233,224,.7)}
 .pfb{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:5px 12px;border-radius:100px;cursor:pointer;transition:all .2s}
-.pfb.on{background:rgba(245,224,58,.1);border:1px solid rgba(245,224,58,.28);color:var(--brand-primary, #f5e03a)}
+.pfb.on{background:rgba(var(--brand-primary-rgb),.1);border:1px solid rgba(var(--brand-primary-rgb),.28);color:var(--brand-primary, #f5e03a)}
 .pfb.off{background:rgba(237,233,224,.03);border:1px solid rgba(237,233,224,.07);color:rgba(237,233,224,.35)}
 .ic{transition:transform .2s}
 .ic:hover{transform:translateY(-3px)}

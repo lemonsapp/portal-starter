@@ -1,7 +1,7 @@
 // server/routes/admin-feed.js
 //
 // Endpoints del feed editor del admin (spec § 9.2). El feed reemplaza al
-// "Lo último de Lemon's" del HomeClient — el admin postea actualizaciones
+// "Lo último" del HomeClient — el admin postea actualizaciones
 // (permanentes, stories de 24hs, o updates destacadas).
 //
 //   GET    /feed                    → posts activos (no auth — público para HomeClient)

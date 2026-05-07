@@ -5,7 +5,7 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 const AVATAR_EMOJI = {
-  avatar_lemon: "🍋", avatar_rocket: "🚀", avatar_globe: "🌍",
+  avatar_lemon: "🪙", avatar_rocket: "🚀", avatar_globe: "🌍",
   avatar_diamond: "💎", avatar_fire: "🔥", avatar_crown: "👑",
 };
 const AVATAR_BG = {
@@ -41,7 +41,7 @@ function nameStyleFromUser(u) {
 }
 
 function FriendCard({ f, onClick, online }) {
-  const emoji = AVATAR_EMOJI[f.avatar_key] || "🍋";
+  const emoji = AVATAR_EMOJI[f.avatar_key] || "🪙";
   const bg = AVATAR_BG[f.avatar_key] || "var(--brand-primary, #f5e03a)";
   const dotColor = online ? "#22c55e" : "#6b7280";
   const ring = online ? "rgba(34,197,94,.55)" : "rgba(255,255,255,.06)";
@@ -103,14 +103,14 @@ export default function FriendsPanel() {
     <div className="hc-card" style={{ "--ac": "#22c55e", padding: "20px 22px" }}>
       <style>{`
         @keyframes fpPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.25);opacity:.85}}
-        .fp-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:rgba(245,224,58,.2) transparent}
+        .fp-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:rgba(var(--brand-primary-rgb),.2) transparent}
         .fp-row::-webkit-scrollbar{height:6px}
-        .fp-row::-webkit-scrollbar-thumb{background:rgba(245,224,58,.2);border-radius:99px}
+        .fp-row::-webkit-scrollbar-thumb{background:rgba(var(--brand-primary-rgb),.2);border-radius:99px}
         .fp-card{flex:0 0 auto;width:96px;background:transparent;border:none;cursor:pointer;font-family:inherit;text-align:center;padding:6px 4px;color:inherit;border-radius:14px;transition:all .25s}
-        .fp-card:hover{background:rgba(245,224,58,.04);transform:translateY(-2px)}
+        .fp-card:hover{background:rgba(var(--brand-primary-rgb),.04);transform:translateY(-2px)}
         .fp-ava-wrap{position:relative;width:64px;height:64px;margin:0 auto 8px}
         .fp-ava{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid var(--ring);box-shadow:0 0 0 2px rgba(8,9,16,.85),0 4px 14px rgba(0,0,0,.4);transition:all .3s}
-        .fp-card:hover .fp-ava{border-color:rgba(245,224,58,.5)}
+        .fp-card:hover .fp-ava{border-color:rgba(var(--brand-primary-rgb),.5)}
         .fp-dot{position:absolute;bottom:1px;right:1px;width:14px;height:14px;border-radius:50%;border:2.5px solid rgba(8,9,16,.95)}
         .fp-mutual{position:absolute;top:-2px;right:-2px;font-size:14px;background:rgba(8,9,16,.95);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(34,197,94,.4)}
         .fp-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;line-height:1.1;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

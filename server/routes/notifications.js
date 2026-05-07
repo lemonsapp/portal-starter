@@ -10,7 +10,7 @@ async function migrate() {
     CREATE TABLE IF NOT EXISTS lemon_notifications (
       id          SERIAL PRIMARY KEY,
       message     TEXT NOT NULL,
-      emoji       TEXT DEFAULT '🍋',
+      emoji       TEXT DEFAULT '🔔',
       type        TEXT DEFAULT 'info',   -- info | warning | promo | update
       active      BOOLEAN DEFAULT TRUE,
       target_role TEXT DEFAULT 'all',    -- all | client | operator
@@ -63,7 +63,7 @@ router.post("/", authRequired, requireRole(["operator","admin"]), async (req, re
       VALUES ($1,$2,$3,$4,TRUE,$5) RETURNING *
     `, [
       message.trim(),
-      emoji || "🍋",
+      emoji || "🔔",
       type || "info",
       target_role || "all",
       req.user.id,

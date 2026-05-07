@@ -5,16 +5,16 @@ const db      = require("../db");
 const { authRequired, requireRole } = require("../auth");
 
 // ── Constantes ────────────────────────────────────────────────────────────────
-const COINS_PER_KG       = 3;
-const COINS_BIG_SHIPMENT = 10;
-const BIG_SHIPMENT_USD   = 500;
 const COINS_FIRST_BONUS  = 15;
 
+// Rewards genéricos del starter. El admin puede ampliar la lista vía DB
+// (coin_redemptions queda flexible). Estas son las recompensas mínimas
+// out-of-the-box; cada cliente puede customizar copy/precios.
 const REWARDS = {
-  free_shipment: { coins: 9500,  label: "Envío gratis a elección",  type: "service" },
-  free_5kg:      { coins: 4500,  label: "5kg gratis",               type: "service" },
-  discount_15:   { coins: 500,   label: "USD 15 de descuento",      type: "discount", value: 15 },
-  discount_8:    { coins: 100,   label: "USD 8 de descuento",       type: "discount", value: 8  },
+  badge_legend:   { coins: 9500, label: "Badge legendario en perfil", type: "cosmetic" },
+  highlight_24h:  { coins: 4500, label: "Resaltado de perfil 24h",    type: "cosmetic" },
+  spotlight:      { coins: 500,  label: "Spotlight en home (1h)",     type: "cosmetic" },
+  custom_emoji:   { coins: 100,  label: "Emoji custom en chat (1)",   type: "cosmetic" },
 };
 
 const LEVELS = [
@@ -67,7 +67,7 @@ router.get("/:userId", authRequired, async (req, res) => {
     const nextLevel   = [...LEVELS].reverse().find(l => l.min > coins.balance) ?? null;
     const coinsToNext = nextLevel ? nextLevel.min - coins.balance : null;
 
-    // Sprint 4: removida tabla shipments (Lemons-only). Las queries no
+    // Sprint 4: removida tabla shipments (legacy). Las queries no
     // joinen más; shipment_code queda como undefined en el response (los
     // consumers ya manejan undefined gracefully).
     const txQ = await db.query(`

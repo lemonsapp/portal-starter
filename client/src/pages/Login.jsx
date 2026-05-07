@@ -168,10 +168,10 @@ export default function Login() {
         .lg-left{position:relative;overflow:hidden;border-right:1px solid rgba(240,236,227,.07);display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px}
         .lg-bg{position:absolute;inset:0;background-image:url("${fondoLogin}");background-size:cover;background-position:center;filter:brightness(.32) saturate(.6);z-index:0}
         .lg-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(2,3,7,.9) 0%,rgba(2,3,7,.55) 50%,rgba(2,3,7,.95) 100%)}
-        .lg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,224,58,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(245,224,58,.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
-        .lg-watermark{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-8px;color:transparent;-webkit-text-stroke:1px rgba(245,224,58,.04);pointer-events:none;z-index:1;bottom:-60px;right:-40px;user-select:none}
+        .lg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
+        .lg-watermark{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-8px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;bottom:-60px;right:-40px;user-select:none}
         .lg-logo-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;max-width:540px;opacity:.06;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
-        .lg-lemon{position:absolute;right:-6%;bottom:-2%;height:96%;max-height:780px;z-index:2;pointer-events:none;animation:lgFloat 6s ease-in-out infinite;filter:drop-shadow(0 0 60px rgba(245,224,58,.18))}
+        .lg-lemon{position:absolute;right:-6%;bottom:-2%;height:96%;max-height:780px;z-index:2;pointer-events:none;animation:lgFloat 6s ease-in-out infinite;filter:drop-shadow(0 0 60px rgba(var(--brand-primary-rgb),.18))}
         @keyframes lgFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-18px) rotate(2deg)}}
         .lg-left-inner{position:relative;z-index:3;display:flex;flex-direction:column;height:100%;justify-content:space-between}
 
@@ -215,7 +215,7 @@ export default function Login() {
         .lg-field{margin-bottom:18px}
         .lg-field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(240,236,227,.4);margin-bottom:10px}
         .lg-input{width:100%;background:rgba(255,255,255,.025);border:1px solid rgba(240,236,227,.08);color:#f0ece3;font-family:'Barlow',sans-serif;font-size:15px;padding:15px 18px;outline:none;transition:all .25s;border-radius:0}
-        .lg-input:focus{border-color:rgba(245,224,58,.5);background:rgba(245,224,58,.04);box-shadow:0 0 0 1px rgba(245,224,58,.2)}
+        .lg-input:focus{border-color:rgba(var(--brand-primary-rgb),.5);background:rgba(var(--brand-primary-rgb),.04);box-shadow:0 0 0 1px rgba(var(--brand-primary-rgb),.2)}
         .lg-input::placeholder{color:rgba(240,236,227,.18)}
 
         .lg-row{display:flex;align-items:center;justify-content:space-between;margin:8px 0 26px}
@@ -228,14 +228,14 @@ export default function Login() {
         .lg-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--brand-primary, #fff7a0),var(--brand-primary, #f5e03a),var(--brand-primary, #fff7a0));background-size:200% 100%;opacity:0;transition:opacity .3s;animation:lgshim 2.4s linear infinite}
         @keyframes lgshim{0%{background-position:0% 0}100%{background-position:200% 0}}
         .lg-btn:hover::before{opacity:1}
-        .lg-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(245,224,58,.18)}
+        .lg-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(var(--brand-primary-rgb),.18)}
         .lg-btn:active{transform:translateY(0)}
         .lg-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
         .lg-btn span{position:relative;z-index:1}
         .lg-btn .arr{position:relative;z-index:1;transition:transform .3s}
         .lg-btn:hover .arr{transform:translateX(4px)}
 
-        .lg-err{margin-bottom:18px;padding:12px 16px;background:rgba(255,85,0,.06);border:1px solid rgba(255,85,0,.18);color:#ffb07a;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;font-family:'Barlow',sans-serif}
+        .lg-err{margin-bottom:18px;padding:12px 16px;background:rgba(var(--brand-accent-rgb),.06);border:1px solid rgba(var(--brand-accent-rgb),.18);color:#ffb07a;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;font-family:'Barlow',sans-serif}
         .lg-err::before{content:'⚠';color:var(--brand-accent, #ff5500);font-size:14px}
 
         .lg-divider{display:flex;align-items:center;gap:14px;margin:32px 0 24px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,236,227,.25)}
@@ -246,7 +246,7 @@ export default function Login() {
         .lg-register a:hover{border-bottom-color:var(--brand-primary, #f5e03a)}
 
         /* Decorative numbers like watermarks */
-        .lg-num{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:160px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(245,224,58,.05);pointer-events:none;user-select:none}
+        .lg-num{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:160px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.05);pointer-events:none;user-select:none}
         .lg-num.tl{top:14px;right:14px;font-size:90px}
 
         /* RESPONSIVE */
@@ -311,8 +311,8 @@ export default function Login() {
                 width: "100%",
                 padding: "16px 20px",
                 marginBottom: 18,
-                background: "rgba(245,224,58,0.06)",
-                border: "1px solid rgba(245,224,58,0.3)",
+                background: "rgba(var(--brand-primary-rgb),0.06)",
+                border: "1px solid rgba(var(--brand-primary-rgb),0.3)",
                 color: "var(--brand-primary, #f5e03a)",
                 fontFamily: "'Barlow Condensed',sans-serif",
                 fontSize: 14,

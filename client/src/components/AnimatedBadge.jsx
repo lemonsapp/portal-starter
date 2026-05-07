@@ -7,7 +7,7 @@ const EFFECTS = {
   },
   fire: {
     css: () => `@keyframes fg{0%,100%{box-shadow:0 0 8px var(--brand-accent, #ff5500)aa,0 0 20px var(--brand-accent, #ff5500)55}50%{box-shadow:0 0 16px var(--brand-accent, #ff5500)cc,0 0 32px var(--brand-accent, #ff5500)77}}@keyframes fw{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.08)}}`,
-    wrap: () => ({ animation:"fg 1.8s ease-in-out infinite", background:"linear-gradient(135deg,rgba(255,85,0,.2),rgba(245,224,58,.08))", border:"1.5px solid rgba(255,85,0,.6)" }),
+    wrap: () => ({ animation:"fg 1.8s ease-in-out infinite", background:"linear-gradient(135deg,rgba(var(--brand-accent-rgb),.2),rgba(var(--brand-primary-rgb),.08))", border:"1.5px solid rgba(var(--brand-accent-rgb),.6)" }),
     text: () => ({ background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))", backgroundClip:"text", WebkitBackgroundClip:"text", color:"transparent" }),
     emoji: "fw 1.5s ease-in-out infinite",
   },
@@ -37,13 +37,13 @@ const EFFECTS = {
   },
   sparkle: {
     css: () => `@keyframes sp{0%,100%{box-shadow:0 0 8px var(--brand-primary, #f5e03a)55,0 0 20px var(--brand-accent, #ff5500)33}33%{box-shadow:0 0 12px #a78bfa55}66%{box-shadow:0 0 10px var(--brand-primary, #f5e03a)77}}@keyframes spr{from{transform:rotate(0)}to{transform:rotate(360deg)}}`,
-    wrap: () => ({ animation:"sp 2.5s ease-in-out infinite", background:"linear-gradient(135deg,rgba(245,224,58,.15),rgba(255,85,0,.1))", border:"1.5px solid rgba(245,224,58,.45)" }),
+    wrap: () => ({ animation:"sp 2.5s ease-in-out infinite", background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.15),rgba(var(--brand-accent-rgb),.1))", border:"1.5px solid rgba(var(--brand-primary-rgb),.45)" }),
     text: () => ({ background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a))", backgroundClip:"text", WebkitBackgroundClip:"text", color:"transparent" }),
     emoji: "spr 4s linear infinite",
   },
   rainbow: {
     css: () => `@keyframes rbf{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}@keyframes rbg{0%,100%{box-shadow:0 0 10px var(--brand-primary, #f5e03a)44}33%{box-shadow:0 0 10px #a78bfa44}66%{box-shadow:0 0 10px #22c55e44}}`,
-    wrap: () => ({ background:"linear-gradient(270deg,var(--brand-primary, #f5e03a)22,var(--brand-accent, #ff5500)22,#a78bfa22,#60a5fa22,#22c55e22,var(--brand-primary, #f5e03a)22)", backgroundSize:"400% 400%", animation:"rbf 4s ease infinite,rbg 3s ease-in-out infinite", border:"1.5px solid rgba(245,224,58,.3)" }),
+    wrap: () => ({ background:"linear-gradient(270deg,var(--brand-primary, #f5e03a)22,var(--brand-accent, #ff5500)22,#a78bfa22,#60a5fa22,#22c55e22,var(--brand-primary, #f5e03a)22)", backgroundSize:"400% 400%", animation:"rbf 4s ease infinite,rbg 3s ease-in-out infinite", border:"1.5px solid rgba(var(--brand-primary-rgb),.3)" }),
     text: () => ({ background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),#a78bfa,#60a5fa,#22c55e)", backgroundClip:"text", WebkitBackgroundClip:"text", color:"transparent" }),
     emoji: "none",
   },

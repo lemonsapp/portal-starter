@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
  * <Jumbo> → escala bouncy para emoji solos / coin pop
  *
  * Usage:
- *   <Pop as="button" onClick={x}>🍋 Comprar</Pop>
+ *   <Pop as="button" onClick={x}>🪙 Comprar</Pop>
  *   <FadeUp delay={.1}><Card/></FadeUp>
  *   <Jumbo>{emoji}</Jumbo>
  */

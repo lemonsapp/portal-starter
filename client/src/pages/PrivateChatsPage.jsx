@@ -78,13 +78,13 @@ export default function PrivateChatsPage() {
                   </div>
                 ) : convs.map(c => (
                   <div key={c.other_id}
-                    style={{ width: "100%", display: "flex", gap: 10, padding: "11px 14px", borderBottom: "1px solid rgba(255,255,255,.03)", background: activeId === c.other_id ? "rgba(245,224,58,.06)" : "transparent", borderLeft: activeId === c.other_id ? "3px solid var(--brand-primary, #f5e03a)" : "3px solid transparent", alignItems: "center" }}>
+                    style={{ width: "100%", display: "flex", gap: 10, padding: "11px 14px", borderBottom: "1px solid rgba(255,255,255,.03)", background: activeId === c.other_id ? "rgba(var(--brand-primary-rgb),.06)" : "transparent", borderLeft: activeId === c.other_id ? "3px solid var(--brand-primary, #f5e03a)" : "3px solid transparent", alignItems: "center" }}>
                     <button
                       onClick={(e) => { e.stopPropagation(); if (c.username) navigate(`/perfil/${c.username}`); }}
                       title={c.username ? `Ver perfil de ${c.name}` : ""}
                       disabled={!c.username}
                       style={{ position: "relative", flexShrink: 0, background: "transparent", border: "none", padding: 0, cursor: c.username ? "pointer" : "default" }}>
-                      <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", background: "#0a0820", border: "1.5px solid rgba(245,224,58,.2)" }}>
+                      <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", background: "#0a0820", border: "1.5px solid rgba(var(--brand-primary-rgb),.2)" }}>
                         {c.avatar_url
                           ? <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>}
@@ -104,7 +104,7 @@ export default function PrivateChatsPage() {
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
                         {c.reply_to_story_id && c.reply_story_image_url && (
-                          <img src={c.reply_story_image_url} alt="story" style={{ width: 26, height: 32, borderRadius: 4, objectFit: "cover", flexShrink: 0, border: "1px solid rgba(245,224,58,.4)" }} />
+                          <img src={c.reply_story_image_url} alt="story" style={{ width: 26, height: 32, borderRadius: 4, objectFit: "cover", flexShrink: 0, border: "1px solid rgba(var(--brand-primary-rgb),.4)" }} />
                         )}
                         <div style={{ fontSize: 12, color: c.reply_to_story_id ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.55)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1, lineHeight: 1.3 }}>
                           {c.reply_to_story_id ? (
@@ -232,7 +232,7 @@ function PrivateThread({ otherId, onSent, isMobile, onBack }) {
                     : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>👤</div>}
                 </button>
               )}
-              <div style={{ maxWidth: "75%", padding: m.reply_to_story_id ? "6px 6px 8px" : "8px 12px", borderRadius: isOwn ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: isOwn ? "rgba(245,224,58,.12)" : "rgba(255,255,255,.05)", border: `1px solid ${isOwn ? "rgba(245,224,58,.25)" : "rgba(255,255,255,.08)"}` }}>
+              <div style={{ maxWidth: "75%", padding: m.reply_to_story_id ? "6px 6px 8px" : "8px 12px", borderRadius: isOwn ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: isOwn ? "rgba(var(--brand-primary-rgb),.12)" : "rgba(255,255,255,.05)", border: `1px solid ${isOwn ? "rgba(var(--brand-primary-rgb),.25)" : "rgba(255,255,255,.08)"}` }}>
                 {!isOwn && !m.reply_to_story_id && (
                   <button
                     onClick={() => target?.username && navigate(`/perfil/${target.username}`)}

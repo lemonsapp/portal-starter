@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
  *  - Partículas flotantes (canvas, lemon/orange)
  *  - Glow que sigue al cursor
  *  - Tilt 3D suave en cards al pasar el mouse
- *  - Confetti utility expuesto en window.lemonsConfetti(x, y)
+ *  - Confetti utility expuesto en window.portalConfetti(x, y)
  *
  * Se monta una sola vez en App. Respeta prefers-reduced-motion.
  */
@@ -42,9 +42,9 @@ export default function PremiumFX() {
 
     const TARGET = Math.min(48, Math.round(window.innerWidth / 28));
     const palette = [
-      "rgba(245,224,58,",
-      "rgba(255,140,42,",
-      "rgba(255,85,0,",
+      "rgba(var(--brand-primary-rgb),",
+      "rgba(var(--brand-accent-rgb),",
+      "rgba(var(--brand-accent-rgb),",
       "rgba(255,249,176,",
     ];
     const rand = (a, b) => a + Math.random() * (b - a);
@@ -97,7 +97,7 @@ export default function PremiumFX() {
           const d2 = dx * dx + dy * dy;
           if (d2 < 14000) {
             const o = (1 - d2 / 14000) * 0.08;
-            ctx.strokeStyle = `rgba(245,224,58,${o.toFixed(3)})`;
+            ctx.strokeStyle = `rgba(var(--brand-primary-rgb),${o.toFixed(3)})`;
             ctx.lineWidth = 0.6;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
@@ -295,7 +295,7 @@ export default function PremiumFX() {
     return () => { io.disconnect(); mo.disconnect(); };
   }, []);
 
-  // ── Konami code easter egg → LEMONS PARTY MODE ──
+  // ── Konami code easter egg → PARTY MODE ──
   useEffect(() => {
     const code = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
     let idx = 0;
@@ -316,16 +316,16 @@ export default function PremiumFX() {
       document.body.classList.add("fxPartyMode");
       const banner = document.createElement("div");
       banner.className = "fxPartyBanner";
-      banner.textContent = "LEMONS MODE";
+      banner.textContent = "PARTY MODE";
       document.body.appendChild(banner);
 
       // Confetti masivo desde varios puntos
-      if (window.lemonsConfetti) {
+      if (window.portalConfetti) {
         const w = window.innerWidth;
         const h = window.innerHeight;
         for (let i = 0; i < 8; i++) {
           setTimeout(() => {
-            window.lemonsConfetti(Math.random() * w, h * 0.3 + Math.random() * 200, 60);
+            window.portalConfetti(Math.random() * w, h * 0.3 + Math.random() * 200, 60);
           }, i * 180);
         }
       }
@@ -356,7 +356,7 @@ export default function PremiumFX() {
     return () => document.removeEventListener("click", onClick);
   }, []);
 
-  // ── Confetti utility en window.lemonsConfetti(x, y) ──
+  // ── Confetti utility en window.portalConfetti(x, y) ──
   useEffect(() => {
     const canvas = confettiRef.current;
     if (!canvas) return;
@@ -440,10 +440,10 @@ export default function PremiumFX() {
       }
     };
 
-    window.lemonsConfetti = burst;
+    window.portalConfetti = burst;
     return () => {
       window.removeEventListener("resize", resize);
-      delete window.lemonsConfetti;
+      delete window.portalConfetti;
     };
   }, []);
 

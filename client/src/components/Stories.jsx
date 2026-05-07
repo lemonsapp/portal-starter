@@ -16,7 +16,7 @@ const CAT_CFG = {
 const TIPS = [
   { title: "Antes de comprar consultá",   body: "Cada producto tiene reglas aduaneras distintas. Mandá link por WhatsApp y te decimos si conviene importarlo.", emoji: "💡", color: "#fbbf24" },
   { title: "Express vs Normal",            body: "Express USA llega en 72 hs; Normal 7-10 días. La diferencia se justifica en mercadería sensible al tiempo.", emoji: "⚡", color: "var(--brand-accent, #ff8c2a)" },
-  { title: "Coins acumulan",         body: "Cada envío te suma LC. Canjealos por descuentos, items premium del perfil o powers del chat.",                  emoji: "🍋", color: "var(--brand-primary, #f5e03a)" },
+  { title: "Coins acumulan",         body: "Cada envío te suma LC. Canjealos por descuentos, items premium del perfil o powers del chat.",                  emoji: "🪙", color: "var(--brand-primary, #f5e03a)" },
   { title: "Invitá amigos · 25 LC",        body: "Mandá tu link de referido. Cuando hacen su primer envío, vos ganás 25 LC y ellos 25.",                            emoji: "🎁", color: "#a78bfa" },
 ];
 
@@ -130,7 +130,7 @@ export default function Stories({ announcements = [] }) {
         .st-ring{width:64px;height:64px;border-radius:50%;padding:2.5px;margin:0 auto 6px;position:relative;transition:transform .25s}
         .st-ring.unread{background:conic-gradient(from 0deg,#a78bfa,#ec4899,var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a),#a78bfa)}
         .st-ring.viewed{background:rgba(255,255,255,.12)}
-        .st-ring.lemons{background:conic-gradient(from 0deg,var(--c1),var(--c2),var(--c1))}
+        .st-ring.brand{background:conic-gradient(from 0deg,var(--c1),var(--c2),var(--c1))}
         .st-circle:hover .st-ring{transform:scale(1.06)}
         .st-inner{width:100%;height:100%;border-radius:50%;background:#03040c;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden}
         .st-inner img{width:100%;height:100%;object-fit:cover}
@@ -156,7 +156,7 @@ export default function Stories({ announcements = [] }) {
                   ? <img src={selfGroup.stories[0].image_url} alt="" />
                   : selfGroup?.avatar_url
                     ? <img src={selfGroup.avatar_url} alt="" />
-                    : <span style={{ fontSize: 26 }}>🍋</span>}
+                    : <span style={{ fontSize: 26 }}>🪙</span>}
               </div>
             </div>
             <div className="st-label">Tu historia</div>
@@ -198,7 +198,7 @@ export default function Stories({ announcements = [] }) {
           const cat = CAT_CFG[a.category] || CAT_CFG.general;
           return (
             <button key={`ann-${a.id}`} className="st-circle" onClick={() => openBucketByKey(`ann-${a.id}`)}>
-              <div className="st-ring lemons" style={{ "--c1": cat.color, "--c2": "var(--brand-accent, #ff5500)", position: "relative" }}>
+              <div className="st-ring brand" style={{ "--c1": cat.color, "--c2": "var(--brand-accent, #ff5500)", position: "relative" }}>
                 <div className="st-inner">{a.emoji || cat.emoji}</div>
                 {a.pinned && <span className="st-pin">📌</span>}
               </div>
@@ -210,7 +210,7 @@ export default function Stories({ announcements = [] }) {
         {/* Tips */}
         {TIPS.map((t, i) => (
           <button key={`tip-${i}`} className="st-circle" onClick={() => openBucketByKey(`tip-${i}`)}>
-            <div className="st-ring lemons" style={{ "--c1": t.color, "--c2": "#ec4899" }}>
+            <div className="st-ring brand" style={{ "--c1": t.color, "--c2": "#ec4899" }}>
               <div className="st-inner">{t.emoji}</div>
             </div>
             <div className="st-label">TIP</div>

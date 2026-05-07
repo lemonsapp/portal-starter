@@ -64,7 +64,7 @@ export default function ResetPassword() {
         .rp-root::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.026;pointer-events:none;z-index:9}
 
         .rp-left{position:relative;display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:#020307;border-right:1px solid rgba(240,236,227,.07)}
-        .rp-num{position:absolute;top:14px;left:14px;font-family:'Bebas Neue',sans-serif;font-size:90px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(245,224,58,.05);pointer-events:none;user-select:none}
+        .rp-num{position:absolute;top:14px;left:14px;font-family:'Bebas Neue',sans-serif;font-size:90px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.05);pointer-events:none;user-select:none}
         .rp-card{width:100%;max-width:460px;opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1) .15s}
         .rp-card.in{opacity:1;transform:translateY(0)}
         .rp-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:var(--brand-accent, #ff5500);display:flex;align-items:center;gap:12px;margin-bottom:18px}
@@ -78,7 +78,7 @@ export default function ResetPassword() {
         .rp-field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(240,236,227,.4);margin-bottom:10px}
         .rp-input-wrap{position:relative}
         .rp-input{width:100%;background:rgba(255,255,255,.025);border:1px solid rgba(240,236,227,.08);color:#f0ece3;font-family:'Barlow',sans-serif;font-size:15px;padding:15px 18px;outline:none;transition:all .25s;border-radius:0}
-        .rp-input:focus{border-color:rgba(245,224,58,.5);background:rgba(245,224,58,.04);box-shadow:0 0 0 1px rgba(245,224,58,.2)}
+        .rp-input:focus{border-color:rgba(var(--brand-primary-rgb),.5);background:rgba(var(--brand-primary-rgb),.04);box-shadow:0 0 0 1px rgba(var(--brand-primary-rgb),.2)}
         .rp-input::placeholder{color:rgba(240,236,227,.18)}
         .rp-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(240,236,227,.4);font-size:16px;padding:4px}
         .rp-eye:hover{color:var(--brand-primary, #f5e03a)}
@@ -87,21 +87,21 @@ export default function ResetPassword() {
         .rp-strength div{flex:1;height:3px;background:rgba(240,236,227,.07);transition:background .25s}
 
         .rp-btn{width:100%;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;background:var(--brand-primary, #f5e03a);color:#000;border:none;padding:18px 28px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
-        .rp-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(245,224,58,.18);background:var(--brand-primary, #fff7a0)}
+        .rp-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(var(--brand-primary-rgb),.18);background:var(--brand-primary, #fff7a0)}
         .rp-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
         .rp-btn .arr{transition:transform .3s}
         .rp-btn:hover .arr{transform:translateX(4px)}
 
         .rp-back{width:100%;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:transparent;color:rgba(240,236,227,.45);border:1px solid rgba(240,236,227,.1);padding:14px 28px;cursor:pointer;transition:all .25s;margin-top:10px}
-        .rp-back:hover{border-color:rgba(245,224,58,.25);color:var(--brand-primary, #f5e03a)}
+        .rp-back:hover{border-color:rgba(var(--brand-primary-rgb),.25);color:var(--brand-primary, #f5e03a)}
 
-        .rp-err{margin-bottom:18px;padding:12px 16px;background:rgba(255,85,0,.06);border:1px solid rgba(255,85,0,.18);color:#ffb07a;font-size:13px;display:flex;align-items:center;gap:10px}
+        .rp-err{margin-bottom:18px;padding:12px 16px;background:rgba(var(--brand-accent-rgb),.06);border:1px solid rgba(var(--brand-accent-rgb),.18);color:#ffb07a;font-size:13px;display:flex;align-items:center;gap:10px}
         .rp-err::before{content:'⚠';color:var(--brand-accent, #ff5500);font-size:14px}
 
         .rp-icon-wrap{width:96px;height:96px;border-radius:50%;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;font-size:42px;animation:rpPulse 2.4s ease-in-out infinite}
         .rp-icon-wrap.success{background:rgba(34,197,94,.06);border:1.5px solid rgba(34,197,94,.35)}
-        .rp-icon-wrap.error{background:rgba(255,85,0,.06);border:1.5px solid rgba(255,85,0,.35)}
-        @keyframes rpPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,224,58,.2)}50%{box-shadow:0 0 0 14px rgba(245,224,58,0)}}
+        .rp-icon-wrap.error{background:rgba(var(--brand-accent-rgb),.06);border:1.5px solid rgba(var(--brand-accent-rgb),.35)}
+        @keyframes rpPulse{0%,100%{box-shadow:0 0 0 0 rgba(var(--brand-primary-rgb),.2)}50%{box-shadow:0 0 0 14px rgba(var(--brand-primary-rgb),0)}}
 
         /* Animated SVG check */
         .rp-check{width:96px;height:96px;margin:0 auto 28px;display:block;animation:rpCheckPop .5s cubic-bezier(.34,1.56,.64,1)}
@@ -115,8 +115,8 @@ export default function ResetPassword() {
         .rp-success-desc{font-size:14px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:24px;text-align:center}
 
         .rp-right{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px;background:linear-gradient(135deg,#07090f 0%,#020307 70%)}
-        .rp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,224,58,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(245,224,58,.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
-        .rp-watermark{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-8px;color:transparent;-webkit-text-stroke:1px rgba(245,224,58,.04);pointer-events:none;z-index:1;bottom:-60px;left:-40px;user-select:none}
+        .rp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
+        .rp-watermark{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-8px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;bottom:-60px;left:-40px;user-select:none}
         .rp-logo-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;max-width:520px;opacity:.06;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
         .rp-glow{position:absolute;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.04) 0%,transparent 70%);top:50%;right:-200px;transform:translateY(-50%);z-index:1;pointer-events:none}
         .rp-right-inner{position:relative;z-index:3;display:flex;flex-direction:column;height:100%;justify-content:space-between}
@@ -129,7 +129,7 @@ export default function ResetPassword() {
         .rp-tips{display:flex;flex-direction:column;gap:10px}
         .rp-tip{display:flex;align-items:center;gap:14px;font-size:13px;color:rgba(240,236,227,.55);font-weight:300}
         .rp-tip b{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);font-weight:400;min-width:54px}
-        .rp-tip-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(245,224,58,.25),rgba(245,224,58,0))}
+        .rp-tip-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--brand-primary-rgb),.25),rgba(var(--brand-primary-rgb),0))}
 
         @media (max-width: 980px){
           .rp-root{grid-template-columns:1fr}

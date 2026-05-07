@@ -32,8 +32,8 @@ export default function VerifyEmail() {
       <style>{`
         .vf-root{min-height:100vh;min-height:100svh;background:#020307;color:#f0ece3;font-family:'Barlow',sans-serif;display:flex;align-items:center;justify-content:center;padding:32px;overflow:hidden;position:relative}
         .vf-root::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.026;pointer-events:none;z-index:9}
-        .vf-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,224,58,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(245,224,58,.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
-        .vf-watermark{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(180px,22vw,360px);line-height:.78;letter-spacing:-6px;color:transparent;-webkit-text-stroke:1px rgba(245,224,58,.04);pointer-events:none;z-index:1;user-select:none;top:50%;left:50%;transform:translate(-50%,-50%)}
+        .vf-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
+        .vf-watermark{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(180px,22vw,360px);line-height:.78;letter-spacing:-6px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;user-select:none;top:50%;left:50%;transform:translate(-50%,-50%)}
         .vf-logo-bg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50%;max-width:480px;opacity:.05;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
         .vf-card{position:relative;z-index:5;width:100%;max-width:560px;text-align:center;padding:56px 48px;background:linear-gradient(135deg,#07090f 0%,#020307 100%);border:1px solid rgba(240,236,227,.08);opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1)}
         .vf-card.in{opacity:1;transform:translateY(0)}
@@ -44,7 +44,7 @@ export default function VerifyEmail() {
         .vf-eyebrow::before,.vf-eyebrow::after{content:'';width:28px;height:1px;background:var(--brand-accent, #ff5500)}
 
         .vf-icon{margin:0 auto 28px;width:128px;height:128px;display:flex;align-items:center;justify-content:center;position:relative}
-        .vf-spinner{width:96px;height:96px;border:3px solid rgba(245,224,58,.1);border-top-color:var(--brand-primary, #f5e03a);border-radius:50%;animation:vfSpin 1s linear infinite}
+        .vf-spinner{width:96px;height:96px;border:3px solid rgba(var(--brand-primary-rgb),.1);border-top-color:var(--brand-primary, #f5e03a);border-radius:50%;animation:vfSpin 1s linear infinite}
         @keyframes vfSpin{to{transform:rotate(360deg)}}
 
         .vf-check{width:128px;height:128px;animation:vfPop .6s cubic-bezier(.34,1.56,.64,1)}
@@ -65,11 +65,11 @@ export default function VerifyEmail() {
 
         .vf-msg{font-size:15px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:24px;max-width:420px;margin-left:auto;margin-right:auto}
 
-        .vf-coins{display:inline-flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(245,224,58,.06);border:1px solid rgba(245,224,58,.22);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);margin-bottom:30px}
+        .vf-coins{display:inline-flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(var(--brand-primary-rgb),.06);border:1px solid rgba(var(--brand-primary-rgb),.22);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);margin-bottom:30px}
         .vf-coins b{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;font-weight:400}
 
         .vf-btn{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;background:var(--brand-primary, #f5e03a);color:#000;border:none;padding:18px 36px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:10px}
-        .vf-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(245,224,58,.18);background:var(--brand-primary, #fff7a0)}
+        .vf-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(var(--brand-primary-rgb),.18);background:var(--brand-primary, #fff7a0)}
         .vf-btn .arr{transition:transform .3s}
         .vf-btn:hover .arr{transform:translateX(4px)}
 
@@ -111,7 +111,7 @@ export default function VerifyEmail() {
         {msg && <div className="vf-msg">{msg}</div>}
 
         {status === "ok" && (
-          <div className="vf-coins">🍋 <b>+15</b> Coins acreditados</div>
+          <div className="vf-coins">🪙 <b>+15</b> Coins acreditados</div>
         )}
 
         {status !== "loading" && (

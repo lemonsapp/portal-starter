@@ -26,10 +26,10 @@ export function buildNickStyle(u) {
 
 export function getAvatarEmoji(avatarKey) {
   const map = {
-    avatar_lemon: "🍋", avatar_rocket: "🚀", avatar_globe: "🌍",
-    avatar_diamond: "💎", avatar_fire: "🔥", avatar_crown: "👑", avatar_lemon_fly: "🍋",
+    avatar_lemon: "🪙", avatar_rocket: "🚀", avatar_globe: "🌍",
+    avatar_diamond: "💎", avatar_fire: "🔥", avatar_crown: "👑", avatar_lemon_fly: "🪙",
   };
-  return map[avatarKey] || "🍋";
+  return map[avatarKey] || "🪙";
 }
 
 export function getAvatarBg(avatarKey) {

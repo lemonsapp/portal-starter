@@ -6,14 +6,14 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 const TYPE_STYLES = {
-  info:    { bg:"linear-gradient(135deg,#1a2540,#0f1628)", accent:"var(--brand-primary, #f5e03a)", icon:"🍋" },
+  info:    { bg:"linear-gradient(135deg,#1a2540,#0f1628)", accent:"var(--brand-primary, #f5e03a)", icon:"🪙" },
   warning: { bg:"linear-gradient(135deg,#2a1a0f,#1a0f00)", accent:"var(--brand-accent, #ff5500)", icon:"⚠" },
   promo:   { bg:"linear-gradient(135deg,#0d2a1a,#071a10)", accent:"#4ade80", icon:"🎉" },
   update:  { bg:"linear-gradient(135deg,#0d1a2a,#071018)", accent:"#60a5fa", icon:"🆕" },
 };
 
 // Key para saber qué notificaciones ya cerró el usuario
-const DISMISSED_KEY = "lemon_dismissed_notifs";
+const DISMISSED_KEY = "dismissed_notifs";
 function getDismissed() {
   try { return JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]"); } catch { return []; }
 }
@@ -67,33 +67,33 @@ export default function AppNotification() {
   return (
     <>
       <style>{`
-        @keyframes lemonBounce {
+        @keyframes notifBounce {
           0%,100% { transform: translateY(0) scale(1); }
           30%      { transform: translateY(-12px) scale(1.1); }
           60%      { transform: translateY(-4px) scale(1.05); }
         }
-        @keyframes lemonPop {
+        @keyframes notifPop {
           from { opacity:0; transform:scale(0.7) translateY(20px); }
           to   { opacity:1; transform:scale(1) translateY(0); }
         }
-        @keyframes lemonSlide {
+        @keyframes notifSlide {
           from { opacity:0; transform:translateY(10px) scale(0.95); }
           to   { opacity:1; transform:none; }
         }
-        .lemon-bubble {
-          animation: lemonPop 0.4s cubic-bezier(.34,1.56,.64,1) forwards;
+        .notif-bubble {
+          animation: notifPop 0.4s cubic-bezier(.34,1.56,.64,1) forwards;
         }
-        .lemon-bounce {
-          animation: lemonBounce 0.6s ease-in-out;
+        .notif-bounce {
+          animation: notifBounce 0.6s ease-in-out;
         }
-        .lemon-msg {
-          animation: lemonSlide 0.3s ease forwards;
+        .notif-msg {
+          animation: notifSlide 0.3s ease forwards;
         }
       `}</style>
 
       {/* Burbuja flotante */}
       <div
-        className={`lemon-bubble ${bounce ? "lemon-bounce" : ""}`}
+        className={`notif-bubble ${bounce ? "notif-bounce" : ""}`}
         style={{
           position:"fixed", bottom:24, right:24, zIndex:9000,
           display:"flex", flexDirection:"column", alignItems:"flex-end", gap:10,
@@ -101,7 +101,7 @@ export default function AppNotification() {
       >
         {/* Mensaje expandido */}
         {expanded && (
-          <div className="lemon-msg" style={{
+          <div className="notif-msg" style={{
             background: style.bg,
             border:`2px solid ${style.accent}40`,
             borderRadius:18, padding:"16px 18px", maxWidth:300,
@@ -125,7 +125,7 @@ export default function AppNotification() {
                   width:28, height:28, borderRadius:"50%",
                   background:`${style.accent}20`, border:`1px solid ${style.accent}40`,
                   display:"grid", placeItems:"center", fontSize:14,
-                }}>🍋</div>
+                }}>🪙</div>
                 <span style={{ fontWeight:800, fontSize:13, color:style.accent }}>AVISO</span>
               </div>
               <button onClick={dismiss} style={{
@@ -167,7 +167,7 @@ export default function AppNotification() {
             transition:"transform 0.2s",
           }}
         >
-          {expanded ? "✕" : "🍋"}
+          {expanded ? "✕" : "🪙"}
         </div>
 
         {/* Punto de notificación */}
