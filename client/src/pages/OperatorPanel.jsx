@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import BarcodeScanner from "../components/BarcodeScanner.jsx";
-import WhatsAppCRMPanel from "../components/WhatsAppCRMPanel.jsx";
 import EditorialHero from "../components/EditorialHero.jsx";
 import Skeleton from "../components/Skeleton.jsx";
 
@@ -1420,14 +1419,12 @@ export default function OperatorPanel(){
           {key:"news",    icon:"📰", label:"Anuncios"},
           {key:"coupons", icon:"🎟", label:"Cupones"},
           {key:"emojis",  icon:"😀", label:"Emojis"},
-          {key:"wa",      icon:"💬", label:"WhatsApp CRM"},
           {key:"ia",      icon:"🤖", label:"Control IA"},
           {key:"invites", icon:"🔑", label:"Invitaciones"},
         ].filter(t => tabAllowed(t.key, scopes))}/>
       </div>
 
       {opTab==="ia"      && tabAllowed("ia", scopes)      && <AIPanel toast={toast}/>}
-      {opTab==="wa"      && tabAllowed("wa", scopes)      && <WhatsAppCRMPanel/>}
       {opTab==="invites" && tabAllowed("invites", scopes) && <InvitePanel toast={toast}/>}
       {opTab==="lines"   && tabAllowed("lines", scopes)   && <LinesPanel toast={toast}/>}
       {opTab==="news"    && tabAllowed("news", scopes)    && <AnnouncementsPanel toast={toast}/>}

@@ -23,7 +23,6 @@ const coinsRouter         = require("./routes/coins");         // ✅ Lemon Coin
 const notificationsRouter = require("./routes/notifications"); // ✅ Notificaciones LIMÓN (broadcast)
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
 const founderIntelligenceRouter = require("./routes/founderIntelligence");
-const waCRMRouter        = require("./routes/waCRM");
 const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
 
@@ -5183,7 +5182,6 @@ app.post("/api/ai/settings/unblock-chat", async (req, res) => {
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
-app.use("/api/wa/crm", waCRMRouter);
 app.use("/api/chat", chatRouter);
 app.use("/profile",       profileRouter);
 app.use("/auth/webauthn", webauthnRouter);
