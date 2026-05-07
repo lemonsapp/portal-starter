@@ -28,6 +28,7 @@ const notificationsRouter = require("./routes/notifications"); // ✅ Notificaci
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
 const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
+const adminConfig        = require("./routes/admin-config");    // 🪄 Setup wizard endpoints
 
 const app = express();
 
@@ -2644,6 +2645,10 @@ app.use("/notifications", notificationsRouter);
 app.use("/api/chat", chatRouter);
 app.use("/profile",       profileRouter);
 app.use("/auth/webauthn", webauthnRouter);
+
+// ── Setup wizard endpoints (Sprint 2) ────────────────────────────────────────
+app.use("/api/admin/config", adminConfig.build({ authRequired, requireRole }));
+app.use("/api/config/public", adminConfig.publicRouter());
 
 // ── Reclamar bonus primer envío (cliente) ──────────────────────────
 
