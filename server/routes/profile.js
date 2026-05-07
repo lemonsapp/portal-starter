@@ -1,0 +1,845 @@
+// server/routes/profile.js — Sistema de perfiles con Lemon Coins
+"use strict";
+const express = require("express");
+const router  = express.Router();
+const db      = require("../db");
+const { authRequired } = require("../auth");
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Solo se permiten imágenes'));
+  }
+});
+
+// ── Auto-migración ────────────────────────────────────────────────────────────
+async function migrate() {
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS profile_items (
+      id          SERIAL PRIMARY KEY,
+      key         TEXT UNIQUE NOT NULL,
+      type        TEXT NOT NULL,  -- avatar | frame | title | badge
+      name        TEXT NOT NULL,
+      description TEXT,
+      emoji       TEXT,
+      data        JSONB DEFAULT '{}',
+      cost_coins  INTEGER NOT NULL DEFAULT 0,
+      rarity      TEXT DEFAULT 'common', -- common | rare | epic | legendary
+      active      BOOLEAN DEFAULT TRUE,
+      created_at  TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS user_profiles (
+      user_id       INTEGER PRIMARY KEY REFERENCES users(id),
+      avatar_key    TEXT DEFAULT 'default',
+      frame_key     TEXT DEFAULT NULL,
+      title_key     TEXT DEFAULT NULL,
+      badges        TEXT[] DEFAULT '{}',
+      bio           TEXT DEFAULT NULL,
+      updated_at    TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS user_items (
+      id          SERIAL PRIMARY KEY,
+      user_id     INTEGER REFERENCES users(id),
+      item_key    TEXT NOT NULL,
+      acquired_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, item_key)
+    )
+  `);
+  // Agregar peak_balance a lemon_coins si no existe
+  await db.query(`ALTER TABLE lemon_coins ADD COLUMN IF NOT EXISTS peak_balance INTEGER DEFAULT 0`).catch(() => {});
+  await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_envios BOOLEAN DEFAULT TRUE`).catch(() => {});
+  await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_coins BOOLEAN DEFAULT TRUE`).catch(() => {});
+  await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_logros BOOLEAN DEFAULT TRUE`).catch(() => {});
+  await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_posts BOOLEAN DEFAULT TRUE`).catch(() => {});
+  await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS privacy_amigos BOOLEAN DEFAULT FALSE`).catch(() => {});
+
+  // Seed items si no hay
+  if (true) {
+    await db.query(`
+      INSERT INTO profile_items (key, type, name, description, emoji, cost_coins, rarity, data) VALUES
+      -- Avatares
+      ('avatar_lemon',    'avatar', 'Limón Dorado',    'El clásico de Lemon''s',           '🍋', 0,    'common',    '{"bg":"#f5e03a","emoji":"🍋"}'),
+      ('avatar_rocket',   'avatar', 'Rocketero',       'Para los que van rápido',           '🚀', 200,  'common',    '{"bg":"#3b82f6","emoji":"🚀"}'),
+      ('avatar_globe',    'avatar', 'Viajero Global',  'Conectado al mundo',                '🌍', 300,  'common',    '{"bg":"#22c55e","emoji":"🌍"}'),
+      ('avatar_diamond',  'avatar', 'Diamante',        'Importador de lujo',                '💎', 800,  'rare',      '{"bg":"#a78bfa","emoji":"💎"}'),
+      ('avatar_fire',     'avatar', 'On Fire',         'Siempre activo',                    '🔥', 500,  'rare',      '{"bg":"#ff6200","emoji":"🔥"}'),
+      ('avatar_crown',    'avatar', 'La Corona',       'Para los reyes del comercio',       '👑', 2000, 'epic',      '{"bg":"#f5e03a","emoji":"👑"}'),
+      ('avatar_lemon_fly','avatar', 'Limón Volador',   'Edición especial Lemon''s',         '🍋', 5000, 'legendary', '{"bg":"linear-gradient(135deg,#f5e03a,#ff6200)","emoji":"🍋✈️"}'),
+      -- Marcos
+      ('frame_gold',      'frame',  'Marco Dorado',    'Un clásico elegante',               '⭐', 400,  'rare',      '{"border":"2px solid #f5e03a","shadow":"0 0 12px rgba(245,224,58,.5)"}'),
+      ('frame_fire',      'frame',  'Marco Llamas',    'Ardiente y poderoso',               '🔥', 600,  'rare',      '{"border":"2px solid #ff6200","shadow":"0 0 14px rgba(255,98,0,.6)"}'),
+      ('frame_rainbow',   'frame',  'Marco Arcoíris',  'Edición colorida',                  '🌈', 1200, 'epic',      '{"border":"2px solid transparent","gradient":"linear-gradient(45deg,#f5e03a,#ff6200,#a78bfa,#22c55e)"}'),
+      ('frame_diamond',   'frame',  'Marco Diamante',  'Solo para los mejores',             '💎', 3000, 'legendary', '{"border":"2px solid #a78bfa","shadow":"0 0 20px rgba(167,139,250,.7)","pulse":true}'),
+      -- Títulos
+      ('title_importer',  'title',  'Importador Pro',  'Para los que ya tienen experiencia','📦', 300,  'common',    '{"color":"#ede9e0"}'),
+      ('title_fast',      'title',  'Velocista',       'Siempre en Express',                '⚡', 500,  'rare',      '{"color":"#f5e03a"}'),
+      ('title_global',    'title',  'Global Trader',   'Compra en todo el mundo',           '🌍', 800,  'rare',      '{"color":"#60a5fa"}'),
+      ('title_legend',    'title',  'Leyenda Lemon''s','El título más exclusivo',           '🏆', 4000, 'legendary', '{"color":"#f5e03a","gradient":true}'),
+      -- Insignias
+      ('badge_first',     'badge',  'Primer Envío',    'Completaste tu primer envío',       '🎯', 0,    'common',    '{"color":"#f5e03a"}'),
+      ('badge_x10',       'badge',  '10 Envíos',       'Importador frecuente',              '📦', 0,    'rare',      '{"color":"#22c55e"}'),
+      ('badge_whale',     'badge',  'Ballena',         'Más de USD 5000 importados',        '🐋', 0,    'epic',      '{"color":"#3b82f6"}'),
+      ('badge_loyal',     'badge',  'Cliente Leal',    'Más de 1 año con Lemon''s',         '💛', 0,    'rare',      '{"color":"#f5e03a"}'),
+      ('badge_express',   'badge',  'Experto Express', '5 envíos Express completados',      '⚡', 150,  'common',    '{"color":"#f5e03a"}')
+      ON CONFLICT (key) DO NOTHING
+    `);
+    // Badges especiales animadas
+    await db.query(`
+      INSERT INTO profile_items (key, type, name, description, emoji, cost_coins, rarity, data) VALUES
+      ('badge_creator',  'badge', 'CREATOR',    'Creador de Lemon''s ARG',           '⚡', 0,    'legendary', '{"color":"#f5e03a","animated":true,"effect":"lightning","grantOnly":true}'),
+      ('badge_mod',      'badge', 'MOD',         'Moderador oficial',                  '🛡️', 0,    'legendary', '{"color":"#60a5fa","animated":true,"effect":"shield","grantOnly":true}'),
+      ('badge_bot',      'badge', 'BOT',         'Agente automatizado de Lemon''s',    '🤖', 0,    'legendary', '{"color":"#a78bfa","animated":true,"effect":"pulse","grantOnly":true}'),
+      ('badge_beta',     'badge', 'BETA',        'Early adopter — primeros meses',     '🧪', 0,    'legendary', '{"color":"#22c55e","animated":true,"effect":"glow","claimable":true}'),
+      ('badge_vip',      'badge', 'VIP',         'Cliente VIP de Lemon''s',            '💎', 2000, 'legendary', '{"color":"#f5e03a","animated":true,"effect":"sparkle"}'),
+      ('badge_thunder',  'badge', 'THUNDER',     'Importador veloz — siempre Express', '⚡', 800,  'epic',      '{"color":"#fbbf24","animated":true,"effect":"lightning"}'),
+      ('badge_phantom',  'badge', 'PHANTOM',     'El que importa en silencio',         '👻', 600,  'epic',      '{"color":"#818cf8","animated":true,"effect":"float"}'),
+      ('badge_gold_star','badge', 'GOLD STAR',   'Excelencia en cada envío',           '🌟', 1500, 'legendary', '{"color":"#f5e03a","animated":true,"effect":"spin"}')
+      ON CONFLICT (key) DO NOTHING
+    `);
+    // Banners preset
+    await db.query(`
+      INSERT INTO profile_items (key, type, name, description, emoji, cost_coins, rarity, data) VALUES
+      ('banner_lemon_rain', 'banner', 'Lluvia de Limones', 'El banner oficial de Lemon''s', '🍋', 3,   'common',    '{"effect":"lemon_rain","color1":"#f5e03a","color2":"#ff6200","category":"lemons"}'),
+      ('banner_lightning',  'banner', 'Tormenta Eléctrica','Energía pura en tu perfil',     '⚡', 5,   'rare',      '{"effect":"lightning","color1":"#f5e03a","color2":"#fbbf24","category":"tech"}'),
+      ('banner_fire',       'banner', 'Llamas',            'El poder del fuego',            '🔥', 5,   'rare',      '{"effect":"fire","color1":"#ff6200","color2":"#f5e03a","category":"tech"}'),
+      ('banner_matrix',     'banner', 'Matrix',            'Estilo hacker futurista',       '👾', 7,   'epic',      '{"effect":"matrix","color1":"#22c55e","color2":"#14532d","category":"tech"}'),
+      ('banner_stars',      'banner', 'Estrellas',         'El universo a tu favor',        '✨', 4,   'common',    '{"effect":"stars","color1":"#a78bfa","color2":"#312e81","category":"space"}'),
+      ('banner_rainbow',    'banner', 'Arcoíris',          'Todos los colores del mundo',   '🌈', 6,   'epic',      '{"effect":"rainbow","color1":"#f5e03a","color2":"#a78bfa","category":"nature"}'),
+      ('banner_snow',       'banner', 'Nevada',            'Tranquilidad y elegancia',      '❄', 4,   'common',    '{"effect":"snow","color1":"#bae6fd","color2":"#0ea5e9","category":"nature"}')
+      ON CONFLICT (key) DO NOTHING
+    `);
+  }
+}
+migrate().catch(e => console.error("[PROFILE MIGRATE]", e));
+
+// ── GET /profile — perfil del usuario actual ──────────────────────────────────
+router.get("/", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Crear perfil si no existe
+    await db.query(`
+      INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING
+    `, [userId]);
+
+    const [profileQ, coinsQ, userQ, itemsQ, statsQ] = await Promise.all([
+      db.query(`SELECT * FROM user_profiles WHERE user_id=$1`, [userId]),
+      db.query(`SELECT balance, total_earned, peak_balance FROM lemon_coins WHERE user_id=$1`, [userId]),
+      db.query(`SELECT id, name, email, client_number, role, username, created_at FROM users WHERE id=$1`, [userId]),
+      db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [userId]),
+      db.query(`
+        SELECT
+          COUNT(*) AS total_shipments,
+          COUNT(*) FILTER (WHERE status='Entregado') AS delivered,
+          COALESCE(SUM(estimated_usd) FILTER (WHERE status='Entregado'), 0) AS total_usd
+        FROM shipments WHERE user_id=$1
+      `, [userId]),
+    ]);
+
+    const profile = profileQ.rows[0];
+    const coins   = coinsQ.rows[0] || { balance: 0, total_earned: 0 };
+    const user    = userQ.rows[0];
+    const items   = itemsQ.rows.map(r => r.item_key);
+    const stats   = statsQ.rows[0];
+
+    // Calcular nivel
+    const balance  = Number(coins.balance);
+    const peak     = Number(coins.peak_balance || Math.max(balance, Number(coins.total_earned) || 0));
+    const level    = peak >= 1500 ? "gold" : peak >= 500 ? "silver" : "bronze";
+
+    // Calcular insignias automáticas
+    const autoBadges = [];
+    if (Number(stats.delivered) >= 1)  autoBadges.push("badge_first");
+    if (Number(stats.delivered) >= 10) autoBadges.push("badge_x10");
+    if (Number(stats.total_usd) >= 5000) autoBadges.push("badge_whale");
+
+    // Agregar insignias automáticas al usuario si no las tiene
+    for (const badge of autoBadges) {
+      await db.query(`
+        INSERT INTO user_items (user_id, item_key) VALUES ($1, $2) ON CONFLICT DO NOTHING
+      `, [userId, badge]);
+    }
+
+    const allItems = [...new Set([...items, ...autoBadges])];
+
+    res.json({
+      user:    { ...user, level },
+      profile: { ...profile, owned_items: allItems },
+      coins:   { balance, total_earned: Number(coins.total_earned), peak_balance: peak },
+      stats:   {
+        total_shipments: Number(stats.total_shipments),
+        delivered:       Number(stats.delivered),
+        total_usd:       Number(stats.total_usd),
+      },
+    });
+  } catch(e) { console.error("[PROFILE GET]", e); res.status(500).json({ error: e.message }); }
+});
+
+// ── GET /profile/shop — catálogo de items ─────────────────────────────────────
+router.get("/shop", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const [itemsQ, ownedQ] = await Promise.all([
+      db.query(`SELECT * FROM profile_items WHERE active=true ORDER BY cost_coins ASC`),
+      db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [userId]),
+    ]);
+    const owned = ownedQ.rows.map(r => r.item_key);
+    res.json({
+      items: itemsQ.rows.map(i => ({ ...i, owned: owned.includes(i.key) })),
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── POST /profile/buy — comprar item con coins ────────────────────────────────
+router.post("/buy", authRequired, async (req, res) => {
+  try {
+    const userId  = req.user.id;
+    const { item_key } = req.body;
+    if (!item_key) return res.status(400).json({ error: "item_key requerido" });
+
+    // Verificar item
+    const itemQ = await db.query(`SELECT * FROM profile_items WHERE key=$1 AND active=true`, [item_key]);
+    if (!itemQ.rows[0]) return res.status(404).json({ error: "Item no encontrado" });
+    const item = itemQ.rows[0];
+
+    // Verificar que no lo tenga ya
+    const ownedQ = await db.query(`SELECT id FROM user_items WHERE user_id=$1 AND item_key=$2`, [userId, item_key]);
+    if (ownedQ.rows[0]) return res.status(400).json({ error: "Ya tenés este item" });
+
+    // Verificar coins
+    if (item.cost_coins > 0) {
+      await db.query(`INSERT INTO lemon_coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
+      const coinsQ = await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId]);
+      const balance = Number(coinsQ.rows[0]?.balance || 0);
+      if (balance < item.cost_coins) {
+        return res.status(400).json({ error: `Coins insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
+      }
+      // Descontar coins
+      await db.query(`UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [item.cost_coins, userId]);
+      await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'redeem',$2,$3)`,
+        [userId, -item.cost_coins, `Compra de perfil: ${item.name}`]);
+    }
+
+    // Dar item
+    await db.query(`INSERT INTO user_items (user_id, item_key) VALUES ($1, $2)`, [userId, item_key]);
+
+    const newBalance = item.cost_coins > 0
+      ? (await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId])).rows[0]?.balance
+      : null;
+
+    res.json({ ok: true, item, new_balance: newBalance ? Number(newBalance) : null });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── PATCH /profile — actualizar perfil activo ─────────────────────────────────
+router.patch("/", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { avatar_key, frame_key, title_key, badges, bio,
+            name_color, name_glow_color, name_glow,
+            name_grad_from, name_grad_to,
+            nickname, nick_color, nick_glow, icon_slug,
+            privacy_envios, privacy_coins, privacy_logros, privacy_posts, privacy_amigos } = req.body;
+
+    // Verificar powers del chat si quiere cambiar nombre/chat config
+    const chatFields = { name_color, name_glow_color, name_glow, name_grad_from, name_grad_to, nickname, nick_color, nick_glow, icon_slug };
+    const hasChatChanges = Object.values(chatFields).some(v => v !== undefined);
+    if (hasChatChanges) {
+      const powersQ = await db.query(`SELECT power_slug FROM user_chat_powers WHERE user_id=$1`, [userId]);
+      const owned = powersQ.rows.map(r => r.power_slug);
+      const roleQ = await db.query(`SELECT role FROM users WHERE id=$1`, [userId]);
+      const isStaff = ['admin','operator'].includes(roleQ.rows[0]?.role);
+      if (!isStaff) {
+        if (name_color !== undefined && !owned.includes('namecolor')) return res.status(403).json({ error: "Necesitás el power namecolor" });
+        if ((name_grad_from || name_grad_to) && !owned.includes('namegrad')) return res.status(403).json({ error: "Necesitás el power namegrad" });
+        if (name_glow !== undefined && !owned.includes('nameglow')) return res.status(403).json({ error: "Necesitás el power nameglow" });
+        if (nickname !== undefined && !owned.includes('nickname')) return res.status(403).json({ error: "Necesitás el power nickname" });
+        if (nick_color !== undefined && !owned.includes('nickcolor')) return res.status(403).json({ error: "Necesitás el power nickcolor" });
+        if (nick_glow !== undefined && !owned.includes('nickglow')) return res.status(403).json({ error: "Necesitás el power nickglow" });
+        if (icon_slug !== undefined && !owned.includes(icon_slug)) return res.status(403).json({ error: "Necesitás el power " + icon_slug });
+      }
+      // Guardar en user_profiles
+      await db.query(`
+        INSERT INTO user_profiles (user_id, name_color, name_glow_color, name_glow,
+          name_grad_from, name_grad_to, nickname, nick_color, nick_glow, icon_slug, updated_at)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW())
+        ON CONFLICT (user_id) DO UPDATE SET
+          name_color      = COALESCE($2, user_profiles.name_color),
+          name_glow_color = COALESCE($3, user_profiles.name_glow_color),
+          name_glow       = COALESCE($4, user_profiles.name_glow),
+          name_grad_from  = COALESCE($5, user_profiles.name_grad_from),
+          name_grad_to    = COALESCE($6, user_profiles.name_grad_to),
+          nickname        = COALESCE($7, user_profiles.nickname),
+          nick_color      = COALESCE($8, user_profiles.nick_color),
+          nick_glow       = COALESCE($9, user_profiles.nick_glow),
+          icon_slug       = COALESCE($10, user_profiles.icon_slug),
+          updated_at      = NOW()
+      `, [userId, name_color||null, name_glow_color||null, name_glow!=null?name_glow:null,
+          name_grad_from||null, name_grad_to||null, nickname||null,
+          nick_color||null, nick_glow!=null?name_glow:null, icon_slug||null]);
+    }
+
+    // Verificar que el usuario tiene los items que quiere equipar
+    async function hasItem(key) {
+      if (!key) return true;
+      const q = await db.query(`SELECT id FROM user_items WHERE user_id=$1 AND item_key=$2`, [userId, key]);
+      return !!q.rows[0];
+    }
+
+    if (avatar_key && !(await hasItem(avatar_key))) return res.status(403).json({ error: "No tenés ese avatar" });
+    if (frame_key  && !(await hasItem(frame_key)))  return res.status(403).json({ error: "No tenés ese marco" });
+    if (title_key  && !(await hasItem(title_key)))  return res.status(403).json({ error: "No tenés ese título" });
+
+    await db.query(`
+      INSERT INTO user_profiles (user_id, avatar_key, frame_key, title_key, badges, bio,
+        privacy_envios, privacy_coins, privacy_logros, privacy_posts, privacy_amigos, updated_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW())
+      ON CONFLICT (user_id) DO UPDATE SET
+        avatar_key      = COALESCE($2, user_profiles.avatar_key),
+        frame_key       = $3,
+        title_key       = $4,
+        badges          = COALESCE($5, user_profiles.badges),
+        bio             = COALESCE($6, user_profiles.bio),
+        privacy_envios  = COALESCE($7, user_profiles.privacy_envios),
+        privacy_coins   = COALESCE($8, user_profiles.privacy_coins),
+        privacy_logros  = COALESCE($9, user_profiles.privacy_logros),
+        privacy_posts   = COALESCE($10, user_profiles.privacy_posts),
+        privacy_amigos  = COALESCE($11, user_profiles.privacy_amigos),
+        updated_at      = NOW()
+    `, [userId, avatar_key||null, frame_key||null, title_key||null,
+        badges ? `{${badges.join(",")}}` : null, bio||null,
+        privacy_envios!=null?privacy_envios:null,
+        privacy_coins!=null?privacy_coins:null,
+        privacy_logros!=null?privacy_logros:null,
+        privacy_posts!=null?privacy_posts:null,
+        privacy_amigos!=null?privacy_amigos:null]);
+
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── POST /profile/studio — guardar config del studio (solo admin) ─────────────
+router.post("/studio", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log("[STUDIO] user:", userId, "body:", JSON.stringify(req.body));
+    const me = await db.query(`SELECT role FROM users WHERE id=$1`, [userId]);
+    console.log("[STUDIO] role:", me.rows[0]?.role);
+    if (me.rows[0]?.role !== "admin") return res.status(403).json({ error: "Solo admin" });
+
+    const { name_color, name_glow_color, name_glow, custom_name, banner_effect, banner_color1, banner_color2 } = req.body;
+
+    await db.query(`
+      INSERT INTO user_profiles (user_id, name_color, name_glow_color, name_glow, custom_name, banner_effect, banner_color1, banner_color2, updated_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW())
+      ON CONFLICT (user_id) DO UPDATE SET
+        name_color      = COALESCE($2, user_profiles.name_color),
+        name_glow_color = COALESCE($3, user_profiles.name_glow_color),
+        name_glow       = COALESCE($4, user_profiles.name_glow),
+        custom_name     = COALESCE($5, user_profiles.custom_name),
+        banner_effect   = COALESCE($6, user_profiles.banner_effect),
+        banner_color1   = COALESCE($7, user_profiles.banner_color1),
+        banner_color2   = COALESCE($8, user_profiles.banner_color2),
+        updated_at      = NOW()
+    `, [userId, name_color||null, name_glow_color||null, name_glow!=null?name_glow:null, custom_name||null,
+        banner_effect||null, banner_color1||null, banner_color2||null]);
+
+    // Actualizar nombre si viene
+    if (custom_name) {
+      await db.query(`UPDATE users SET name=$1 WHERE id=$2`, [custom_name, userId]);
+    }
+
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── POST /profile/studio/badge — crear badge custom (solo admin) ──────────────
+router.post("/studio/badge", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const me = await db.query(`SELECT role FROM users WHERE id=$1`, [userId]);
+    if (me.rows[0]?.role !== "admin") return res.status(403).json({ error: "Solo admin" });
+
+    const { key, name, description, emoji, cost_coins, rarity, data } = req.body;
+    if (!key || !name) return res.status(400).json({ error: "key y name requeridos" });
+
+    await db.query(`
+      INSERT INTO profile_items (key, type, name, description, emoji, cost_coins, rarity, data, active)
+      VALUES ($1, 'badge', $2, $3, $4, $5, $6, $7, true)
+      ON CONFLICT (key) DO UPDATE SET
+        name=$2, description=$3, emoji=$4, cost_coins=$5, rarity=$6, data=$7, active=true
+    `, [key, name, description||"", emoji||"⚡", cost_coins||0, rarity||"legendary", JSON.stringify(data||{})]);
+
+    // Auto-dar la badge al admin
+    await db.query(`INSERT INTO user_items (user_id, item_key) VALUES ($1,$2) ON CONFLICT DO NOTHING`, [userId, key]);
+
+    res.json({ ok: true, key });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── POST /profile/unlock — desbloquear feature o comprar banner preset ────────
+router.post("/unlock", authRequired, async (req, res) => {
+  try {
+    const userId   = req.user.id;
+    const { item_key } = req.body;
+    if (!item_key) return res.status(400).json({ error: "item_key requerido" });
+
+    // Verificar item existe y es feature o banner
+    const itemQ = await db.query(
+      `SELECT * FROM profile_items WHERE key=$1 AND active=true AND type IN ('feature','banner')`,
+      [item_key]
+    );
+    if (!itemQ.rows[0]) return res.status(404).json({ error: "Item no encontrado" });
+    const item = itemQ.rows[0];
+
+    // Verificar que no lo tenga ya
+    const ownedQ = await db.query(
+      `SELECT id FROM user_items WHERE user_id=$1 AND item_key=$2`,
+      [userId, item_key]
+    );
+    if (ownedQ.rows[0]) return res.status(400).json({ error: "Ya tenés este item" });
+
+    // Verificar y descontar coins
+    await db.query(
+      `INSERT INTO lemon_coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`,
+      [userId]
+    );
+    const coinsQ = await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId]);
+    const balance = Number(coinsQ.rows[0]?.balance || 0);
+    if (balance < item.cost_coins) {
+      return res.status(400).json({ error: `Coins insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
+    }
+
+    await db.query(
+      `UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`,
+      [item.cost_coins, userId]
+    );
+
+    // Dar item
+    await db.query(`INSERT INTO user_items (user_id, item_key) VALUES ($1, $2)`, [userId, item_key]);
+
+    // Si es feature, agregarlo a features_unlocked del perfil
+    if (item.type === 'feature') {
+      const data = item.data || {};
+      await db.query(`
+        INSERT INTO user_profiles (user_id, features_unlocked, updated_at)
+        VALUES ($1, ARRAY[$2::text], NOW())
+        ON CONFLICT (user_id) DO UPDATE SET
+          features_unlocked = array_append(
+            COALESCE(user_profiles.features_unlocked, '{}'),
+            $2::text
+          ),
+          updated_at = NOW()
+      `, [userId, data.feature || item_key]);
+    }
+
+    const newBalance = (await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [userId])).rows[0]?.balance;
+    res.json({ ok: true, item, new_balance: Number(newBalance) });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── PATCH /profile/banner — equipar banner preset ─────────────────────────────
+router.patch("/banner", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { banner_key } = req.body;
+
+    if (!banner_key) {
+      // Desequipar banner — volver a ninguno
+      await db.query(`
+        INSERT INTO user_profiles (user_id, banner_key, banner_effect, updated_at)
+        VALUES ($1, NULL, 'none', NOW())
+        ON CONFLICT (user_id) DO UPDATE SET banner_key=NULL, banner_effect='none', updated_at=NOW()
+      `, [userId]);
+      return res.json({ ok: true });
+    }
+
+    // Verificar que el usuario lo tiene
+    const has = await db.query(
+      `SELECT id FROM user_items WHERE user_id=$1 AND item_key=$2`,
+      [userId, banner_key]
+    );
+    if (!has.rows[0]) return res.status(403).json({ error: "No tenés ese banner" });
+
+    // Leer el data del banner para extraer effect y colors
+    const itemQ = await db.query(
+      `SELECT data FROM profile_items WHERE key=$1`,
+      [banner_key]
+    );
+    const data = itemQ.rows[0]?.data || {};
+
+    // Guardar banner_key + actualizar effect/colors para que el perfil lo muestre
+    await db.query(`
+      INSERT INTO user_profiles (user_id, banner_key, banner_effect, banner_color1, banner_color2, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW())
+      ON CONFLICT (user_id) DO UPDATE SET
+        banner_key    = $2,
+        banner_effect = $3,
+        banner_color1 = $4,
+        banner_color2 = $5,
+        updated_at    = NOW()
+    `, [userId, banner_key, data.effect || "none", data.color1 || "#f5e03a", data.color2 || "#ff6200"]);
+
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── GET /profile/ranking ──────────────────────────────────────────────────────
+router.get("/ranking", async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit)||20, 50);
+    const q = await db.query(`
+      SELECT u.id, u.name, u.client_number, u.role,
+        lc.balance, lc.total_earned,
+        up.name_color, up.name_glow, up.name_glow_color, up.name_grad_from, up.name_grad_to,
+        up.nickname, up.nick_color, up.nick_glow, up.icon_slug, up.avatar_url, up.avatar_key,
+        up.frame_key, up.badges,
+        COALESCE(s.total,0) AS total_shipments,
+        COALESCE(s.delivered,0) AS delivered
+      FROM users u
+      JOIN lemon_coins lc ON lc.user_id = u.id
+      LEFT JOIN user_profiles up ON up.user_id = u.id
+      LEFT JOIN (
+        SELECT user_id, COUNT(*) AS total,
+          COUNT(*) FILTER (WHERE status='delivered') AS delivered
+        FROM shipments GROUP BY user_id
+      ) s ON s.user_id = u.id
+      WHERE u.role != 'operator'
+      ORDER BY lc.total_earned DESC
+      LIMIT $1
+    `, [limit]);
+    res.json({ ok: true, ranking: q.rows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── GET /profile/spin ─────────────────────────────────────────────────────────
+router.get("/spin", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const last = await db.query(`SELECT * FROM daily_spin WHERE user_id=$1 ORDER BY spun_at DESC LIMIT 1`, [userId]);
+    const lastSpin = last.rows[0];
+    const canSpin = !lastSpin || (new Date() - new Date(lastSpin.spun_at)) > 24*60*60*1000;
+    res.json({ ok: true, can_spin: canSpin, last_spin: lastSpin || null });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── POST /profile/spin ────────────────────────────────────────────────────────
+router.post("/spin", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const last = await db.query(`SELECT * FROM daily_spin WHERE user_id=$1 ORDER BY spun_at DESC LIMIT 1`, [userId]);
+    const lastSpin = last.rows[0];
+    if (lastSpin && (new Date() - new Date(lastSpin.spun_at)) < 24*60*60*1000) {
+      return res.status(400).json({ error: "Ya giraste hoy. Volvé mañana!" });
+    }
+    // ORDEN EXACTO igual al frontend (8 segmentos)
+    const prizes = [
+      { label:"Manana",  coins:0,    prob:25    },
+      { label:"5",       coins:5,    prob:42.47 },
+      { label:"10",      coins:10,   prob:20    },
+      { label:"50",      coins:50,   prob:8     },
+      { label:"100",     coins:100,  prob:3     },
+      { label:"200",     coins:200,  prob:1     },
+      { label:"500",     coins:500,  prob:0.5   },
+      { label:"1000",    coins:1000, prob:0.03  },
+    ];
+    const rand = Math.random() * 100;
+    let cumulative = 0, wonIdx = 0;
+    for (let i = 0; i < prizes.length; i++) {
+      cumulative += prizes[i].prob;
+      if (rand <= cumulative) { wonIdx = i; break; }
+      if (i === prizes.length - 1) wonIdx = i;
+    }
+    const won = prizes[wonIdx];
+    await db.query(`UPDATE lemon_coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [won.coins, userId]);
+    await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, won.coins, 'Ruleta diaria: ' + won.label]);
+    await db.query(`INSERT INTO daily_spin (user_id, coins_won, prize_label) VALUES ($1,$2,$3)`, [userId, won.coins, won.label]);
+    const prizeIndex = wonIdx;
+    res.json({ ok: true, prize: won, prize_index: prizeIndex, prizes });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── GET /profile/missions ─────────────────────────────────────────────────────
+router.get("/missions", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const today = new Date().toISOString().slice(0,10);
+    const weekNum = Math.ceil(new Date().getDate()/7);
+    const week = new Date().getFullYear() + '-W' + String(weekNum).padStart(2,'0');
+    const q = await db.query(`
+      SELECT m.*,
+        um.progress, um.completed_at, um.claimed_at, um.period
+      FROM coin_missions m
+      LEFT JOIN user_missions um ON um.mission_slug = m.slug AND um.user_id = $1
+        AND (
+          (m.mission_type = 'daily'   AND um.period = $2) OR
+          (m.mission_type = 'weekly'  AND um.period = $3) OR
+          (m.mission_type = 'onetime')
+        )
+      WHERE m.is_active = TRUE
+      ORDER BY m.mission_type, m.coins_reward DESC
+    `, [userId, today, week]);
+    res.json({ ok: true, missions: q.rows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── POST /profile/missions/:slug/claim ───────────────────────────────────────
+router.post("/missions/:slug/claim", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { slug } = req.params;
+    const today = new Date().toISOString().slice(0,10);
+    const weekNum = Math.ceil(new Date().getDate()/7);
+    const week = new Date().getFullYear() + '-W' + String(weekNum).padStart(2,'0');
+    const mQ = await db.query(`SELECT * FROM coin_missions WHERE slug=$1`, [slug]);
+    const mission = mQ.rows[0];
+    if (!mission) return res.status(404).json({ error: "Misión no encontrada" });
+    const period = mission.mission_type==='daily' ? today : mission.mission_type==='weekly' ? week : 'forever';
+    const umQ = await db.query(`SELECT * FROM user_missions WHERE user_id=$1 AND mission_slug=$2 AND period=$3`, [userId, slug, period]);
+    const um = umQ.rows[0];
+    if (!um?.completed_at) return res.status(400).json({ error: "Misión no completada aún" });
+    if (um.claimed_at) return res.status(400).json({ error: "Ya reclamaste esta misión" });
+    await db.query(`UPDATE user_missions SET claimed_at=NOW() WHERE user_id=$1 AND mission_slug=$2 AND period=$3`, [userId, slug, period]);
+    await db.query(`INSERT INTO lemon_coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
+    await db.query(`UPDATE lemon_coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [mission.coins_reward, userId]);
+    await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, mission.coins_reward, 'Misión: ' + mission.title]);
+
+    // STREAK de login: cuando reclamás "daily_login", se actualiza el streak.
+    // Si el último claim fue ayer → suma 1; si fue >1 día → reset a 1.
+    let streakInfo = null;
+    if (slug === "daily_login") {
+      const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+      const yesterdayStr = yesterday.toISOString().slice(0,10);
+      const sQ = await db.query(`SELECT * FROM login_streaks WHERE user_id=$1`, [userId]);
+      const cur = sQ.rows[0];
+      let newStreak = 1;
+      if (cur) {
+        if (cur.last_login === yesterdayStr) newStreak = (cur.streak || 0) + 1;
+        else if (cur.last_login === today)   newStreak = cur.streak || 1;
+        // si cur.last_login no es ayer ni hoy → reset a 1
+        await db.query(`UPDATE login_streaks SET streak=$1, last_login=$2, updated_at=NOW() WHERE user_id=$3`, [newStreak, today, userId]);
+      } else {
+        await db.query(`INSERT INTO login_streaks (user_id, streak, last_login) VALUES ($1,1,$2)`, [userId, today]);
+      }
+      // Bonus 7 días seguidos: 25 extras + reset
+      if (newStreak >= 7) {
+        await db.query(`UPDATE lemon_coins SET balance=balance+25, total_earned=total_earned+25, updated_at=NOW() WHERE user_id=$1`, [userId]);
+        await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',25,'Bonus 7 días seguidos')`, [userId]);
+        await db.query(`UPDATE login_streaks SET streak=0 WHERE user_id=$1`, [userId]);
+      }
+      streakInfo = { streak: newStreak, last_login: today, bonus_awarded: newStreak >= 7 };
+    }
+
+    res.json({ ok: true, coins_earned: mission.coins_reward, streak: streakInfo });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── GET /profile/referrals — link único + stats ──────────────────────────────
+router.get("/referrals", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userQ = await db.query(`SELECT username FROM users WHERE id=$1`, [userId]);
+    const username = userQ.rows[0]?.username;
+    const base = process.env.APP_URL || "https://app.lemonsarg.com";
+    const link = username ? `${base}/register?r=${username}` : null;
+
+    const refsQ = await db.query(
+      `SELECT r.*, u.name AS referred_name, u.username AS referred_username, u.created_at AS referred_signup
+         FROM referrals r
+         JOIN users u ON u.id = r.referred_id
+        WHERE r.referrer_id=$1
+        ORDER BY r.created_at DESC`,
+      [userId]
+    );
+    const refs = refsQ.rows;
+    const pending  = refs.filter(r => r.status === "pending").length;
+    const rewarded = refs.filter(r => r.status === "rewarded").length;
+    const totalCoins = refs
+      .filter(r => r.status === "rewarded")
+      .reduce((s, r) => s + (Number(r.coins_referrer) || 0), 0);
+
+    res.set("Cache-Control", "no-store");
+    res.json({
+      ok: true,
+      username, link,
+      stats: { total: refs.length, pending, rewarded, total_coins_earned: totalCoins },
+      referrals: refs,
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── GET /profile/streak ───────────────────────────────────────────────────────
+// Devuelve streak actual + array de últimos 7 días con flag claimed/missed.
+router.get("/streak", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const sQ = await db.query(`SELECT streak, last_login FROM login_streaks WHERE user_id=$1`, [userId]);
+    const streak = sQ.rows[0] || { streak: 0, last_login: null };
+
+    // Fechas YYYY-MM-DD de los últimos 7 días (inclusive hoy)
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      days.push(d.toISOString().slice(0,10));
+    }
+    // Buscar claims de daily_login en ese rango
+    const claimsQ = await db.query(
+      `SELECT period FROM user_missions
+        WHERE user_id=$1 AND mission_slug='daily_login' AND claimed_at IS NOT NULL
+          AND period = ANY($2)`,
+      [userId, days]
+    );
+    const claimedSet = new Set(claimsQ.rows.map(r => r.period));
+    const today = new Date().toISOString().slice(0,10);
+    const week = days.map(d => ({
+      date: d,
+      day_short: new Date(d).toLocaleDateString("es-AR", { weekday: "short" }).slice(0,3).toUpperCase(),
+      claimed: claimedSet.has(d),
+      is_today: d === today,
+    }));
+
+    res.set("Cache-Control", "no-store");
+    res.json({ ok: true, streak: streak.streak || 0, last_login: streak.last_login, week });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── POST /profile/gift ────────────────────────────────────────────────────────
+router.post("/gift", authRequired, async (req, res) => {
+  try {
+    const fromId = req.user.id;
+    const { to_client_number, amount, message } = req.body;
+    if (!amount || amount < 10) return res.status(400).json({ error: "Mínimo 10 coins" });
+    const toQ = await db.query(`SELECT id, name FROM users WHERE client_number=$1`, [to_client_number]);
+    if (!toQ.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
+    const toUser = toQ.rows[0];
+    if (toUser.id === fromId) return res.status(400).json({ error: "No podés regalarte a vos mismo" });
+    const balQ = await db.query(`SELECT balance FROM lemon_coins WHERE user_id=$1`, [fromId]);
+    if ((balQ.rows[0]?.balance||0) < amount) return res.status(400).json({ error: "Coins insuficientes" });
+    await db.query(`UPDATE lemon_coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [amount, fromId]);
+    await db.query(`UPDATE lemon_coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);
+    await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`, [fromId, amount, 'Gift a ' + toUser.name]);
+    await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [toUser.id, amount, 'Gift de ' + req.user.name]);
+    await db.query(`INSERT INTO coin_gifts (from_user_id, to_user_id, amount, message) VALUES ($1,$2,$3,$4)`, [fromId, toUser.id, amount, message||null]);
+    res.json({ ok: true, message: '🎁 Regalaste ' + amount + ' coins a ' + toUser.name });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── GET /profile/:id — ver perfil de otro usuario (solo staff) ───────────────
+router.get("/:id", authRequired, async (req, res) => {
+  try {
+    const requesterId = req.user.id;
+    const targetId    = parseInt(req.params.id);
+
+    // Cualquier user autenticado puede ver perfiles públicos.
+    // Sólo el propio user o staff ven el email.
+    const requesterQ = await db.query(`SELECT role FROM users WHERE id=$1`, [requesterId]);
+    const role = requesterQ.rows[0]?.role;
+    const isOwnerOrStaff = requesterId === targetId || role === "operator" || role === "admin";
+
+    await db.query(`INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING`, [targetId]);
+
+    const [profileQ, coinsQ, userQ, itemsQ, statsQ] = await Promise.all([
+      db.query(`SELECT * FROM user_profiles WHERE user_id=$1`, [targetId]),
+      db.query(`SELECT balance, total_earned FROM lemon_coins WHERE user_id=$1`, [targetId]),
+      db.query(`SELECT id, name, email, client_number, role, username, created_at, last_seen_at FROM users WHERE id=$1`, [targetId]),
+      db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [targetId]),
+      db.query(`SELECT COUNT(*) AS total_shipments, COUNT(*) FILTER (WHERE status='Entregado') AS delivered, COALESCE(SUM(estimated_usd) FILTER (WHERE status='Entregado'),0) AS total_usd FROM shipments WHERE user_id=$1`, [targetId]),
+    ]);
+
+    if (!userQ.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    const coins  = coinsQ.rows[0] || { balance:0, total_earned:0 };
+    const stats  = statsQ.rows[0];
+    const balance  = Number(coins.balance);
+    const peak     = Number(coins.peak_balance || Math.max(balance, Number(coins.total_earned) || 0));
+    const level    = peak >= 1500 ? "gold" : peak >= 500 ? "silver" : "bronze";
+    const items    = itemsQ.rows.map(r => r.item_key);
+
+    // Auto-badges (solo si tiene shipments propios — evita errores en perfiles ajenos)
+    const autoBadges = [];
+    if (Number(stats.delivered) >= 1)    autoBadges.push("badge_first");
+    if (Number(stats.delivered) >= 10)   autoBadges.push("badge_x10");
+    if (Number(stats.total_usd) >= 5000) autoBadges.push("badge_whale");
+    for (const badge of autoBadges) {
+      await db.query(`INSERT INTO user_items (user_id,item_key) VALUES ($1,$2) ON CONFLICT DO NOTHING`, [targetId, badge]);
+    }
+
+    // Sanitize: no leak email a otros users
+    const userOut = { ...userQ.rows[0], level };
+    if (!isOwnerOrStaff) delete userOut.email;
+
+    res.json({
+      user:    userOut,
+      profile: { ...profileQ.rows[0], owned_items: [...new Set([...items,...autoBadges])] },
+      coins:   { balance, total_earned: Number(coins.total_earned), peak_balance: peak },
+      stats:   { total_shipments:Number(stats.total_shipments), delivered:Number(stats.delivered), total_usd:Number(stats.total_usd) },
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── POST /profile/avatar-upload ──────────────────────────────────────────────
+router.post("/avatar-upload", authRequired, upload.single("avatar"), async (req, res) => {
+  try {
+    const userId = req.user.id;
+    if (!req.file) return res.status(400).json({ error: "No se recibió ninguna imagen" });
+
+    // Subir a Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "lemons-avatars", public_id: `avatar_${userId}`, overwrite: true, transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }] },
+        (error, result) => { if (error) reject(error); else resolve(result); }
+      );
+      stream.end(req.file.buffer);
+    });
+
+    const url = result.secure_url;
+
+    // Guardar en DB
+    await db.query(
+      `INSERT INTO user_profiles (user_id, avatar_url, updated_at)
+       VALUES ($1,$2,NOW())
+       ON CONFLICT (user_id) DO UPDATE SET avatar_url=$2, updated_at=NOW()`,
+      [userId, url]
+    );
+
+    // Completar mision perfil completo
+    try {
+      const profileQ = await db.query(`SELECT bio, avatar_url FROM user_profiles WHERE user_id=$1`, [userId]);
+      const p = profileQ.rows[0];
+      if (p?.bio && p?.avatar_url) {
+        const today = new Date().toISOString().slice(0,10);
+        await db.query(
+          `INSERT INTO user_missions (user_id, mission_slug, progress, completed_at, period)
+           VALUES ($1,'onetime_profile',1,NOW(),'forever')
+           ON CONFLICT (user_id, mission_slug, period) DO UPDATE SET completed_at=NOW(), progress=1
+           WHERE user_missions.completed_at IS NULL`,
+          [userId]
+        );
+      }
+    } catch(me) { console.log("[MISSION] profile check error:", me.message); }
+
+    res.json({ ok: true, url });
+  } catch(e) {
+    console.error("[AVATAR UPLOAD]", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+module.exports = router;

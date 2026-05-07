@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal Lemons - Rapido, Seguro y Confiable</title>
+
+    <!-- Fonts — matching landing -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@300;400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="Lemons Portal" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Lemons" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#f5e03a" />
+    <meta name="msapplication-TileColor" content="#04060d" />
+    <meta name="msapplication-TileImage" content="/icons/icon-192.png" />
+
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/logo-lemons-1.png" />
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <meta property="og:image" content="/logo-lemons-1.png" />
+  <style>
+    /* ── DESIGN TOKENS (alineados al landing) ── */
+    :root {
+      --black: #020307;
+      --dark: #07090f;
+      --card: #0b0d18;
+      --lemon: #f5e03a;
+      --orange: #ff5500;
+      --white: #f0ece3;
+      --ghost: rgba(240,236,227,.4);
+      --border: rgba(240,236,227,.07);
+      --border2: rgba(240,236,227,.12);
+      --legacy-orange: #f5a623;
+      --legacy-orange-hot: #ff6200;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; overflow-x: hidden; }
+    body { background: #080808; color: #fff; font-family: 'Barlow', sans-serif; }
+
+    /* ── Helpers tipográficos del landing ── */
+    .ff-bebas { font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+    .ff-mono  { font-family: 'DM Mono', monospace; }
+    .ff-cond  { font-family: 'Barlow Condensed', sans-serif; }
+    .lbl-mono { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ghost); }
+    .eyebrow  { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3.5px; text-transform: uppercase; color: var(--orange); display: inline-flex; align-items: center; gap: 12px; }
+    .eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--orange); }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(245,224,58,0.28); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(245,224,58,0.5); }
+    
+    /* ── Tabla responsive ── */
+    .tableWrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+    .table th { padding: 10px 12px; text-align: left; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.4); border-bottom: 1px solid rgba(255,255,255,0.06); white-space: nowrap; }
+    .table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+    .muted { color: rgba(255,255,255,0.35); }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.08); font-size: 11px; font-weight: 700; font-family: monospace; }
+    
+    /* ── Inputs globales ── */
+    .input {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(245,166,35,0.15);
+      border-radius: 10px; color: #fff;
+      font-size: 14px; padding: 10px 14px;
+      outline: none; transition: all .2s;
+      font-family: inherit;
+    }
+    .input:focus { border-color: rgba(245,166,35,0.5); background: rgba(245,166,35,0.06); }
+    .input::placeholder { color: rgba(255,255,255,0.25); }
+    select.input { cursor: pointer; }
+    
+    /* ── Botones globales ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      height: 40px; padding: 0 16px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.7);
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: all .2s; font-family: inherit; white-space: nowrap;
+    }
+    .btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btnPrimary {
+      background: linear-gradient(135deg,#f5a623,#ff6200) !important;
+      color: #000 !important; border: none !important;
+      box-shadow: 0 4px 16px rgba(245,166,35,0.35);
+    }
+    .btnPrimary:hover { box-shadow: 0 6px 24px rgba(245,166,35,0.5) !important; transform: translateY(-1px); }
+    
+    /* ── Screen wrapper ── */
+    .screen { padding: 0 16px 40px; }
+    
+    /* ── Grid 2 cols → 1 col en mobile ── */
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    
+    /* ── Sidebar global ── */
+    .sidebar-wrap { transition: width .3s; }
+    
+    /* ── RESPONSIVE MOBILE ── */
+    @media (max-width: 768px) {
+      .grid2 { grid-template-columns: 1fr !important; }
+      .screen { padding: 0 10px 32px; }
+      .table { font-size: 12px; }
+      .table th, .table td { padding: 8px 10px; }
+      .sidebar-wrap { width: 68px !important; }
+      .sb-label { display: none !important; }
+      .sb-btn { width: 56px !important; padding: 12px 6px !important; }
+      .op-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .op-tabs { flex-wrap: wrap !important; gap: 6px !important; }
+      input, select, textarea { font-size: 16px !important; } /* evita zoom en iOS */
+    }
+    
+    @media (max-width: 480px) {
+      .op-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .sidebar-wrap { width: 52px !important; }
+    }
+    
+    /* ── Upload avatar en mobile ── */
+    input[type="file"] { font-size: 14px; }
+    
+    /* ── Topbar mobile ── */
+    @media (max-width: 600px) {
+      .hide-mobile { display: none !important; }
+      .tb-inner { padding: 0 12px !important; height: 56px !important; }
+      .tb-logo { font-size: 16px !important; letter-spacing: 3px !important; }
+      .tb-user-btn { padding: 6px 10px !important; gap: 6px !important; }
+      .tb-name { font-size: 12px !important; }
+      .tb-role { font-size: 8px !important; padding: 1px 6px !important; }
+      .tb-logout { padding: 6px 12px !important; font-size: 11px !important; }
+      .tb-shell { height: 56px !important; }
+    }
+    
+    /* ── LemonCoins mobile ── */
+    @media (max-width: 600px) {
+      .tab-btn { width: 72px !important; padding: 10px 4px !important; }
+    }
+    
+    /* ── Cards responsive ── */
+    @media (max-width: 600px) {
+      .screen { padding: 0 8px 24px !important; }
+    }
+  </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
