@@ -1,4 +1,3 @@
-import ChatPage from "./pages/ChatPage";
 import "./styles/staff-mobile.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { UserProvider } from "./context/UserContext.jsx";
@@ -7,25 +6,39 @@ import Sidebar from "./components/Sidebar.jsx";
 import Topbar from "./components/Topbar.jsx";
 import PremiumFX from "./components/PremiumFX.jsx";
 import { useBranding, useFeatureFlag } from "./lib/branding.js";
-import { useEffect, useState } from "react";
-
-import Login from "./pages/Login.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
-import ResetPassword from "./pages/ResetPassword.jsx";
+import { useEffect, useState, lazy, Suspense } from "react";
 import PWAManager from "./components/PWAManager.jsx";
-import Coins from "./pages/Coins.jsx";
-import AdminSetup from "./pages/AdminSetup.jsx";
-import AdminPanel from "./pages/AdminPanel.jsx";
-import SetupAdmin from "./pages/SetupAdmin.jsx";
 import AppNotification from "./components/AppNotification.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
-import Register from "./pages/Register.jsx";
-import VerifyEmail from "./pages/VerifyEmail.jsx";
-import HomeClient from "./pages/HomeClient.jsx";
-import PrivateChatsPage from "./pages/PrivateChatsPage.jsx";
-import usePresence from "./hooks/usePresence.js";
 import OnboardingModal from "./components/OnboardingModal.jsx";
+import usePresence from "./hooks/usePresence.js";
 import { useParams, useNavigate } from "react-router-dom";
+
+// ── Lazy-loaded pages ──────────────────────────────────────────────────────
+// Cada page se carga on-demand. El primer paint (login) se reduce a su chunk
+// + vendor + main. Las pages "premium" (Profile, Chat, Admin) sólo bajan
+// cuando el user las navega.
+const Login            = lazy(() => import("./pages/Login.jsx"));
+const ForgotPassword   = lazy(() => import("./pages/ForgotPassword.jsx"));
+const ResetPassword    = lazy(() => import("./pages/ResetPassword.jsx"));
+const Register         = lazy(() => import("./pages/Register.jsx"));
+const VerifyEmail      = lazy(() => import("./pages/VerifyEmail.jsx"));
+const HomeClient       = lazy(() => import("./pages/HomeClient.jsx"));
+const Coins            = lazy(() => import("./pages/Coins.jsx"));
+const ProfilePage      = lazy(() => import("./pages/ProfilePage.jsx"));
+const ChatPage         = lazy(() => import("./pages/ChatPage.jsx"));
+const PrivateChatsPage = lazy(() => import("./pages/PrivateChatsPage.jsx"));
+const AdminPanel       = lazy(() => import("./pages/AdminPanel.jsx"));
+const AdminSetup       = lazy(() => import("./pages/AdminSetup.jsx"));
+const SetupAdmin       = lazy(() => import("./pages/SetupAdmin.jsx"));
+
+// Fallback minimo mientras baja un chunk (evita pantalla en blanco).
+function PageLoader() {
+  return (
+    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--brand-bg, #080808)", color: "rgba(var(--brand-primary-rgb, 245,224,58),.4)", fontFamily: "monospace", fontSize: 12, letterSpacing: 2 }}>
+      CARGANDO...
+    </div>
+  );
+}
 
 // Redirige a /setup-admin si la DB no tiene users; si no, renderiza Login.
 // Side effect: también redirige al admin a /admin/setup si app_config está
@@ -148,6 +161,7 @@ export default function App() {
       <PremiumFX />
       <PWAManager />
       <AppNotification />
+      <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Publicas sin sidebar */}
         <Route path="/setup-admin"    element={<SetupAdmin />} />
@@ -175,6 +189,7 @@ export default function App() {
         <Route path="/client" element={<Navigate to="/inicio" replace />} />
         <Route path="*"       element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
     </UserProvider>
     </ToastProvider>
