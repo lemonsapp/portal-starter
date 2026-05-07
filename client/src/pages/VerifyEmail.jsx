@@ -81,7 +81,7 @@ export default function VerifyEmail() {
 
       <div className="vf-grid" />
       <div className="vf-watermark">VERIFY</div>
-      <img src="/logo-lemons-1.png" alt="" className="vf-logo-bg" />
+      <img src="/icons/icon.svg" alt="" className="vf-logo-bg" />
 
       <div ref={cardRef} className="vf-card">
         <div className="vf-eyebrow">Verificación de email</div>

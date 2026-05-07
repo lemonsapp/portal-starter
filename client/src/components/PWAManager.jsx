@@ -24,9 +24,9 @@ export default function PWAManager() {
       {canInstall && !installDismissed && (
         <div style={styles.installBanner}>
           <div style={styles.installLeft}>
-            <img src="/icons/icon.svg" alt="Lemons" style={styles.installIcon} />
+            <img src="/icons/icon.svg" alt="App icon" style={styles.installIcon} />
             <div>
-              <div style={styles.installTitle}>Instalar Lemons Portal</div>
+              <div style={styles.installTitle}>Instalar app</div>
               <div style={styles.installSub}>Acceso rápido desde tu pantalla de inicio</div>
             </div>
           </div>

@@ -249,7 +249,7 @@ export default function Register() {
       <div className="rg-right">
         <div className="rg-grid" />
         <div className="rg-watermark">PORTAL</div>
-        <img src="/logo-lemons-1.png" alt="" className="rg-logo-img" />
+        <img src="/icons/icon.svg" alt="" className="rg-logo-img" />
         <div className="rg-glow" />
         <div className="rg-right-inner">
           <div className="rg-top">

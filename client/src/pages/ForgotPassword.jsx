@@ -112,7 +112,7 @@ export default function ForgotPassword() {
       <div className="fp-left">
         <div className="fp-grid" />
         <div className="fp-watermark">RESET</div>
-        <img src="/logo-lemons-1.png" alt="" className="fp-logo-img" />
+        <img src="/icons/icon.svg" alt="" className="fp-logo-img" />
         <div className="fp-glow" />
         <div className="fp-left-inner">
           <div className="fp-top">

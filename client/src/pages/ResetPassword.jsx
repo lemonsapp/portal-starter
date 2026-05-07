@@ -216,7 +216,7 @@ export default function ResetPassword() {
       <div className="rp-right">
         <div className="rp-grid" />
         <div className="rp-watermark">RESET</div>
-        <img src="/logo-lemons-1.png" alt="" className="rp-logo-img" />
+        <img src="/icons/icon.svg" alt="" className="rp-logo-img" />
         <div className="rp-glow" />
         <div className="rp-right-inner">
           <div className="rp-top">

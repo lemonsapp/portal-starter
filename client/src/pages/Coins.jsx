@@ -139,7 +139,7 @@ function SpinModal({ onClose, onWin }) {
         </div>
 
         <div style={{ position:"relative",width:SIZE+200,height:SIZE+60,display:"flex",alignItems:"center",justifyContent:"center" }}>
-          <img src="/limon-mascota.png" alt="" style={{ position:"absolute",left:-30,bottom:0,width:180,height:190,objectFit:"contain",filter:"drop-shadow(0 0 20px var(--brand-primary, #f5e03a)66)",zIndex:10,pointerEvents:"none" }}/>
+          <img src="/icons/icon.svg" alt="" style={{ position:"absolute",left:-30,bottom:0,width:180,height:190,objectFit:"contain",filter:"drop-shadow(0 0 20px var(--brand-primary, #f5e03a)66)",zIndex:10,pointerEvents:"none" }}/>
           <div style={{ position:"absolute",width:SIZE+40,height:SIZE+40,borderRadius:"50%",background:"conic-gradient(#f5a62233,var(--brand-primary, #f5e03a)22,var(--brand-accent, #ff5500)22,#f5a62233)",animation:"rotateSlow 4s linear infinite",filter:"blur(16px)" }}/>
           <svg width={SIZE} height={SIZE} style={{ transform:`rotate(${rotation}deg)`,transition:spinning?`transform 6.5s cubic-bezier(0.08,0.82,0.17,1)`:"none",filter:"drop-shadow(0 0 40px var(--brand-primary, #f5e03a)33)",zIndex:2 }}>
             {PRIZES.map((p,i) => {

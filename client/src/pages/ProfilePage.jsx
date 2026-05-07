@@ -748,7 +748,7 @@ export default function ProfilePage() {
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,#040110,#0a0820,#120605)",backgroundSize:"400% 400%",animation:"holographic 8s ease infinite"}}>
                   <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 30% 50%,var(--brand-primary, #f5e03a)18 0%,transparent 60%)"}}/>
                   <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 70% 30%,#8b5cf618 0%,transparent 60%)"}}/>
-                  <img src="/logo-lemons-1.png" alt="" style={{position:"absolute",right:-30,top:-30,width:340,height:340,opacity:.04,filter:"invert(1)",pointerEvents:"none",userSelect:"none"}}/>
+                  <img src="/icons/icon.svg" alt="" style={{position:"absolute",right:-30,top:-30,width:340,height:340,opacity:.04,filter:"invert(1)",pointerEvents:"none",userSelect:"none"}}/>
                 </div>
               )}
               {/* Editorial bar top */}

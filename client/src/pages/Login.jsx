@@ -267,7 +267,7 @@ export default function Login() {
       <div className="lg-left">
         <div className="lg-bg" />
         <div className="lg-grid" />
-        <img src="/logo-lemons-1.png" alt="" className="lg-logo-img" />
+        <img src="/icons/icon.svg" alt="" className="lg-logo-img" />
         <div className="lg-left-inner">
           <div className="lg-top">
             <div className="lg-logo">LEMON<span className="y">'S</span><span className="lg-dot" /> ARG</div>

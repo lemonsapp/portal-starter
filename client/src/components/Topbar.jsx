@@ -143,7 +143,7 @@ export default function Topbar() {
 
           {/* Logo */}
           <a href="/inicio" className="tb-logo">
-            <img src="/logo-lemons-1.png" alt="" style={{ width:30, height:30, objectFit:"contain", filter:"drop-shadow(0 0 8px rgba(245,224,58,.35))", flexShrink:0 }} />
+            <img src="/icons/icon.svg" alt="" style={{ width:30, height:30, objectFit:"contain", filter:"drop-shadow(0 0 8px rgba(245,224,58,.35))", flexShrink:0 }} />
             LEMON<span className="y">'S</span>
             <span className="dot" />
             ARG
