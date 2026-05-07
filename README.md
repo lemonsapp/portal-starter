@@ -11,7 +11,7 @@ Boilerplate clonable para portales web con auth, perfiles, coins, chat 1-a-1, st
 | 0 | Copy-paste de lemons-portal + limpieza quirúrgica de features no aplicables (IG, WA, AI, cargas, founder, cash) | ✅ |
 | 1 | Branding centralizado (CSS vars + branding.json), sacar refs hardcoded, auth verificado | ✅ |
 | 2 | Setup wizard + configStore + encriptación AES-256-GCM + schema bootstrap | ✅ |
-| 3 | Coins admin + chat + stories + friends + feed editor + AdminPanel UI | ⏳ |
+| 3 | First-admin bootstrap + AdminPanel (Coins/Feed/Settings) + feature flags wired | ✅ |
 | 4 | WebAuthn + PWA + onboarding + feature flags wired al UI | ⏳ |
 | 5 | Deploy primer cliente + handoff + docs | ⏳ |
 
