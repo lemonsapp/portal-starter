@@ -56,18 +56,23 @@ export function useBranding() {
     // Aplicar defaults inmediatamente (sin esperar fetch)
     applyToDOM(DEFAULTS);
 
-    // Sprint 2: fetch a /api/config/public para overrides del wizard.
-    // Por ahora dejamos sólo los defaults.
-    // const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
-    // fetch(`${API}/api/config/public`)
-    //   .then(r => r.ok ? r.json() : null)
-    //   .then(remote => {
-    //     if (!remote?.branding) return;
-    //     const merged = { ...DEFAULTS, ...remote.branding };
-    //     setBranding(merged);
-    //     applyToDOM(merged);
-    //   })
-    //   .catch(() => { /* keep defaults */ });
+    // Pull overrides del wizard (Sprint 2). Si el backend está caído o el
+    // wizard no fue completado, mantenemos los defaults sin romper.
+    const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+    fetch(`${API}/api/config/public`)
+      .then(r => r.ok ? r.json() : null)
+      .then(remote => {
+        if (!remote?.branding) return;
+        // Merge: cualquier campo no vacío del backend pisa al default.
+        const merged = { ...DEFAULTS };
+        for (const k of Object.keys(remote.branding)) {
+          const v = remote.branding[k];
+          if (v !== null && v !== undefined && v !== "") merged[k] = v;
+        }
+        setBranding(merged);
+        applyToDOM(merged);
+      })
+      .catch(() => { /* mantener defaults */ });
   }, []);
 
   return branding;

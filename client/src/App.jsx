@@ -14,6 +14,7 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import PWAManager from "./components/PWAManager.jsx";
 import Coins from "./pages/Coins.jsx";
+import AdminSetup from "./pages/AdminSetup.jsx";
 import AppNotification from "./components/AppNotification.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import Register from "./pages/Register.jsx";
@@ -137,6 +138,7 @@ export default function App() {
         <Route path="/chats/:otherId"   element={<AuthGate><PrivateChatsPage /></AuthGate>} />
 
         {/* Staff */}
+        <Route path="/admin/setup"   element={<AuthGate allowRoles={["admin"]}><AdminSetup /></AuthGate>} />
 
         {/* Fallbacks */}
         <Route path="/client" element={<Navigate to="/inicio" replace />} />
