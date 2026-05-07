@@ -22,8 +22,6 @@ const {
 const coinsRouter         = require("./routes/coins");         // ✅ Lemon Coins
 const externalRouter      = require("./routes/external");      // ✅ Cargas Externas
 const notificationsRouter = require("./routes/notifications"); // ✅ Notificaciones LIMÓN (broadcast)
-const aiRouter            = require("./routes/ai");
-const aiOperatorRouter    = require("./routes/aiOperator");            // 🤖 AI Agent API
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
 const founderIntelligenceRouter = require("./routes/founderIntelligence");
 const waCRMRouter        = require("./routes/waCRM");
@@ -73,15 +71,6 @@ app.use(rateLimit({
   legacyHeaders: false,
   message: { error: "Demasiadas solicitudes. Intentá de nuevo en 15 minutos." },
 }));
-
-// ── Rate limiting para el agente de IA (por IP del servidor OpenClaw) ──
-const aiLimiter = rateLimit({
-  windowMs: 60 * 1000,  // 1 minuto
-  max: 120,              // 120 req/min (2 por segundo) — suficiente para el agente
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "AI rate limit exceeded. Wait 1 minute." },
-});
 
 // ── Rate limiting estricto para auth ──
 const authLimiter = rateLimit({
@@ -5199,8 +5188,6 @@ app.post("/api/ai/settings/unblock-chat", async (req, res) => {
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
-app.use("/api/ai/operator", aiLimiter, aiOperatorRouter);
-app.use("/api/ai", aiLimiter, aiRouter); // AI Agent — protegido por API key
 app.use("/api/wa/crm", waCRMRouter);
 app.use("/api/instagram", instagramRouter);
 app.use("/api/instagram-content", instagramContentRouter);
