@@ -4,7 +4,7 @@ Boilerplate clonable para portales web con auth, perfiles, coins, chat 1-a-1, st
 
 ## Estado
 
-✅ **Listo para deploy** — 8 sprints cerrados, build/boot/tests verde, refs Lemons en código y schema: 0. Spec: [`docs/superpowers/specs/2026-05-06-portal-starter-design.md`](./docs/superpowers/specs/2026-05-06-portal-starter-design.md).
+✅ **Listo para deploy** — 12 sprints cerrados, build/boot/tests verde, refs Lemons en código y schema: 0. Primer cliente real (**Holistic Growshop**) configurado y con runbook deploy en [`docs/DEPLOY-HOLISTIC.md`](./docs/DEPLOY-HOLISTIC.md). Spec: [`docs/superpowers/specs/2026-05-06-portal-starter-design.md`](./docs/superpowers/specs/2026-05-06-portal-starter-design.md).
 
 | Sprint | Entregable | Estado |
 |---|---|---|
@@ -17,6 +17,10 @@ Boilerplate clonable para portales web con auth, perfiles, coins, chat 1-a-1, st
 | 6 | Branding-aware rgba (CSS vars derivadas) + cleanup final Lemons-flavored (🍋→🪙, animations rename, sala general seed, copy genérico) | ✅ |
 | 7 | Rename tablas DB legacy: lemon_coins → coins, lemon_notifications → broadcast_notifications (migration runtime idempotente, rows preservadas) | ✅ |
 | 8 | Setup propagation: SSR de title + PWA metas + manifest.json dinámico, WebAuthn RP_NAME y Telegram APP_NAME resuelven branding por request, cache invalidation cuando admin edita. Primer cliente real configurado: **Holistic Growshop** (#52b788/#d4a574, hgrowshop.com) | ✅ |
+| 9 | AdminPanel branding preview tab: 6 mockups live (browser tab, PWA install, OG link, prompt biométrico, Telegram, email) + lista de "se aplica en 8 lugares" + swatches clickeables que copian el hex | ✅ |
+| 10 | Code splitting: 13 pages a React.lazy() + manualChunks Vite (vendor-react/router/socket/framer/lottie/zxing/jspdf/webauthn). Initial gzip: 240 KB → 106 KB (-56%) | ✅ |
+| 11 | Stats sociales reales: profile.js getSocialStats() count posts/comments/likes/friends/followers/following/days_active. Achievements en ProfilePage migrados de envíos legacy a sociales. ALTER TABLE idempotente para 16 cols faltantes (name_color, banner_*, etc.) | ✅ |
+| 12 | Deploy Pack Holistic: docs/DEPLOY-HOLISTIC.md runbook end-to-end (~90 min) con valores específicos (Neon región AR, paleta verde, DNS portal/api.hgrowshop.com), comandos copy/paste, checklist de smoke test, costos USD 7/mes | ✅ |
 
 ## Stack
 
