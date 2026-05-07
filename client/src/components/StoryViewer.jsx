@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Pop } from "./MotionPop.jsx";
+import { useBranding } from "../lib/branding.js";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -22,6 +23,7 @@ const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("
  *   - Si soy owner: botón 👁 abre panel con likers.
  */
 export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, onClose, onStoryDeleted }) {
+  const branding = useBranding();
   const [bIdx, setBIdx] = useState(startBucket);
   const [sIdx, setSIdx] = useState(startStory);
   const [paused, setPaused] = useState(false);
@@ -281,7 +283,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
                 <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${story.color}25`, border: `1px solid ${story.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{story.emoji}</div>
                 <div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: "2px", color: story.color, textTransform: "uppercase", fontWeight: 700 }}>
-                    Mi Portal {story.kind === "tip" ? "Tip" : "anuncia"}
+                    {branding.name} {story.kind === "tip" ? "Tip" : "anuncia"}
                   </div>
                 </div>
               </>

@@ -3,8 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Title overrideado en runtime por useBranding(). El default acá es el del branding.json. -->
+    <!-- Title + metas se reemplazan server-side al servir el HTML
+         (server/lib/htmlBranding.js lee getBranding() y transforma) y
+         también vía useBranding() en runtime. Los valores hardcoded acá
+         son el default starter, sólo se ven si servís el archivo crudo. -->
     <title>Mi Portal</title>
+    <meta name="description" content="Tu comunidad en un solo lugar" />
+
+    <!-- Open Graph / Twitter (preview en redes) -->
+    <meta property="og:title" content="Mi Portal" />
+    <meta property="og:description" content="Tu comunidad en un solo lugar" />
+    <meta property="og:image" content="/icons/icon-512.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mi Portal" />
+    <meta name="twitter:description" content="Tu comunidad en un solo lugar" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

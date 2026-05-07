@@ -133,7 +133,9 @@ let BRANDING = { name: "Mi Portal", color_primary: "#3B82F6", color_accent: "#F5
 try { BRANDING = require("../branding.json"); } catch (e) { /* fallback in-memory */ }
 const { getBranding } = require("./lib/branding");
 
-app.get("/", (_req, res) => res.send(`${BRANDING.name} API OK — probá /health`));
+// Nota: NO definimos un handler para "/" acá — ese path lo atiende el SPA
+// fallback al final del archivo (sirve index.html del cliente con branding
+// server-side rendered). Para health-check usá /health.
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
@@ -2669,9 +2671,45 @@ app.post("/api/notifications/read", authRequired, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-app.use(express.static(distPath));
-app.get("/{*path}", (req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
+// ── Manifest PWA dinámico (lee branding del wizard) ──────────────────────────
+// Tiene que ir ANTES del express.static para ganarle al manifest.json estático
+// que vite copia desde public/.
+const fs = require("fs");
+const { brandHtml, brandManifest } = require("./lib/htmlBranding");
+
+app.get("/manifest.json", async (_req, res) => {
+  try {
+    const m = await brandManifest();
+    res.set("Cache-Control", "public, max-age=60");
+    res.json(m);
+  } catch (e) {
+    console.error("[manifest]", e.message);
+    res.status(500).json({ error: "manifest unavailable" });
+  }
+});
+
+app.use(express.static(distPath, { index: false })); // no servir index.html acá; lo hace nuestro handler
+// SPA fallback: lee index.html de dist y lo transforma con el branding actual
+// (title + metas PWA + theme-color + og:image) — así crawlers y la primera
+// pintura ya muestran el nombre/colores del tenant sin esperar al JS.
+let _indexHtmlCache = null;
+function readIndexHtml() {
+  if (_indexHtmlCache) return _indexHtmlCache;
+  try { _indexHtmlCache = fs.readFileSync(path.join(distPath, "index.html"), "utf8"); }
+  catch { _indexHtmlCache = null; }
+  return _indexHtmlCache;
+}
+app.get("/{*path}", async (req, res) => {
+  const raw = readIndexHtml();
+  if (!raw) return res.status(503).send("Build no encontrado. Corré `npm run build` en client/.");
+  try {
+    const html = await brandHtml(raw);
+    res.set("Cache-Control", "no-cache, must-revalidate");
+    res.type("html").send(html);
+  } catch (e) {
+    console.error("[brandHtml]", e.message);
+    res.type("html").send(raw); // fallback: servir crudo
+  }
 });
 
 // ── Error handler global → Telegram + log ─────────────────────────────────────

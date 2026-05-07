@@ -12,14 +12,17 @@ import { useEffect, useState } from "react";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
-// Defaults inlined — espejar /branding.json del repo.
+// Defaults inlined — espejar /branding.json del repo. Se aplican antes del
+// fetch a /api/config/public para evitar flash. Si actualizás branding.json,
+// actualizá acá también (no hay import directo porque está fuera del root
+// de Vite y queremos zero-build-step).
 const BRANDING_DEFAULTS = {
-  name: "Mi Portal",
-  slogan: "Tu comunidad en un solo lugar",
-  logo_url: "",
-  favicon_url: "",
-  color_primary: "#3B82F6",
-  color_accent:  "#F59E0B",
+  name: "Holistic Growshop",
+  slogan: "Tu growshop de confianza · Línea Elite, Pro y Bio",
+  logo_url: "https://hgrowshop.com/wp-content/uploads/2022/01/logo2.svg",
+  favicon_url: "https://hgrowshop.com/wp-content/uploads/2022/01/logo2.svg",
+  color_primary: "#52b788",
+  color_accent:  "#d4a574",
   color_bg:      "#080808",
   color_text:    "#EDE9E0",
   font_preset:   "moderna",
@@ -55,6 +58,19 @@ function hexToRgbTriplet(hex) {
   return `${r}, ${g}, ${b}`;
 }
 
+// Setea o actualiza un <meta {selector}> con el value dado (lo agrega si no existe).
+function setMeta(selector, attr, value) {
+  if (!value) return;
+  let el = document.head.querySelector(`meta[${selector}]`);
+  if (!el) {
+    el = document.createElement("meta");
+    const [k, v] = selector.split("=");
+    el.setAttribute(k, v.replace(/['"]/g, ""));
+    document.head.appendChild(el);
+  }
+  el.setAttribute(attr, value);
+}
+
 function applyToDOM(b) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
@@ -69,7 +85,29 @@ function applyToDOM(b) {
   const accentRgb  = hexToRgbTriplet(b.color_accent);
   if (primaryRgb) root.style.setProperty("--brand-primary-rgb", primaryRgb);
   if (accentRgb)  root.style.setProperty("--brand-accent-rgb",  accentRgb);
-  if (b.name)        document.title = b.name;
+
+  // Title
+  if (b.name) document.title = b.name;
+
+  // Metas PWA (también las renderiza el server al servir el HTML — esto
+  // cubre el caso dev con Vite o el caso "admin acaba de cambiar el nombre,
+  // navegó a otra página y queremos refrescar los metas en vivo").
+  if (b.name) {
+    setMeta("name='application-name'",         "content", b.name);
+    setMeta("name='apple-mobile-web-app-title'", "content", b.name);
+    setMeta("property='og:title'",              "content", b.name);
+    setMeta("name='twitter:title'",             "content", b.name);
+  }
+  if (b.slogan) {
+    setMeta("name='description'",         "content", b.slogan);
+    setMeta("property='og:description'",  "content", b.slogan);
+    setMeta("name='twitter:description'", "content", b.slogan);
+  }
+  if (b.color_primary) setMeta("name='theme-color'", "content", b.color_primary);
+  if (b.color_bg)      setMeta("name='msapplication-TileColor'", "content", b.color_bg);
+  if (b.logo_url)      setMeta("property='og:image'", "content", b.logo_url);
+
+  // Favicon (si el admin subió uno custom)
   if (b.favicon_url) {
     let link = document.querySelector("link[rel='icon']");
     if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }

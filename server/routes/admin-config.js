@@ -81,6 +81,16 @@ function build({ authRequired, requireRole }) {
         }
       }
 
+      // Si tocamos branding, invalidar caches dependientes (server-side
+      // brandHtml de 30s + getBranding de 30s) para que el admin vea el
+      // cambio reflejado en title/metas/manifest sin esperar el TTL.
+      if (section === "branding" && updates.length > 0) {
+        try {
+          require("../lib/branding").invalidateCache();
+          require("../lib/htmlBranding").invalidateCache();
+        } catch { /* non-fatal */ }
+      }
+
       res.json({
         ok: errors.length === 0,
         updates,

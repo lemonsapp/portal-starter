@@ -40,3 +40,8 @@ coverage/
 # ── Claude Code local config ────────────────────────────────────────────────
 .claude/
 tmp/
+
+# ── Assets pesados de branding del cliente ──────────────────────────────────
+# Carpetas IMAGENES-<CLIENTE>/ con fotos/videos crudos. Los assets finales se
+# suben a Cloudinary (o equivalente) y se referencian via DB (logo_url, etc).
+IMAGENES-*/

@@ -16,6 +16,7 @@ Boilerplate clonable para portales web con auth, perfiles, coins, chat 1-a-1, st
 | 5 | Wizard guiado paso a paso + scripts/setup-new-client.js + docs CONFIGURACION+ARQUITECTURA | ✅ |
 | 6 | Branding-aware rgba (CSS vars derivadas) + cleanup final Lemons-flavored (🍋→🪙, animations rename, sala general seed, copy genérico) | ✅ |
 | 7 | Rename tablas DB legacy: lemon_coins → coins, lemon_notifications → broadcast_notifications (migration runtime idempotente, rows preservadas) | ✅ |
+| 8 | Setup propagation: SSR de title + PWA metas + manifest.json dinámico, WebAuthn RP_NAME y Telegram APP_NAME resuelven branding por request, cache invalidation cuando admin edita. Primer cliente real configurado: **Holistic Growshop** (#52b788/#d4a574, hgrowshop.com) | ✅ |
 
 ## Stack
 

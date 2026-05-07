@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { CountUp } from "./MotionPop.jsx";
+import { useBranding } from "../lib/branding.js";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 export default function Topbar() {
   const userCtx = useUser();
+  const branding = useBranding();
   const [me, setMe] = useState(null);
   const [userDrop, setUserDrop] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -203,7 +205,7 @@ export default function Topbar() {
                                 <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:800,padding:"2px 8px",color:annStyle.color,background:annStyle.bg,border:`1px solid ${annStyle.border}`,borderRadius:4,textTransform:"uppercase"}}>
                                   📢 {annStyle.label}
                                 </span>
-                                <span style={{fontSize:10,color:"rgba(255,255,255,.35)",fontFamily:"'DM Mono',monospace",letterSpacing:"1px"}}>Mi Portal</span>
+                                <span style={{fontSize:10,color:"rgba(255,255,255,.35)",fontFamily:"'DM Mono',monospace",letterSpacing:"1px"}}>{branding.name}</span>
                               </div>
                             ) : (n.actor_name && (
                               <span style={{fontSize:13,fontWeight:800,color:n.actor_name_color||"var(--brand-primary, #f5e03a)",textShadow:n.actor_glow>0&&n.actor_glow_color?`0 0 ${n.actor_glow*2}px ${n.actor_glow_color}`:"none",marginRight:6}}>

@@ -5,7 +5,13 @@
 
 const TOKEN   = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-const APP_NAME = process.env.APP_NAME || "Mi Portal";
+// APP_NAME se lee dinámicamente del branding (configStore + branding.json):
+// si el admin renombra el portal vía wizard, las alerts próximas usan el
+// nombre nuevo. Cache de 30s en getBranding evita pegar a DB en cada error.
+const { getBranding } = require("../lib/branding");
+async function getAppName() {
+  return process.env.APP_NAME || (await getBranding()).name;
+}
 
 // Throttle: evita spam si un endpoint tira 500 muchas veces seguidas.
 const recent = new Map(); // key -> ts
@@ -57,8 +63,9 @@ async function notifyError({ method, url, status, message, stack, userId, ip }) 
   if (!shouldSend(key)) return;
 
   const stackShort = stack ? stack.split("\n").slice(0, 3).join("\n") : "";
+  const appName = await getAppName();
   const text =
-    `🚨 <b>${APP_NAME} · Error ${status || 500}</b>\n` +
+    `🚨 <b>${appName} · Error ${status || 500}</b>\n` +
     `<code>${escapeHtml(method)} ${escapeHtml(url)}</code>\n\n` +
     `<b>Message:</b> ${escapeHtml(message)}\n` +
     (userId ? `<b>User:</b> #${userId}\n` : "") +

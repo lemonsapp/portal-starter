@@ -4,6 +4,7 @@ const router = express.Router();
 const db = require("../db");
 const jwt = require("jsonwebtoken");
 const { authRequired } = require("../auth");
+const { getBranding } = require("../lib/branding");
 const {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -13,7 +14,11 @@ const {
 
 // ── Configuración WebAuthn ───────────────────────────────────────────────────
 const RP_ID = process.env.WEBAUTHN_RP_ID || "localhost";
-const RP_NAME = "Mi Portal";
+// RP_NAME se lee dinámicamente del branding (configStore + branding.json) en
+// cada request — así, cuando el admin cambia el nombre desde el wizard, los
+// prompts del browser ("Registrar passkey en {RP_NAME}") muestran el nombre
+// actualizado sin necesidad de redeploy ni reinicio.
+async function getRpName() { return (await getBranding()).name; }
 const EXPECTED_ORIGIN = (process.env.WEBAUTHN_ORIGIN || "http://localhost:5173").replace(/\/$/, "");
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 min
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
@@ -85,7 +90,7 @@ router.post("/register/options", authRequired, async (req, res) => {
     }));
 
     const options = await generateRegistrationOptions({
-      rpName: RP_NAME,
+      rpName: await getRpName(),
       rpID: RP_ID,
       userID: Buffer.from(String(user.id)),
       userName: user.email,
