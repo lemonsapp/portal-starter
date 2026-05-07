@@ -1,0 +1,344 @@
+---
+// ChapterOrnaments — lianas decorativas que cuelgan de los costados de
+// cada ChapterSection. Tallo curvo + hojas + elemento alusivo al cultivo
+// según variant. Se dibuja con scroll, las hojas pop con stagger.
+//
+// Variants:
+//   leaves   → bio       (brotes / despertar orgánico)
+//   dna      → cloner    (doble hélice ADN — bordes biológicos)
+//   roots    → cloner    (legacy, fallback)
+//   drops    → race      (líquido concentrado)
+//   crystals → elite     (nutrientes premium)
+//   blossom  → pro       (precisión floral)
+//   harvest  → day-0     (cosecha)
+const {
+    variant = "leaves",
+    from = "#2e8f6e",
+    to = "#25d366",
+} = Astro.props;
+
+const uid = Math.random().toString(36).slice(2, 7);
+const gradL = `orn-grad-l-${uid}`;
+const gradR = `orn-grad-r-${uid}`;
+const dnaGradId = `orn-dna-grad-${uid}`;
+
+// ---- DNA helix path generator ----
+// Genera dos hélices entrelazadas sobre un viewBox 200×1000.
+// Centro en x=100, amplitud=55, una vuelta cada 220y → ~4.5 vueltas.
+function helixPath(phase) {
+    const cx = 100, amp = 55, step = 18, total = 1000, period = 220;
+    let d = "";
+    for (let y = 0; y <= total; y += step) {
+        const x = cx + amp * Math.sin((y / period) * Math.PI * 2 + phase);
+        d += (y === 0 ? `M${x.toFixed(1)} 0` : ` L${x.toFixed(1)} ${y}`);
+    }
+    return d;
+}
+const dnaA = helixPath(0);
+const dnaB = helixPath(Math.PI);
+// Cross-bars (escalones / pares de bases) cada 55y
+const dnaRungs = [];
+if (variant === "dna") {
+    const cx = 100, amp = 55, period = 220;
+    for (let y = 28; y < 1000; y += 55) {
+        const x1 = cx + amp * Math.sin((y / period) * Math.PI * 2);
+        const x2 = cx + amp * Math.sin((y / period) * Math.PI * 2 + Math.PI);
+        dnaRungs.push({ y, x1: x1.toFixed(1), x2: x2.toFixed(1) });
+    }
+}
+---
+<aside
+    class="chapter-ornaments"
+    data-chapter-ornaments
+    data-variant={variant}
+    style={`--orn-from: ${from}; --orn-to: ${to};`}
+    aria-hidden="true"
+>
+    {variant === "dna" ? (
+        <>
+            <!-- ADN izquierdo -->
+            <svg
+                class="chapter-ornaments__vine chapter-ornaments__vine--left chapter-ornaments__vine--dna"
+                viewBox="0 0 200 1000"
+                preserveAspectRatio="xMaxYMid meet"
+                data-orn-dna="left"
+            >
+                <defs>
+                    <linearGradient id={`${dnaGradId}-l`} x1="50%" y1="0%" x2="50%" y2="100%">
+                        <stop offset="0%"  stop-color={from} stop-opacity="0.85" />
+                        <stop offset="100%" stop-color={to}   stop-opacity="0.95" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Cross-bars (pares de bases) — se dibujan después de las hélices -->
+                {dnaRungs.map((r, i) => (
+                    <line
+                        class="chapter-ornaments__dna-rung"
+                        data-orn-dna-rung
+                        data-rung-index={i}
+                        x1={r.x1} y1={r.y} x2={r.x2} y2={r.y}
+                        stroke={`url(#${dnaGradId}-l)`}
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                    />
+                ))}
+
+                <!-- Hélice A -->
+                <path
+                    class="chapter-ornaments__dna-strand chapter-ornaments__dna-strand--a"
+                    data-orn-dna-strand="a"
+                    d={dnaA}
+                    fill="none"
+                    stroke={`url(#${dnaGradId}-l)`}
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                />
+                <!-- Hélice B (phase opuesta) -->
+                <path
+                    class="chapter-ornaments__dna-strand chapter-ornaments__dna-strand--b"
+                    data-orn-dna-strand="b"
+                    d={dnaB}
+                    fill="none"
+                    stroke={`url(#${dnaGradId}-l)`}
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    opacity="0.65"
+                />
+
+                <!-- Nucleótidos: círculos pequeños en cada cruce de las cross-bars -->
+                {dnaRungs.map((r, i) => (
+                    <g class="chapter-ornaments__dna-base" data-orn-dna-base data-base-index={i}>
+                        <circle cx={r.x1} cy={r.y} r="2.8" fill={from} />
+                        <circle cx={r.x2} cy={r.y} r="2.8" fill={to} />
+                    </g>
+                ))}
+            </svg>
+
+            <!-- ADN derecho (mirror) -->
+            <svg
+                class="chapter-ornaments__vine chapter-ornaments__vine--right chapter-ornaments__vine--dna"
+                viewBox="0 0 200 1000"
+                preserveAspectRatio="xMinYMid meet"
+                data-orn-dna="right"
+            >
+                <defs>
+                    <linearGradient id={`${dnaGradId}-r`} x1="50%" y1="0%" x2="50%" y2="100%">
+                        <stop offset="0%"  stop-color={from} stop-opacity="0.85" />
+                        <stop offset="100%" stop-color={to}   stop-opacity="0.95" />
+                    </linearGradient>
+                </defs>
+
+                {dnaRungs.map((r, i) => (
+                    <line
+                        class="chapter-ornaments__dna-rung"
+                        data-orn-dna-rung
+                        data-rung-index={i}
+                        x1={200 - r.x1} y1={r.y} x2={200 - r.x2} y2={r.y}
+                        stroke={`url(#${dnaGradId}-r)`}
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                    />
+                ))}
+                <path
+                    class="chapter-ornaments__dna-strand chapter-ornaments__dna-strand--a"
+                    data-orn-dna-strand="a"
+                    d={`M${200 - parseFloat(dnaA.split(" ")[0].slice(1))} 0 ${dnaA.replace(/[ML]([\d.]+) (\d+)/g, (m, x, y) => `L${(200 - parseFloat(x)).toFixed(1)} ${y}`)}`}
+                    fill="none"
+                    stroke={`url(#${dnaGradId}-r)`}
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                />
+                <path
+                    class="chapter-ornaments__dna-strand chapter-ornaments__dna-strand--b"
+                    data-orn-dna-strand="b"
+                    d={dnaB.replace(/[ML]([\d.]+) (\d+)/g, (m, x, y) => `${m.startsWith("M") ? "M" : "L"}${(200 - parseFloat(x)).toFixed(1)} ${y}`)}
+                    fill="none"
+                    stroke={`url(#${dnaGradId}-r)`}
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    opacity="0.65"
+                />
+                {dnaRungs.map((r, i) => (
+                    <g class="chapter-ornaments__dna-base" data-orn-dna-base data-base-index={i}>
+                        <circle cx={200 - r.x1} cy={r.y} r="2.8" fill={from} />
+                        <circle cx={200 - r.x2} cy={r.y} r="2.8" fill={to} />
+                    </g>
+                ))}
+            </svg>
+        </>
+    ) : (
+        <>
+    <!-- Vine IZQUIERDA -->
+    <svg
+        class="chapter-ornaments__vine chapter-ornaments__vine--left"
+        viewBox="0 0 200 1000"
+        preserveAspectRatio="xMaxYMid meet"
+    >
+        <defs>
+            <linearGradient id={gradL} x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stop-color={from} stop-opacity="0.85" />
+                <stop offset="100%" stop-color={to} stop-opacity="0.95" />
+            </linearGradient>
+        </defs>
+
+        <path
+            class="chapter-ornaments__stem"
+            d="M40 0 Q90 200 30 400 Q-20 600 80 800 Q130 950 70 1000"
+            fill="none"
+            stroke={`url(#${gradL})`}
+            stroke-width="2.5"
+            stroke-linecap="round"
+            data-orn-stem
+        />
+
+        <!-- 3 hojas en el lado izquierdo (apuntan hacia el centro) -->
+        <g class="chapter-ornaments__leaf" data-orn-leaf>
+            <path
+                d="M70 150 Q120 130 140 165 Q132 185 110 180 Q92 175 70 150 Z"
+                fill={from} opacity="0.85"
+            />
+            <path d="M70 150 L 130 168" stroke={from} stroke-width="1" opacity="0.4" />
+        </g>
+        <g class="chapter-ornaments__leaf" data-orn-leaf>
+            <path
+                d="M30 410 Q-10 380 -25 425 Q-15 450 20 445 Q32 440 30 410 Z"
+                fill={from} opacity="0.7"
+            />
+        </g>
+        <g class="chapter-ornaments__leaf" data-orn-leaf>
+            <path
+                d="M85 720 Q140 700 160 740 Q150 760 122 755 Q98 748 85 720 Z"
+                fill={to} opacity="0.85"
+            />
+            <path d="M85 720 L 145 738" stroke={to} stroke-width="1" opacity="0.4" />
+        </g>
+
+        <!-- Decoración alusiva — variant -->
+        {variant === "leaves" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <circle cx="80" cy="935" r="6" fill={to} />
+                <circle cx="92" cy="950" r="4" fill={to} opacity="0.75" />
+                <circle cx="68" cy="958" r="3" fill={to} opacity="0.6" />
+            </g>
+        )}
+        {variant === "roots" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <path d="M75 920 Q70 950 60 980 M75 920 Q80 950 85 985 M75 920 Q72 955 76 990 M75 920 Q60 945 50 975"
+                    stroke={to} stroke-width="2" stroke-linecap="round" fill="none" />
+                <circle cx="75" cy="920" r="4" fill={to} />
+            </g>
+        )}
+        {variant === "drops" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <path d="M75 920 Q85 940 75 960 Q65 940 75 920 Z" fill={to} />
+                <path d="M55 945 Q63 960 55 975 Q47 960 55 945 Z" fill={to} opacity="0.7" />
+            </g>
+        )}
+        {variant === "crystals" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <polygon points="75,920 88,938 75,956 62,938" fill={to} />
+                <polygon points="55,945 64,955 55,968 46,955" fill={to} opacity="0.7" />
+            </g>
+        )}
+        {variant === "blossom" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <circle cx="75" cy="935" r="8" fill={from} />
+                <circle cx="63" cy="930" r="6" fill={to} opacity="0.85" />
+                <circle cx="87" cy="930" r="6" fill={to} opacity="0.85" />
+                <circle cx="69" cy="945" r="6" fill={to} opacity="0.75" />
+                <circle cx="81" cy="945" r="6" fill={to} opacity="0.75" />
+                <circle cx="75" cy="935" r="3" fill="#fff" opacity="0.9" />
+            </g>
+        )}
+        {variant === "harvest" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <circle cx="75" cy="935" r="14" fill={to} />
+                <ellipse cx="75" cy="918" rx="8" ry="3" fill={from} opacity="0.7" />
+                <path d="M75 918 L 75 908" stroke={from} stroke-width="2" stroke-linecap="round" opacity="0.7" />
+            </g>
+        )}
+    </svg>
+
+    <!-- Vine DERECHA (espejo) -->
+    <svg
+        class="chapter-ornaments__vine chapter-ornaments__vine--right"
+        viewBox="0 0 200 1000"
+        preserveAspectRatio="xMinYMid meet"
+    >
+        <defs>
+            <linearGradient id={gradR} x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stop-color={from} stop-opacity="0.85" />
+                <stop offset="100%" stop-color={to} stop-opacity="0.95" />
+            </linearGradient>
+        </defs>
+
+        <path
+            class="chapter-ornaments__stem"
+            d="M160 0 Q110 200 170 400 Q220 600 120 800 Q70 950 130 1000"
+            fill="none"
+            stroke={`url(#${gradR})`}
+            stroke-width="2.5"
+            stroke-linecap="round"
+            data-orn-stem
+        />
+
+        <g class="chapter-ornaments__leaf" data-orn-leaf>
+            <path
+                d="M130 180 Q80 160 60 195 Q68 215 90 210 Q108 205 130 180 Z"
+                fill={from} opacity="0.78"
+            />
+        </g>
+        <g class="chapter-ornaments__leaf" data-orn-leaf>
+            <path
+                d="M170 450 Q210 420 225 465 Q215 490 180 485 Q168 480 170 450 Z"
+                fill={from} opacity="0.7"
+            />
+        </g>
+        <g class="chapter-ornaments__leaf" data-orn-leaf>
+            <path
+                d="M115 770 Q60 750 40 790 Q50 810 78 805 Q102 798 115 770 Z"
+                fill={to} opacity="0.82"
+            />
+        </g>
+
+        <!-- Decoración alusiva derecha -->
+        {variant === "leaves" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <circle cx="120" cy="940" r="5" fill={to} />
+                <circle cx="108" cy="958" r="3" fill={to} opacity="0.7" />
+            </g>
+        )}
+        {variant === "roots" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <path d="M125 925 Q120 960 115 985 M125 925 Q130 955 125 988 M125 925 Q140 950 145 980"
+                    stroke={to} stroke-width="2" stroke-linecap="round" fill="none" />
+            </g>
+        )}
+        {variant === "drops" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <path d="M125 935 Q133 952 125 970 Q117 952 125 935 Z" fill={to} opacity="0.85" />
+            </g>
+        )}
+        {variant === "crystals" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <polygon points="125,935 136,950 125,965 114,950" fill={to} opacity="0.85" />
+            </g>
+        )}
+        {variant === "blossom" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <circle cx="125" cy="945" r="6" fill={from} opacity="0.85" />
+                <circle cx="115" cy="940" r="4" fill={to} opacity="0.8" />
+                <circle cx="135" cy="940" r="4" fill={to} opacity="0.8" />
+                <circle cx="125" cy="950" r="2" fill="#fff" opacity="0.9" />
+            </g>
+        )}
+        {variant === "harvest" && (
+            <g class="chapter-ornaments__deco" data-orn-deco>
+                <circle cx="125" cy="945" r="10" fill={to} opacity="0.85" />
+                <ellipse cx="125" cy="932" rx="6" ry="2" fill={from} opacity="0.7" />
+            </g>
+        )}
+    </svg>
+        </>
+    )}
+</aside>

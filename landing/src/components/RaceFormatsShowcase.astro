@@ -1,0 +1,576 @@
+---
+// RaceFormatsShowcase — reemplaza al pdd__formats cuadrado para /linea-race.
+//
+// Layout cinematográfico:
+//   ┌──────────────────────────────────────────────────────┐
+//   │ FÓRMULAS RACE                          01 / 04        │
+//   │                                                       │
+//   │              ╱─────────────────╲                      │
+//   │             │   ┌───────────┐   │                     │
+//   │             │   │           │   │  ← stage circular  │
+//   │             │   │  IMAGEN   │   │     con halo       │
+//   │             │   │  ACTIVA   │   │     y partículas   │
+//   │             │   │           │   │                    │
+//   │             │   └───────────┘   │                     │
+//   │              ╲─────────────────╱                      │
+//   │                                                       │
+//   │   01 RACE 1  ──  02 RACE 2  ──  03 RACE 3  ──  04 R4 │
+//   │                  ─────────                            │
+//   │                                                       │
+//   │   La pareja perfecta.                                 │
+//   │   Sistema dual de floración (Part A + Part B)...      │
+//   └──────────────────────────────────────────────────────┘
+//
+// Interacción:
+//   • Tabs clickeables — cambian la imagen del stage con cross-fade
+//     blurred (capa anterior fade-out + blur, nueva fade-in desde blur).
+//   • Auto-rotación cada 5s con pause al hover del stage.
+//   • Partículas alrededor del stage tintadas con el color del Race
+//     activo (violeta/verde/azul/rosa).
+//
+// Skills aplicadas (citadas en script):
+//   • gsap-timeline           → secuencia de transición entre fórmulas
+//   • gsap-plugins Flip       → opcional para morph del stage entre estados
+//   • gsap-plugins SplitText  → tagline reveal char-by-char
+//   • gsap-scrolltrigger      → reveal de la sección al entrar viewport
+//   • gsap-utils.toArray/random → partículas
+//   • gsap-core matchMedia    → reduce-motion + breakpoints
+//   • gsap-performance        → transforms + filter scoped
+//   • frontend-design         → glass morphism, asimetría, tipo-mix
+//   • accessibility           → aria-selected, role=tablist, focus
+
+interface Format {
+    name: string;
+    size: string;
+    image: string;
+    color: string;
+    tagline: string;
+    description: string;
+}
+interface Props {
+    formats: Format[];
+}
+const { formats } = Astro.props;
+const total = formats.length;
+const PARTICLE_COUNT = 22;
+---
+<section
+    class="rfs"
+    data-rfs
+    data-total={total}
+    aria-labelledby="rfs-title"
+>
+    <div class="rfs__bg" aria-hidden="true"></div>
+
+    <header class="rfs__head">
+        <p class="rfs__eyebrow" data-rfs-eyebrow>
+            <span class="rfs__eyebrow-dot" aria-hidden="true"></span>
+            <span>FÓRMULAS RACE</span>
+        </p>
+        <h2 class="rfs__title" id="rfs-title" data-rfs-title>
+            Cuatro fórmulas. <em>Un ciclo entero.</em>
+        </h2>
+        <p class="rfs__hud" aria-live="polite">
+            <span class="rfs__hud-num" data-rfs-hud-num>01</span>
+            <span class="rfs__hud-sep">/</span>
+            <span class="rfs__hud-total">{String(total).padStart(2, "0")}</span>
+        </p>
+    </header>
+
+    <!-- ============================================================
+         STAGE — imagen activa con halo + partículas
+         ============================================================ -->
+    <div class="rfs__stage" data-rfs-stage>
+        <!-- Capas de glow / halo: el .--ring está detrás, --halo es el
+             gradiente difuso, --core es el pulso. -->
+        <span class="rfs__stage-ring" data-rfs-ring aria-hidden="true"></span>
+        <span class="rfs__stage-halo" data-rfs-halo aria-hidden="true"></span>
+        <span class="rfs__stage-core" data-rfs-core aria-hidden="true"></span>
+
+        <!-- Particles circundantes: el JS las distribuye en órbita
+             elíptica alrededor del stage y las tinta con el color
+             del Race activo. -->
+        <div class="rfs__particles" aria-hidden="true">
+            {Array.from({ length: PARTICLE_COUNT }).map((_, i) => (
+                <span class="rfs__particle" data-rfs-particle data-index={i}></span>
+            ))}
+        </div>
+
+        <!-- Imágenes apiladas: la activa al frente, las demás escondidas
+             absolutamente atrás. El JS hace cross-fade con blur. -->
+        <div class="rfs__images" data-rfs-images>
+            {formats.map((f, i) => (
+                <img
+                    class:list={["rfs__image", i === 0 && "is-active"]}
+                    data-rfs-image
+                    data-index={i}
+                    src={f.image}
+                    alt={`${f.name} — ${f.tagline}`}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    draggable="false"
+                />
+            ))}
+        </div>
+
+        <span class="rfs__stage-shadow" aria-hidden="true"></span>
+    </div>
+
+    <!-- ============================================================
+         TABS editoriales con número + nombre
+         ============================================================ -->
+    <div class="rfs__tabs" role="tablist" aria-label="Fórmulas Race">
+        <span class="rfs__tabs-rail" aria-hidden="true">
+            <span class="rfs__tabs-rail-fill" data-rfs-rail-fill></span>
+        </span>
+        {formats.map((f, i) => (
+            <button
+                class:list={["rfs__tab", i === 0 && "is-active"]}
+                data-rfs-tab
+                data-index={i}
+                role="tab"
+                type="button"
+                aria-selected={i === 0 ? "true" : "false"}
+                aria-controls={`rfs-panel-${i}`}
+                data-cursor="hover"
+                style={`--tab-color: ${f.color};`}
+            >
+                <span class="rfs__tab-num">{String(i + 1).padStart(2, "0")}</span>
+                <span class="rfs__tab-name">{f.name}</span>
+                <span class="rfs__tab-size">{f.size}</span>
+            </button>
+        ))}
+    </div>
+
+    <!-- ============================================================
+         CAPTION dinámica — tagline + descripción del format activo
+         ============================================================ -->
+    <div class="rfs__caption" data-rfs-caption>
+        {formats.map((f, i) => (
+            <article
+                class:list={["rfs__caption-panel", i === 0 && "is-active"]}
+                data-rfs-caption-panel
+                data-index={i}
+                id={`rfs-panel-${i}`}
+                role="tabpanel"
+                aria-hidden={i === 0 ? "false" : "true"}
+            >
+                <h3 class="rfs__caption-tagline">{f.tagline}</h3>
+                <p class="rfs__caption-body">{f.description}</p>
+            </article>
+        ))}
+    </div>
+</section>
+
+<style>
+    /* ====================================================================
+       Showcase Race — fondo dark con gradient sutil verde-violeta
+       ==================================================================== */
+    .rfs {
+        --rfs-active-color: #2E8F6E;
+
+        position: relative;
+        padding: clamp(72px, 11vh, 140px) clamp(20px, 5vw, 80px);
+        background: #0A0A0A;
+        color: #fff;
+        overflow: hidden;
+        isolation: isolate;
+        font-family: "Inter", sans-serif;
+    }
+    .rfs__bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background:
+            radial-gradient(ellipse at 80% 10%,
+                rgba(46, 143, 110, 0.18) 0%,
+                transparent 50%),
+            radial-gradient(ellipse at 10% 90%,
+                rgba(142, 36, 170, 0.16) 0%,
+                transparent 55%),
+            #0A0A0A;
+    }
+
+    /* ====================================================================
+       Header
+       ==================================================================== */
+    .rfs__head {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1.5rem;
+        align-items: end;
+        max-width: 1200px;
+        margin: 0 auto clamp(40px, 6vh, 72px);
+    }
+    .rfs__eyebrow {
+        margin: 0 0 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.7);
+        opacity: 0;
+        will-change: transform, opacity;
+    }
+    .rfs__eyebrow-dot {
+        width: 0.5rem; height: 0.5rem;
+        border-radius: 50%;
+        background: var(--rfs-active-color);
+        box-shadow: 0 0 12px var(--rfs-active-color);
+        transition: background 0.6s ease, box-shadow 0.6s ease;
+        animation: rfs-tick 2.4s ease-in-out infinite;
+    }
+    @keyframes rfs-tick {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50%      { transform: scale(0.55); opacity: 0.5; }
+    }
+    .rfs__title {
+        margin: 0;
+        font-family: "Anton", sans-serif;
+        font-weight: 400;
+        font-size: clamp(2rem, 5vw, 4rem);
+        line-height: 0.96;
+        letter-spacing: 0.005em;
+        text-transform: uppercase;
+        color: #fff;
+        max-width: 18ch;
+    }
+    .rfs__title em {
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: -0.02em;
+        color: var(--rfs-active-color);
+        transition: color 0.6s ease;
+    }
+    .rfs__hud {
+        margin: 0;
+        font-family: var(--f-display-race, "Anton", sans-serif);
+        font-size: clamp(1rem, 1.6vw, 1.4rem);
+        font-weight: 400;
+        letter-spacing: 0.16em;
+        color: rgba(255, 255, 255, 0.55);
+        opacity: 0;
+        will-change: opacity;
+    }
+    .rfs__hud-num {
+        color: var(--rfs-active-color);
+        transition: color 0.6s ease;
+    }
+
+    /* ====================================================================
+       STAGE — imagen activa con capas de glow + partículas
+       ==================================================================== */
+    .rfs__stage {
+        position: relative;
+        z-index: 2;
+        margin: 0 auto;
+        width: min(560px, 80vw);
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        cursor: pointer; /* hover pause */
+    }
+
+    /* Anillo exterior: borde sutil giratorio. */
+    .rfs__stage-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background:
+            conic-gradient(from 0deg,
+                transparent 0deg,
+                var(--rfs-active-color) 60deg,
+                transparent 180deg,
+                rgba(255, 255, 255, 0.4) 280deg,
+                transparent 360deg);
+        opacity: 0.45;
+        will-change: transform, background;
+        animation: rfs-ring-spin 22s linear infinite;
+        mask:
+            radial-gradient(circle, transparent 60%, black 60.5%, black 70%, transparent 70.5%);
+        -webkit-mask:
+            radial-gradient(circle, transparent 60%, black 60.5%, black 70%, transparent 70.5%);
+    }
+    @keyframes rfs-ring-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+
+    /* Halo difuso pintado con el color del Race activo. */
+    .rfs__stage-halo {
+        position: absolute;
+        width: 92%; height: 92%;
+        border-radius: 50%;
+        background: radial-gradient(
+            circle at 50% 50%,
+            color-mix(in srgb, var(--rfs-active-color) 55%, transparent) 0%,
+            color-mix(in srgb, var(--rfs-active-color) 18%, transparent) 35%,
+            transparent 70%);
+        filter: blur(40px);
+        will-change: opacity;
+        transition: background 0.6s ease;
+    }
+    /* Núcleo: pulso central blanco que da volumen al producto. */
+    .rfs__stage-core {
+        position: absolute;
+        width: 70%; height: 70%;
+        border-radius: 50%;
+        background: radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 255, 255, 0.18) 0%,
+            transparent 65%);
+        filter: blur(20px);
+        animation: rfs-core-pulse 6s ease-in-out infinite;
+    }
+    @keyframes rfs-core-pulse {
+        0%, 100% { transform: scale(1);   opacity: 0.7; }
+        50%      { transform: scale(1.08); opacity: 1; }
+    }
+
+    /* Particles orbitales — el JS las posiciona en círculo. */
+    .rfs__particles {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+    }
+    .rfs__particle {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%,
+            #fff 0%,
+            rgba(255, 255, 255, 0.5) 55%,
+            transparent 80%);
+        filter: blur(0.4px);
+        opacity: 0;
+        will-change: transform, opacity;
+        transform: translate(-50%, -50%);
+    }
+    .rfs__particle:nth-child(3n) {
+        background: radial-gradient(circle at 35% 30%,
+            color-mix(in srgb, var(--rfs-active-color) 90%, white) 0%,
+            color-mix(in srgb, var(--rfs-active-color) 40%, transparent) 60%,
+            transparent 80%);
+        transition: background 0.6s ease;
+    }
+
+    /* Imágenes apiladas — se hace cross-fade entre ellas. */
+    .rfs__images {
+        position: relative;
+        width: 78%; height: 78%;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+    }
+    .rfs__image {
+        position: absolute;
+        inset: 0;
+        max-width: 100%;
+        max-height: 100%;
+        margin: auto;
+        object-fit: contain;
+        opacity: 0;
+        filter: blur(14px) saturate(0.85);
+        transform: scale(0.94);
+        transition:
+            opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+            filter 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+            transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+        border-radius: 18px;
+        will-change: opacity, filter, transform;
+    }
+    .rfs__image.is-active {
+        opacity: 1;
+        filter: blur(0) saturate(1.04);
+        transform: scale(1);
+    }
+
+    /* Sombra elipse bajo el stage. */
+    .rfs__stage-shadow {
+        position: absolute;
+        bottom: -3%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50%;
+        height: 30px;
+        background: radial-gradient(ellipse at center,
+            rgba(0, 0, 0, 0.5),
+            transparent 70%);
+        filter: blur(14px);
+        z-index: 0;
+    }
+
+    /* ====================================================================
+       TABS editoriales
+       ==================================================================== */
+    .rfs__tabs {
+        position: relative;
+        z-index: 2;
+        max-width: 980px;
+        margin: clamp(40px, 6vh, 72px) auto 0;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(8px, 1.5vw, 24px);
+    }
+    /* Rail underline animado. */
+    .rfs__tabs-rail {
+        position: absolute;
+        left: 0; right: 0;
+        bottom: 0;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.08);
+        pointer-events: none;
+    }
+    .rfs__tabs-rail-fill {
+        position: absolute;
+        top: 0; left: 0;
+        width: 25%;
+        height: 100%;
+        background: var(--rfs-active-color);
+        transition:
+            transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+            background 0.4s ease;
+        will-change: transform, background;
+    }
+
+    .rfs__tab {
+        --tab-color: #2E8F6E;
+        position: relative;
+        background: none;
+        border: 0;
+        padding: 1.1rem 0.4rem 1.4rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        cursor: pointer;
+        color: rgba(255, 255, 255, 0.55);
+        font-family: "Inter", sans-serif;
+        transition: color 0.35s ease, transform 0.35s ease;
+        min-height: 80px; /* a11y target size */
+    }
+    .rfs__tab:hover,
+    .rfs__tab:focus-visible {
+        color: rgba(255, 255, 255, 0.92);
+        outline: none;
+    }
+    .rfs__tab:focus-visible {
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 8px;
+    }
+    .rfs__tab.is-active {
+        color: #fff;
+    }
+
+    .rfs__tab-num {
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-size: 0.85rem;
+        font-weight: 500;
+        letter-spacing: 0;
+        opacity: 0.75;
+        color: var(--tab-color);
+    }
+    .rfs__tab-name {
+        font-family: "Anton", sans-serif;
+        font-size: clamp(1rem, 1.5vw, 1.4rem);
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        line-height: 1;
+    }
+    .rfs__tab-size {
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        opacity: 0.7;
+    }
+
+    /* ====================================================================
+       CAPTION dinámica
+       ==================================================================== */
+    .rfs__caption {
+        position: relative;
+        z-index: 2;
+        margin: clamp(28px, 4vh, 48px) auto 0;
+        max-width: 720px;
+        text-align: center;
+        min-height: 8em;
+    }
+    .rfs__caption-panel {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        transition:
+            opacity 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+            transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .rfs__caption-panel.is-active {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+    .rfs__caption-tagline {
+        margin: 0 0 0.6rem;
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: clamp(1.2rem, 2vw, 1.8rem);
+        line-height: 1.15;
+        color: var(--rfs-active-color);
+        transition: color 0.6s ease;
+    }
+    .rfs__caption-body {
+        margin: 0;
+        font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.78);
+    }
+
+    /* ====================================================================
+       Responsive
+       ==================================================================== */
+    @media (max-width: 760px) {
+        .rfs__head {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        .rfs__hud { justify-self: start; }
+        .rfs__tabs {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .rfs__tab { padding: 0.85rem 0.3rem 1rem; }
+        .rfs__tab-name { font-size: 1rem; }
+    }
+
+    /* ====================================================================
+       Reduced motion
+       ==================================================================== */
+    @media (prefers-reduced-motion: reduce) {
+        .rfs__stage-ring,
+        .rfs__stage-core,
+        .rfs__eyebrow-dot { animation: none !important; }
+        .rfs__image,
+        .rfs__caption-panel,
+        .rfs__tabs-rail-fill {
+            transition: none !important;
+        }
+    }
+</style>
+
+<script>
+    import "../scripts/race-formats-showcase.js";
+</script>

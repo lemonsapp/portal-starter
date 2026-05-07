@@ -1,13 +1,69 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/Hero.astro";
-import WhatsAppBanner from "../components/WhatsAppBanner.astro";
-import BentoGrid from "../components/BentoGrid.astro";
-import Channels from "../components/Channels.astro";
+import Loader from "../components/Loader.astro";
+import VideoHero from "../components/VideoHero.astro";
+import BrandManifest from "../components/BrandManifest.astro";
+import Marquee from "../components/Marquee.astro";
+import LiquidPour from "../components/LiquidPour.astro";
+import EaseOfUse from "../components/EaseOfUse.astro";
+import ProductFloatSlider from "../components/ProductFloatSlider.astro";
+import ChapterSection from "../components/ChapterSection.astro";
+import VineDivider from "../components/VineDivider.astro";
+import HumanSupport from "../components/HumanSupport.astro";
+import FinalCTA from "../components/FinalCTA.astro";
+import { capitulos } from "../data/capitulos.js";
+
+// Transiciones orgánicas entre cada par de chapters. El orden de
+// chapters es: bio → cloner → race → elite → pro → day-0.
+// Cada divider lleva una decoración alusiva al producto que viene.
+const dividers = [
+    { variant: "leaves",   from: "#F7D6DC", to: "#E4D5F2" }, // bio    → cloner
+    { variant: "roots",    from: "#E4D5F2", to: "#C7F0DD" }, // cloner → race
+    { variant: "drops",    from: "#C7F0DD", to: "#F7F3EA" }, // race   → elite
+    { variant: "crystals", from: "#F7F3EA", to: "#AEDAD4" }, // elite  → pro
+    { variant: "harvest",  from: "#AEDAD4", to: "#F9E79B" }, // pro    → day-0
+];
 ---
-<BaseLayout>
-    <Hero />
-    <WhatsAppBanner />
-    <BentoGrid />
-    <Channels />
+<BaseLayout
+    title="Holistic Growshop — Nutrición superior"
+    description="Holistic Growshop: fertilizantes premium Línea Elite, Línea Pro y Línea Race para resultados superiores."
+>
+    <Loader />
+
+    <!-- HERO PRINCIPAL — video cinematográfico (race-clip-04) con
+         partículas + headline editorial, pausa en último frame. -->
+    <VideoHero />
+
+    <!-- 6 productos: pin horizontal SPYLT.
+         showWelcome={false} oculta el welcome interno del slider:
+         ya tenemos el VideoHero arriba como intro cinemática. -->
+    <ProductFloatSlider showWelcome={false} />
+
+    <!-- MANIFIESTO HOLISTIC — reemplazó al hero antiguo "Nutrición Superior" -->
+    <BrandManifest />
+
+    <HumanSupport />
+
+    <Marquee variant="dark" />
+
+    <LiquidPour />
+
+    <EaseOfUse />
+
+    {capitulos.map((c, i) => (
+        <>
+            <ChapterSection chapter={c} priority={i < 2} />
+            {i < capitulos.length - 1 && (
+                <VineDivider {...dividers[i]} />
+            )}
+        </>
+    ))}
+
+    <FinalCTA />
+
+    <script>
+        import "../scripts/story-animations.js";
+        import "../scripts/vine-divider-animations.js";
+        import "../scripts/race-slider-animations.js";
+    </script>
 </BaseLayout>

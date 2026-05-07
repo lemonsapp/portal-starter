@@ -1,0 +1,674 @@
+---
+// ProductHighlights — versión cinematográfica del pdd__highlights
+// genérica para CUALQUIER producto. Reemplaza al sticky-pin con una
+// experiencia rica:
+//
+//   • Stage izquierdo:
+//       - Imagen activa (o video) con cross-fade + blur entre N highlights
+//       - Halo dinámico que cambia de color con cada highlight (data.color)
+//       - Big number 01-NN atrás de la imagen (cambia con stagger)
+//       - 18-22 partículas orbitales tintadas con el color activo
+//       - Progress bar vertical (DrawSVG) con tick marks por highlight
+//       - Tilt 3D al mover el mouse sobre el stage
+//   • Texto derecho:
+//       - Kicker + título con SplitText words stagger
+//       - Body fade-up
+//       - Decorative rule horizontal con DrawSVG al final
+//   • Top HUD: contador 01/NN + dots
+//   • Bottom: progress bar horizontal del scroll del pin
+//   • Background: gradient que pulsa con el color del highlight activo
+//
+// Skills aplicadas (citadas en el script):
+//   • gsap-timeline           → defaults + labels para reveal
+//   • gsap-scrolltrigger      → pin + scrub + onUpdate por highlight
+//   • gsap-plugins SplitText  → words stagger en title
+//   • gsap-plugins DrawSVG    → progress bar vertical + decorative rule
+//   • gsap-utils.toArray      → setup partículas + nodes
+//   • gsap-utils.random       → posiciones partículas
+//   • gsap-utils.mapRange     → tilt mouse parallax
+//   • gsap-core matchMedia    → reduce-motion + breakpoints
+
+interface Highlight {
+    kicker: string;
+    title: string;
+    body: string;
+    image: string;
+    color: string;
+    stat?: string;
+    /** Si "video", el media path en `image` se renderiza como <video>
+        (autoplay/muted/loop). Útil para Línea Pro que tiene clip MP4. */
+    mediaType?: "image" | "video";
+}
+interface Props {
+    highlights: Highlight[];
+    /** Label en el HUD de arriba (ej. "RACE · BACKSTAGE"). */
+    eyebrowLabel?: string;
+    /** Color de fallback cuando ningún highlight está activo. */
+    defaultAccent?: string;
+}
+const {
+    highlights,
+    eyebrowLabel = "BACKSTAGE",
+    defaultAccent = "#A7F5C8",
+} = Astro.props;
+
+const total = highlights.length;
+const PARTICLE_COUNT = 22;
+// Lista de colores serializada en data-attr para que el script JS no
+// tenga que duplicar ese mapping (permitiendo paletas distintas por
+// producto sin tocar el script).
+const colorList = highlights.map((h) => h.color || defaultAccent).join(",");
+---
+<section
+    class="ph"
+    data-ph
+    data-total={total}
+    data-colors={colorList}
+    style={`--ph-active: ${highlights[0]?.color || defaultAccent};`}
+    aria-label={`${eyebrowLabel} — fórmulas en detalle`}
+>
+    <div class="ph__bg" aria-hidden="true">
+        <div class="ph__bg-radial" data-ph-bg-radial></div>
+        <div class="ph__bg-grid"></div>
+    </div>
+
+    <div class="ph__pin" data-ph-pin>
+        <header class="ph__hud ph__hud--top" aria-hidden="true">
+            <div class="ph__hud-left">
+                <span class="ph__hud-tick"></span>
+                <span class="ph__hud-label">{eyebrowLabel}</span>
+            </div>
+            <div class="ph__hud-right">
+                <span class="ph__hud-num" data-ph-hud-num>01</span>
+                <span class="ph__hud-sep">/</span>
+                <span class="ph__hud-total">{String(total).padStart(2, "0")}</span>
+                <span class="ph__hud-dots">
+                    {highlights.map((_, i) => (
+                        <span
+                            class:list={["ph__hud-dot", i === 0 && "is-active"]}
+                            data-ph-hud-dot
+                            data-index={i}
+                        ></span>
+                    ))}
+                </span>
+            </div>
+        </header>
+
+        <div class="ph__split">
+            <!-- IZQUIERDO: stage cinemático -->
+            <div class="ph__stage" data-ph-stage>
+                <!-- Big number atrás -->
+                <span class="ph__bignum" data-ph-bignum aria-hidden="true">
+                    {highlights.map((h, i) => (
+                        <span
+                            class:list={["ph__bignum-digit", i === 0 && "is-active"]}
+                            data-ph-bignum-digit
+                            data-index={i}
+                        >{h.stat || String(i + 1).padStart(2, "0")}</span>
+                    ))}
+                </span>
+
+                <span class="ph__halo" data-ph-halo aria-hidden="true"></span>
+                <span class="ph__halo-ring" data-ph-halo-ring aria-hidden="true"></span>
+
+                <div class="ph__particles" aria-hidden="true">
+                    {Array.from({ length: PARTICLE_COUNT }).map((_, i) => (
+                        <span class="ph__particle" data-ph-particle data-index={i}></span>
+                    ))}
+                </div>
+
+                <div class="ph__images" data-ph-images>
+                    {highlights.map((h, i) => (
+                        h.mediaType === "video" ? (
+                            <video
+                                class:list={["ph__image", i === 0 && "is-active"]}
+                                data-ph-image
+                                data-index={i}
+                                src={h.image}
+                                muted loop playsinline
+                                preload="metadata"
+                                aria-label={h.title}
+                            ></video>
+                        ) : (
+                            <img
+                                class:list={["ph__image", i === 0 && "is-active"]}
+                                data-ph-image
+                                data-index={i}
+                                src={h.image}
+                                alt={h.title}
+                                loading={i === 0 ? "eager" : "lazy"}
+                                draggable="false"
+                            />
+                        )
+                    ))}
+                </div>
+
+                <span class="ph__shadow" aria-hidden="true"></span>
+            </div>
+
+            <!-- DERECHO: texto -->
+            <div class="ph__text">
+                <svg
+                    class="ph__rail"
+                    data-ph-rail
+                    viewBox="0 0 6 400"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                >
+                    <line
+                        x1="3" y1="0" x2="3" y2="400"
+                        stroke="rgba(255,255,255,0.1)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+                    <line
+                        class="ph__rail-fill"
+                        data-ph-rail-fill
+                        x1="3" y1="0" x2="3" y2="400"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+                    {highlights.map((_, i) => {
+                        const y = total > 1 ? (i / (total - 1)) * 400 : 200;
+                        return (
+                            <circle
+                                class:list={["ph__rail-tick", i === 0 && "is-active"]}
+                                data-ph-rail-tick
+                                data-index={i}
+                                cx="3" cy={y} r="3"
+                                fill="rgba(255,255,255,0.3)"
+                            />
+                        );
+                    })}
+                </svg>
+
+                <div class="ph__text-stack">
+                    {highlights.map((h, i) => (
+                        <article
+                            class:list={["ph__panel", i === 0 && "is-active"]}
+                            data-ph-panel
+                            data-index={i}
+                        >
+                            <p class="ph__kicker" data-ph-kicker>
+                                <span class="ph__kicker-dot" aria-hidden="true"></span>
+                                <span>{h.kicker}</span>
+                            </p>
+                            <h3 class="ph__title" data-ph-title>{h.title}</h3>
+                            <p class="ph__body" data-ph-body>{h.body}</p>
+                            <svg
+                                class="ph__rule"
+                                data-ph-rule
+                                viewBox="0 0 240 8"
+                                preserveAspectRatio="none"
+                                aria-hidden="true"
+                            >
+                                <line
+                                    x1="0" y1="4" x2="240" y2="4"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    data-ph-rule-line
+                                />
+                                <circle
+                                    cx="240" cy="4" r="3"
+                                    fill="currentColor"
+                                    data-ph-rule-cap
+                                />
+                            </svg>
+                        </article>
+                    ))}
+                </div>
+            </div>
+        </div>
+
+        <footer class="ph__hud ph__hud--bottom" aria-hidden="true">
+            <div class="ph__progress">
+                <span class="ph__progress-fill" data-ph-progress-fill></span>
+            </div>
+            <div class="ph__hud-bottom-right">
+                <span class="ph__bottom-label">SCROLL</span>
+                <span class="ph__bottom-icon">↓</span>
+            </div>
+        </footer>
+    </div>
+</section>
+
+<style>
+    .ph {
+        --ph-active: #A7F5C8;
+
+        position: relative;
+        background: #050505;
+        color: #fff;
+        overflow: hidden;
+        isolation: isolate;
+        font-family: "Inter", sans-serif;
+    }
+
+    .ph__bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+    }
+    .ph__bg-radial {
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse at 25% 50%,
+                color-mix(in srgb, var(--ph-active) 32%, transparent) 0%,
+                transparent 55%),
+            radial-gradient(ellipse at 80% 80%,
+                color-mix(in srgb, var(--ph-active) 18%, transparent) 0%,
+                transparent 60%);
+        transition: background 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        will-change: background;
+    }
+    .ph__bg-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        background-size: 80px 80px;
+        opacity: 0.6;
+    }
+
+    .ph__pin {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: clamp(60px, 8vh, 100px) clamp(20px, 5vw, 80px);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(28px, 4vh, 48px);
+    }
+
+    .ph__hud {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    .ph__hud-left,
+    .ph__hud-right,
+    .ph__hud-bottom-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+    .ph__hud-tick {
+        width: 0.55rem; height: 0.55rem;
+        border-radius: 50%;
+        background: var(--ph-active);
+        box-shadow: 0 0 12px var(--ph-active);
+        animation: ph-tick 2.4s ease-in-out infinite;
+        transition: background 0.6s ease, box-shadow 0.6s ease;
+    }
+    @keyframes ph-tick {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50%      { transform: scale(0.55); opacity: 0.4; }
+    }
+    .ph__hud-num {
+        font-family: "Anton", sans-serif;
+        font-size: 1.1rem;
+        color: var(--ph-active);
+        letter-spacing: 0.08em;
+        transition: color 0.6s ease;
+    }
+    .ph__hud-sep,
+    .ph__hud-total { color: rgba(255, 255, 255, 0.5); }
+    .ph__hud-dots {
+        display: inline-flex;
+        gap: 0.4rem;
+        margin-left: 0.5rem;
+    }
+    .ph__hud-dot {
+        width: 0.45rem; height: 0.45rem;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        transition: background 0.4s ease, transform 0.4s ease;
+    }
+    .ph__hud-dot.is-active {
+        background: var(--ph-active);
+        transform: scale(1.4);
+    }
+
+    .ph__split {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(40px, 6vw, 100px);
+        align-items: center;
+    }
+
+    .ph__stage {
+        position: relative;
+        width: 100%;
+        max-width: 560px;
+        aspect-ratio: 1;
+        margin: 0 auto;
+        display: grid;
+        place-items: center;
+        will-change: transform;
+        transform-style: preserve-3d;
+        perspective: 1000px;
+    }
+
+    .ph__bignum {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+    }
+    .ph__bignum-digit {
+        position: absolute;
+        font-family: "Anton", sans-serif;
+        font-size: clamp(14rem, 30vw, 26rem);
+        font-weight: 400;
+        line-height: 0.85;
+        letter-spacing: -0.04em;
+        color: transparent;
+        -webkit-text-stroke: 2px color-mix(in srgb, var(--ph-active) 38%, transparent);
+        text-stroke: 2px color-mix(in srgb, var(--ph-active) 38%, transparent);
+        opacity: 0;
+        transform: translateY(20%);
+        will-change: transform, opacity;
+        transition: opacity 0.6s, color 0.6s, -webkit-text-stroke-color 0.6s;
+    }
+    .ph__bignum-digit.is-active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .ph__halo {
+        position: absolute;
+        width: 80%; height: 80%;
+        border-radius: 50%;
+        background: radial-gradient(
+            circle at 50% 50%,
+            color-mix(in srgb, var(--ph-active) 60%, transparent) 0%,
+            color-mix(in srgb, var(--ph-active) 22%, transparent) 35%,
+            transparent 70%);
+        filter: blur(40px);
+        z-index: 1;
+        will-change: opacity;
+        transition: background 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .ph__halo-ring {
+        position: absolute;
+        width: 90%; height: 90%;
+        border-radius: 50%;
+        background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            color-mix(in srgb, var(--ph-active) 70%, white) 80deg,
+            rgba(255, 255, 255, 0.85) 100deg,
+            color-mix(in srgb, var(--ph-active) 70%, white) 120deg,
+            transparent 220deg,
+            transparent 360deg);
+        opacity: 0.32;
+        animation: ph-ring-spin 18s linear infinite;
+        mask: radial-gradient(circle, transparent 60%, black 60.5%, black 70%, transparent 70.5%);
+        -webkit-mask: radial-gradient(circle, transparent 60%, black 60.5%, black 70%, transparent 70.5%);
+        z-index: 1;
+    }
+    @keyframes ph-ring-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+
+    .ph__particles {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+    }
+    .ph__particle {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%,
+            #fff 0%,
+            rgba(255, 255, 255, 0.5) 55%,
+            transparent 80%);
+        filter: blur(0.4px);
+        opacity: 0;
+        will-change: transform, opacity;
+        transform: translate(-50%, -50%);
+    }
+    .ph__particle:nth-child(3n) {
+        background: radial-gradient(circle at 35% 30%,
+            color-mix(in srgb, var(--ph-active) 92%, white) 0%,
+            color-mix(in srgb, var(--ph-active) 45%, transparent) 60%,
+            transparent 80%);
+        transition: background 0.6s ease;
+    }
+    .ph__particle:nth-child(7n) {
+        width: 3px; height: 3px;
+        filter: blur(0.7px);
+    }
+
+    .ph__images {
+        position: relative;
+        width: 70%; height: 70%;
+        z-index: 3;
+        display: grid;
+        place-items: center;
+    }
+    .ph__image {
+        position: absolute;
+        inset: 0;
+        max-width: 100%;
+        max-height: 100%;
+        margin: auto;
+        object-fit: contain;
+        opacity: 0;
+        filter: blur(18px) saturate(0.7);
+        transform: scale(0.93);
+        border-radius: 18px;
+        box-shadow:
+            0 32px 64px rgba(0, 0, 0, 0.6),
+            0 8px 16px rgba(0, 0, 0, 0.4);
+        will-change: opacity, filter, transform;
+        transition:
+            opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+            filter 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+            transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    /* Si es video, ajustamos object-fit para llenar el frame con cover. */
+    video.ph__image {
+        object-fit: cover;
+        background: #0a0a0a;
+    }
+    .ph__image.is-active {
+        opacity: 1;
+        filter: blur(0) saturate(1.05);
+        transform: scale(1);
+    }
+
+    .ph__shadow {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50%;
+        height: 30px;
+        background: radial-gradient(ellipse at center,
+            rgba(0, 0, 0, 0.45),
+            transparent 70%);
+        filter: blur(15px);
+        z-index: 0;
+    }
+
+    .ph__text {
+        position: relative;
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        gap: clamp(20px, 3vw, 40px);
+        align-items: stretch;
+        max-width: 540px;
+    }
+
+    .ph__rail {
+        width: 6px;
+        height: clamp(280px, 50vh, 420px);
+        align-self: center;
+        color: var(--ph-active);
+        transition: color 0.6s ease;
+    }
+    .ph__rail-fill {
+        stroke-dasharray: 0 400;
+        stroke-dashoffset: 0;
+    }
+    .ph__rail-tick {
+        transition: r 0.4s ease, fill 0.4s ease;
+    }
+    .ph__rail-tick.is-active {
+        r: 5;
+        fill: currentColor;
+    }
+
+    .ph__text-stack {
+        position: relative;
+        min-height: 360px;
+    }
+    .ph__panel {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        will-change: opacity, transform;
+    }
+    .ph__panel.is-active {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .ph__kicker {
+        margin: 0 0 clamp(0.85rem, 1.6vh, 1.2rem);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.78);
+    }
+    .ph__kicker-dot {
+        width: 0.45rem; height: 0.45rem;
+        border-radius: 50%;
+        background: var(--ph-active);
+        box-shadow: 0 0 8px var(--ph-active);
+        transition: background 0.6s ease, box-shadow 0.6s ease;
+    }
+
+    .ph__title {
+        margin: 0 0 clamp(1rem, 2vh, 1.6rem);
+        font-family: "Anton", sans-serif;
+        font-weight: 400;
+        font-size: clamp(2rem, 4.5vw, 3.6rem);
+        line-height: 0.98;
+        letter-spacing: 0.005em;
+        text-transform: uppercase;
+        color: #fff;
+    }
+    .ph__title-line { overflow: hidden; display: block; }
+    .ph__title-word {
+        display: inline-block;
+        will-change: transform;
+    }
+
+    .ph__body {
+        margin: 0 0 clamp(1rem, 2.5vh, 1.6rem);
+        font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+        line-height: 1.65;
+        color: rgba(255, 255, 255, 0.78);
+        max-width: 48ch;
+    }
+
+    .ph__rule {
+        width: clamp(180px, 30vw, 240px);
+        height: 8px;
+        color: var(--ph-active);
+        transition: color 0.6s ease;
+    }
+
+    .ph__progress {
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        max-width: 60%;
+    }
+    .ph__progress-fill {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--ph-active) 90%, white) 0%,
+            #fff 100%);
+        transform-origin: left center;
+        transform: scaleX(0);
+        will-change: transform, background;
+        transition: background 0.6s ease;
+    }
+    .ph__bottom-icon {
+        font-size: 0.9rem;
+        animation: ph-bounce 1.6s ease-in-out infinite;
+    }
+    @keyframes ph-bounce {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(3px); }
+    }
+
+    @media (max-width: 900px) {
+        .ph__split {
+            grid-template-columns: 1fr;
+            gap: 32px;
+        }
+        .ph__text {
+            grid-template-columns: 1fr;
+        }
+        .ph__rail { display: none; }
+        .ph__stage {
+            max-width: 360px;
+        }
+        .ph__bignum-digit {
+            font-size: clamp(8rem, 22vw, 14rem);
+        }
+        .ph__hud--top { font-size: 0.66rem; }
+        .ph__hud-dots { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ph__halo-ring,
+        .ph__hud-tick,
+        .ph__bottom-icon { animation: none !important; }
+        .ph__image,
+        .ph__bignum-digit,
+        .ph__panel,
+        .ph__bg-radial,
+        .ph__rail-fill { transition: none !important; }
+    }
+</style>
+
+<script>
+    import "../scripts/product-highlights-animations.js";
+</script>

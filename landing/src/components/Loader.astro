@@ -1,0 +1,177 @@
+---
+// Loader minimal y robusto. Sólo se renderiza en home (index.astro).
+//
+// Diseño:
+//   • Wordmark "HOLISTIC" + barra de progreso → wipe-up al final.
+//   • Sin SplitText (un punto de falla menos).
+//   • Liberación de scroll GARANTIZADA en onComplete y onInterrupt.
+//   • Si reduceMotion: skip total.
+//
+// Skills aplicadas:
+//   • gsap-timeline       → defaults + secuencia simple
+//   • gsap-core           → eases, set/to
+//   • gsap-performance    → transforms only
+//   • accessibility       → aria-hidden, prefers-reduced-motion
+---
+<div class="loader" data-loader aria-hidden="true">
+    <div class="loader__inner">
+        <h1 class="loader__text" data-loader-text>HOLISTIC</h1>
+        <p class="loader__caption" data-loader-caption>
+            <span>Nutrición</span>
+            <span class="loader__caption-em">superior</span>
+        </p>
+        <div class="loader__bar" data-loader-bar aria-hidden="true">
+            <div class="loader__bar-fill" data-loader-bar-fill></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { gsap } from "gsap";
+
+    /**
+     * Libera SIEMPRE overflow + lenis + clase de html. Idempotente.
+     */
+    function releasePage() {
+        const html = document.documentElement;
+        html.classList.remove("is-loading");
+        html.classList.add("is-loaded");
+        document.body.style.overflow = "";
+        document.body.style.height = "";
+
+        if (window.__lenis && typeof window.__lenis.start === "function") {
+            try { window.__lenis.start(); } catch (_) {}
+        }
+    }
+
+    function hideLoader() {
+        const loader = document.querySelector("[data-loader]");
+        if (loader instanceof HTMLElement) {
+            loader.style.display = "none";
+        }
+    }
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (prefersReducedMotion) {
+        hideLoader();
+        releasePage();
+    } else {
+        document.documentElement.classList.add("is-loading");
+        document.body.style.overflow = "hidden";
+
+        if (window.__lenis && typeof window.__lenis.stop === "function") {
+            try { window.__lenis.stop(); } catch (_) {}
+        }
+
+        const text = document.querySelector("[data-loader-text]");
+        const caption = document.querySelector("[data-loader-caption]");
+        const barFill = document.querySelector("[data-loader-bar-fill]");
+        const loader = document.querySelector("[data-loader]");
+
+        // Estado inicial
+        gsap.set(text, { autoAlpha: 0, y: 24 });
+        gsap.set(caption, { autoAlpha: 0, y: 12 });
+        gsap.set(barFill, { scaleX: 0, transformOrigin: "left center" });
+
+        const tl = gsap.timeline({
+            defaults: { ease: "power3.out" },
+            onComplete: () => {
+                hideLoader();
+                releasePage();
+            },
+            onInterrupt: () => {
+                hideLoader();
+                releasePage();
+            },
+        });
+
+        tl.to(text,    { autoAlpha: 1, y: 0, duration: 0.7 }, 0)
+          .to(caption, { autoAlpha: 1, y: 0, duration: 0.55 }, 0.25)
+          .to(barFill, { scaleX: 1, duration: 1.2, ease: "power2.inOut" }, 0.5)
+          .to([text, caption, barFill], {
+              autoAlpha: 0, y: -16,
+              duration: 0.4, ease: "power2.in", stagger: 0.04,
+          }, 1.85)
+          .to(loader, {
+              clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+              duration: 0.85, ease: "power4.inOut",
+          }, 2.0);
+
+        // Red de seguridad: si pasa más de 4s sin completar, libera igual.
+        window.setTimeout(() => {
+            if (!document.documentElement.classList.contains("is-loaded")) {
+                try { tl.kill(); } catch (_) {}
+                hideLoader();
+                releasePage();
+            }
+        }, 4000);
+    }
+</script>
+
+<style>
+    .loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: linear-gradient(180deg, #050505 0%, #0F1A14 100%);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+        will-change: clip-path;
+    }
+
+    .loader__inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.2rem;
+        width: min(86vw, 640px);
+        text-align: center;
+    }
+
+    .loader__text {
+        font-family: "Archivo Black", Impact, sans-serif;
+        color: #fff;
+        font-size: clamp(2.6rem, 8vw, 6.5rem);
+        line-height: 1;
+        letter-spacing: 0.02em;
+        margin: 0;
+        will-change: transform, opacity;
+    }
+
+    .loader__caption {
+        font-family: "Fraunces", serif;
+        font-size: clamp(1rem, 1.6vw, 1.3rem);
+        font-weight: 400;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.85);
+        margin: 0;
+        display: inline-flex;
+        gap: 0.4rem;
+        will-change: transform, opacity;
+    }
+    .loader__caption-em {
+        color: #A7F5C8;
+        font-weight: 500;
+    }
+
+    .loader__bar {
+        width: min(60vw, 360px);
+        height: 1px;
+        background: rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+        margin-top: 0.4rem;
+    }
+    .loader__bar-fill {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, #A7F5C8, #fff);
+        will-change: transform;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .loader { display: none !important; }
+    }
+</style>

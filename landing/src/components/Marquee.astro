@@ -1,0 +1,46 @@
+---
+interface Props {
+    variant?: "dark" | "light";
+    text?: string;
+    repeats?: number;
+}
+
+const {
+    variant = "dark",
+    text = "HOLISTIC",
+    repeats = 4,
+} = Astro.props;
+
+const segments = [
+    text,
+    "NUTRICIÓN PREMIUM",
+    "CULTIVO PROFESIONAL",
+];
+
+// Render 2 copias del track — GSAP anima xPercent: -50 para loop perfecto.
+const chunk = Array.from({ length: repeats }, () => segments).flat();
+---
+<div class:list={["marquee", `marquee--${variant}`]} data-marquee aria-hidden="true">
+    <div class="marquee__track" data-marquee-track>
+        <div class="marquee__group">
+            {chunk.map((label) => (
+                <span class="marquee__item">
+                    <span>{label}</span>
+                    <span class="marquee__dot">·</span>
+                </span>
+            ))}
+        </div>
+        <div class="marquee__group" aria-hidden="true">
+            {chunk.map((label) => (
+                <span class="marquee__item">
+                    <span>{label}</span>
+                    <span class="marquee__dot">·</span>
+                </span>
+            ))}
+        </div>
+    </div>
+</div>
+
+<script>
+    import "../scripts/marquee-animations.js";
+</script>

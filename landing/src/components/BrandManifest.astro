@@ -1,0 +1,138 @@
+---
+// BrandManifest — sección de manifiesto de marca, completamente nueva.
+// Reemplaza al "NUTRICIÓN SUPERIOR" anterior. Concepto:
+//
+//   • LEFT: 3 columnas de marquees verticales infinitos. Direcciones
+//     alternadas (col1 ↑, col2 ↓, col3 ↑) — texturas tipográficas.
+//   • RIGHT: image stack — productos apilados que rotan automáticamente
+//     con Flip plugin (cambian de posición sin "pop", animan estado).
+//   • BOTTOM: 4 stat counters que cuentan up scrub-driven al scrollear.
+//
+// Skills aplicadas (todas, citadas en el script):
+//   • gsap-core matchMedia      → reduced-motion + breakpoints
+//   • gsap-timeline             → image stack rotation timeline
+//   • gsap-scrolltrigger        → scrub para counters + reveal de columnas
+//   • gsap-plugins (Flip)       → core de la rotación de productos
+//   • gsap-utils                → snap (counters enteros), random
+//   • gsap-performance          → transforms only, will-change limitado
+//   • frontend-design           → typography editorial, asimetría
+//   • accessibility             → aria-live para counters, target sizes
+
+const COL1 = [
+    "PREMIUM", "ARGENTINA", "CIENCIA", "BIO",
+    "ELITE", "SISTEMA", "RIGOR", "CULTURA",
+];
+const COL2 = [
+    "RAÍZ", "FLOR", "COSECHA", "CICLO",
+    "PROFESIONAL", "CONFIANZA", "TÉCNICA", "SOPORTE",
+];
+const COL3 = [
+    "RACE", "PRO", "DAY-0", "CLONER",
+    "BIO-EST.", "BLOOM", "VEGE", "FINISH",
+];
+
+// Cada columna se duplica para hacer marquee infinito sin gap.
+const dup = (arr) => [...arr, ...arr];
+
+// Productos del stack (ordenados como aparecen en index original)
+const STACK = [
+    { src: "/img/productos/linea-elite/1l/juntos-1l.png",                 alt: "Holistic Elite",    color: "#C9A34E" },
+    { src: "/img/productos/linea-pro/1kg/flora-1kg-1.png",                alt: "Holistic Pro",       color: "#F5948A" },
+    { src: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",      alt: "Holistic Race",      color: "#2E8F6E" },
+    { src: "/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png", alt: "Bio Estimulante", color: "#E8A5B1" },
+    { src: "/img/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png",       alt: "Day 0",             color: "#F9E79B" },
+];
+
+const STATS = [
+    { num: 6,    suffix: "",  label: "Productos", caption: "El sistema completo" },
+    { num: 12,   suffix: "+", label: "Años",      caption: "De experiencia técnica" },
+    { num: 100,  suffix: "%", label: "Soporte",   caption: "Asesoramiento humano" },
+    { num: 4,    suffix: "",  label: "Líneas",    caption: "Race · Elite · Pro · Bio" },
+];
+---
+<section class="bm" data-brand-manifest>
+    <div class="bm__bg" aria-hidden="true"></div>
+
+    <div class="bm__inner">
+        <!-- LEFT: 3 columnas de marquees verticales -->
+        <div class="bm__cols" data-bm-cols aria-hidden="true">
+            <div class="bm__col" data-bm-col data-dir="up">
+                <div class="bm__col-track" data-bm-track>
+                    {dup(COL1).map((w) => (
+                        <span class="bm__col-word">{w}</span>
+                    ))}
+                </div>
+            </div>
+            <div class="bm__col bm__col--accent" data-bm-col data-dir="down">
+                <div class="bm__col-track" data-bm-track>
+                    {dup(COL2).map((w) => (
+                        <span class="bm__col-word">{w}</span>
+                    ))}
+                </div>
+            </div>
+            <div class="bm__col" data-bm-col data-dir="up">
+                <div class="bm__col-track" data-bm-track>
+                    {dup(COL3).map((w) => (
+                        <span class="bm__col-word">{w}</span>
+                    ))}
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER COPY -->
+        <div class="bm__copy">
+            <p class="bm__eyebrow" data-bm-eyebrow>
+                <span class="bm__eyebrow-dot" aria-hidden="true"></span>
+                <span>MANIFIESTO HOLISTIC</span>
+            </p>
+
+            <h2 class="bm__claim" data-bm-claim>
+                <span class="bm__claim-line">Cada paso del</span>
+                <span class="bm__claim-line bm__claim-line--em">ciclo</span>
+                <span class="bm__claim-line">tiene su</span>
+                <span class="bm__claim-line bm__claim-line--em">fórmula.</span>
+            </h2>
+
+            <p class="bm__lede" data-bm-lede>
+                Un sistema completo, ensamblado en Argentina, validado en cultivo real.
+                Sin atajos, sin promesas vacías. Lo mismo que usan los pros — al alcance
+                de cualquier persona.
+            </p>
+        </div>
+
+        <!-- RIGHT: image stack rotador con Flip -->
+        <div class="bm__stack" data-bm-stack aria-label="Productos Holistic en rotación">
+            <div class="bm__stack-stage" data-bm-stage>
+                {STACK.map((p, i) => (
+                    <div
+                        class={`bm__stack-card${i === 0 ? " is-front" : ""}`}
+                        data-bm-card
+                        data-index={i}
+                        data-color={p.color}
+                        style={`--card-color: ${p.color};`}
+                    >
+                        <span class="bm__stack-halo" aria-hidden="true"></span>
+                        <img src={p.src} alt={p.alt} loading="lazy" draggable="false" />
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM: stat counters -->
+    <div class="bm__stats" data-bm-stats aria-live="polite">
+        {STATS.map((s) => (
+            <article class="bm__stat" data-bm-stat>
+                <p class="bm__stat-num">
+                    <span class="bm__stat-value" data-bm-stat-value data-target={s.num}>0</span><span class="bm__stat-suffix">{s.suffix}</span>
+                </p>
+                <p class="bm__stat-label">{s.label}</p>
+                <p class="bm__stat-caption">{s.caption}</p>
+            </article>
+        ))}
+    </div>
+</section>
+
+<script>
+    import "../scripts/brand-manifest.js";
+</script>

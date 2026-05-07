@@ -1,0 +1,121 @@
+---
+import FloatingParticles from "./FloatingParticles.astro";
+// CinematicHero v5 — "NUTRICIÓN SUPERIOR" credo section.
+// Ya no es el hero principal del sitio (eso lo cubre ProductFloatSlider).
+// Acá es la sección manifiesto que comunica la promesa central de Holistic
+// con animación scroll-driven y typography editorial. El producto Elite
+// hace de "totem" del concepto: el sistema premium del catálogo.
+//
+// Skills aplicadas:
+//   • gsap-scrolltrigger → pin + scrub para reveal cinemático
+//   • gsap-plugins (SplitText, DrawSVG) → chars del título, pour
+//   • gsap-timeline → secuencia coordinada
+//   • gsap-core matchMedia → reduced-motion + breakpoints
+//   • frontend-design → Fraunces italic, asimetría, watermark
+---
+<section class="nutri" data-cinematic-hero data-nutri>
+    <div class="nutri__bg" aria-hidden="true">
+        <div class="nutri__bg-mesh" data-nutri-mesh></div>
+        <div class="nutri__bg-grain"></div>
+    </div>
+
+    <FloatingParticles />
+
+    <!-- Watermark gigante detrás (Fraunces italic) -->
+    <span class="nutri__watermark" aria-hidden="true">Superior</span>
+
+    <div class="nutri__inner">
+        <div class="nutri__copy">
+            <p class="nutri__eyebrow" data-nutri-eyebrow>
+                <span class="nutri__eyebrow-dot" aria-hidden="true"></span>
+                <span>PROMESA HOLISTIC · LÍNEA ELITE</span>
+            </p>
+
+            <h2 class="nutri__title" data-nutri-title>
+                <span class="nutri__title-line" data-nutri-line>
+                    <span data-nutri-text>Nutrición</span>
+                </span>
+                <span class="nutri__title-line nutri__title-line--em" data-nutri-line>
+                    <span data-nutri-text>Superior</span>
+                </span>
+            </h2>
+
+            <p class="nutri__lede" data-nutri-lede>
+                El sistema premium de dos componentes diseñado para sustratos inertes
+                e hidroponía. Aplicado en todo el ciclo, brinda los nutrientes en su
+                máxima concentración. Para cultivadores que no negocian calidad.
+            </p>
+
+            <a
+                href="/linea-elite"
+                class="nutri__cta"
+                data-cursor="hover"
+                data-nutri-cta
+                data-magnetic
+                data-magnetic-strength="0.22"
+            >
+                <span>CONOCER LÍNEA ELITE</span>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"
+                          stroke="currentColor" stroke-width="2"
+                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+        </div>
+
+        <!-- Producto Elite + columna de pour scrub-driven -->
+        <div class="nutri__stage" data-nutri-stage>
+            <span class="nutri__halo" aria-hidden="true"></span>
+
+            <!-- Pour dorado scrub-driven que cae desde arriba del envase -->
+            <svg
+                class="nutri__pour"
+                data-nutri-pour
+                viewBox="0 0 200 800"
+                preserveAspectRatio="xMidYMin meet"
+                aria-hidden="true"
+            >
+                <defs>
+                    <filter id="nutri-pour-goo">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                        <feColorMatrix in="blur" mode="matrix" values="
+                            1 0 0 0 0
+                            0 1 0 0 0
+                            0 0 1 0 0
+                            0 0 0 22 -10
+                        " result="goo" />
+                        <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+                    </filter>
+                    <linearGradient id="nutri-pour-grad" x1="50%" y1="0%" x2="50%" y2="100%">
+                        <stop offset="0%"  stop-color="#f3d986" />
+                        <stop offset="55%" stop-color="#c9a34e" />
+                        <stop offset="100%" stop-color="#7a5f24" />
+                    </linearGradient>
+                </defs>
+                <g filter="url(#nutri-pour-goo)">
+                    <rect data-nutri-pour-stream x="92" y="0" width="16" height="0" rx="8"
+                          fill="url(#nutri-pour-grad)" />
+                    <circle data-nutri-pour-drop cx="100" cy="0" r="0" fill="url(#nutri-pour-grad)" />
+                    <circle data-nutri-pour-drop cx="92"  cy="0" r="0" fill="url(#nutri-pour-grad)" />
+                    <circle data-nutri-pour-drop cx="108" cy="0" r="0" fill="url(#nutri-pour-grad)" />
+                    <circle data-nutri-pour-drop cx="100" cy="0" r="0" fill="url(#nutri-pour-grad)" />
+                    <circle data-nutri-pour-drop cx="96"  cy="0" r="0" fill="url(#nutri-pour-grad)" />
+                </g>
+            </svg>
+
+            <img
+                class="nutri__product"
+                data-nutri-product
+                src="/img/productos/linea-elite/1l/juntos-1l.png"
+                alt="Holistic Elite — Sistema premium"
+                loading="eager"
+            />
+
+            <span class="nutri__product-shadow" aria-hidden="true"></span>
+        </div>
+    </div>
+</section>
+
+<script>
+    import "../scripts/hero-animations.js";
+</script>

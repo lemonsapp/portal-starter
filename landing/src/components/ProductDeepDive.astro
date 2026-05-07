@@ -1,0 +1,399 @@
+---
+// ProductDeepDive — landing page interna del producto, estilo
+// apple.com/macbook-pro. Compone múltiples secciones narrativas y
+// scroll-driven. Recibe `cap` (el chapter completo de capitulos.js)
+// y resuelve detail desde productDetails.js.
+//
+// Skills aplicadas (citadas inline en script):
+//   • gsap-scrolltrigger pin + scrub  → highlights sticky + big stat counter
+//   • gsap-plugins SplitText           → hero headline, claim, pullquote
+//   • gsap-plugins Flip                → format selector
+//   • gsap-plugins DrawSVG             → underlines decorativos
+//   • gsap-timeline                    → sequence enter
+//   • gsap-utils.snap                  → counter integer
+//   • gsap-utils.toArray/random        → setup
+//   • gsap-core matchMedia             → reduced-motion + breakpoints
+//   • gsap-performance                 → transforms, will-change
+//   • frontend-design                  → Fraunces editorial, asimetría, dark sections
+//   • accessibility                    → aria-live, aria-controls, aria-expanded
+import { getProductDetail } from "../data/productDetails.js";
+import RaceFormatsShowcase from "./RaceFormatsShowcase.astro";
+import ProductHighlights from "./ProductHighlights.astro";
+
+const { cap } = Astro.props;
+const detail = getProductDetail(cap.slug);
+
+// Layout flags por slug:
+//   - useProductHighlights: TODOS los productos cuyos highlights tienen
+//     campo `image` usan el showcase cinematográfico (ProductHighlights).
+//     Si no, fallback al pdd__highlights genérico.
+//   - useRaceFormats: solo Race usa el RaceFormatsShowcase con stage
+//     central, partículas y tabs animadas.
+const isRace = cap.slug === "linea-race";
+const useRaceFormats = isRace;
+const useProductHighlights = !!(detail?.highlights?.[0]?.image);
+
+// Eyebrow por producto para el HUD del top del showcase.
+const HIGHLIGHT_EYEBROW = {
+    "linea-race":     "RACE · BACKSTAGE",
+    "linea-elite":    "ELITE · DETALLES",
+    "linea-pro":      "PRO · FÓRMULA",
+    "bio-estimulante":"BIO · CIENCIA",
+    "cloner":         "CLONER · PROCESO",
+    "day-0":          "DAY-0 · CIERRE",
+};
+const highlightEyebrow = HIGHLIGHT_EYEBROW[cap.slug] || "BACKSTAGE";
+
+// Fallback: si no hay detalle definido, generamos contenido mínimo desde cap.
+const d = detail || {
+    hero: {
+        kicker: cap.kicker || "HOLISTIC",
+        headline: `${cap.nombreCorto} ${cap.nombreDestacado}`,
+        claim: cap.descripcion,
+        ctaPrimary:   { label: "COMPRAR",                href: `/shop?categoria=${cap.slug}` },
+        ctaSecondary: { label: "VER ESPECIFICACIONES",   href: "#specs" },
+        color: cap.accentColor || cap.bgColor,
+        colorSoft: cap.bgColor,
+    },
+    highlights: [],
+    bigStat: null,
+    features: [],
+    formats: [],
+    system: null,
+    pullquote: cap.tagline || "",
+    techSpecs: [],
+};
+
+// Resolución del asset del hero. Prioridad:
+//   1) d.hero.heroVideo  → reproduce un MP4 ambient (Race usa esto)
+//   2) d.hero.heroImage  → imagen específica del deep-dive
+//   3) cap.producto      → fallback al PNG de catálogo
+const heroVideo = d.hero?.heroVideo || null;
+const heroImg = d.hero?.heroImage || cap.producto;
+const detailColor = d.hero.color;
+const detailSoft = d.hero.colorSoft;
+
+// Layout flags:
+//   • heroBackground: true → video como fondo full-bleed con scrim, texto
+//     centrado encima. Race usa este layout. Default false: stage al lado.
+//   • Cualquier hero sin ctaPrimary/ctaSecondary omite el bloque de CTAs.
+const heroBackground = !!d.hero?.heroBackground;
+const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
+---
+<article
+    class:list={["pdd", heroBackground && "pdd--hero-bg"]}
+    data-product-deepdive
+    data-slug={cap.slug}
+    style={`--pdd-color: ${detailColor}; --pdd-color-soft: ${detailSoft};`}
+>
+    <!-- ============================================================
+         1) HERO
+         Layout dual:
+           • heroBackground=false → stage al costado del texto (default).
+           • heroBackground=true  → video full-bleed como fondo, texto
+             centrado encima con scrim. Race usa este modo.
+         ============================================================ -->
+    <section
+        class:list={["pdd__hero", heroBackground && "pdd__hero--bg"]}
+        data-pdd-hero
+    >
+        {heroBackground && heroVideo && (
+            <div class="pdd__hero-fullvideo" aria-hidden="true">
+                <video
+                    class="pdd__hero-fullvideo-el"
+                    data-pdd-hero-video
+                    src={heroVideo.src}
+                    poster={heroVideo.poster || heroImg}
+                    muted
+                    loop
+                    playsinline
+                    autoplay
+                    preload="metadata"
+                    aria-label={`${cap.nombreDestacado} en movimiento`}
+                ></video>
+                <!-- Scrim doble: vignette radial (oscurece esquinas) +
+                     gradient bottom para anclar el texto del hero. -->
+                <div class="pdd__hero-fullvideo-scrim"></div>
+            </div>
+        )}
+
+        {!heroBackground && (
+            <div class="pdd__hero-bg" aria-hidden="true">
+                <span class="pdd__hero-glow" data-pdd-hero-glow></span>
+            </div>
+        )}
+
+        <div class="pdd__hero-inner">
+            <p class="pdd__hero-kicker" data-pdd-kicker>
+                <span class="pdd__hero-dot" aria-hidden="true"></span>
+                <span>{d.hero.kicker}</span>
+            </p>
+
+            <h1 class="pdd__hero-headline" data-pdd-headline>
+                {d.hero.headline.split("\n").map((line, i) => (
+                    <span class="pdd__hero-line" data-pdd-headline-line>
+                        <span class={i % 2 === 1 ? "pdd__hero-em" : ""}>{line}</span>
+                    </span>
+                ))}
+            </h1>
+
+            <p class="pdd__hero-claim" data-pdd-claim>{d.hero.claim}</p>
+
+            {showCtas && (
+                <div class="pdd__hero-ctas">
+                    {d.hero.ctaPrimary && (
+                        <a class="pdd__cta pdd__cta--primary" href={d.hero.ctaPrimary.href} data-cursor="hover" data-magnetic data-magnetic-strength="0.18">
+                            <span>{d.hero.ctaPrimary.label}</span>
+                            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    )}
+                    {d.hero.ctaSecondary && (
+                        <a class="pdd__cta pdd__cta--ghost" href={d.hero.ctaSecondary.href} data-cursor="hover">
+                            <span>{d.hero.ctaSecondary.label}</span>
+                        </a>
+                    )}
+                </div>
+            )}
+
+            {/* Stage al costado sólo en modo NO-fullbleed */}
+            {!heroBackground && (
+                <div
+                    class:list={["pdd__hero-stage", heroVideo && "pdd__hero-stage--video"]}
+                    data-pdd-hero-stage
+                >
+                    <span class="pdd__hero-halo" aria-hidden="true"></span>
+                    {heroVideo ? (
+                        <video
+                            class="pdd__hero-video"
+                            data-pdd-hero-video
+                            src={heroVideo.src}
+                            poster={heroVideo.poster || heroImg}
+                            muted
+                            loop
+                            playsinline
+                            autoplay
+                            preload="metadata"
+                            aria-label={`${cap.nombreDestacado} en movimiento`}
+                        ></video>
+                    ) : (
+                        <img src={heroImg} alt={cap.nombreDestacado} loading="eager" data-pdd-hero-img />
+                    )}
+                    <span class="pdd__hero-shadow" aria-hidden="true"></span>
+                </div>
+            )}
+
+            <p class="pdd__hero-scroll" data-pdd-scroll-hint aria-hidden="true">
+                <span>SCROLL</span>
+                <span class="pdd__hero-scroll-line"></span>
+            </p>
+        </div>
+    </section>
+
+    {d.highlights.length > 0 && useProductHighlights && (
+        <!-- ============================================================
+             2P) PRODUCT HIGHLIGHTS — versión cinematográfica genérica
+             que se aplica a CUALQUIER producto cuyos highlights tienen
+             imagen (image) + color. Funciona para Race, Elite, Pro, Bio,
+             Cloner, Day-0 con sólo definir esos campos en productDetails.
+             ============================================================ -->
+        <ProductHighlights
+            highlights={d.highlights}
+            eyebrowLabel={highlightEyebrow}
+            defaultAccent={detailColor}
+        />
+    )}
+
+    {d.highlights.length > 0 && !useProductHighlights && (
+        <!-- ============================================================
+             2) STICKY HIGHLIGHTS — producto pinned + slides de highlights
+             (versión genérica para productos sin image en highlights).
+             ============================================================ -->
+        <section class="pdd__highlights" data-pdd-highlights>
+            <div class="pdd__highlights-pin" data-pdd-highlights-pin>
+                <div
+                    class:list={[
+                        "pdd__highlights-product",
+                        d.highlights.some((h) => h.image) && "pdd__highlights-product--multi",
+                    ]}
+                    data-pdd-highlights-product
+                >
+                    <span class="pdd__highlights-halo" aria-hidden="true"></span>
+                    {d.highlights.some((h) => h.image) ? (
+                        d.highlights.map((h, i) => (
+                            <img
+                                class:list={["pdd__highlights-img", i === 0 && "is-active"]}
+                                data-pdd-highlights-img
+                                data-index={i}
+                                src={h.image || heroImg}
+                                alt={h.title || ""}
+                                loading={i === 0 ? "eager" : "lazy"}
+                            />
+                        ))
+                    ) : (
+                        <img class="pdd__highlights-img is-active" src={heroImg} alt="" loading="lazy" />
+                    )}
+                </div>
+
+                <div class="pdd__highlights-track">
+                    {d.highlights.map((h, i) => (
+                        <article
+                            class={`pdd__highlight${i === 0 ? " is-active" : ""}`}
+                            data-pdd-highlight
+                            data-index={i}
+                        >
+                            <p class="pdd__highlight-kicker">{h.kicker}</p>
+                            <h3 class="pdd__highlight-title" data-pdd-highlight-title>{h.title}</h3>
+                            <p class="pdd__highlight-body">{h.body}</p>
+                        </article>
+                    ))}
+                </div>
+            </div>
+
+            <div class="pdd__highlights-progress" aria-hidden="true">
+                {d.highlights.map((_, i) => (
+                    <span class={`pdd__highlights-dot${i === 0 ? " is-active" : ""}`} data-pdd-highlight-dot></span>
+                ))}
+            </div>
+        </section>
+    )}
+
+    {d.bigStat && (
+        <!-- ============================================================
+             3) BIG STAT — número gigante scrub-counted
+             ============================================================ -->
+        <section class="pdd__bigstat" data-pdd-bigstat>
+            <div class="pdd__bigstat-inner">
+                <p class="pdd__bigstat-label" data-pdd-bigstat-label>{d.bigStat.label}</p>
+                <p class="pdd__bigstat-num">
+                    <span class="pdd__bigstat-value" data-pdd-bigstat-value data-target={d.bigStat.num}>0</span><span class="pdd__bigstat-suffix">{d.bigStat.suffix}</span>
+                </p>
+                <p class="pdd__bigstat-body" data-pdd-bigstat-body>{d.bigStat.body}</p>
+            </div>
+        </section>
+    )}
+
+    {d.features.length > 0 && (
+        <!-- ============================================================
+             4) FEATURE BENTO
+             ============================================================ -->
+        <section class="pdd__bento">
+            <div class="pdd__bento-head">
+                <p class="pdd__section-eyebrow">CARACTERÍSTICAS</p>
+                <h2 class="pdd__section-title">Detalles que hacen la diferencia.</h2>
+            </div>
+            <div class="pdd__bento-grid">
+                {d.features.map((f) => (
+                    <article class="pdd__bento-cell" data-pdd-bento-cell>
+                        <span class="pdd__bento-icon" aria-hidden="true">{f.emoji}</span>
+                        <h3 class="pdd__bento-title">{f.title}</h3>
+                        <p class="pdd__bento-body">{f.body}</p>
+                    </article>
+                ))}
+            </div>
+        </section>
+    )}
+
+    {d.formats.length > 0 && useRaceFormats && (
+        <!-- ============================================================
+             5R) RACE FORMATS SHOWCASE — versión cinematográfica
+             ============================================================ -->
+        <RaceFormatsShowcase formats={d.formats} />
+    )}
+
+    {d.formats.length > 0 && !useRaceFormats && (
+        <!-- ============================================================
+             5) FORMATS — selector con Flip plugin (genérico)
+             ============================================================ -->
+        <section class="pdd__formats" data-pdd-formats>
+            <div class="pdd__formats-head">
+                <p class="pdd__section-eyebrow">PRESENTACIONES</p>
+                <h2 class="pdd__section-title">Elegí el formato.</h2>
+            </div>
+
+            <div class="pdd__formats-stage" data-pdd-formats-stage>
+                {d.formats.map((f, i) => (
+                    <div
+                        class={`pdd__format-card${i === 0 ? " is-active" : ""}`}
+                        data-pdd-format-card
+                        data-index={i}
+                    >
+                        <img src={f.image} alt={f.name} loading="lazy" />
+                    </div>
+                ))}
+            </div>
+
+            <div class="pdd__formats-tabs" role="tablist" aria-label="Formatos disponibles">
+                {d.formats.map((f, i) => (
+                    <button
+                        class={`pdd__format-tab${i === 0 ? " is-active" : ""}`}
+                        data-pdd-format-tab
+                        data-index={i}
+                        role="tab"
+                        aria-selected={i === 0 ? "true" : "false"}
+                        aria-controls={`format-card-${i}`}
+                        type="button"
+                        data-cursor="hover"
+                    >
+                        <span class="pdd__format-name">{f.name}</span>
+                        <span class="pdd__format-size">{f.size}</span>
+                    </button>
+                ))}
+            </div>
+        </section>
+    )}
+
+    {d.system && (
+        <!-- ============================================================
+             6) SYSTEM CALLOUT
+             ============================================================ -->
+        <section class="pdd__system" data-pdd-system>
+            <div class="pdd__system-inner">
+                <p class="pdd__section-eyebrow">SISTEMA HOLISTIC</p>
+                <h2 class="pdd__system-title" data-pdd-system-title>{d.system.title}</h2>
+                <p class="pdd__system-body">{d.system.body}</p>
+                <ul class="pdd__system-chips">
+                    {d.system.chips.map((c) => (
+                        <li class="pdd__system-chip" data-pdd-system-chip>{c}</li>
+                    ))}
+                </ul>
+            </div>
+        </section>
+    )}
+
+    {d.pullquote && (
+        <!-- ============================================================
+             7) PULLQUOTE
+             ============================================================ -->
+        <section class="pdd__pullquote" data-pdd-pullquote>
+            <blockquote class="pdd__pullquote-text" data-pdd-pullquote-text>
+                <span class="pdd__pullquote-mark">&ldquo;</span>{d.pullquote}<span class="pdd__pullquote-mark">&rdquo;</span>
+            </blockquote>
+        </section>
+    )}
+
+    {d.techSpecs.length > 0 && (
+        <!-- ============================================================
+             8) TECH SPECS (disclosure)
+             ============================================================ -->
+        <section class="pdd__specs" id="specs" data-pdd-specs>
+            <div class="pdd__specs-head">
+                <p class="pdd__section-eyebrow">ESPECIFICACIONES TÉCNICAS</p>
+                <h2 class="pdd__section-title">Datos del producto.</h2>
+            </div>
+            <dl class="pdd__specs-list">
+                {d.techSpecs.map((s) => (
+                    <div class="pdd__specs-row" data-pdd-spec-row>
+                        <dt class="pdd__specs-label">{s.label}</dt>
+                        <dd class="pdd__specs-value">{s.value}</dd>
+                    </div>
+                ))}
+            </dl>
+        </section>
+    )}
+</article>
+
+<script>
+    import "../scripts/product-detail.js";
+</script>

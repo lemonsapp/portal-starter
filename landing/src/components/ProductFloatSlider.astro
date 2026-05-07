@@ -1,0 +1,188 @@
+---
+// ProductFloatSlider — Welcome intro + SPYLT horizontal pinned slider.
+//
+// Estructura:
+//   1) WELCOME (100vh) — bienvenida cinemática que entra al cargar la
+//      página. Headline gigante, claim, ghost-row con los 6 productos,
+//      scroll hint. Anima en una timeline coordinada cuando el Loader
+//      libera (clase .is-loaded en <html>).
+//   2) PIN WRAP — slider SPYLT (horizontal scroll pinned con 6 panels,
+//      cada uno fullscreen con producto + nombre HUGE outlined detrás).
+//
+// Skills aplicadas (citadas en script):
+//   • gsap-timeline           → secuencia welcome multi-step
+//   • gsap-scrolltrigger      → pin + scrub + snap + containerAnimation
+//   • gsap-plugins SplitText  → headline chars stagger
+//   • gsap-utils.toArray, mapRange
+//   • gsap-core matchMedia    → reduced-motion + responsive
+//   • gsap-performance        → transforms only, will-change limitado
+//   • frontend-design         → typography editorial, asimetría, ghost row
+//   • accessibility           → aria-roledescription="carousel", aria-live
+import { flavors } from "../data/flavors.js";
+
+const ROUTES = {
+    "bio-estimulante": "/bio-estimulante",
+    "cloner":          "/cloner",
+    "linea-race":      "/linea-race",
+    "linea-elite":     "/linea-elite",
+    "linea-pro":       "/linea-pro",
+    "day-0":           "/day-0",
+};
+
+// Cuando el home monta el VideoHero arriba, el welcome del slider
+// queda redundante (doble intro). showWelcome={false} esconde la
+// primera viewport del componente y deja sólo el pin horizontal con
+// los 6 productos.
+const { showWelcome = true } = Astro.props;
+---
+<section
+    class:list={["psl", !showWelcome && "psl--no-welcome"]}
+    data-product-slider
+    data-show-welcome={showWelcome ? "true" : "false"}
+    aria-roledescription="carousel"
+    aria-label="6 productos Holistic"
+    id="productos"
+>
+    {showWelcome && (
+    <!-- ============================================================
+         1) WELCOME — intro cinemática full-viewport
+         ============================================================ -->
+    <div class="psl__welcome" data-psl-welcome>
+        <div class="psl__welcome-bg" aria-hidden="true">
+            <span class="psl__welcome-blob psl__welcome-blob--a" data-psl-welcome-blob></span>
+            <span class="psl__welcome-blob psl__welcome-blob--b" data-psl-welcome-blob></span>
+            <span class="psl__welcome-blob psl__welcome-blob--c" data-psl-welcome-blob></span>
+        </div>
+
+        <header class="psl__welcome-head">
+            <p class="psl__welcome-eyebrow" data-psl-welcome-eyebrow>
+                <span class="psl__welcome-dot" aria-hidden="true"></span>
+                <span>HOLISTIC GROWSHOP</span>
+            </p>
+
+            <h1 class="psl__welcome-headline" data-psl-welcome-headline>
+                <span class="psl__welcome-line">El sistema completo</span>
+                <span class="psl__welcome-line">para </span>
+                <span class="psl__welcome-line psl__welcome-line--em">resultados superiores.</span>
+            </h1>
+
+            <p class="psl__welcome-sub" data-psl-welcome-sub>
+                6 productos que conforman un ciclo. De la raíz al corte —
+                desde el primer esqueje hasta el último día de la cosecha.
+            </p>
+        </header>
+
+        <!-- Ghost row: los 6 productos como teaser flotando, con paleta -->
+        <ul class="psl__welcome-row" data-psl-welcome-row aria-hidden="true">
+            {flavors.map((f, i) => (
+                <li
+                    class="psl__welcome-ghost"
+                    data-psl-welcome-ghost
+                    data-index={i}
+                    style={`--ghost-color: ${f.color}; --ghost-bg: ${f.bgGradient};`}
+                >
+                    <span class="psl__welcome-ghost-bg" aria-hidden="true"></span>
+                    <img src={f.producto} alt="" loading={i < 3 ? "eager" : "lazy"} draggable="false" />
+                </li>
+            ))}
+        </ul>
+
+        <!-- Scroll hint -->
+        <p class="psl__welcome-scroll" data-psl-welcome-scroll aria-hidden="true">
+            <span>DESLIZÁ PARA EXPLORAR</span>
+            <span class="psl__welcome-scroll-line"></span>
+        </p>
+    </div>
+    )}
+
+    <!-- ============================================================
+         2) PIN HORIZONTAL — slider SPYLT-style con 6 panels
+         ============================================================ -->
+    <div class="psl__pin-wrap" data-psl-pin-wrap>
+        <div class="psl__track" data-psl-track>
+            {flavors.map((f, i) => {
+                const num = String(i + 1).padStart(2, "0");
+                const route = ROUTES[f.slug] || `/${f.slug}`;
+                return (
+                    <article
+                        class={`psl__panel${i === 0 ? " is-active" : ""}`}
+                        data-psl-panel
+                        data-index={i}
+                        data-slug={f.slug}
+                        data-color={f.color}
+                        style={`--flavor-color: ${f.color}; --flavor-accent: ${f.accentColor}; --flavor-bg-gradient: ${f.bgGradient};`}
+                        role="group"
+                        aria-roledescription="slide"
+                        aria-label={`${i + 1} de ${flavors.length}: ${f.nombre}`}
+                    >
+                        <span class="psl__panel-bg" aria-hidden="true"></span>
+
+                        <span class="psl__panel-num" aria-hidden="true">{num}</span>
+                        <p class="psl__panel-stage">ETAPA {num}</p>
+
+                        <span class="psl__panel-bigname" data-psl-bigname aria-hidden="true">{f.nombre}</span>
+
+                        <div class="psl__panel-stage-img" data-psl-panel-img>
+                            <span class="psl__panel-halo" aria-hidden="true"></span>
+                            <img
+                                src={f.producto}
+                                alt={f.nombre}
+                                loading={i === 0 ? "eager" : "lazy"}
+                                draggable="false"
+                            />
+                            <span class="psl__panel-shadow" aria-hidden="true"></span>
+                        </div>
+
+                        <footer class="psl__panel-footer">
+                            <h3 class="psl__panel-name">{f.nombre}</h3>
+                            <a
+                                class="psl__panel-cta"
+                                href={route}
+                                data-cursor="hover"
+                                data-magnetic
+                                data-magnetic-strength="0.18"
+                            >
+                                <span>VER PRODUCTO</span>
+                                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                                    <path d="M5 12h14M13 6l6 6-6 6"
+                                          stroke="currentColor" stroke-width="2"
+                                          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </footer>
+                    </article>
+                );
+            })}
+        </div>
+
+        <div class="psl__hud">
+            <div class="psl__hud-counter" aria-hidden="true">
+                <span class="psl__hud-num" data-psl-hud-num>01</span>
+                <span class="psl__hud-sep">/</span>
+                <span class="psl__hud-total">{String(flavors.length).padStart(2, "0")}</span>
+            </div>
+            <div class="psl__hud-steps" role="tablist" aria-label="Productos">
+                {flavors.map((f, i) => (
+                    <button
+                        class={`psl__hud-step${i === 0 ? " is-active" : ""}`}
+                        data-psl-step
+                        data-index={i}
+                        role="tab"
+                        aria-label={`Ir a ${f.nombre}`}
+                        aria-selected={i === 0 ? "true" : "false"}
+                        type="button"
+                        data-cursor="hover"
+                    ></button>
+                ))}
+            </div>
+            <p class="psl__hud-hint" aria-hidden="true">
+                <span class="psl__hud-hint-icon">↓</span>
+                <span>SCROLL</span>
+            </p>
+        </div>
+    </div>
+</section>
+
+<script>
+    import "../scripts/product-float-slider.js";
+</script>

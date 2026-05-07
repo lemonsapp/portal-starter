@@ -1,0 +1,52 @@
+---
+// Cursor custom (dot + ring). Sólo se activa >900px via gsap.matchMedia().
+---
+<div class="cursor" data-cursor aria-hidden="true">
+    <div class="cursor-dot" data-cursor-dot></div>
+    <div class="cursor-ring" data-cursor-ring></div>
+</div>
+
+<script>
+    import "../scripts/cursor-animations.js";
+</script>
+
+<style>
+    .cursor {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9998;
+        display: none;
+    }
+
+    :global(html.has-custom-cursor) .cursor {
+        display: block;
+    }
+
+    :global(html.has-custom-cursor),
+    :global(html.has-custom-cursor *) {
+        cursor: none !important;
+    }
+
+    .cursor-dot,
+    .cursor-ring {
+        position: fixed;
+        top: 0;
+        left: 0;
+        border-radius: 50%;
+        will-change: transform;
+    }
+
+    .cursor-dot {
+        width: 8px;
+        height: 8px;
+        background: #000;
+    }
+
+    .cursor-ring {
+        width: 32px;
+        height: 32px;
+        border: 1.5px solid rgba(0, 0, 0, 0.6);
+        background: transparent;
+    }
+</style>

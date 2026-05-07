@@ -1,0 +1,271 @@
+---
+// RaceSlider — slider hero estilo SPYLT para el chapter Race.
+// 4 slides apilados (position:absolute) que se cruzan con un timeline
+// GSAP. Las imágenes son composiciones widescreen 16:9 con card +
+// splash + botella + piezas F1 ya horneadas; el slider sólo orquesta
+// la transición, el float idle, los dots y el autoplay.
+//
+// Las animaciones viven en src/scripts/race-slider-animations.js y
+// se enganchan por data-attributes (data-race-slider, data-slide,
+// data-slide-id, data-slide-dot). Se monta dentro de chapter__visual
+// reemplazando al RacePortal anterior.
+import { raceSlides } from "../data/raceSlides.js";
+---
+<svg class="race-slider__defs" aria-hidden="true" focusable="false" width="0" height="0">
+    <defs>
+        <!-- Knockout del fondo cream/blanco horneado en las PNG.
+             1) feColorMatrix de luminancia: zerea RGB y mete la luma
+                (Y = 0.299 R + 0.587 G + 0.114 B) en el canal alpha.
+             2) feComponentTransfer con table aplica un threshold suave
+                en luma 0.8–0.95: cream/blanco → alpha 0; mid/oscuro
+                /saturado → alpha 1.
+             3) feComposite operator="in" pisa el alpha sobre el original
+                preservando el color RGB de la PNG. -->
+        <filter id="race-bg-knockout" color-interpolation-filters="sRGB">
+            <feColorMatrix
+                in="SourceGraphic"
+                type="matrix"
+                values="0 0 0 0 0
+                        0 0 0 0 0
+                        0 0 0 0 0
+                        0.299 0.587 0.114 0 0"
+                result="luma"
+            />
+            <feComponentTransfer in="luma" result="alphaMask">
+                <feFuncA type="table" tableValues="1 1 1 1 1 1 1 1 0.85 0.1 0"/>
+            </feComponentTransfer>
+            <feComposite in="SourceGraphic" in2="alphaMask" operator="in"/>
+        </filter>
+    </defs>
+</svg>
+
+<div
+    class="race-slider"
+    data-race-slider
+    data-active-index="0"
+    role="region"
+    aria-roledescription="carousel"
+    aria-label="Línea Race — variantes"
+    style={`--race-active-color: ${raceSlides[0].color};`}
+>
+    <div class="race-slider__stage" data-race-stage>
+        {raceSlides.map((slide, index) => (
+            <article
+                class:list={["race-slide", index === 0 && "race-slide--active"]}
+                data-slide
+                data-slide-id={slide.id}
+                data-slide-index={index}
+                style={`--slide-color: ${slide.color}; --slide-text: ${slide.textColor};`}
+                aria-hidden={index === 0 ? "false" : "true"}
+            >
+                <img
+                    class="race-slide__bg"
+                    src={slide.bg}
+                    alt={`${slide.nombre} — ${slide.tagline}`}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    data-slide-bg
+                />
+                <div class="race-slide__overlay" data-slide-overlay aria-live="polite">
+                    <span class="race-slide__nombre" data-slide-nombre>{slide.nombre}</span>
+                    <p class="race-slide__tagline" data-slide-tagline>{slide.tagline}</p>
+                </div>
+            </article>
+        ))}
+    </div>
+
+    <button
+        type="button"
+        class="race-arrow race-arrow--prev"
+        data-slide-arrow="prev"
+        aria-label="Slide anterior"
+    >
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+    </button>
+    <button
+        type="button"
+        class="race-arrow race-arrow--next"
+        data-slide-arrow="next"
+        aria-label="Siguiente slide"
+    >
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+    </button>
+
+    <nav class="race-slider__dots" aria-label="Seleccionar variante Race">
+        {raceSlides.map((slide, index) => (
+            <button
+                type="button"
+                class:list={["race-dot", index === 0 && "race-dot--active"]}
+                data-slide-dot
+                data-target-index={index}
+                aria-label={`Ir a ${slide.nombre}`}
+                aria-current={index === 0 ? "true" : "false"}
+                style={`--dot-color: ${slide.color};`}
+            ></button>
+        ))}
+    </nav>
+</div>
+
+<style>
+    .race-slider__defs {
+        position: absolute;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+    }
+
+    .race-slider {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: transparent;
+    }
+
+    .race-slider__stage {
+        position: absolute;
+        inset: 0;
+    }
+
+    .race-slide {
+        position: absolute;
+        inset: 0;
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        will-change: transform, opacity;
+        background: transparent;
+    }
+
+    .race-slide--active {
+        opacity: 1;
+        visibility: inherit;
+    }
+
+    .race-slide__bg {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+        will-change: transform;
+        /* SVG filter knockea el cream/blanco horneado de las PNG.
+           Más confiable que mix-blend-mode acá porque GSAP aplica
+           transforms en .race-slide y eso crea stacking contexts que
+           rompen el blend con el chapter bg. */
+        filter: url(#race-bg-knockout);
+    }
+
+    .race-slide__overlay {
+        position: absolute;
+        left: clamp(1rem, 4%, 3rem);
+        bottom: clamp(1.25rem, 6%, 3rem);
+        max-width: 38%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        color: var(--slide-text, #1A1A1A);
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+        pointer-events: none;
+    }
+
+    .race-slide__nombre {
+        font-size: clamp(0.85rem, 1.2vw, 1rem);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .race-slide__tagline {
+        font-size: clamp(0.95rem, 1.4vw, 1.25rem);
+        font-weight: 500;
+        line-height: 1.3;
+        margin: 0;
+    }
+
+    .race-slider__dots {
+        position: absolute;
+        left: 50%;
+        bottom: clamp(0.75rem, 2.5%, 1.5rem);
+        transform: translateX(-50%);
+        display: flex;
+        gap: 0.6rem;
+        z-index: 2;
+        padding: 0.4rem 0.75rem;
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(8px);
+        border-radius: 999px;
+    }
+
+    .race-dot {
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 50%;
+        border: 2px solid var(--dot-color);
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+    .race-dot:hover {
+        transform: scale(1.15);
+    }
+
+    .race-dot--active {
+        background: var(--dot-color);
+        transform: scale(1.1);
+    }
+
+    .race-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(8px);
+        color: var(--race-active-color, #1A1A1A);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        z-index: 3;
+        transition: background 0.2s ease, transform 0.2s ease, color 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .race-arrow:hover {
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateY(-50%) scale(1.08);
+    }
+
+    .race-arrow:active {
+        transform: translateY(-50%) scale(0.96);
+    }
+
+    .race-arrow--prev { left: clamp(0.5rem, 2%, 1.25rem); }
+    .race-arrow--next { right: clamp(0.5rem, 2%, 1.25rem); }
+
+    /* En mobile el chapter colapsa visual+texto verticalmente. El slider
+       mantiene aspect 16:9 pero achicamos overlay y dots. */
+    @media (max-width: 640px) {
+        .race-slide__overlay {
+            max-width: 60%;
+        }
+        .race-arrow {
+            width: 2.25rem;
+            height: 2.25rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .race-slide,
+        .race-slide__bg {
+            will-change: auto;
+        }
+    }
+</style>

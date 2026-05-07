@@ -1,0 +1,148 @@
+---
+// EaseOfUse v3 — patrón position:sticky (no ScrollTrigger pin).
+// 3 paneles superpuestos dentro de un sticky de 100vh, intercambiándose
+// con scroll. La sección padre tiene 300vh — al terminar, el sticky se
+// libera de forma nativa por CSS, sin pin-spacer fantasma.
+const promesas = [
+    {
+        idx: "01",
+        kicker: "Cualquiera puede cultivar",
+        word: "USO",
+        wordHl: "SIMPLE",
+        copy: "Dosificás, regás, listo. Sin tablas eternas, sin balanzas de precisión, sin semanas de prueba y error.",
+        color: "#F7D6DC",
+        accent: "#E8A5B1",
+    },
+    {
+        idx: "02",
+        kicker: "Sin estrés químico",
+        word: "PH",
+        wordHl: "IDEAL",
+        copy: "Las fórmulas se ajustan al rango óptimo para que las raíces absorban todo lo que necesitan. Estable, repetible, sin sorpresas.",
+        color: "#C7F0DD",
+        accent: "#2E8F6E",
+    },
+    {
+        idx: "03",
+        kicker: "Cultivá como los pros",
+        word: "RESULTADOS",
+        wordHl: "DE PROS",
+        copy: "Insumos premium, dosificación precisa y un sistema completo. Lo mismo que usan los cultivadores top — ahora al alcance de cualquier persona.",
+        color: "#F9E79B",
+        accent: "#C9A34E",
+    },
+];
+---
+<section class="ease-of-use" data-ease-of-use>
+    <div class="ease-of-use__viewport">
+        <div class="ease-of-use__bg" data-ease-bg></div>
+
+        <!-- Liquid paint splash entre paneles: SVG con goo filter +
+             múltiples blobs que crecen desde puntos random formando una
+             "salpicadura" del color destino. -->
+        <svg
+            class="ease-of-use__paint"
+            data-ease-paint
+            viewBox="0 0 1000 1000"
+            preserveAspectRatio="xMidYMid slice"
+            aria-hidden="true"
+        >
+            <defs>
+                <filter id="ease-goo">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
+                    <feColorMatrix in="blur" mode="matrix" values="
+                        1 0 0 0 0
+                        0 1 0 0 0
+                        0 0 1 0 0
+                        0 0 0 22 -10
+                    " result="goo" />
+                    <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+                </filter>
+            </defs>
+            <g filter="url(#ease-goo)" data-ease-paint-group>
+                <circle data-ease-blob cx="200" cy="500" r="0" fill="#F7D6DC" />
+                <circle data-ease-blob cx="500" cy="300" r="0" fill="#F7D6DC" />
+                <circle data-ease-blob cx="800" cy="500" r="0" fill="#F7D6DC" />
+                <circle data-ease-blob cx="350" cy="700" r="0" fill="#F7D6DC" />
+                <circle data-ease-blob cx="650" cy="700" r="0" fill="#F7D6DC" />
+                <circle data-ease-blob cx="500" cy="500" r="0" fill="#F7D6DC" />
+            </g>
+        </svg>
+
+        <!-- Filtro warp compartido por los títulos de los promise-panels.
+             En las transiciones GSAP empuja `scale` del displacement de 0
+             → 25 (texto disuelto en ruido) y vuelve a 0 (limpio) tras
+             swappear el contenido. Idle: seed cambia para que el texto
+             vibre sutilmente. -->
+        <svg class="ease-of-use__filter-defs" aria-hidden="true" focusable="false" width="0" height="0">
+            <defs>
+                <filter id="promise-warp" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+                    <feTurbulence
+                        type="fractalNoise"
+                        baseFrequency="0.018 0.05"
+                        numOctaves="2"
+                        seed="2"
+                        data-promise-noise
+                        result="noise"
+                    />
+                    <feDisplacementMap
+                        in="SourceGraphic"
+                        in2="noise"
+                        scale="0"
+                        xChannelSelector="R"
+                        yChannelSelector="G"
+                        data-promise-disp
+                    />
+                </filter>
+            </defs>
+        </svg>
+
+        <p class="ease-of-use__eyebrow ease-of-use__eyebrow--headline" data-ease-eyebrow>
+            <span class="ease-of-use__dot" aria-hidden="true"></span>
+            <span class="ease-of-use__eyebrow-text" data-ease-eyebrow-text>TRES RAZONES PARA EMPEZAR HOY</span>
+        </p>
+
+        <div class="ease-of-use__stage">
+            {promesas.map((p, i) => (
+                <article
+                    class={`promise-panel${i === 0 ? " is-active" : ""}`}
+                    data-promise
+                    data-index={i}
+                    style={`--promise-color: ${p.color}; --promise-accent: ${p.accent};`}
+                >
+                    <span class="promise-panel__idx" aria-hidden="true">{p.idx}</span>
+                    <p class="promise-panel__kicker">{p.kicker}</p>
+
+                    <h2 class="promise-panel__title" data-promise-title>
+                        <span class="promise-panel__word" data-promise-word>{p.word}</span>
+                        <span class="promise-panel__hl-wrap">
+                            <svg class="promise-panel__underline" viewBox="0 0 600 32" preserveAspectRatio="none" aria-hidden="true">
+                                <path
+                                    d="M4 22 C 120 4, 320 32, 596 14"
+                                    fill="none"
+                                    stroke="var(--promise-accent)"
+                                    stroke-width="6"
+                                    stroke-linecap="round"
+                                    data-promise-underline
+                                />
+                            </svg>
+                            <span class="promise-panel__hl" data-promise-word>{p.wordHl}</span>
+                        </span>
+                    </h2>
+
+                    <p class="promise-panel__copy">{p.copy}</p>
+                </article>
+            ))}
+        </div>
+
+        <div class="ease-of-use__progress" data-ease-progress aria-hidden="true">
+            {promesas.map((_, i) => (
+                <span class={`ease-of-use__step${i === 0 ? " is-active" : ""}`} data-ease-step></span>
+            ))}
+        </div>
+    </div>
+</section>
+
+<script>
+    import "../scripts/ease-of-use-animations.js";
+</script>

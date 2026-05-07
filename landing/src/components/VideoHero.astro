@@ -1,0 +1,737 @@
+---
+// VideoHero — home cinematográfico estilo spylt.com.
+//
+// Layout (full-viewport):
+//   ┌──────────────────────────────────────────────────────┐
+//   │ HOLISTIC · GROWSHOP                       EST · 2014 │  top band
+//   │                                                       │
+//   │                                       FÓRMULA 04      │  kicker
+//   │                                                       │
+//   │   HOLISTIC                                            │  display XL
+//   │   ─ RACE ─                                            │  italic em
+//   │                                                       │
+//   │   Velocidad pura.                                     │  claim
+//   │   Cuatro fórmulas. Un sistema.                        │
+//   │                                                       │
+//   │   ╭────────────────────────────────╮                  │
+//   │   │ ENTRAR EN LÍNEA RACE       →   │  ← magnetic CTA  │
+//   │   ╰────────────────────────────────╯                  │
+//   │                                                       │
+//   │ SCROLL ↓                            01 / 06  ●●●●○○   │  bottom band
+//   └──────────────────────────────────────────────────────┘
+//        ^ video MP4 full-bleed atrás (race-clip-04.mp4)
+//
+// Skills aplicadas (citadas en el script):
+//   • gsap-timeline           → master timeline con defaults + labels
+//   • gsap-plugins SplitText  → wordmark chars stagger
+//   • gsap-utils.toArray, random → partículas + counter HUD
+//   • gsap-core matchMedia    → reduce-motion + breakpoints
+//   • gsap-performance        → transforms only, will-change, scoped
+//   • frontend-design         → tipografía display masiva, asimetría
+//                               editorial, scrim radial, HUD bands
+//   • accessibility           → aria-labels, prefers-reduced-motion,
+//                               target-size 24px, focus-visible
+
+const PARTICLE_COUNT = 28;
+// 6 productos en el catálogo total → matches el counter del slider de abajo.
+const TOTAL_FORMULAS = 6;
+---
+<section class="vh" data-video-hero aria-label="Holistic Growshop — intro">
+    <!-- ============================================================
+         BACKGROUND: video MP4 full-bleed
+         ============================================================ -->
+    <div class="vh__media" aria-hidden="true">
+        <video
+            class="vh__video"
+            data-video-hero-video
+            src="/video/race/race-clip-04.mp4"
+            muted
+            playsinline
+            autoplay
+            preload="metadata"
+            disablepictureinpicture
+            disableremoteplayback
+            x-webkit-airplay="deny"
+        ></video>
+    </div>
+
+    <!-- ============================================================
+         PARTICLES (delicate, encima del video)
+         ============================================================ -->
+    <div class="vh__particles" aria-hidden="true">
+        {Array.from({ length: PARTICLE_COUNT }).map((_, i) => (
+            <span class="vh__particle" data-video-hero-particle data-index={i}></span>
+        ))}
+    </div>
+
+    <!-- ============================================================
+         SCRIM doble — vignette + linear bottom para contraste
+         ============================================================ -->
+    <div class="vh__scrim" aria-hidden="true">
+        <div class="vh__scrim-vignette"></div>
+        <div class="vh__scrim-gradient"></div>
+    </div>
+
+    <!-- ============================================================
+         TOP BAND — brand + meta tipo HUD
+         ============================================================ -->
+    <header class="vh__band vh__band--top">
+        <div class="vh__band-left" data-vh-band-l>
+            <span class="vh__band-tick" aria-hidden="true"></span>
+            <span class="vh__band-text">HOLISTIC</span>
+            <span class="vh__band-sep" aria-hidden="true">·</span>
+            <span class="vh__band-text vh__band-text--dim">GROWSHOP</span>
+        </div>
+        <div class="vh__band-right" data-vh-band-r aria-hidden="true">
+            <span class="vh__band-text vh__band-text--dim">EST</span>
+            <span class="vh__band-text">2014</span>
+        </div>
+    </header>
+
+    <!-- ============================================================
+         CONTENT — kicker + display + claim + CTA
+         ============================================================ -->
+    <div class="vh__stage">
+        <p class="vh__kicker" data-vh-kicker aria-hidden="true">
+            <span class="vh__kicker-num">04</span>
+            <span class="vh__kicker-line"></span>
+            <span>FÓRMULAS PARA EL CICLO COMPLETO</span>
+        </p>
+
+        <h1 class="vh__display" data-vh-display>
+            <span class="vh__display-line">
+                <span class="vh__display-mask">
+                    <span data-vh-word>HOLISTIC</span>
+                </span>
+            </span>
+            <span class="vh__display-line vh__display-line--em">
+                <span class="vh__display-rule" data-vh-rule aria-hidden="true"></span>
+                <span class="vh__display-mask">
+                    <span data-vh-word>RACE</span>
+                </span>
+                <span class="vh__display-rule" data-vh-rule aria-hidden="true"></span>
+            </span>
+        </h1>
+
+        <p class="vh__claim" data-vh-claim>
+            <span class="vh__claim-line"><strong>Velocidad pura.</strong></span>
+            <span class="vh__claim-line">Cuatro fórmulas. Un sistema.</span>
+            <span class="vh__claim-line vh__claim-line--dim">
+                Race 1 · 2A · 2B · 3 · 4 — el kit del cultivador acelerado.
+            </span>
+        </p>
+
+        <!-- ============================================================
+             CTA SUPER ANIMADO — magnético + liquid fill + dual text
+             que se rota con clip-path al hover.
+             ============================================================ -->
+        <a
+            href="/linea-race"
+            class="vh-cta"
+            data-vh-cta
+            data-cursor="hover"
+            data-magnetic
+            data-magnetic-strength="0.32"
+            aria-label="Entrar en Línea Race"
+        >
+            <!-- Capas de glow detrás (CSS-driven, no GSAP) -->
+            <span class="vh-cta__halo" aria-hidden="true"></span>
+            <span class="vh-cta__shimmer" aria-hidden="true"></span>
+
+            <!-- Pill body — el círculo blanco se expande al hover desde el cursor -->
+            <span class="vh-cta__inner">
+                <span class="vh-cta__fill" data-vh-cta-fill aria-hidden="true"></span>
+                <span class="vh-cta__text" data-vh-cta-text>
+                    <!-- Dual labels: la primera se va arriba al hover, la segunda
+                         entra desde abajo. Mismo texto pero con colores opuestos. -->
+                    <span class="vh-cta__label vh-cta__label--default">
+                        <span>ENTRAR EN LÍNEA RACE</span>
+                    </span>
+                    <span class="vh-cta__label vh-cta__label--hover" aria-hidden="true">
+                        <span>VEAMOS LA RACE</span>
+                    </span>
+                </span>
+                <span class="vh-cta__arrow" data-vh-cta-arrow aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path
+                            d="M5 12h14M13 6l6 6-6 6"
+                            stroke="currentColor" stroke-width="2.2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round"
+                        />
+                    </svg>
+                </span>
+            </span>
+        </a>
+    </div>
+
+    <!-- ============================================================
+         BOTTOM BAND — scroll hint + counter HUD
+         ============================================================ -->
+    <footer class="vh__band vh__band--bottom">
+        <a
+            href="#productos"
+            class="vh__scroll"
+            data-vh-scroll
+            data-cursor="hover"
+            aria-label="Bajar a productos"
+        >
+            <span class="vh__scroll-text">SCROLL</span>
+            <span class="vh__scroll-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        </a>
+
+        <div class="vh__hud" aria-hidden="true">
+            <span class="vh__hud-num" data-vh-hud-num>01</span>
+            <span class="vh__hud-sep">/</span>
+            <span class="vh__hud-total">{String(TOTAL_FORMULAS).padStart(2, "0")}</span>
+            <span class="vh__hud-dots" data-vh-hud-dots>
+                {Array.from({ length: TOTAL_FORMULAS }).map((_, i) => (
+                    <span class={`vh__hud-dot${i === 0 ? " is-active" : ""}`} data-vh-hud-dot data-index={i}></span>
+                ))}
+            </span>
+        </div>
+    </footer>
+</section>
+
+<style>
+    /* ====================================================================
+       Tokens locales — derivados de la paleta brand pero scoped.
+       ==================================================================== */
+    .vh {
+        --vh-bg: #050505;
+        --vh-fg: #ffffff;
+        --vh-fg-dim: rgba(255, 255, 255, 0.6);
+        --vh-fg-mute: rgba(255, 255, 255, 0.32);
+        --vh-accent: #A7F5C8;     /* mint Holistic */
+        --vh-race: #2E8F6E;       /* verde Race */
+        --vh-rule: rgba(255, 255, 255, 0.55);
+
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 640px;
+        overflow: hidden;
+        background: var(--vh-bg);
+        color: var(--vh-fg);
+        isolation: isolate;
+        font-family: var(--f-text, "Inter", sans-serif);
+    }
+
+    /* ====================================================================
+       Video full-bleed
+       ==================================================================== */
+    .vh__media { position: absolute; inset: 0; z-index: 0; }
+    .vh__video {
+        width: 100%; height: 100%;
+        object-fit: cover; object-position: center;
+        display: block;
+        /* Color grade para que el clip raw de iPhone se acople: bajamos
+           saturación, subimos contraste, oscurecemos un toque. */
+        filter: contrast(1.08) saturate(0.85) brightness(0.78);
+        will-change: opacity;
+    }
+
+    /* ====================================================================
+       Particles
+       ==================================================================== */
+    .vh__particles {
+        position: absolute; inset: 0; z-index: 1;
+        pointer-events: none;
+    }
+    .vh__particle {
+        position: absolute;
+        display: block;
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(255, 255, 255, 0.4) 55%,
+            transparent 75%);
+        filter: blur(0.4px);
+        opacity: 0;
+        will-change: transform, opacity;
+        transform: translate3d(0, 100vh, 0);
+    }
+    .vh__particle:nth-child(4n) {
+        width: 7px; height: 7px;
+        background: radial-gradient(circle at 35% 30%,
+            rgba(167, 245, 200, 0.85) 0%,
+            rgba(46, 143, 110, 0.4) 55%,
+            transparent 75%);
+    }
+    .vh__particle:nth-child(7n) {
+        width: 4px; height: 4px;
+        filter: blur(0.8px);
+    }
+    .vh__particle:nth-child(11n) {
+        width: 9px; height: 9px;
+        filter: blur(1.5px);
+        opacity: 0.4;
+    }
+
+    /* ====================================================================
+       Scrim doble
+       ==================================================================== */
+    .vh__scrim {
+        position: absolute; inset: 0; z-index: 2;
+        pointer-events: none;
+    }
+    .vh__scrim-vignette {
+        position: absolute; inset: 0;
+        background: radial-gradient(
+            ellipse at 35% 50%,
+            transparent 30%,
+            rgba(0, 0, 0, 0.55) 95%
+        );
+    }
+    .vh__scrim-gradient {
+        position: absolute; inset: 0;
+        background:
+            linear-gradient(180deg,
+                rgba(0, 0, 0, 0.55) 0%,
+                rgba(0, 0, 0, 0)    14%,
+                rgba(0, 0, 0, 0)    62%,
+                rgba(0, 0, 0, 0.55) 92%,
+                rgba(0, 0, 0, 0.78) 100%);
+    }
+
+    /* ====================================================================
+       BANDS top + bottom (HUD)
+       ==================================================================== */
+    .vh__band {
+        position: absolute;
+        left: 0; right: 0;
+        z-index: 4;
+        padding: 0 clamp(20px, 4vw, 64px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--vh-fg);
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    }
+    .vh__band--top    { top: clamp(18px, 3vh, 32px); }
+    .vh__band--bottom { bottom: clamp(18px, 3vh, 32px); }
+
+    .vh__band-left,
+    .vh__band-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        opacity: 0;
+        will-change: transform, opacity;
+    }
+    .vh__band-tick {
+        width: 0.5rem; height: 0.5rem;
+        border-radius: 50%;
+        background: var(--vh-accent);
+        box-shadow: 0 0 10px rgba(167, 245, 200, 0.6);
+        animation: vh-tick 2.4s ease-in-out infinite;
+    }
+    @keyframes vh-tick {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50%      { transform: scale(0.55); opacity: 0.4; }
+    }
+    .vh__band-text--dim { color: var(--vh-fg-dim); }
+    .vh__band-sep { opacity: 0.4; }
+
+    /* ====================================================================
+       STAGE — contenido principal
+       ==================================================================== */
+    .vh__stage {
+        position: absolute;
+        left: clamp(20px, 5vw, 80px);
+        right: clamp(20px, 5vw, 80px);
+        bottom: clamp(110px, 18vh, 220px);
+        z-index: 4;
+        max-width: 1200px;
+    }
+
+    /* ----- Kicker tipo HUD ----- */
+    .vh__kicker {
+        margin: 0 0 clamp(1rem, 2.5vh, 2rem);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.76rem;
+        font-weight: 600;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--vh-fg-dim);
+        opacity: 0;
+        will-change: transform, opacity;
+    }
+    .vh__kicker-num {
+        display: inline-block;
+        padding: 0.18rem 0.5rem;
+        border: 1px solid var(--vh-fg-mute);
+        border-radius: 3px;
+        font-family: var(--f-display, "Fraunces", serif);
+        font-size: 0.85rem;
+        font-style: italic;
+        font-weight: 500;
+        color: var(--vh-accent);
+    }
+    .vh__kicker-line {
+        flex: 0 0 auto;
+        width: clamp(20px, 4vw, 40px);
+        height: 1px;
+        background: var(--vh-fg-mute);
+    }
+
+    /* ----- Display masivo ----- */
+    .vh__display {
+        margin: 0;
+        font-family: "Archivo Black", Impact, sans-serif;
+        font-size: clamp(3.4rem, 13vw, 12rem);
+        font-weight: 900;
+        line-height: 0.86;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+        color: var(--vh-fg);
+        text-shadow: 0 4px 30px rgba(0, 0, 0, 0.55);
+    }
+    .vh__display-line {
+        display: flex;
+        align-items: center;
+        gap: clamp(0.5rem, 1.5vw, 1.5rem);
+    }
+    .vh__display-line--em {
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: clamp(2.6rem, 10vw, 9.5rem);
+        color: var(--vh-accent);
+        letter-spacing: -0.02em;
+        margin-top: -0.05em;
+    }
+    .vh__display-mask {
+        display: inline-block;
+        overflow: hidden;
+        line-height: 1.05;
+        padding-bottom: 0.06em;
+    }
+    .vh__display-mask > span {
+        display: inline-block;
+        will-change: transform;
+    }
+    .vh__display-rule {
+        display: inline-block;
+        flex: 0 0 auto;
+        height: 2px;
+        background: var(--vh-rule);
+        will-change: transform, opacity;
+        transform-origin: left center;
+        scale: 0 1;
+    }
+    .vh__display-line--em .vh__display-rule:first-child {
+        width: clamp(40px, 8vw, 110px);
+    }
+    .vh__display-line--em .vh__display-rule:last-child {
+        width: clamp(60px, 14vw, 220px);
+    }
+
+    /* ----- Claim ----- */
+    .vh__claim {
+        margin: clamp(1rem, 2vh, 2rem) 0 clamp(1.6rem, 3vh, 2.6rem);
+        max-width: 56ch;
+        font-family: var(--f-display, "Fraunces", serif);
+        font-size: clamp(1.05rem, 1.6vw, 1.45rem);
+        font-weight: 400;
+        line-height: 1.45;
+        color: var(--vh-fg);
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+    .vh__claim-line { display: block; opacity: 0; transform: translateY(14px); will-change: transform, opacity; }
+    .vh__claim-line strong { font-weight: 700; color: var(--vh-fg); }
+    .vh__claim-line--dim {
+        font-size: 0.95em;
+        color: var(--vh-fg-dim);
+        font-style: italic;
+        margin-top: 0.4rem;
+    }
+
+    /* ====================================================================
+       CTA super animado — magnetic + liquid fill
+       ==================================================================== */
+    .vh-cta {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        opacity: 0;
+        will-change: transform, opacity;
+        cursor: none; /* el sitio tiene custom cursor */
+        outline: none;
+        /* iniciar el isolation para que el shimmer/halo no afecte siblings */
+        isolation: isolate;
+    }
+    .vh-cta:focus-visible {
+        outline: 2px solid var(--vh-accent);
+        outline-offset: 8px;
+        border-radius: 999px;
+    }
+
+    /* Halo: aura difusa atrás, scale up al hover. */
+    .vh-cta__halo {
+        position: absolute;
+        inset: -18px -32px;
+        z-index: -2;
+        border-radius: 999px;
+        background: radial-gradient(
+            ellipse at center,
+            rgba(167, 245, 200, 0.32) 0%,
+            rgba(46, 143, 110, 0.18) 38%,
+            transparent 72%
+        );
+        filter: blur(18px);
+        opacity: 0;
+        transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    .vh-cta:hover .vh-cta__halo,
+    .vh-cta:focus-visible .vh-cta__halo {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+
+    /* Shimmer rotativo idle (CSS-driven). Conic gradient gira detrás
+       del pill para que se sienta vivo cuando está estático. */
+    .vh-cta__shimmer {
+        position: absolute;
+        inset: -1px;
+        z-index: -1;
+        border-radius: 999px;
+        background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            rgba(167, 245, 200, 0.0) 60deg,
+            rgba(167, 245, 200, 0.85) 90deg,
+            rgba(255, 255, 255, 0.95) 110deg,
+            rgba(167, 245, 200, 0.85) 130deg,
+            transparent 180deg,
+            transparent 360deg
+        );
+        animation: vh-cta-shimmer 4.5s linear infinite;
+        filter: blur(0.5px);
+        opacity: 0.85;
+    }
+    @keyframes vh-cta-shimmer {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+
+    /* Pill body */
+    .vh-cta__inner {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 1rem 1.6rem 1rem 1.85rem;
+        border-radius: 999px;
+        background: #0E0E0E;
+        color: var(--vh-fg);
+        overflow: hidden;
+        font-family: var(--f-text);
+        font-size: 0.86rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        line-height: 1;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        transition: color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        will-change: transform;
+    }
+    .vh-cta:hover .vh-cta__inner,
+    .vh-cta:focus-visible .vh-cta__inner {
+        color: #0E0E0E;
+    }
+
+    /* Liquid fill: círculo blanco que crece desde el cursor (left:50%
+       como default, JS opcional puede ajustar al cursor real). */
+    .vh-cta__fill {
+        position: absolute;
+        top: 50%;
+        left: var(--vh-cta-fill-x, 50%);
+        transform: translate(-50%, -50%) scale(0);
+        width: 240%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FFFFFF 0%, #A7F5C8 100%);
+        z-index: 0;
+        transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.25, 1);
+        pointer-events: none;
+    }
+    .vh-cta:hover .vh-cta__fill,
+    .vh-cta:focus-visible .vh-cta__fill {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* Texto: dual labels que rotan con clip-path al hover. */
+    .vh-cta__text {
+        position: relative;
+        display: inline-block;
+        z-index: 1;
+        height: 1em;
+        overflow: hidden;
+    }
+    .vh-cta__label {
+        position: absolute;
+        inset: 0;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+        will-change: transform;
+        transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .vh-cta__label--default {
+        position: relative;
+        transform: translateY(0);
+    }
+    .vh-cta__label--hover {
+        transform: translateY(110%);
+    }
+    .vh-cta:hover .vh-cta__label--default,
+    .vh-cta:focus-visible .vh-cta__label--default {
+        transform: translateY(-110%);
+    }
+    .vh-cta:hover .vh-cta__label--hover,
+    .vh-cta:focus-visible .vh-cta__label--hover {
+        transform: translateY(0);
+    }
+
+    /* Arrow: slide-in subtle al hover, color invertido por color: en parent. */
+    .vh-cta__arrow {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        transition:
+            background 0.4s ease,
+            transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .vh-cta:hover .vh-cta__arrow,
+    .vh-cta:focus-visible .vh-cta__arrow {
+        background: #0E0E0E;
+        color: var(--vh-accent);
+        transform: translateX(4px);
+    }
+    .vh-cta__arrow svg {
+        transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .vh-cta:hover .vh-cta__arrow svg {
+        transform: translateX(2px);
+    }
+
+    /* ====================================================================
+       BOTTOM scroll + HUD counter
+       ==================================================================== */
+    .vh__scroll {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        text-decoration: none;
+        color: var(--vh-fg);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        opacity: 0;
+        will-change: transform, opacity;
+        min-width: 24px;
+        min-height: 24px;
+    }
+    .vh__scroll-icon {
+        animation: vh-scroll-bounce 1.8s ease-in-out infinite;
+    }
+    @keyframes vh-scroll-bounce {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(4px); }
+    }
+    .vh__scroll:hover { color: var(--vh-accent); }
+
+    .vh__hud {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: var(--f-text);
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        opacity: 0;
+        will-change: transform, opacity;
+    }
+    .vh__hud-num,
+    .vh__hud-total { color: var(--vh-fg); }
+    .vh__hud-num   { color: var(--vh-accent); }
+    .vh__hud-sep   { color: var(--vh-fg-mute); }
+
+    .vh__hud-dots {
+        display: inline-flex;
+        gap: 0.45rem;
+        margin-left: 0.45rem;
+    }
+    .vh__hud-dot {
+        width: 0.45rem; height: 0.45rem;
+        border-radius: 50%;
+        background: var(--vh-fg-mute);
+        transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .vh__hud-dot.is-active {
+        background: var(--vh-accent);
+        transform: scale(1.3);
+    }
+
+    /* ====================================================================
+       Responsive
+       ==================================================================== */
+    @media (max-width: 700px) {
+        .vh__band-right { display: none; }
+        .vh__stage {
+            bottom: clamp(120px, 22vh, 220px);
+        }
+        .vh__hud-dots { display: none; }
+        .vh-cta__inner {
+            padding: 0.85rem 1.2rem 0.85rem 1.4rem;
+            font-size: 0.78rem;
+        }
+        .vh-cta__arrow { width: 24px; height: 24px; }
+    }
+
+    /* ====================================================================
+       Reduced motion
+       ==================================================================== */
+    @media (prefers-reduced-motion: reduce) {
+        .vh__band-tick,
+        .vh__scroll-icon,
+        .vh-cta__shimmer,
+        .vh__particle {
+            animation: none !important;
+        }
+        .vh-cta__fill,
+        .vh-cta__halo,
+        .vh-cta__label,
+        .vh-cta__arrow,
+        .vh-cta__arrow svg {
+            transition: none !important;
+        }
+    }
+</style>
+
+<script>
+    import "../scripts/video-hero-animations.js";
+</script>

@@ -1,0 +1,51 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ProductDeepDive from "../components/ProductDeepDive.astro";
+import RaceCinematic from "../components/RaceCinematic.astro";
+import VineDivider from "../components/VineDivider.astro";
+import FinalCTA from "../components/FinalCTA.astro";
+import { capitulos } from "../data/capitulos.js";
+
+export function getStaticPaths() {
+    return capitulos.map((cap) => ({
+        params: { categoria: cap.slug },
+        props: { cap },
+    }));
+}
+
+const { cap } = Astro.props;
+// RaceCinematic monta marquee de iconos + grid de motion videos para
+// /linea-race. El header inicial del componente fue retirado por pedido
+// del cliente; ahora la sección abre directo con el marquee.
+const showRaceCinematic = cap.slug === "linea-race";
+
+// Divider hacia FinalCTA — ornamento alusivo al producto.
+const ORNAMENT_BY_SLUG = {
+    "bio-estimulante": { variant: "leaves" },
+    "cloner":          { variant: "dna" },
+    "linea-race":      { variant: "drops" },
+    "linea-elite":     { variant: "crystals" },
+    "linea-pro":       { variant: "blossom" },
+    "day-0":           { variant: "harvest" },
+};
+const dv = ORNAMENT_BY_SLUG[cap.slug] || { variant: "leaves" };
+
+const pageTitle = `${cap.nombreCorto} ${cap.nombreDestacado} — Holistic Growshop`;
+const pageDescription = cap.descripcion;
+---
+<BaseLayout title={pageTitle} description={pageDescription}>
+    <!-- Landing interna del producto al estilo apple.com/macbook-pro:
+         hero + sticky highlights + big stat + bento + formats + system
+         + pullquote + tech specs. -->
+    <ProductDeepDive cap={cap} />
+
+    {showRaceCinematic && <RaceCinematic />}
+
+    <VineDivider variant={dv.variant} from={cap.bgColor} to="#FFFFFF" />
+
+    <FinalCTA />
+
+    <script>
+        import "../scripts/vine-divider-animations.js";
+    </script>
+</BaseLayout>

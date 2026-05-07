@@ -1,6 +1,7 @@
 ---
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import CustomCursor from "../components/CustomCursor.astro";
 import "../styles/global.css";
 
 const {
@@ -21,17 +22,25 @@ const {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-        href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Archivo:wght@100;200;300&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,400;1,9..144,500;1,9..144,700&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet"
     />
 </head>
 <body>
+    <script>
+        // Lenis se inicializa antes de que corran los demás scripts de página
+        // así ScrollTrigger arranca con el proxy correcto.
+        import "../scripts/smooth-scroll.js";
+    </script>
+
     <Header />
     <slot />
     <Footer />
+    <CustomCursor />
 
     <script>
-        import "../scripts/animations.js";
+        // Header + footer fade global (excepto /home-classic — auto-skip interno).
+        import "../scripts/header-footer-animations.js";
     </script>
 </body>
 </html>

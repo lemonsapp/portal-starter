@@ -1,0 +1,183 @@
+---
+// LiquidPour v2 — handoff cinematográfico Hero → EaseOfUse.
+// Secuencia con labels: hold → release → fall (stretch) → impact (crater)
+// → splash (arc) → ripples (rings) → wave (fill) → bubbles → brand → transition.
+// Filtro SVG goo funde gota + blobs en líquido continuo. Todo scrubbed
+// al scroll vía ScrollTrigger; cada beat es un label en la timeline.
+---
+<section class="liquid-pour" data-liquid-pour aria-hidden="true">
+    <svg
+        class="liquid-pour__svg"
+        viewBox="0 0 1000 1200"
+        preserveAspectRatio="none"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <defs>
+            <filter id="liquid-goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+                <feColorMatrix
+                    in="blur"
+                    mode="matrix"
+                    values="
+                        1 0 0 0 0
+                        0 1 0 0 0
+                        0 0 1 0 0
+                        0 0 0 22 -10
+                    "
+                    result="goo"
+                />
+                <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+            </filter>
+
+            <linearGradient id="liquid-grad" x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stop-color="#3FBE82" />
+                <stop offset="55%" stop-color="#2E8F6E" />
+                <stop offset="100%" stop-color="#1F6E54" />
+            </linearGradient>
+
+            <radialGradient id="liquid-bubble-grad" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85" />
+                <stop offset="55%" stop-color="#A8E6C5" stop-opacity="0.55" />
+                <stop offset="100%" stop-color="#3FBE82" stop-opacity="0.0" />
+            </radialGradient>
+
+            <!-- WARP filter para SUPERIOR. feTurbulence genera ruido
+                 fractal organico; feDisplacementMap usa ese ruido como
+                 mapa de desplazamiento (R→x, G→y) para empujar pixels.
+                 GSAP anima `scale` (intensidad) y `seed` (boil) por attr
+                 tween → texto que se distorsiona como visto a través de
+                 agua / heat haze. -->
+            <filter id="superior-warp" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+                <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.018 0.045"
+                    numOctaves="2"
+                    seed="3"
+                    data-superior-noise
+                    result="noise"
+                />
+                <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="noise"
+                    scale="0"
+                    xChannelSelector="R"
+                    yChannelSelector="G"
+                    data-superior-disp
+                />
+            </filter>
+        </defs>
+
+        <!-- Capa goo: gota principal + blobs satélite + pool. -->
+        <g filter="url(#liquid-goo)">
+            <ellipse class="liquid-pour__drop" data-liquid-drop cx="500" cy="0" rx="38" ry="54" fill="url(#liquid-grad)" />
+            <ellipse class="liquid-pour__blob" data-liquid-blob cx="478" cy="0" rx="14" ry="20" fill="url(#liquid-grad)" />
+            <ellipse class="liquid-pour__blob" data-liquid-blob cx="522" cy="0" rx="11" ry="16" fill="url(#liquid-grad)" />
+            <ellipse class="liquid-pour__blob" data-liquid-blob cx="492" cy="0" rx="8" ry="12" fill="url(#liquid-grad)" />
+
+            <rect class="liquid-pour__pool" data-liquid-pool x="-50" y="1200" width="1100" height="0" fill="url(#liquid-grad)" />
+
+            <!-- Crater: el centro del pool se hunde al impacto, simula "huella" del drop. -->
+            <ellipse data-liquid-crater cx="500" cy="1180" rx="0" ry="0" fill="#1F6E54" opacity="0.0" />
+
+            <!-- Splash drops: arrancan en (500, 1180) y rebotan al impacto -->
+            <circle data-liquid-splash cx="500" cy="1180" r="0" fill="url(#liquid-grad)" />
+            <circle data-liquid-splash cx="500" cy="1180" r="0" fill="url(#liquid-grad)" />
+            <circle data-liquid-splash cx="500" cy="1180" r="0" fill="url(#liquid-grad)" />
+            <circle data-liquid-splash cx="500" cy="1180" r="0" fill="url(#liquid-grad)" />
+            <circle data-liquid-splash cx="500" cy="1180" r="0" fill="url(#liquid-grad)" />
+            <circle data-liquid-splash cx="500" cy="1180" r="0" fill="url(#liquid-grad)" />
+        </g>
+
+        <!-- Ripple rings — fuera del goo para mantener trazo limpio. -->
+        <g class="liquid-pour__ripples" data-liquid-ripples>
+            <circle data-liquid-ripple cx="500" cy="1180" r="0" fill="none" stroke="#2E8F6E" stroke-width="3" opacity="0" />
+            <circle data-liquid-ripple cx="500" cy="1180" r="0" fill="none" stroke="#2E8F6E" stroke-width="2.4" opacity="0" />
+            <circle data-liquid-ripple cx="500" cy="1180" r="0" fill="none" stroke="#2E8F6E" stroke-width="1.8" opacity="0" />
+        </g>
+
+        <!-- Bubbles que suben dentro del pool una vez formado. -->
+        <g class="liquid-pour__bubbles" data-liquid-bubbles>
+            <circle data-liquid-bubble cx="380" cy="1180" r="0" fill="url(#liquid-bubble-grad)" />
+            <circle data-liquid-bubble cx="450" cy="1180" r="0" fill="url(#liquid-bubble-grad)" />
+            <circle data-liquid-bubble cx="520" cy="1180" r="0" fill="url(#liquid-bubble-grad)" />
+            <circle data-liquid-bubble cx="600" cy="1180" r="0" fill="url(#liquid-bubble-grad)" />
+            <circle data-liquid-bubble cx="680" cy="1180" r="0" fill="url(#liquid-bubble-grad)" />
+        </g>
+    </svg>
+
+    <!-- Brand moment — texto sobre la ola.
+         "SUPERIOR" lleva el filtro #superior-warp (turbulencia +
+         displacement). GSAP modula el `scale` del displacement
+         (entrada: 90 → 0; idle: oscila 0–3 con seed cambiando; salida:
+         0 → 90) — el texto emerge del caos líquido y al final se
+         disuelve en él. Patrón muy poco usado en webs modernas porque
+         requiere SVG filter primitives, no CSS shortcuts. -->
+    <div class="liquid-pour__brand" data-liquid-brand aria-hidden="true">
+        <span class="liquid-pour__brand-line" data-liquid-brand-line>NUTRICIÓN</span>
+        <span
+            class="liquid-pour__brand-line liquid-pour__brand-superior"
+            data-liquid-brand-line
+            data-liquid-superior
+        >SUPERIOR</span>
+    </div>
+
+    <div class="liquid-pour__overlay" data-liquid-overlay></div>
+</section>
+
+<style>
+    .liquid-pour__brand {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2em;
+        z-index: 3;
+        text-align: center;
+        line-height: 0.9;
+        letter-spacing: -0.02em;
+        pointer-events: none;
+    }
+
+    .liquid-pour__brand-line {
+        display: block;
+        font-family: var(--f-display, "Archivo Black", Impact, sans-serif);
+        font-size: clamp(2.5rem, 7vw, 6.5rem);
+        color: #fff;
+        opacity: 0;
+        transform: translateY(40px);
+        will-change: transform, opacity;
+        mix-blend-mode: difference;
+    }
+
+    /* SUPERIOR: filtro warp aplicado vía CSS. background-clip + gradient
+       lo pintan con la misma paleta verde del líquido para reforzar la
+       coherencia temática. */
+    .liquid-pour__brand-superior {
+        font-family: var(--f-display, "Archivo Black", Impact, sans-serif);
+        font-size: clamp(3rem, 9vw, 8rem);
+        letter-spacing: 0.02em;
+        color: #fff;
+        text-shadow: 0 0 28px rgba(31, 110, 84, 0.6);
+        filter: url(#superior-warp);
+        will-change: filter;
+        /* Mix-blend reset — el wrap padre ya no aplica difference. */
+        mix-blend-mode: normal;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .liquid-pour__brand-line {
+            opacity: 1;
+            transform: none;
+        }
+        .liquid-pour__brand-superior {
+            filter: none;
+        }
+    }
+</style>
+
+<script>
+    import "../scripts/liquid-pour-animations.js";
+</script>

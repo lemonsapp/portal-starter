@@ -1,0 +1,203 @@
+---
+// RaceCinematic — sección editorial específica de /linea-race con el
+// material cinematográfico real (botellas en pista, campo, invernadero,
+// raíces, splash) y clips de video MP4. Pensada para ir DESPUÉS del
+// ProductDeepDive y ANTES del FinalCTA, como un "showcase" que cierra
+// la narrativa del producto con emoción.
+//
+// Composición actual (post-cliente):
+//   1) HEADER inicial (eyebrow + title editorial)
+//   2) MARQUEE de iconos (carros + banderas)
+//   3) STRIP de videos en motion — clips en viewport-loop con poster
+//
+// La galería editorial masonry (raceScenes) y el header de motion
+// fueron retirados por pedido del cliente. raceScenes sigue exportado
+// en data/raceCinematic.js por si se reactiva en otra sección.
+//
+// Skills aplicadas (citadas en script asociado):
+//   • frontend-design       → marquee horizontal infinito, kickers
+//   • gsap-scrolltrigger    → reveal stagger
+//   • gsap-utils.toArray    → setup de videos
+//   • gsap-core matchMedia  → reduced-motion + breakpoints
+//   • accessibility         → video aria-label, autoplay muted,
+//                             pausa con prefers-reduced-motion
+import { raceMarquee, raceMotion } from "../data/raceCinematic.js";
+---
+<section class="race-cinematic" data-race-cinematic aria-label="Race en movimiento">
+    {/* Header inicial (eyebrow "RACE · BACKSTAGE" + título "Velocidad,
+        cultivo, resultado." + lede) retirado por pedido del cliente.
+        La sección abre directo con el marquee horizontal. */}
+
+    <!-- 1) MARQUEE — carros + banderas, scroll horizontal lento -->
+    <div class="race-cinematic__marquee" data-rc-marquee aria-hidden="true">
+        <div class="race-cinematic__marquee-track" data-rc-marquee-track>
+            {[...raceMarquee, ...raceMarquee].map((m) => (
+                <figure class="race-cinematic__marquee-tile">
+                    <img src={m.src} alt="" loading="lazy" draggable="false" />
+                </figure>
+            ))}
+        </div>
+    </div>
+
+    <!-- 2) MOTION strip — clips en loop (sin header propio, va directo
+         después del marquee). La galería editorial masonry de slides de
+         productos quedó retirada por pedido del cliente; raceScenes ya
+         no se renderiza acá. El array sigue exportado por si lo
+         retomamos en otra sección más adelante. -->
+    <div class="race-cinematic__motion" data-rc-motion>
+        <div class="race-cinematic__motion-grid">
+            {raceMotion.map((v, i) => (
+                <figure
+                    class="race-cinematic__motion-tile"
+                    data-rc-motion-tile
+                    data-index={i}
+                >
+                    <video
+                        class="race-cinematic__motion-video"
+                        data-rc-motion-video
+                        src={v.src}
+                        poster={v.poster}
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        aria-label={v.alt}
+                    ></video>
+                    <figcaption class="race-cinematic__motion-caption">
+                        <span class="race-cinematic__caption-kicker">{v.kicker}</span>
+                        <span class="race-cinematic__caption-title">{v.title}</span>
+                    </figcaption>
+                </figure>
+            ))}
+        </div>
+    </div>
+</section>
+
+<style>
+    /* ===== Layout base ===== */
+    .race-cinematic {
+        position: relative;
+        padding: clamp(64px, 10vh, 128px) clamp(20px, 5vw, 80px);
+        background: linear-gradient(
+            180deg,
+            #FFFFFF 0%,
+            #F4F1EC 40%,
+            #EDE6D8 100%
+        );
+        color: #1A1A1A;
+        overflow: hidden;
+    }
+
+    /* ===== Marquee horizontal infinito ===== */
+    .race-cinematic__marquee {
+        position: relative;
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        padding: clamp(20px, 3vh, 40px) 0;
+        overflow: hidden;
+        mask-image: linear-gradient(
+            to right,
+            transparent 0%,
+            black 8%,
+            black 92%,
+            transparent 100%
+        );
+    }
+    .race-cinematic__marquee-track {
+        display: flex;
+        gap: clamp(20px, 3vw, 48px);
+        width: max-content;
+        /* Animación CSS-only del marquee para no requerir GSAP en
+           este detalle decorativo. Translate -50% en track duplicado
+           = loop sin gap visible. */
+        animation: race-marquee 32s linear infinite;
+    }
+    @keyframes race-marquee {
+        from { transform: translate3d(0, 0, 0); }
+        to   { transform: translate3d(-50%, 0, 0); }
+    }
+    .race-cinematic__marquee-tile {
+        flex: 0 0 auto;
+        width: clamp(120px, 14vw, 200px);
+        aspect-ratio: 3 / 4;
+        margin: 0;
+    }
+    .race-cinematic__marquee-tile img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    /* ===== Motion strip — videos en grid (post-cliente) ===== */
+    .race-cinematic__motion {
+        margin-top: clamp(40px, 6vh, 72px);
+    }
+    /* Reglas de caption compartidas entre tiles legacy y motion. */
+    .race-cinematic__caption-kicker {
+        font-family: var(--f-text);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        opacity: 0.92;
+    }
+    .race-cinematic__caption-title {
+        font-family: var(--f-display, "Fraunces", serif);
+        font-size: clamp(1rem, 1.6vw, 1.5rem);
+        font-style: italic;
+        font-weight: 500;
+        line-height: 1.15;
+    }
+    .race-cinematic__motion-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(12px, 1.6vw, 24px);
+    }
+    .race-cinematic__motion-tile {
+        position: relative;
+        margin: 0;
+        overflow: hidden;
+        border-radius: 14px;
+        background: #0E0E0E;
+        aspect-ratio: 16 / 9;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+    }
+    .race-cinematic__motion-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+    }
+    .race-cinematic__motion-caption {
+        position: absolute;
+        left: clamp(0.85rem, 1.6vw, 1.6rem);
+        bottom: clamp(0.85rem, 1.6vw, 1.6rem);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        color: #fff;
+        text-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.55),
+            0 0 14px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 900px) {
+        .race-cinematic__motion-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    /* ===== Reduced motion ===== */
+    @media (prefers-reduced-motion: reduce) {
+        .race-cinematic__marquee-track {
+            animation: none;
+        }
+    }
+</style>
+
+<script>
+    import "../scripts/race-cinematic-animations.js";
+</script>

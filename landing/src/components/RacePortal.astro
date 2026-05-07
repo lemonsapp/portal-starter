@@ -1,0 +1,36 @@
+---
+// RacePortal — Race chapter visual estilo Ahmed Codes.
+// productos.png al FRENTE (z más alto). El portal animado queda detrás:
+// fondo, luces, remolino rotando, líquido y cristales hacen movimiento
+// sumándose por mix-blend-mode: screen.
+//
+// Orden z-index (ascendente):
+//   1 fondo      — bokeh ambient
+//   2 luces      — destellos titilando
+//   3 remolino   — espiral rotando 360° infinito
+//   4 liquido    — partículas líquidas
+//   5 cristales  — fragmentos drifteando
+//   6 productos  — composición de botellas y chorros AL FRENTE
+const layers = [
+    { name: "fondo",     speed: -6,  z: 1 },
+    { name: "luces",     speed: -14, z: 2 },
+    { name: "remolino",  speed: 0,   z: 3 },
+    { name: "liquido",   speed: -20, z: 4 },
+    { name: "cristales", speed: -24, z: 5 },
+    { name: "productos", speed: -8,  z: 6 },
+];
+---
+<div class="race-portal" data-race-portal aria-hidden="true">
+    {layers.map((layer) => (
+        <img
+            class={`race-portal__layer race-portal__layer--${layer.name}`}
+            src={`/img/portal-race/${layer.name}.png`}
+            alt=""
+            loading="lazy"
+            data-portal-layer
+            data-layer-name={layer.name}
+            data-layer-speed={layer.speed}
+            style={`z-index: ${layer.z};`}
+        />
+    ))}
+</div>

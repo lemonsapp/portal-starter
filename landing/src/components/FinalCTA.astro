@@ -1,0 +1,38 @@
+---
+// Último bloque de la home. Cursor se vuelve claro mientras esta sección
+// está en viewport (lo maneja story-animations.js).
+---
+<section class="final-cta" data-final-cta>
+    <div class="final-cta__inner">
+        <h2 class="final-cta__title" data-final-title>
+            <span class="word" data-split-final>EXPLORÁ</span>
+            <span class="word" data-split-final>TODO</span>
+        </h2>
+        <p class="final-cta__sub" data-final-sub>
+            El catálogo completo de Holistic, en un solo lugar.
+        </p>
+        <a
+            href="/shop"
+            class="final-cta__btn"
+            data-cursor="hover"
+            data-final-btn
+            data-magnetic
+            data-magnetic-strength="0.25"
+        >
+            <span>VER CATÁLOGO</span>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                <path
+                    d="M5 12h14M13 6l6 6-6 6"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    fill="none"
+                    stroke-linecap="round"
+                />
+            </svg>
+        </a>
+    </div>
+</section>
+
+<script>
+    import "../scripts/final-cta-animations.js";
+</script>

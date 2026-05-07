@@ -1,0 +1,28 @@
+---
+// FloatingParticles — capa de partículas absolutamente posicionadas que
+// hero-animations.js distribuye por el viewport del hero. Cantidad y
+// movimiento se gatean por breakpoint vía gsap.matchMedia().
+const COUNT = 24;
+---
+<div class="floating-particles" aria-hidden="true">
+    {Array.from({ length: COUNT }).map(() => (
+        <span class="floating-particles__dot" data-particle></span>
+    ))}
+</div>
+
+<style>
+    .floating-particles {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .floating-particles__dot {
+        position: absolute;
+        display: none;
+        border-radius: 50%;
+        will-change: transform;
+    }
+</style>

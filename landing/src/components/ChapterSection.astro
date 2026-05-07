@@ -1,0 +1,174 @@
+---
+import ChapterOrnaments from "./ChapterOrnaments.astro";
+import RaceSlider from "./RaceSlider.astro";
+
+interface Chapter {
+    slug: string;
+    orden: number;
+    kicker: string;
+    nombreCorto: string;
+    nombreDestacado: string;
+    tagline: string;
+    descripcion: string;
+    producto: string;
+    productoSecundario: string | null;
+    video?: string;
+    videoSatellites?: Array<{ src: string; position: string; color: string }>;
+    ctaTexto: string;
+    ctaHref: string;
+    bgColor: string;
+    accentColor: string;
+    textColor: string;
+}
+
+interface Props {
+    chapter: Chapter;
+    priority?: boolean;
+}
+
+const { chapter, priority = false } = Astro.props;
+
+// Visual alterna lado: impares a la derecha, pares a la izquierda.
+const visualSide = chapter.orden % 2 === 0 ? "left" : "right";
+const imgLoading = priority ? "eager" : "lazy";
+
+// Ornamento alusivo al cultivo, único por chapter.
+// • cloner usa variant "dna" → doble hélice ADN en los bordes (request del cliente)
+const ORNAMENT_BY_SLUG: Record<string, { variant: string; from: string; to: string }> = {
+    "bio-estimulante": { variant: "leaves",   from: "#E8A5B1", to: "#FFFFFF" },
+    "cloner":          { variant: "dna",      from: "#6B3BAF", to: "#B49AE0" },
+    "linea-race":      { variant: "drops",    from: "#2E8F6E", to: "#3FBE82" },
+    "linea-elite":     { variant: "crystals", from: "#C9A34E", to: "#E5D9B8" },
+    "linea-pro":       { variant: "blossom",  from: "#F5948A", to: "#AEDAD4" },
+    "day-0":           { variant: "harvest",  from: "#C9A34E", to: "#F9E79B" },
+};
+const ornament = ORNAMENT_BY_SLUG[chapter.slug] || { variant: "leaves", from: "#2e8f6e", to: "#25d366" };
+---
+<section
+    class:list={["chapter", `chapter--${chapter.slug}`, `chapter--visual-${visualSide}`]}
+    data-chapter={chapter.slug}
+    data-visual-side={visualSide}
+    data-bg-color={chapter.bgColor}
+    style={`--chapter-bg: ${chapter.bgColor}; --chapter-accent: ${chapter.accentColor}; --chapter-text: ${chapter.textColor};`}
+>
+    <ChapterOrnaments {...ornament} />
+
+    <div class="chapter__inner">
+        <div class="chapter__text">
+            <span class="chapter__kicker" data-chapter-kicker>{chapter.kicker}</span>
+            <h2 class="chapter__title" data-chapter-title>
+                <span class="thin" data-split-title>{chapter.nombreCorto}</span>
+                <span class="bold" data-split-title>{chapter.nombreDestacado}</span>
+
+                <!-- Drips de líquido que cuelgan de la base del título.
+                     Animados por story-animations.js (caen con scrub +
+                     idle dripping cuando el chapter está activo). -->
+                <svg
+                    class="chapter__drips"
+                    data-chapter-drips
+                    viewBox="0 0 800 220"
+                    preserveAspectRatio="xMidYMin meet"
+                    aria-hidden="true"
+                >
+                    <defs>
+                        <filter id={`drip-goo-${chapter.slug}`}>
+                            <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                            <feColorMatrix in="blur" mode="matrix" values="
+                                1 0 0 0 0
+                                0 1 0 0 0
+                                0 0 1 0 0
+                                0 0 0 22 -10
+                            " result="goo" />
+                            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+                        </filter>
+                    </defs>
+                    <g filter={`url(#drip-goo-${chapter.slug})`} fill={chapter.accentColor || chapter.bgColor}>
+                        <ellipse data-drip-stem cx="160" cy="0" rx="8" ry="0" />
+                        <ellipse data-drip-stem cx="320" cy="0" rx="6" ry="0" />
+                        <ellipse data-drip-stem cx="480" cy="0" rx="9" ry="0" />
+                        <ellipse data-drip-stem cx="640" cy="0" rx="7" ry="0" />
+                        <circle  data-drip cx="160" cy="0" r="0" />
+                        <circle  data-drip cx="200" cy="0" r="0" />
+                        <circle  data-drip cx="320" cy="0" r="0" />
+                        <circle  data-drip cx="480" cy="0" r="0" />
+                        <circle  data-drip cx="540" cy="0" r="0" />
+                        <circle  data-drip cx="640" cy="0" r="0" />
+                    </g>
+                </svg>
+            </h2>
+            <p class="chapter__tagline" data-chapter-tagline>{chapter.tagline}</p>
+            <p class="chapter__description" data-chapter-description>{chapter.descripcion}</p>
+            <a
+                href={chapter.ctaHref}
+                class="chapter__cta"
+                data-cursor="hover"
+                data-chapter-cta
+                data-magnetic
+                data-magnetic-strength="0.2"
+            >
+                <span>{chapter.ctaTexto}</span>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                    <path
+                        d="M5 12h14M13 6l6 6-6 6"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        fill="none"
+                        stroke-linecap="round"
+                    />
+                </svg>
+            </a>
+        </div>
+
+        <div class="chapter__visual">
+            {chapter.slug === "linea-race" ? (
+                <RaceSlider />
+            ) : chapter.video ? (
+                <div class="chapter__video-stage" data-chapter-video-stage>
+                    <div class="chapter__video-frame" data-chapter-video-frame>
+                        <video
+                            class="chapter__video"
+                            data-chapter-video
+                            src={chapter.video}
+                            muted
+                            loop
+                            playsinline
+                            preload="metadata"
+                            poster={chapter.producto}
+                        ></video>
+                        <span class="chapter__video-glow" aria-hidden="true"></span>
+                    </div>
+
+                    {chapter.videoSatellites && chapter.videoSatellites.map((s) => (
+                        <div
+                            class={`video-sat video-sat--${s.position}`}
+                            data-video-sat
+                            style={`--sat-color: ${s.color};`}
+                        >
+                            <span class="video-sat__halo" aria-hidden="true"></span>
+                            <img src={s.src} alt="" loading="lazy" aria-hidden="true" />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <>
+                    <img
+                        class="chapter__product chapter__product--main"
+                        src={chapter.producto}
+                        alt={chapter.nombreDestacado}
+                        loading={imgLoading}
+                        data-product-main
+                    />
+                    {chapter.productoSecundario && (
+                        <img
+                            class="chapter__product chapter__product--secondary"
+                            src={chapter.productoSecundario}
+                            alt={`${chapter.nombreDestacado} secundario`}
+                            loading="lazy"
+                            data-product-secondary
+                        />
+                    )}
+                </>
+            )}
+        </div>
+    </div>
+</section>

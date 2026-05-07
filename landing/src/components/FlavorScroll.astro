@@ -1,0 +1,118 @@
+---
+import { flavors } from "../data/flavors.js";
+
+// Mapeo slug → ruta de categoría.
+const ROUTE_BY_SLUG = {
+    "bio-estimulante": "/bio-estimulante",
+    cloner: "/cloner",
+    "linea-race": "/linea-race",
+    "linea-elite": "/linea-elite",
+    "linea-pro": "/linea-pro",
+    "day-0": "/day-0",
+};
+---
+<section class="flavor-split" data-flavor-scroll data-flavor-split>
+    <div class="flavor-split__inner">
+        <div class="flavor-split__copy">
+            <p class="flavor-split__eyebrow" data-flavor-header>EL CICLO COMPLETO</p>
+
+            <h2 class="flavor-split__title" data-flavor-title>
+                <span>TENEMOS </span>
+                <span class="hl-num">6</span>
+                <span> PRODUCTOS PARA UN </span>
+                <span class="hl">SISTEMA</span>
+                <span> CON RESULTADOS </span>
+                <span class="hl hl--green">SUPERIORES</span>
+                <span>.</span>
+            </h2>
+
+            <div class="flavor-split__actions">
+                <a
+                    href="/shop"
+                    class="flavor-split__cta"
+                    data-cursor="hover"
+                    data-flavor-cta
+                    data-magnetic
+                    data-magnetic-strength="0.25"
+                >
+                    EXPLORAR LOS 6 →
+                </a>
+
+                <div class="flavor-split__nav" aria-label="Navegar productos">
+                    <button
+                        class="flavor-split__arrow"
+                        data-flavor-prev
+                        data-cursor="hover"
+                        aria-label="Producto anterior"
+                    >
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M19 12H5M11 18l-6-6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="flavor-split__progress" data-flavor-progress>
+                        {flavors.map((f, i) => (
+                            <button
+                                class={`flavor-split__step${i === 0 ? " is-active" : ""}`}
+                                data-progress-step
+                                data-index={i}
+                                data-cursor="hover"
+                                aria-label={`Ir a ${f.nombre}`}
+                            ></button>
+                        ))}
+                    </div>
+                    <button
+                        class="flavor-split__arrow"
+                        data-flavor-next
+                        data-cursor="hover"
+                        aria-label="Producto siguiente"
+                    >
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M5 12h14M13 6l6 6-6 6"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flavor-split__stage" data-flavor-stage>
+            <div class="flavor-split__cards" data-flavor-cards>
+                {flavors.map((f, i) => {
+                    const num = String(i + 1).padStart(2, "0");
+                    const route = ROUTE_BY_SLUG[f.slug] || `/${f.slug}`;
+                    return (
+                        <a
+                            class={`flavor-big${i === 0 ? " is-active" : ""}`}
+                            data-flavor-big
+                            data-index={i}
+                            href={route}
+                            data-cursor="hover"
+                            aria-label={`Ver ${f.nombre}`}
+                            style={`--flavor-color: ${f.color}; --flavor-accent: ${f.accentColor}; --flavor-bg-gradient: ${f.bgGradient};`}
+                        >
+                            <div class="flavor-big__bg" style={`background: ${f.bgGradient};`}></div>
+                            <span class="flavor-big__etapa">ETAPA {num}</span>
+                            <span class="flavor-big__num" aria-hidden="true">{num}</span>
+                            <img
+                                class="flavor-big__img"
+                                src={f.producto}
+                                alt={f.nombre}
+                                loading="lazy"
+                            />
+                        </a>
+                    );
+                })}
+            </div>
+
+            <!-- Nombres fuera del grid, en su propia capa absolute. -->
+            <div class="flavor-split__names" data-flavor-names>
+                {flavors.map((f, i) => (
+                    <h3
+                        class={`flavor-big__name${i === 0 ? " is-active" : ""}`}
+                        data-flavor-name
+                        data-index={i}
+                    >{f.nombre}</h3>
+                ))}
+            </div>
+        </div>
+    </div>
+</section>
