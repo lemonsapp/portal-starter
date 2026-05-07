@@ -1,3 +1,6 @@
+---
+import { CONTACTO } from "../data/contacto.js";
+---
 <section class="channels" id="contacto">
     <div class="channels__inner">
         <h2 class="channels__title">Canales de atención</h2>
@@ -10,8 +13,8 @@
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.1 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.6 2.8a2 2 0 0 1-.5 2.1L7.9 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.8.6a2 2 0 0 1 1.7 2z"/></svg>
                 </div>
                 <h3 class="channels__card-title">Teléfono</h3>
-                <p class="channels__card-text">Lun–Sáb · 10 a 19 hs</p>
-                <a href="tel:" class="channels__link">Llamar</a>
+                <p class="channels__card-text">{CONTACTO.horario}</p>
+                <a href={CONTACTO.phone_url} class="channels__link">Llamar</a>
             </article>
 
             <article class="channels__card">
@@ -20,7 +23,7 @@
                 </div>
                 <h3 class="channels__card-title">WhatsApp</h3>
                 <p class="channels__card-text">Respuesta rápida durante el día</p>
-                <a href="https://wa.me/" target="_blank" rel="noopener" class="channels__link">Escribir</a>
+                <a href={CONTACTO.whatsapp_url_with_message} target="_blank" rel="noopener noreferrer" class="channels__link">Escribir</a>
             </article>
 
             <article class="channels__card">
@@ -28,8 +31,8 @@
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
                 </div>
                 <h3 class="channels__card-title">Instagram &amp; Mail</h3>
-                <p class="channels__card-text">@holisticgrowshop · contacto@hgrowshop.com</p>
-                <a href="https://instagram.com/" target="_blank" rel="noopener" class="channels__link">Seguirnos</a>
+                <p class="channels__card-text">{CONTACTO.instagram_handle_at} · {CONTACTO.email}</p>
+                <a href={CONTACTO.instagram_url} target="_blank" rel="noopener noreferrer" class="channels__link">Seguirnos</a>
             </article>
 
         </div>

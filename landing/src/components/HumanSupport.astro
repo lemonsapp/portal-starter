@@ -2,6 +2,7 @@
 // HumanSupport — "Asesoramiento sin cargo, gente real".
 // Sección antes del FinalCTA. Headline scrubbed, pulses y timeline
 // horizontal con 4 hitos del ciclo.
+import { CONTACTO } from "../data/contacto.js";
 const pulses = [
     "PROFESIONALES",
     "GENTE REAL",
@@ -89,7 +90,7 @@ const milestones = [
         </div>
 
         <a
-            href="https://wa.me/5491100000000"
+            href={CONTACTO.whatsapp_url_with_message}
             class="human-support__cta human-support__cta--radiant"
             data-cursor="hover"
             data-human-cta

@@ -1,6 +1,7 @@
 ---
 // Último bloque de la home. Cursor se vuelve claro mientras esta sección
 // está en viewport (lo maneja story-animations.js).
+import { CTAS } from "../data/contacto.js";
 ---
 <section class="final-cta" data-final-cta>
     <div class="final-cta__inner">
@@ -12,7 +13,7 @@
             El catálogo completo de Holistic, en un solo lugar.
         </p>
         <a
-            href="/shop"
+            href={CTAS.explorar_catalogo}
             class="final-cta__btn"
             data-cursor="hover"
             data-final-btn

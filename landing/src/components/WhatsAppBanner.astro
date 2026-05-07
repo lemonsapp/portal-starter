@@ -1,5 +1,9 @@
 ---
-const { href = "https://wa.me/", text = "SE PARTE DE NUESTRO TEAM HOLISTIC EN WHATSAPP" } = Astro.props;
+import { CONTACTO } from "../data/contacto.js";
+const {
+    href = CONTACTO.whatsapp_url_with_message,
+    text = "SE PARTE DE NUESTRO TEAM HOLISTIC EN WHATSAPP",
+} = Astro.props;
 ---
 <a class="banner" href={href} target="_blank" rel="noopener">
     <div class="banner__inner">

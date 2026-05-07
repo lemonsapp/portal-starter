@@ -47,3 +47,4 @@ tmp/
 # Carpetas IMAGENES-<CLIENTE>/ con fotos/videos crudos. Los assets finales se
 # suben a Cloudinary (o equivalente) y se referencian via DB (logo_url, etc).
 IMAGENES-*/
+landing/imagenes-web/

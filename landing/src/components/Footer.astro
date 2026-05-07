@@ -1,25 +1,31 @@
 ---
+import { CONTACTO } from "../data/contacto.js";
+
 const cols = [
     {
         heading: "Contacto",
         items: [
-            { href: "https://wa.me/", label: "WhatsApp" },
-            { href: "https://instagram.com/", label: "Instagram" },
-            { href: "mailto:contacto@hgrowshop.com", label: "contacto@hgrowshop.com" },
+            { href: CONTACTO.whatsapp_url, label: "WhatsApp", external: true },
+            { href: CONTACTO.instagram_url, label: "Instagram", external: true },
+            { href: CONTACTO.mailto_url, label: CONTACTO.email },
         ],
     },
     {
-        heading: "Info",
+        heading: "Productos",
         items: [
-            { href: "#linea-elite", label: "Línea Elite" },
-            { href: "#linea-pro", label: "Línea Pro" },
-            { href: "#bio-estimulante", label: "Bio Estimulante" },
-            { href: "#otros", label: "Otros productos" },
+            { href: "/linea-elite", label: "Línea Elite" },
+            { href: "/linea-pro", label: "Línea Pro" },
+            { href: "/linea-race", label: "Línea Race" },
+            { href: "/bio-estimulante", label: "Bio Estimulante" },
+            { href: "/cloner", label: "Cloner" },
+            { href: "/day-0", label: "Day 0" },
         ],
     },
     {
         heading: "Legales",
         items: [
+            // TODO_HOLISTIC: el cliente debe proveer las paginas legales
+            // o redactarlas. Mantengo placeholders hasta entonces.
             { href: "#", label: "Términos y condiciones" },
             { href: "#", label: "Política de privacidad" },
             { href: "#", label: "Política de envíos" },
@@ -35,7 +41,11 @@ const cols = [
                     <h4 class="footer__heading">{col.heading}</h4>
                     <ul class="footer__list">
                         {col.items.map(item => (
-                            <li><a href={item.href}>{item.label}</a></li>
+                            <li>
+                                {item.external
+                                    ? <a href={item.href} target="_blank" rel="noopener noreferrer">{item.label}</a>
+                                    : <a href={item.href}>{item.label}</a>}
+                            </li>
                         ))}
                     </ul>
                 </div>
