@@ -126,10 +126,12 @@ app.use(
 const PORT = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 
-// Lee branding.json de la raíz (canonical). Sprint 2 va a poder leer
-// overrides desde la tabla app_config (lo que pegó el cliente en el wizard).
+// Branding: carga inicial síncrona del JSON para endpoints sync (/, /privacy).
+// Para emails y otros lugares async, se usa getBranding() que pulla de
+// configStore (con overrides del wizard) — ver server/lib/branding.js.
 let BRANDING = { name: "Mi Portal", color_primary: "#3B82F6", color_accent: "#F59E0B" };
 try { BRANDING = require("../branding.json"); } catch (e) { /* fallback in-memory */ }
+const { getBranding } = require("./lib/branding");
 
 app.get("/", (_req, res) => res.send(`${BRANDING.name} API OK — probá /health`));
 
@@ -889,7 +891,10 @@ async function checkMissions(userId, eventType, extraData = {}) {
 
 // ══ INVITE CODES + REGISTRO ═══════════════════════════════════════════════════
 
-function buildVerifyEmailHtml(name, verifyUrl) {
+function buildVerifyEmailHtml(name, verifyUrl, brand = BRANDING) {
+  const primary = brand.color_primary || "#3B82F6";
+  const accent  = brand.color_accent  || "#F59E0B";
+  const appName = brand.name || "Mi Portal";
   return `<!doctype html>
 <html lang="es">
 <head><meta charset="utf-8"/></head>
@@ -898,20 +903,20 @@ function buildVerifyEmailHtml(name, verifyUrl) {
   <tr><td align="center">
     <table width="480" cellspacing="0" cellpadding="0" style="width:480px;max-width:480px;">
       <tr><td style="padding-bottom:32px;text-align:center;">
-        <div style="font-family:Arial,sans-serif;font-size:28px;margin-bottom:8px;">🍋</div>
-        <div style="font-family:Arial,sans-serif;color:#f5a623;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Mi Portal</div>
+        ${brand.logo_url ? `<img src="${brand.logo_url}" alt="${appName}" style="max-height:48px;margin-bottom:8px;"/>` : `<div style="font-family:Arial,sans-serif;font-size:28px;margin-bottom:8px;">✨</div>`}
+        <div style="font-family:Arial,sans-serif;color:${primary};font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">${appName}</div>
       </td></tr>
-      <tr><td style="background:rgba(245,166,35,0.06);border:2px solid rgba(245,166,35,0.2);border-radius:20px;overflow:hidden;">
-        <div style="padding:32px;background:linear-gradient(135deg,rgba(245,166,35,0.1),transparent);border-bottom:1px solid rgba(245,166,35,0.1);">
+      <tr><td style="background:rgba(255,255,255,0.04);border:2px solid ${primary}33;border-radius:20px;overflow:hidden;">
+        <div style="padding:32px;background:linear-gradient(135deg,${primary}1a,transparent);border-bottom:1px solid ${primary}1a;">
           <div style="font-family:Arial,sans-serif;color:#fff;font-size:22px;font-weight:900;margin-bottom:8px;">Bienvenido, ${name}! 👋</div>
           <div style="font-family:Arial,sans-serif;color:rgba(255,255,255,0.6);font-size:14px;">Ya casi estás listo para usar el portal.</div>
         </div>
         <div style="padding:28px 32px;">
           <p style="font-family:Arial,sans-serif;color:#ccc;font-size:14px;line-height:1.6;margin:0 0 24px 0;">
-            Hacé click en el botón para verificar tu cuenta. El link es válido por <b style="color:#f5a623;">24 horas</b>.
+            Hacé click en el botón para verificar tu cuenta. El link es válido por <b style="color:${primary};">24 horas</b>.
           </p>
           <div style="text-align:center;margin-bottom:24px;">
-            <a href="${verifyUrl}" style="display:inline-block;padding:16px 40px;border-radius:14px;background:linear-gradient(135deg,#f5a623,#ff6200);color:#000;text-decoration:none;font-family:Arial,sans-serif;font-weight:900;font-size:16px;letter-spacing:1px;">
+            <a href="${verifyUrl}" style="display:inline-block;padding:16px 40px;border-radius:14px;background:linear-gradient(135deg,${primary},${accent});color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-weight:900;font-size:16px;letter-spacing:1px;">
               VERIFICAR CUENTA ✓
             </a>
           </div>
@@ -921,7 +926,7 @@ function buildVerifyEmailHtml(name, verifyUrl) {
         </div>
       </td></tr>
       <tr><td style="padding:20px 0 0;text-align:center;font-family:Arial,sans-serif;color:#333;font-size:12px;">
-        © ${new Date().getFullYear()} Mi Portal
+        © ${new Date().getFullYear()} ${appName}
       </td></tr>
     </table>
   </td></tr>
@@ -1072,14 +1077,15 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
       [user.id, tokenHash, expires]
     );
 
-    // Enviar email de verificación
+    // Enviar email de verificación (subject + HTML usan el branding del wizard)
     const base = process.env.APP_URL || "http://localhost:5173";
     const verifyUrl = `${base}/verify-email?token=${token}`;
+    const brand = await getBranding();
     try {
       await sendEmail({
         to: user.email,
-        subject: "Verificá tu cuenta — Mi Portal",
-        html: buildVerifyEmailHtml(name, verifyUrl),
+        subject: `Verificá tu cuenta — ${brand.name}`,
+        html: buildVerifyEmailHtml(name, verifyUrl, brand),
       });
     } catch(e) {
       console.log("[MAIL] verify email falló:", e?.message);
@@ -1794,11 +1800,15 @@ app.post("/auth/forgot-password", forgotLimiter, async (req, res) => {
         : "http://localhost:5173";
 
     const resetUrl = `${base}/reset-password?token=${encodeURIComponent(rawToken)}&email=${encodeURIComponent(email)}`;
+    const brand = await getBranding();
+    const primary = brand.color_primary || "#3B82F6";
+    const accent  = brand.color_accent  || "#F59E0B";
+    const appName = brand.name || "Mi Portal";
 
     try {
       await sendEmail({
         to: user.email,
-        subject: "Restablecer tu contraseña — Mi Portal",
+        subject: `Restablecer tu contraseña — ${appName}`,
         html: `<!doctype html>
 <html lang="es">
 <head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
@@ -1807,20 +1817,22 @@ app.post("/auth/forgot-password", forgotLimiter, async (req, res) => {
   <tr><td align="center">
     <table width="480" cellspacing="0" cellpadding="0" style="width:480px;max-width:480px;">
       <tr><td style="padding-bottom:32px;text-align:center;">
-        <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#ffd200,#ff8a00);display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;">🍋</div>
-        <div style="font-family:Arial,sans-serif;color:#ffd200;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Mi Portal</div>
+        ${brand.logo_url
+          ? `<img src="${brand.logo_url}" alt="${appName}" style="max-height:56px;margin-bottom:12px;"/>`
+          : `<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,${primary},${accent});display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;">🔐</div>`}
+        <div style="font-family:Arial,sans-serif;color:${primary};font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">${appName}</div>
       </td></tr>
       <tr><td style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);border-radius:20px;overflow:hidden;">
-        <div style="padding:32px 32px 24px;background:linear-gradient(135deg,rgba(99,102,241,0.25),rgba(168,85,247,0.15));border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div style="padding:32px 32px 24px;background:linear-gradient(135deg,${primary}40,${accent}26);border-bottom:1px solid rgba(255,255,255,0.08);">
           <div style="font-family:Arial,sans-serif;color:#ffffff;font-size:22px;font-weight:900;margin-bottom:8px;">Restablecer contraseña</div>
           <div style="font-family:Arial,sans-serif;color:#94a3b8;font-size:14px;">Hola <b style="color:#e2e8f0;">${user.name || "usuario"}</b>, recibimos un pedido para cambiar tu contraseña.</div>
         </div>
         <div style="padding:28px 32px;">
           <p style="font-family:Arial,sans-serif;color:#cbd5e1;font-size:14px;line-height:1.6;margin:0 0 24px 0;">
-            Hacé click en el botón para crear una nueva contraseña. Este link es válido por <b style="color:#ffd200;">30 minutos</b>.
+            Hacé click en el botón para crear una nueva contraseña. Este link es válido por <b style="color:${primary};">30 minutos</b>.
           </p>
           <div style="text-align:center;margin-bottom:24px;">
-            <a href="${resetUrl}" style="display:inline-block;padding:14px 32px;border-radius:12px;background:linear-gradient(135deg,#ffd200,#ff8a00);color:#0b1020;text-decoration:none;font-family:Arial,sans-serif;font-weight:900;font-size:15px;">
+            <a href="${resetUrl}" style="display:inline-block;padding:14px 32px;border-radius:12px;background:linear-gradient(135deg,${primary},${accent});color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-weight:900;font-size:15px;">
               Restablecer contraseña
             </a>
           </div>
@@ -1834,7 +1846,7 @@ app.post("/auth/forgot-password", forgotLimiter, async (req, res) => {
         </div>
       </td></tr>
       <tr><td style="padding:20px 0 0;text-align:center;font-family:Arial,sans-serif;color:#334155;font-size:12px;">
-        © ${new Date().getFullYear()} Mi Portal. Todos los derechos reservados.
+        © ${new Date().getFullYear()} ${appName}. Todos los derechos reservados.
       </td></tr>
     </table>
   </td></tr>
@@ -1897,11 +1909,12 @@ app.post("/auth/resend-verification", authLimiter, async (req, res) => {
 
     const base = process.env.APP_URL || "http://localhost:5173";
     const verifyUrl = `${base}/verify-email?token=${token}`;
+    const brand = await getBranding();
     try {
       await sendEmail({
         to: user.email,
-        subject: "Verificá tu cuenta — Mi Portal",
-        html: buildVerifyEmailHtml(user.name || "", verifyUrl),
+        subject: `Verificá tu cuenta — ${brand.name}`,
+        html: buildVerifyEmailHtml(user.name || "", verifyUrl, brand),
       });
     } catch (e) {
       console.log("[MAIL] resend-verification falló:", e?.message);
