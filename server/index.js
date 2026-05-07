@@ -1,4 +1,8 @@
-require("dotenv").config();
+// Carga .env buscando primero en server/.env, luego en la raíz del repo.
+// Permite tanto setup standalone (server/.env) como monorepo (.env en raíz).
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
@@ -2891,8 +2895,7 @@ httpServer.listen(PORT, () => {
   console.log(`API corriendo en http://localhost:${PORT}`);
 });
 
-// Servir frontend
-const path = require("path");
+// Servir frontend (path ya declarado al tope para dotenv)
 const distPath = path.join(__dirname, "../client/dist");
 // ── POSTS / FEED ─────────────────────────────────────────────────────────────
 app.get("/api/posts/:userId", async (req, res) => {
