@@ -145,6 +145,7 @@ export default function PrivateChatsPage() {
 }
 
 function PrivateThread({ otherId, onSent, isMobile, onBack }) {
+  const navigate = useNavigate();   // bug fix Sprint 12: navigate(`/perfil/...`) se usa abajo pero no estaba declarado en este componente
   const [data, setData] = useState({ messages: [], target: null });
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
