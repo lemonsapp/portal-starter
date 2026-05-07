@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useBranding } from "../lib/branding.js";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -11,6 +12,7 @@ function useQuery() {
 export default function ResetPassword() {
   const q = useQuery();
   const navigate = useNavigate();
+  const branding = useBranding();
 
   const email = q.get("email") || "";
   const token = q.get("token") || "";
@@ -220,7 +222,7 @@ export default function ResetPassword() {
         <div className="rp-glow" />
         <div className="rp-right-inner">
           <div className="rp-top">
-            <div className="rp-logo">LEMON<span className="y">'S</span> ARG</div>
+            <div className="rp-logo">{(branding.name || "Mi Portal").toUpperCase()}</div>
           </div>
           <div className="rp-pitch">
             <h2>CUENTA<br/><span className="yl">SEGURA</span></h2>

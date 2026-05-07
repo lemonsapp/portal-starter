@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useBranding } from "../lib/branding.js";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export default function ForgotPassword() {
+  const branding = useBranding();
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
   const [success, setSuccess] = useState(false);
@@ -116,7 +118,7 @@ export default function ForgotPassword() {
         <div className="fp-glow" />
         <div className="fp-left-inner">
           <div className="fp-top">
-            <div className="fp-logo">LEMON<span className="y">'S</span><span className="fp-dot" /> ARG</div>
+            <div className="fp-logo">{(branding.name || "Mi Portal").toUpperCase()}</div>
             <div className="fp-eyebrow">Recuperar acceso</div>
           </div>
           <div className="fp-pitch">

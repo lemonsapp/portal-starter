@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useBranding } from "../lib/branding.js";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export default function Register() {
   const navigate = useNavigate();
+  const branding = useBranding();
   const [searchParams] = useSearchParams();
   const referrer = searchParams.get("r") || searchParams.get("ref") || "";
   const [step, setStep] = useState("form"); // form | success
@@ -253,7 +255,7 @@ export default function Register() {
         <div className="rg-glow" />
         <div className="rg-right-inner">
           <div className="rg-top">
-            <div className="rg-logo">LEMON<span className="y">'S</span><span className="rg-dot" /> ARG</div>
+            <div className="rg-logo">{(branding.name || "Mi Portal").toUpperCase()}</div>
             <button className="rg-back-link" onClick={() => navigate("/")}>← Volver al login</button>
           </div>
 

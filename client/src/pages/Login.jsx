@@ -11,11 +11,13 @@ import {
   shouldShowBiometricPrompt,
 } from "../lib/webauthn";
 import ActivateBiometricModal from "../components/ActivateBiometricModal";
+import { useBranding } from "../lib/branding.js";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export default function Login() {
   const navigate = useNavigate();
+  const branding = useBranding();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
@@ -270,8 +272,8 @@ export default function Login() {
         <img src="/icons/icon.svg" alt="" className="lg-logo-img" />
         <div className="lg-left-inner">
           <div className="lg-top">
-            <div className="lg-logo">LEMON<span className="y">'S</span><span className="lg-dot" /> ARG</div>
-            <div className="lg-eyebrow">Portal de envíos</div>
+            <div className="lg-logo">{(branding.name || "Mi Portal").toUpperCase()}</div>
+            <div className="lg-eyebrow">{branding.slogan || "Portal de envíos"}</div>
           </div>
         </div>
       </div>

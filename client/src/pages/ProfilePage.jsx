@@ -321,7 +321,7 @@ function PostCard({ post, onDelete, isOwn }) {
       <div style={{ display:"flex",alignItems:"center",gap:11,marginBottom:11 }}>
         <div style={{ width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#1a0820,#0a1825)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,border:"1.5px solid rgba(var(--brand-primary-rgb),.22)",flexShrink:0 }}>🪙</div>
         <div>
-          <div style={{ fontSize:13,fontWeight:800,background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{post.author||post.author_name||"LEMON"}</div>
+          <div style={{ fontSize:13,fontWeight:800,background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{post.author||post.author_name||"ANON"}</div>
           <div style={{ fontSize:9,color:"rgba(255,255,255,.25)",marginTop:1 }}>{post.time||"ahora"} · {post.category||"Texto"}</div>
         </div>
         <div style={{ marginLeft:"auto",padding:"3px 9px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color }}>{tc.label}</div>
@@ -644,7 +644,7 @@ export default function ProfilePage() {
           type: "text",
           likes: 0,
           comments: 0,
-          author: profile?.user?.name || "LEMON",
+          author: profile?.user?.name || "ANON",
         };
         setPosts(prev => [newPost, ...prev]);
       }
