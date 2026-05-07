@@ -211,66 +211,10 @@ el wizard del Sprint 2/3 esté activo).
 
 
 // ── Auto-migración al arrancar ────────────────────────────────────────────────
-(async () => {
-  try {
-    await db.query(`ALTER TABLE payments ADD COLUMN IF NOT EXISTS cost_usd NUMERIC(12,2) DEFAULT 0`);
-    await db.query(`ALTER TABLE payments ADD COLUMN IF NOT EXISTS profit_usd NUMERIC(12,2) DEFAULT 0`);
-    await db.query(`ALTER TABLE payment_items ADD COLUMN IF NOT EXISTS cost_usd NUMERIC(12,2) DEFAULT 0`);
-    await db.query(`ALTER TABLE payment_items ADD COLUMN IF NOT EXISTS profit_usd NUMERIC(12,2) DEFAULT 0`);
-    console.log("[MIGRATION] cost_usd/profit_usd columns ready");
-  } catch(e) { console.error("[MIGRATION ERROR]", e.message); }
-})();
 
 // ── Auto-migración: cash bot integration (gastos/ingresos con receipt + media en wa_messages)
-(async () => {
-  try {
-    await db.query(`ALTER TABLE expenses ADD COLUMN IF NOT EXISTS receipt_url TEXT`);
-    await db.query(`ALTER TABLE expenses ADD COLUMN IF NOT EXISTS exchange_rate NUMERIC`);
-    await db.query(`ALTER TABLE expenses ADD COLUMN IF NOT EXISTS created_via TEXT NOT NULL DEFAULT 'manual'`);
-    await db.query(`ALTER TABLE expenses ADD COLUMN IF NOT EXISTS wa_message_id BIGINT`);
-    await db.query(`ALTER TABLE additional_income ADD COLUMN IF NOT EXISTS receipt_url TEXT`);
-    await db.query(`ALTER TABLE additional_income ADD COLUMN IF NOT EXISTS exchange_rate NUMERIC`);
-    await db.query(`ALTER TABLE additional_income ADD COLUMN IF NOT EXISTS created_via TEXT NOT NULL DEFAULT 'manual'`);
-    await db.query(`ALTER TABLE additional_income ADD COLUMN IF NOT EXISTS wa_message_id BIGINT`);
-    await db.query(`ALTER TABLE wa_messages ADD COLUMN IF NOT EXISTS media_url TEXT`);
-    await db.query(`ALTER TABLE wa_messages ADD COLUMN IF NOT EXISTS media_type TEXT`);
-    await db.query(`ALTER TABLE wa_messages ADD COLUMN IF NOT EXISTS caption TEXT`);
-    console.log("[MIGRATION] cash bot integration columns ready");
-  } catch(e) { console.error("[MIGRATION cash bot ERROR]", e.message); }
-})();
 
 // ── Auto-migración: tabla ai_settings ────────────────────────────────────────
-(async () => {
-  try {
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS ai_settings (
-        key        TEXT PRIMARY KEY,
-        value      TEXT,
-        updated_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `);
-    // Insertar valores iniciales sólo si no existen
-    const defaults = [
-      ["global_enabled",     "true"],
-      ["limoncin_enabled",   "false"],  // se activa manualmente desde el panel
-      ["whatsapp_enabled",   "false"],  // se activa manualmente desde el panel
-      ["telegram_enabled",   "true"],
-      ["blocked_wa_chats",   "[]"],
-      ["op_line_usa_normal",     "on"],
-      ["op_line_usa_express",    "on"],
-      ["op_line_china_normal",   "on"],
-      ["op_line_china_express",  "on"],
-      ["op_line_europa_normal",  "off"],
-    ];
-    for (const [key, value] of defaults) {
-      await db.query(
-        `INSERT INTO ai_settings (key, value) VALUES ($1,$2) ON CONFLICT (key) DO NOTHING`,
-        [key, value]
-      );
-    }
-    console.log("[MIGRATION] ai_settings table ready");
-  } catch(e) { console.error("[MIGRATION ai_settings ERROR]", e.message); }
-})();
 
 // ── Auto-migración: tabla user_stories (24h) ─────────────────────────────────
 (async () => {
@@ -302,37 +246,6 @@ el wizard del Sprint 2/3 esté activo).
 })();
 
 // ── Auto-migración: tabla coupons ────────────────────────────────────────────
-(async () => {
-  try {
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS coupons (
-        id            SERIAL PRIMARY KEY,
-        code          TEXT UNIQUE NOT NULL,
-        description   TEXT,
-        discount_pct  INTEGER,
-        discount_usd  NUMERIC(10,2),
-        applies_to    TEXT DEFAULT 'all',  -- all | usa | china | europa | normal | express
-        min_kg        NUMERIC(8,2) DEFAULT 0,
-        max_uses      INTEGER,
-        used_count    INTEGER DEFAULT 0,
-        active        BOOLEAN DEFAULT TRUE,
-        starts_at     TIMESTAMPTZ DEFAULT NOW(),
-        expires_at    TIMESTAMPTZ,
-        created_by    INT,
-        created_at    TIMESTAMPTZ DEFAULT NOW()
-      )
-    `);
-    await db.query(`CREATE TABLE IF NOT EXISTS coupon_redemptions (
-      id          SERIAL PRIMARY KEY,
-      coupon_id   INT REFERENCES coupons(id) ON DELETE CASCADE,
-      user_id     INT,
-      shipment_id INT,
-      amount_off  NUMERIC(10,2),
-      redeemed_at TIMESTAMPTZ DEFAULT NOW()
-    )`);
-    console.log("[MIGRATION] coupons ready");
-  } catch (e) { console.error("[MIGRATION coupons ERROR]", e.message); }
-})();
 
 // ── Auto-migración: referidos (users.referrer_id + tabla referrals) ──────────
 (async () => {
@@ -2793,21 +2706,5 @@ if (telegram.isConfigured()) {
   console.warn("[telegram] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID no seteados — notificaciones desactivadas.");
 }
 // ── Migraciones post-arranque ─────────────────────────────────────────────────
-(async () => {
-  try {
-    await db.query(`CREATE TABLE IF NOT EXISTS ai_settings (key TEXT PRIMARY KEY, value TEXT, updated_at TIMESTAMPTZ DEFAULT NOW())`);
-    const defaults = [
-      ["global_enabled",   "true"],
-      ["limoncin_enabled", "false"],
-      ["whatsapp_enabled", "false"],
-      ["telegram_enabled", "true"],
-      ["blocked_wa_chats", "[]"],
-    ];
-    for (const [key, value] of defaults) {
-      await db.query(`INSERT INTO ai_settings (key, value) VALUES ($1,$2) ON CONFLICT (key) DO NOTHING`, [key, value]);
-    }
-    console.log("[MIGRATION] ai_settings table ready");
-  } catch(e) { console.error("[MIGRATION ai_settings ERROR]", e.message); }
-})();
 
 // force redeploy Sun Apr 19 00:33:45 UTC 2026
