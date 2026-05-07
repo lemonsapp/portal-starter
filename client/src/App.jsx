@@ -11,12 +11,10 @@ import { useEffect, useState } from "react";
 import Login from "./pages/Login.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
-import CashRegister from "./pages/CashRegister.jsx";
 import QuotePublic from "./pages/QuotePublic.jsx";
 import QuoteClient from "./pages/QuoteClient.jsx";
 import PWAManager from "./components/PWAManager.jsx";
 import LemonCoins from "./pages/LemonCoins.jsx";
-import CoinsOperator from "./pages/CoinsOperator.jsx";
 import LemonNotification from "./components/LemonNotification.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import Register from "./pages/Register.jsx";
@@ -141,8 +139,6 @@ export default function App() {
         <Route path="/chats/:otherId"   element={<AuthGate><PrivateChatsPage /></AuthGate>} />
 
         {/* Staff */}
-        <Route path="/caja"          element={<AuthGate allowRoles={["operator","admin"]}><CashRegister /></AuthGate>} />
-        <Route path="/coins/operator"element={<AuthGate allowRoles={["operator","admin"]}><CoinsOperator /></AuthGate>} />
 
         {/* Fallbacks */}
         <Route path="/client" element={<Navigate to="/inicio" replace />} />
