@@ -1,28 +1,23 @@
 ---
 // ProductFloatSlider — SPYLT-style horizontal pinned slider con composición
-// por capas pre-renderizadas (Base + Hero + Ruedas) + editorial cinemática
-// con SplitText char-reveal, counter, chip live, ornamentos SVG, partículas
-// canvas y glow shader CSS.
+// por capas pre-renderizadas (Base + Hero + Ruedas).
 //
-// Cada panel tiene su propio aspect-ratio (de base.png). Los layers
-// usan object-fit: contain para preservar la composición original.
+// Editorial: estructura minimal SPYLT-pure (eyebrow + h2 4 líneas con UN
+// mark + sub). Sin ornamentos, sin counter, sin partículas — el peso
+// visual lo lleva el slider, el editorial es soporte tipográfico.
 //
 // Skills aplicadas:
-//   • gsap-timeline                 → choreography multi-step
-//   • gsap-scrolltrigger            → pin horizontal + scrub + snap
-//                                    + entrance editorial toggleActions
 //   • gsap-plugins SplitText        → headline char reveal con mask
 //   • gsap-plugins CustomEase       → 'explode' en mark (overshoot)
-//   • gsap-plugins DrawSVGPlugin    → ornament asterisco draw-in
-//   • gsap-utils.toArray, random    → naturalismo en partículas e idle
+//   • gsap-timeline                 → entrance multi-step
+//   • gsap-scrolltrigger            → pin horizontal + scrub + snap
+//   • gsap-scrolltrigger toggleActions → entrance editorial
+//   • gsap-utils.toArray, random    → naturalismo
 //   • gsap-core matchMedia          → reduced-motion + responsive
 //   • gsap-performance              → transforms only, will-change
-//
-// Layout: editorial absolute izq, card absolute der, meta absolute bajo
-// card. Particles + noise overlay al fondo del pin-wrap.
 import { panels } from "../data/panels.js";
 
-// Prop legacy. Welcome screen del slider eliminado (VideoHero ya intro).
+// Prop legacy (welcome eliminado). Se ignora.
 const { showWelcome: _legacyShowWelcome = false } = Astro.props;
 ---
 <section
@@ -34,70 +29,35 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
 >
     <div class="psl__pin-wrap" data-psl-pin-wrap>
 
-        <!-- Particles canvas — fondo del pin, parallax mouse+scroll,
-             color tint per panel via fillStyle desde el script. -->
-        <canvas class="psl__particles" data-psl-particles aria-hidden="true"></canvas>
-
-        <!-- Grain noise overlay — textura sutil de papel/film -->
-        <div class="psl__noise" aria-hidden="true"></div>
-
-        <!-- Glow ambient — radial gradients que cambian color con panel -->
-        <div class="psl__glow" data-psl-glow aria-hidden="true"></div>
-
-        <!-- Counter gigante — "06/09" en serif italic flotante.
-             Se posiciona top-right ABSOLUTE en pin-wrap. -->
-        <div class="psl__counter" data-psl-counter aria-hidden="true">
-            <span class="psl__counter-current" data-psl-counter-current>
-                <span class="psl__counter-digit" data-counter-digit>0</span><span class="psl__counter-digit" data-counter-digit>1</span>
-            </span>
-            <span class="psl__counter-divider"></span>
-            <span class="psl__counter-total">{String(panels.length).padStart(2, "0")}</span>
-        </div>
-
-        <!-- Editorial — heading cinemática con SplitText char reveal -->
+        <!-- Editorial — estructura SPYLT-pure: eyebrow + h2 + sub.
+             El peso visual lo lleva el slider; el editorial es soporte
+             tipográfico, NO el protagonista. -->
         <header class="psl__editorial" data-psl-editorial>
-            <!-- Chip live: panel actualmente visible -->
-            <p class="psl__editorial-chip" data-psl-editorial-chip>
+            <p class="psl__editorial-eyebrow" data-psl-editorial-eyebrow>
                 <span class="psl__editorial-dot" aria-hidden="true"></span>
-                <span class="psl__editorial-chip-eyebrow">EN ESCENA</span>
-                <span class="psl__editorial-chip-sep" aria-hidden="true">·</span>
-                <span class="psl__editorial-chip-name" data-psl-editorial-chip-name>{panels[0].nombre}</span>
+                <span>NUESTROS PRODUCTOS</span>
             </p>
 
             <h2 class="psl__editorial-h" data-psl-editorial-h>
                 <span class="psl__editorial-line" data-psl-editorial-line>
-                    <span class="psl__editorial-line-inner">TENEMOS</span>
+                    <span class="psl__editorial-line-inner">TENEMOS 6</span>
                 </span>
-                <span class="psl__editorial-line psl__editorial-line--big" data-psl-editorial-line>
-                    <span class="psl__editorial-line-inner">
-                        <span class="psl__editorial-six">6</span>&nbsp;PRODUCTOS
-                    </span>
+                <span class="psl__editorial-line" data-psl-editorial-line>
+                    <span class="psl__editorial-line-inner">PRODUCTOS</span>
                 </span>
                 <span class="psl__editorial-line psl__editorial-line--mark-row" data-psl-editorial-line>
                     <span class="psl__editorial-line-inner">
-                        <!-- Asterisco SVG ornament: se dibuja con DrawSVG -->
-                        <svg class="psl__editorial-asterisk" data-psl-asterisk
-                             viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                            <g stroke="currentColor" stroke-width="2.5"
-                               stroke-linecap="round" fill="none">
-                                <path d="M12 4 L12 20"/>
-                                <path d="M4 12 L20 12"/>
-                                <path d="M6.3 6.3 L17.7 17.7"/>
-                                <path d="M17.7 6.3 L6.3 17.7"/>
-                            </g>
-                        </svg>
-                        <mark class="psl__editorial-mark" data-psl-editorial-mark>INSANAMENTE</mark>
+                        <mark class="psl__editorial-mark" data-psl-editorial-mark>OBSESIVAMENTE</mark>
                     </span>
                 </span>
                 <span class="psl__editorial-line" data-psl-editorial-line>
-                    <span class="psl__editorial-line-inner">EFECTIVOS<span class="psl__editorial-period">.</span></span>
+                    <span class="psl__editorial-line-inner">DISEÑADOS.</span>
                 </span>
             </h2>
 
             <p class="psl__editorial-sub" data-psl-editorial-sub>
-                <span class="psl__editorial-sub-mark">·</span>
-                Del esqueje al corte — fertilización de precisión
-                <em>diseñada con cabeza, cultivada con manos.</em>
+                Del esqueje al corte. Fórmulas de precisión
+                para cada momento del cultivo.
             </p>
         </header>
 
