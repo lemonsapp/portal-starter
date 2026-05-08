@@ -27,7 +27,10 @@ function initProductSlider() {
     const panels    = gsap.utils.toArray("[data-psl-panel]", root);
     const steps     = gsap.utils.toArray("[data-psl-step]", root);
     const hudNum    = root.querySelector("[data-psl-hud-num]");
-    const editorialMark = root.querySelector("[data-psl-editorial-mark]");
+    const editorialMark    = root.querySelector("[data-psl-editorial-mark]");
+    const editorialEyebrow = root.querySelector("[data-psl-editorial-eyebrow]");
+    const editorialLines   = gsap.utils.toArray("[data-psl-editorial-line]", root);
+    const editorialSub     = root.querySelector("[data-psl-editorial-sub]");
 
     const total = panels.length;
     if (!total || !track || !pinWrap) return;
@@ -38,6 +41,63 @@ function initProductSlider() {
         isStacked:    "(max-width: 900px)",
     }, (ctx) => {
         const { isHorizontal, isStacked, reduceMotion } = ctx.conditions;
+
+        // ============================================================
+        // 0) EDITORIAL ENTRANCE — fade-in stagger SPYLT-style
+        //    skill: gsap-timeline + gsap-scrolltrigger toggleActions
+        //    Eyebrow → headline lines (stagger) → mark (scale subtle) →
+        //    sub. Mostly opacity-driven, leve Y shift, ease power3.out.
+        //    Dispara una sola vez cuando el pin-wrap entra al viewport.
+        // ============================================================
+        const editorialEls = [editorialEyebrow, ...editorialLines, editorialSub].filter(Boolean);
+        if (reduceMotion) {
+            // Skip animation: dejar visible directamente
+            gsap.set(editorialEls, { autoAlpha: 1, y: 0 });
+            if (editorialMark) gsap.set(editorialMark, { scale: 1, autoAlpha: 1 });
+        } else if (editorialEls.length) {
+            // Estados iniciales
+            gsap.set(editorialEls, { autoAlpha: 0, y: 12 });
+            // Mark: GSAP toma control del transform; preservamos el tilt
+            // -1.6deg que viene del CSS sumándolo al estado inicial.
+            if (editorialMark) gsap.set(editorialMark, {
+                scaleX: 0.86, scaleY: 0.92, rotation: -1.6,
+                autoAlpha: 0, transformOrigin: "0 50%",
+            });
+
+            const tl = gsap.timeline({
+                defaults: { ease: "power3.out" },
+                scrollTrigger: {
+                    trigger: pinWrap,
+                    start: "top 75%",
+                    toggleActions: "play none none reverse",
+                },
+            });
+
+            if (editorialEyebrow) {
+                tl.to(editorialEyebrow, { autoAlpha: 1, y: 0, duration: 0.55 }, 0);
+            }
+
+            if (editorialLines.length) {
+                tl.to(editorialLines, {
+                    autoAlpha: 1,
+                    y: 0,
+                    duration: 0.85,
+                    stagger: 0.09,
+                }, 0.18);
+            }
+
+            if (editorialMark) {
+                tl.to(editorialMark, {
+                    scaleX: 1, scaleY: 1, autoAlpha: 1,
+                    duration: 0.6,
+                    ease: "back.out(1.4)",
+                }, "-=0.45");
+            }
+
+            if (editorialSub) {
+                tl.to(editorialSub, { autoAlpha: 1, y: 0, duration: 0.6 }, "-=0.25");
+            }
+        }
 
         // ============================================================
         // 1) Per-panel: idle micro-animaciones de cada capa
