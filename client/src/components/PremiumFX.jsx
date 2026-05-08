@@ -41,11 +41,18 @@ export default function PremiumFX() {
     resize();
 
     const TARGET = Math.min(48, Math.round(window.innerWidth / 28));
+    // Canvas2D NO resuelve CSS vars en color strings — leer los valores
+    // computados al init y armar literales rgba(). Si useBranding cambia
+    // los vars en runtime tras esto, el canvas mantiene los originales
+    // (acceptable: redibuja al re-mount al cambiar tenant).
+    const cs = getComputedStyle(document.documentElement);
+    const primaryRgb = (cs.getPropertyValue("--brand-primary-rgb").trim() || "82,183,136");
+    const accentRgb  = (cs.getPropertyValue("--brand-accent-rgb").trim()  || "212,165,116");
     const palette = [
-      "rgba(var(--brand-primary-rgb),",
-      "rgba(var(--brand-accent-rgb),",
-      "rgba(var(--brand-accent-rgb),",
-      "rgba(255,249,176,",
+      `rgba(${primaryRgb},`,
+      `rgba(${accentRgb},`,
+      `rgba(${accentRgb},`,
+      "rgba(237,233,224,",
     ];
     const rand = (a, b) => a + Math.random() * (b - a);
     const make = () => ({
@@ -97,7 +104,7 @@ export default function PremiumFX() {
           const d2 = dx * dx + dy * dy;
           if (d2 < 14000) {
             const o = (1 - d2 / 14000) * 0.08;
-            ctx.strokeStyle = `rgba(var(--brand-primary-rgb),${o.toFixed(3)})`;
+            ctx.strokeStyle = `rgba(${primaryRgb},${o.toFixed(3)})`;
             ctx.lineWidth = 0.6;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
@@ -372,7 +379,10 @@ export default function PremiumFX() {
     resize();
     window.addEventListener("resize", resize);
 
-    const colors = ["var(--brand-primary, #f5e03a)", "#fff9b0", "var(--brand-accent, #ff8c2a)", "var(--brand-accent, #ff5500)", "#ffffff"];
+    // Confetti: hex literales (canvas no resuelve var()). Paleta Holistic
+    // green + sand + warm white. Si necesitamos colores tenant-specific,
+    // leerlos via getComputedStyle como en el block superior.
+    const colors = ["#52b788", "#9ed8b5", "#d4a574", "#e8c79a", "#ffffff"];
     const burst = (x, y, count = 80) => {
       const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
       if (reduced) return;

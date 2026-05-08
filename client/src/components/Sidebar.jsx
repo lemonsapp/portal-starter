@@ -218,7 +218,6 @@ export default function Sidebar({ mobile = false }) {
             `}</style>
 
             <nav
-                ref={navRef}
                 className={mobile ? "sidebar-bottom" : "h-sb"}
                 style={mobile ? {
                     display: "flex", flexDirection: "row", width: "100%",
