@@ -1910,7 +1910,10 @@ button {
     color: rgba(26, 26, 26, 0.65);
 }
 
-/* ---------- PANEL ---------- */
+/* ---------- PANEL ----------
+   Layout: editorial absolute en columna izq (declarado arriba),
+   card absolute centrado vertical en columna der, meta absolute
+   debajo del card alineada al MISMO eje X que el card. */
 .psl__panel {
     position: relative;
     flex: 0 0 100vw;
@@ -1918,10 +1921,6 @@ button {
     height: 100vh;
     overflow: hidden;
     isolation: isolate;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
-    grid-template-rows: 1fr auto;
-    align-items: center;
 }
 
 /* Step number arriba-derecha (pequeño, discreto) */
@@ -1955,21 +1954,21 @@ button {
     color: var(--psl-bg, #1a1a1a);
 }
 
-/* ---------- CARD con capas apiladas ---------- */
-/* Aspecto 1.66:1 que matchea las layers source. Aspect ratio fijo
-   garantiza que las capas se compongan idénticas al Ejemplo.png. */
+/* ---------- CARD con capas apiladas ----------
+   Cada panel define su propio --psl-aspect (de base.png) → preserva la
+   composición original. object-fit: contain en cada layer evita el
+   cropping cuando dimensiones de hero/wheels difieren del base. */
 .psl__card {
-    position: relative;
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: center;
-    justify-self: center;
-    width: min(74vw, 980px);
-    aspect-ratio: 1.66 / 1;
-    max-height: 70vh;
-    margin-right: clamp(20px, 4vw, 60px);
+    position: absolute;
+    top: 50%;
+    right: clamp(28px, 5vw, 80px);
+    transform: translateY(-50%);
+    width: min(52vw, 720px);
+    aspect-ratio: var(--psl-aspect, 1.66) / 1;
+    max-height: 64vh;
     border-radius: clamp(20px, 2.6vw, 36px);
     overflow: hidden;
+    background: var(--psl-bg, #f7f3ea);
     box-shadow:
         0 30px 70px -20px rgba(26, 26, 26, 0.45),
         0 12px 28px -10px rgba(26, 26, 26, 0.22);
@@ -1999,22 +1998,51 @@ button {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
     pointer-events: none;
     user-select: none;
 }
-.psl__layer--base   { z-index: 0;  will-change: transform; }
+.psl__layer--base   { z-index: 0;  object-fit: cover; will-change: transform; }
 .psl__layer--wheel  { z-index: 10; will-change: transform; }
 .psl__layer--hero   { z-index: 20; will-change: transform; }
-.psl__layer--text   { z-index: 30; }
 
-/* ---------- META debajo del card ---------- */
+/* Label editorial overlay — reemplaza al texto.png (que venía cropped
+   en 6 de 9 paneles). Se posiciona arriba-izquierda del card con un
+   look tipográfico bold/italic similar a la "RACE" del Ejemplo.png. */
+.psl__layer--label {
+    z-index: 30;
+    inset: auto auto auto auto;
+    top: clamp(14px, 3vh, 28px);
+    left: clamp(16px, 3vw, 36px);
+    width: auto;
+    height: auto;
+    font-family: var(--f-title);
+    font-weight: 900;
+    font-style: italic;
+    font-size: clamp(2.2rem, 4.5vw, 4.6rem);
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: #fff;
+    text-transform: uppercase;
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    transform: skewX(-6deg);
+    transform-origin: 0 50%;
+    white-space: nowrap;
+    max-width: calc(100% - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------- META debajo del card ----------
+   Posicionada al mismo eje X que el card (right-aligned + width match)
+   para que el caption + CTA queden centrados sobre el card y no sobre
+   el panel completo. */
 .psl__panel-meta {
     position: absolute;
-    bottom: clamp(70px, 9vh, 110px);
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: clamp(40px, 6vh, 80px);
+    right: clamp(28px, 5vw, 80px);
+    width: min(52vw, 720px);
     z-index: 5;
     display: flex;
     flex-direction: column;

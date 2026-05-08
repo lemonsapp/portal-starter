@@ -48,7 +48,7 @@ function initProductSlider() {
             panels.forEach((panel, panelIdx) => {
                 const base   = panel.querySelector("[data-psl-base]");
                 const hero   = panel.querySelector("[data-psl-hero]");
-                const text   = panel.querySelector("[data-psl-text]");
+                const label  = panel.querySelector("[data-psl-label]");
                 const wheels = gsap.utils.toArray("[data-psl-wheel]", panel);
 
                 // Hero (bidón / pote): float vertical + leve rotation
@@ -98,9 +98,9 @@ function initProductSlider() {
                     });
                 });
 
-                // Texto: idle fade pulse muy sutil para que no se vea muerto
-                if (text) {
-                    gsap.fromTo(text,
+                // Label: idle fade pulse muy sutil para que no se vea muerto
+                if (label) {
+                    gsap.fromTo(label,
                         { autoAlpha: 0.92 },
                         {
                             autoAlpha: 1,
@@ -170,7 +170,7 @@ function initProductSlider() {
             panels.forEach((panel) => {
                 const card   = panel.querySelector("[data-psl-card]");
                 const hero   = panel.querySelector("[data-psl-hero]");
-                const text   = panel.querySelector("[data-psl-text]");
+                const label  = panel.querySelector("[data-psl-label]");
                 const wheels = gsap.utils.toArray("[data-psl-wheel]", panel);
 
                 // Card: leve scale + parallax X mientras pasa por viewport
@@ -207,17 +207,19 @@ function initProductSlider() {
                     );
                 }
 
-                // Texto: entra fade + slide desde derecha
-                if (text) {
-                    gsap.fromTo(text,
-                        { xPercent: 30, autoAlpha: 0 },
+                // Label: entra fade + slide desde la izquierda (porque el
+                // label está top-left del card, queda más natural que entre
+                // desde el inicio del scroll horizontal en lugar del final).
+                if (label) {
+                    gsap.fromTo(label,
+                        { xPercent: -30, autoAlpha: 0 },
                         {
                             xPercent: 0, autoAlpha: 1, ease: "none",
                             scrollTrigger: {
                                 containerAnimation: scrollTween,
                                 trigger: panel,
-                                start: "left 70%",
-                                end:   "left left",
+                                start: "left 80%",
+                                end:   "left 20%",
                                 scrub: true,
                             },
                         }

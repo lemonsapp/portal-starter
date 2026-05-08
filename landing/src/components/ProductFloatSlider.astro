@@ -1,10 +1,15 @@
 ---
 // ProductFloatSlider — SPYLT-style horizontal pinned slider con composición
-// por capas pre-renderizadas (Base + Hero + Ruedas + Texto) que llegan ya
-// posicionadas en su mismo canvas — apilarlas absolutas top:0/left:0 las
-// compone idénticas al Ejemplo.png que diseñó el cliente.
+// por capas pre-renderizadas (Base + Hero + Ruedas) que llegan ya
+// posicionadas en su mismo canvas. Apilarlas absolute top:0/left:0 con
+// object-fit: contain las preserva sin cropping ni stretch.
 //
-// 9 panels = 4 etapas LÍNEA PRO + 5 variantes LÍNEA RACE.
+// Cada panel tiene su PROPIO aspect-ratio (de base.png) — los PRO son
+// más wide (~2.27:1) y los RACE más cuadrados (~1.3-1.6:1).
+//
+// El label tipográfico ("RACE", "PART A", etc.) se renderiza vía CSS
+// porque los texto.png originales venían cropped al bounding box en
+// 6 de 9 paneles (no se podía estirar sin distorsionar).
 //
 // Skills aplicadas (citadas inline en el script):
 //   • gsap-timeline             → entrada/idle multi-layer por panel
@@ -13,14 +18,10 @@
 //   • gsap-utils.toArray, random→ stagger naturalista
 //   • gsap-core matchMedia      → reduced-motion + breakpoint mobile
 //   • gsap-performance          → transforms only, will-change controlado
-//   • frontend-design           → editorial type, asimetría, ritmo SPYLT
-//   • accessibility             → aria-roledescription, aria-selected
 import { panels } from "../data/panels.js";
 
-// Prop showWelcome: legacy. La pantalla de welcome fue removida (el
-// VideoHero del home ya cumple ese rol). El prop se ignora pero queda
-// declarado para no romper imports antiguos. Cuando ningún caller lo use
-// más, eliminar.
+// Prop showWelcome: legacy. Welcome screen del slider fue eliminado
+// (el VideoHero del home cumple ese rol). Se ignora.
 const { showWelcome: _legacyShowWelcome = false } = Astro.props;
 ---
 <section
@@ -30,13 +31,9 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
     aria-label="9 productos Holistic"
     id="productos"
 >
-    <!-- ============================================================
-         PIN HORIZONTAL — track con 9 panels SPYLT-style
-         ============================================================ -->
     <div class="psl__pin-wrap" data-psl-pin-wrap>
 
-        <!-- Editorial headline — fixed durante el pin, no se mueve
-             mientras los panels slidean a su lado (estilo SPYLT
+        <!-- Editorial headline — fixed durante el pin (estilo SPYLT
              "WE HAVE 6 FREAKING DELICIOUS FLAVORS"). -->
         <header class="psl__editorial" data-psl-editorial aria-hidden="false">
             <p class="psl__editorial-eyebrow">
@@ -68,7 +65,7 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                         data-psl-panel
                         data-index={i}
                         data-slug={p.slug}
-                        style={`--psl-bg: ${p.bgColor}; --psl-accent: ${p.accentColor};`}
+                        style={`--psl-bg: ${p.bgColor}; --psl-accent: ${p.accentColor}; --psl-aspect: ${p.aspect};`}
                         role="group"
                         aria-roledescription="slide"
                         aria-label={`${i + 1} de ${panels.length}: ${p.nombre}`}
@@ -76,7 +73,8 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                         <span class="psl__panel-step" aria-hidden="true">{num}</span>
                         <p class="psl__panel-line">LÍNEA {p.linea}</p>
 
-                        <!-- Card con todas las capas apiladas -->
+                        <!-- Card con todas las capas apiladas (object-fit: contain
+                             preserva la composición original de cada layer). -->
                         <div class="psl__card" data-psl-card>
                             <span class="psl__card-shadow" aria-hidden="true"></span>
 
@@ -112,15 +110,14 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                                 loading={i === 0 ? "eager" : "lazy"}
                             />
 
-                            <img
-                                class="psl__layer psl__layer--text"
-                                src={p.layers.texto}
-                                alt=""
-                                aria-hidden="true"
-                                data-psl-text
-                                draggable="false"
-                                loading={i === 0 ? "eager" : "lazy"}
-                            />
+                            <!-- Label tipográfico overlay (reemplaza texto.png).
+                                 Render via CSS porque los texto.png originales
+                                 venían cropped en 6 de 9 paneles. -->
+                            {p.label && (
+                                <span class="psl__layer psl__layer--label" data-psl-label aria-hidden="true">
+                                    {p.label}
+                                </span>
+                            )}
                         </div>
 
                         <!-- Meta debajo del card -->
@@ -146,7 +143,7 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
             })}
         </div>
 
-        <!-- HUD bottom — counter + steps + scroll hint -->
+        <!-- HUD bottom -->
         <div class="psl__hud">
             <div class="psl__hud-counter" aria-hidden="true">
                 <span class="psl__hud-num" data-psl-hud-num>01</span>
