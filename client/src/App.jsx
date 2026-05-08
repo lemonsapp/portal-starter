@@ -112,8 +112,7 @@ function AppLayout({ children, me, refreshMe }) {
           </div>
         </main>
       </div>
-      {/* Sidebar bottom en mobile — visible en todas las rutas autenticadas incluso /coins/operator */}
-      {/* Sidebar bottom en mobile */}
+      {/* Sidebar bottom en mobile — visible en todas las rutas autenticadas */}
       {isMobile && (
         <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:400, background:"rgba(5,5,5,0.98)", borderTop:"1px solid rgba(var(--brand-primary-rgb),0.1)", display:"flex", justifyContent:"space-around", padding:"6px 0 max(6px,env(safe-area-inset-bottom))" }}>
           <Sidebar mobile />

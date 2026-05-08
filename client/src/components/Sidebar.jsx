@@ -6,10 +6,10 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 const NAV_STAFF = [
-  { path: "/inicio",         label: "Inicio",      icon: "🏠", color: "#22c55e" },
-  { path: "/operator",       label: "Operador",    icon: "🗂️",  color: "var(--brand-primary, #f5e03a)" },
-  { path: "/coins/operator", label: "Coins",       icon: "🪙", color: "var(--brand-primary, #f5e03a)" },
-  { path: "/chat",           label: "Chat",        icon: "💬", color: "#a78bfa" },
+  { path: "/inicio", label: "Inicio", icon: "🏠", color: "#22c55e" },
+  { path: "/coins",  label: "Coins",  icon: "🪙", color: "var(--brand-primary, #f5e03a)" },
+  { path: "/chat",   label: "Chat",   icon: "💬", color: "#a78bfa" },
+  { path: "/admin",  label: "Admin",  icon: "🛡️",  color: "#ef4444" },
 ];
 
 const NAV_CLIENT = [
