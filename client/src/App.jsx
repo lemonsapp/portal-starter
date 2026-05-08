@@ -4,6 +4,7 @@ import { UserProvider } from "./context/UserContext.jsx";
 import { ToastProvider } from "./components/ToastReward.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import Topbar from "./components/Topbar.jsx";
+import Footer from "./components/Footer.jsx";
 import PremiumFX from "./components/PremiumFX.jsx";
 import { useBranding, useFeatureFlag } from "./lib/branding.js";
 import { useEffect, useState, lazy, Suspense } from "react";
@@ -106,10 +107,11 @@ function AppLayout({ children, me, refreshMe }) {
       <Topbar />
       <div style={{ display:"flex", flex:1, position:"relative" }}>
         {!isMobile && <Sidebar />}
-        <main style={{ flex:1, overflowY:"auto", minWidth:0 }}>
-          <div key={location.pathname} className="fxPage">
+        <main style={{ flex:1, overflowY:"auto", minWidth:0, display:"flex", flexDirection:"column" }}>
+          <div key={location.pathname} className="fxPage" style={{ flex:1 }}>
             {children}
           </div>
+          {!isMobile && <Footer />}
         </main>
       </div>
       {/* Sidebar bottom en mobile — visible en todas las rutas autenticadas */}

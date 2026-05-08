@@ -8,6 +8,112 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@300;400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
+/* =========================================================
+   HOLISTIC DESIGN TOKENS — premium dark theme tokens.
+   Naming: --h-* para evitar colisión con tokens legacy.
+   Los componentes nuevos (Sidebar, Topbar, Footer, etc.)
+   consumen estos. Los legacy siguen funcionando.
+   ========================================================= */
+:root {
+  /* ── Surfaces (dark ascending) ── */
+  --h-bg-0:        #050708;
+  --h-bg-1:        #0a0d10;
+  --h-bg-2:        #131618;
+  --h-bg-3:        #1c2024;
+  --h-bg-glass:    rgba(10, 13, 16, 0.72);
+
+  /* ── Text scale ── */
+  --h-text-1:      #ede9e0;
+  --h-text-2:      rgba(237, 233, 224, 0.72);
+  --h-text-3:      rgba(237, 233, 224, 0.48);
+  --h-text-4:      rgba(237, 233, 224, 0.28);
+  --h-text-faint:  rgba(237, 233, 224, 0.12);
+
+  /* ── Borders / dividers ── */
+  --h-line-1:      rgba(237, 233, 224, 0.06);
+  --h-line-2:      rgba(237, 233, 224, 0.10);
+  --h-line-3:      rgba(237, 233, 224, 0.16);
+
+  /* ── Brand: Holistic green + sand accent ──
+     Pisados en runtime por useBranding desde /api/config/public.
+     Fallbacks son starter genéricos verdes. */
+  --h-green:       var(--brand-primary, #52b788);
+  --h-green-soft:  color-mix(in srgb, var(--brand-primary, #52b788) 12%, transparent);
+  --h-green-mid:   color-mix(in srgb, var(--brand-primary, #52b788) 26%, transparent);
+  --h-green-glow:  color-mix(in srgb, var(--brand-primary, #52b788) 40%, transparent);
+
+  --h-sand:        var(--brand-accent, #d4a574);
+  --h-sand-soft:   color-mix(in srgb, var(--brand-accent, #d4a574) 12%, transparent);
+  --h-sand-mid:    color-mix(in srgb, var(--brand-accent, #d4a574) 26%, transparent);
+
+  /* ── Semantic states ── */
+  --h-danger:      #ef4444;
+  --h-danger-soft: rgba(239, 68, 68, 0.12);
+  --h-success:     #22c55e;
+  --h-warn:        #f59e0b;
+  --h-info:        #3b82f6;
+
+  /* ── Type scale (rem-based, root 16px) ── */
+  --h-text-xs:     0.6875rem;   /* 11 */
+  --h-text-sm:     0.8125rem;   /* 13 */
+  --h-text-base:   0.9375rem;   /* 15 */
+  --h-text-md:     1.0625rem;   /* 17 */
+  --h-text-lg:     1.375rem;    /* 22 */
+  --h-text-xl:     1.75rem;     /* 28 */
+  --h-text-2xl:    2.25rem;     /* 36 */
+  --h-text-3xl:    3rem;        /* 48 */
+  --h-text-4xl:    4rem;        /* 64 */
+
+  /* ── Spacing scale (4px base) ── */
+  --h-sp-1:        0.25rem;     /* 4  */
+  --h-sp-2:        0.5rem;      /* 8  */
+  --h-sp-3:        0.75rem;     /* 12 */
+  --h-sp-4:        1rem;        /* 16 */
+  --h-sp-5:        1.25rem;     /* 20 */
+  --h-sp-6:        1.5rem;      /* 24 */
+  --h-sp-7:        1.75rem;     /* 28 */
+  --h-sp-8:        2rem;        /* 32 */
+  --h-sp-10:       2.5rem;      /* 40 */
+  --h-sp-12:       3rem;        /* 48 */
+  --h-sp-16:       4rem;        /* 64 */
+  --h-sp-20:       5rem;        /* 80 */
+
+  /* ── Radius scale ── */
+  --h-r-xs:        6px;
+  --h-r-sm:        8px;
+  --h-r-md:        12px;
+  --h-r-lg:        16px;
+  --h-r-xl:        24px;
+  --h-r-2xl:       32px;
+  --h-r-full:      9999px;
+
+  /* ── Elevation (focused, dark mode tuned) ── */
+  --h-el-1:        0 1px 2px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--h-line-1) inset;
+  --h-el-2:        0 4px 14px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--h-line-1) inset;
+  --h-el-3:        0 14px 38px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--h-line-2) inset;
+  --h-el-4:        0 28px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--h-line-2) inset;
+  --h-glow-green:  0 0 24px var(--h-green-glow);
+
+  /* ── Transitions (smooth, calm — never bouncy/elastic for chrome) ── */
+  --h-trans-fast:  150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --h-trans-base:  240ms cubic-bezier(0.4, 0, 0.2, 1);
+  --h-trans-slow:  420ms cubic-bezier(0.4, 0, 0.2, 1);
+  --h-ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --h-ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --h-ease-spring: cubic-bezier(0.34, 1.46, 0.64, 1);
+
+  /* ── Fonts (locked stacks; ya importados arriba) ── */
+  --h-font-sans:    'Barlow', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --h-font-display: 'Bebas Neue', 'Barlow Condensed', ui-sans-serif, sans-serif;
+  --h-font-mono:    'DM Mono', ui-monospace, 'JetBrains Mono', Menlo, monospace;
+
+  /* ── Layout chrome ── */
+  --h-topbar-h:    64px;
+  --h-sidebar-w:   76px;
+  --h-content-mx:  clamp(20px, 4vw, 72px);
+}
+
+
 :root {
   /* Brand */
   --lemon:    var(--brand-primary, #f5e03a);
