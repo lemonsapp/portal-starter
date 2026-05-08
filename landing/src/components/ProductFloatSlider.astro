@@ -1,146 +1,137 @@
 ---
-// ProductFloatSlider — Welcome intro + SPYLT horizontal pinned slider.
+// ProductFloatSlider — SPYLT-style horizontal pinned slider con composición
+// por capas pre-renderizadas (Base + Hero + Ruedas + Texto) que llegan ya
+// posicionadas en su mismo canvas — apilarlas absolutas top:0/left:0 las
+// compone idénticas al Ejemplo.png que diseñó el cliente.
 //
-// Estructura:
-//   1) WELCOME (100vh) — bienvenida cinemática que entra al cargar la
-//      página. Headline gigante, claim, ghost-row con los 6 productos,
-//      scroll hint. Anima en una timeline coordinada cuando el Loader
-//      libera (clase .is-loaded en <html>).
-//   2) PIN WRAP — slider SPYLT (horizontal scroll pinned con 6 panels,
-//      cada uno fullscreen con producto + nombre HUGE outlined detrás).
+// 9 panels = 4 etapas LÍNEA PRO + 5 variantes LÍNEA RACE.
 //
-// Skills aplicadas (citadas en script):
-//   • gsap-timeline           → secuencia welcome multi-step
-//   • gsap-scrolltrigger      → pin + scrub + snap + containerAnimation
-//   • gsap-plugins SplitText  → headline chars stagger
-//   • gsap-utils.toArray, mapRange
-//   • gsap-core matchMedia    → reduced-motion + responsive
-//   • gsap-performance        → transforms only, will-change limitado
-//   • frontend-design         → typography editorial, asimetría, ghost row
-//   • accessibility           → aria-roledescription="carousel", aria-live
-import { flavors } from "../data/flavors.js";
+// Skills aplicadas (citadas inline en el script):
+//   • gsap-timeline             → entrada/idle multi-layer por panel
+//   • gsap-scrolltrigger        → pin horizontal + scrub + snap
+//   • gsap-scrolltrigger        → containerAnimation parallax sub-elementos
+//   • gsap-utils.toArray, random→ stagger naturalista
+//   • gsap-core matchMedia      → reduced-motion + breakpoint mobile
+//   • gsap-performance          → transforms only, will-change controlado
+//   • frontend-design           → editorial type, asimetría, ritmo SPYLT
+//   • accessibility             → aria-roledescription, aria-selected
+import { panels } from "../data/panels.js";
 
-const ROUTES = {
-    "bio-estimulante": "/bio-estimulante",
-    "cloner":          "/cloner",
-    "linea-race":      "/linea-race",
-    "linea-elite":     "/linea-elite",
-    "linea-pro":       "/linea-pro",
-    "day-0":           "/day-0",
-};
-
-// Cuando el home monta el VideoHero arriba, el welcome del slider
-// queda redundante (doble intro). showWelcome={false} esconde la
-// primera viewport del componente y deja sólo el pin horizontal con
-// los 6 productos.
-const { showWelcome = true } = Astro.props;
+// Prop showWelcome: legacy. La pantalla de welcome fue removida (el
+// VideoHero del home ya cumple ese rol). El prop se ignora pero queda
+// declarado para no romper imports antiguos. Cuando ningún caller lo use
+// más, eliminar.
+const { showWelcome: _legacyShowWelcome = false } = Astro.props;
 ---
 <section
-    class:list={["psl", !showWelcome && "psl--no-welcome"]}
+    class="psl"
     data-product-slider
-    data-show-welcome={showWelcome ? "true" : "false"}
     aria-roledescription="carousel"
-    aria-label="6 productos Holistic"
+    aria-label="9 productos Holistic"
     id="productos"
 >
-    {showWelcome && (
     <!-- ============================================================
-         1) WELCOME — intro cinemática full-viewport
+         PIN HORIZONTAL — track con 9 panels SPYLT-style
          ============================================================ -->
-    <div class="psl__welcome" data-psl-welcome>
-        <div class="psl__welcome-bg" aria-hidden="true">
-            <span class="psl__welcome-blob psl__welcome-blob--a" data-psl-welcome-blob></span>
-            <span class="psl__welcome-blob psl__welcome-blob--b" data-psl-welcome-blob></span>
-            <span class="psl__welcome-blob psl__welcome-blob--c" data-psl-welcome-blob></span>
-        </div>
+    <div class="psl__pin-wrap" data-psl-pin-wrap>
 
-        <header class="psl__welcome-head">
-            <p class="psl__welcome-eyebrow" data-psl-welcome-eyebrow>
-                <span class="psl__welcome-dot" aria-hidden="true"></span>
-                <span>HOLISTIC GROWSHOP</span>
+        <!-- Editorial headline — fixed durante el pin, no se mueve
+             mientras los panels slidean a su lado (estilo SPYLT
+             "WE HAVE 6 FREAKING DELICIOUS FLAVORS"). -->
+        <header class="psl__editorial" data-psl-editorial aria-hidden="false">
+            <p class="psl__editorial-eyebrow">
+                <span class="psl__editorial-dot" aria-hidden="true"></span>
+                <span>PORTFOLIO HOLISTIC</span>
             </p>
-
-            <h1 class="psl__welcome-headline" data-psl-welcome-headline>
-                <span class="psl__welcome-line">El sistema completo</span>
-                <span class="psl__welcome-line">para </span>
-                <span class="psl__welcome-line psl__welcome-line--em">resultados superiores.</span>
-            </h1>
-
-            <p class="psl__welcome-sub" data-psl-welcome-sub>
-                6 productos que conforman un ciclo. De la raíz al corte —
-                desde el primer esqueje hasta el último día de la cosecha.
+            <h2 class="psl__editorial-h" data-psl-editorial-h>
+                <span class="psl__editorial-line">TENEMOS 9</span>
+                <span class="psl__editorial-line">PRODUCTOS</span>
+                <span class="psl__editorial-line">
+                    <mark class="psl__editorial-mark" data-psl-editorial-mark>INSANAMENTE</mark>
+                </span>
+                <span class="psl__editorial-line">EFECTIVOS</span>
+            </h2>
+            <p class="psl__editorial-sub">
+                4 etapas Línea PRO · 5 variantes Línea RACE. Fertilización
+                de precisión para cada momento del cultivo.
             </p>
         </header>
 
-        <!-- Ghost row: los 6 productos como teaser flotando, con paleta -->
-        <ul class="psl__welcome-row" data-psl-welcome-row aria-hidden="true">
-            {flavors.map((f, i) => (
-                <li
-                    class="psl__welcome-ghost"
-                    data-psl-welcome-ghost
-                    data-index={i}
-                    style={`--ghost-color: ${f.color}; --ghost-bg: ${f.bgGradient};`}
-                >
-                    <span class="psl__welcome-ghost-bg" aria-hidden="true"></span>
-                    <img src={f.producto} alt="" loading={i < 3 ? "eager" : "lazy"} draggable="false" />
-                </li>
-            ))}
-        </ul>
-
-        <!-- Scroll hint -->
-        <p class="psl__welcome-scroll" data-psl-welcome-scroll aria-hidden="true">
-            <span>DESLIZÁ PARA EXPLORAR</span>
-            <span class="psl__welcome-scroll-line"></span>
-        </p>
-    </div>
-    )}
-
-    <!-- ============================================================
-         2) PIN HORIZONTAL — slider SPYLT-style con 6 panels
-         ============================================================ -->
-    <div class="psl__pin-wrap" data-psl-pin-wrap>
+        <!-- Track con panels -->
         <div class="psl__track" data-psl-track>
-            {flavors.map((f, i) => {
+            {panels.map((p, i) => {
                 const num = String(i + 1).padStart(2, "0");
-                const route = ROUTES[f.slug] || `/${f.slug}`;
+                const wheels = p.layers.wheels ?? [];
                 return (
                     <article
                         class={`psl__panel${i === 0 ? " is-active" : ""}`}
                         data-psl-panel
                         data-index={i}
-                        data-slug={f.slug}
-                        data-color={f.color}
-                        style={`--flavor-color: ${f.color}; --flavor-accent: ${f.accentColor}; --flavor-bg-gradient: ${f.bgGradient};`}
+                        data-slug={p.slug}
+                        style={`--psl-bg: ${p.bgColor}; --psl-accent: ${p.accentColor};`}
                         role="group"
                         aria-roledescription="slide"
-                        aria-label={`${i + 1} de ${flavors.length}: ${f.nombre}`}
+                        aria-label={`${i + 1} de ${panels.length}: ${p.nombre}`}
                     >
-                        <span class="psl__panel-bg" aria-hidden="true"></span>
+                        <span class="psl__panel-step" aria-hidden="true">{num}</span>
+                        <p class="psl__panel-line">LÍNEA {p.linea}</p>
 
-                        <span class="psl__panel-num" aria-hidden="true">{num}</span>
-                        <p class="psl__panel-stage">ETAPA {num}</p>
+                        <!-- Card con todas las capas apiladas -->
+                        <div class="psl__card" data-psl-card>
+                            <span class="psl__card-shadow" aria-hidden="true"></span>
 
-                        <span class="psl__panel-bigname" data-psl-bigname aria-hidden="true">{f.nombre}</span>
-
-                        <div class="psl__panel-stage-img" data-psl-panel-img>
-                            <span class="psl__panel-halo" aria-hidden="true"></span>
                             <img
-                                src={f.producto}
-                                alt={f.nombre}
-                                loading={i === 0 ? "eager" : "lazy"}
+                                class="psl__layer psl__layer--base"
+                                src={p.layers.base}
+                                alt=""
+                                aria-hidden="true"
+                                data-psl-base
                                 draggable="false"
+                                loading={i === 0 ? "eager" : "lazy"}
                             />
-                            <span class="psl__panel-shadow" aria-hidden="true"></span>
+
+                            {wheels.map((w, k) => (
+                                <img
+                                    class="psl__layer psl__layer--wheel"
+                                    data-psl-wheel
+                                    data-wheel-index={k}
+                                    src={w}
+                                    alt=""
+                                    aria-hidden="true"
+                                    draggable="false"
+                                    loading="lazy"
+                                />
+                            ))}
+
+                            <img
+                                class="psl__layer psl__layer--hero"
+                                src={p.layers.hero}
+                                alt={p.nombre}
+                                data-psl-hero
+                                draggable="false"
+                                loading={i === 0 ? "eager" : "lazy"}
+                            />
+
+                            <img
+                                class="psl__layer psl__layer--text"
+                                src={p.layers.texto}
+                                alt=""
+                                aria-hidden="true"
+                                data-psl-text
+                                draggable="false"
+                                loading={i === 0 ? "eager" : "lazy"}
+                            />
                         </div>
 
-                        <footer class="psl__panel-footer">
-                            <h3 class="psl__panel-name">{f.nombre}</h3>
+                        <!-- Meta debajo del card -->
+                        <footer class="psl__panel-meta">
+                            <h3 class="psl__panel-name">{p.nombre}</h3>
                             <a
                                 class="psl__panel-cta"
-                                href={route}
+                                href={p.route}
                                 data-cursor="hover"
                                 data-magnetic
-                                data-magnetic-strength="0.18"
+                                data-magnetic-strength="0.2"
                             >
                                 <span>VER PRODUCTO</span>
                                 <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -155,20 +146,21 @@ const { showWelcome = true } = Astro.props;
             })}
         </div>
 
+        <!-- HUD bottom — counter + steps + scroll hint -->
         <div class="psl__hud">
             <div class="psl__hud-counter" aria-hidden="true">
                 <span class="psl__hud-num" data-psl-hud-num>01</span>
                 <span class="psl__hud-sep">/</span>
-                <span class="psl__hud-total">{String(flavors.length).padStart(2, "0")}</span>
+                <span class="psl__hud-total">{String(panels.length).padStart(2, "0")}</span>
             </div>
             <div class="psl__hud-steps" role="tablist" aria-label="Productos">
-                {flavors.map((f, i) => (
+                {panels.map((p, i) => (
                     <button
                         class={`psl__hud-step${i === 0 ? " is-active" : ""}`}
                         data-psl-step
                         data-index={i}
                         role="tab"
-                        aria-label={`Ir a ${f.nombre}`}
+                        aria-label={`Ir a ${p.nombre}`}
                         aria-selected={i === 0 ? "true" : "false"}
                         type="button"
                         data-cursor="hover"
