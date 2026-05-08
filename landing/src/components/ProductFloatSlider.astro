@@ -120,15 +120,17 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                             )}
                         </div>
 
-                        <!-- Meta debajo del card -->
+                        <!-- Meta debajo del card — sólo CTA. El nombre del
+                             producto ya lo da el label dentro del card +
+                             la pill LÍNEA arriba-derecha. -->
                         <footer class="psl__panel-meta">
-                            <h3 class="psl__panel-name">{p.nombre}</h3>
                             <a
                                 class="psl__panel-cta"
                                 href={p.route}
                                 data-cursor="hover"
                                 data-magnetic
                                 data-magnetic-strength="0.2"
+                                aria-label={`Ver producto ${p.nombre}`}
                             >
                                 <span>VER PRODUCTO</span>
                                 <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
