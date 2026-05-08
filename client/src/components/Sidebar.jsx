@@ -24,29 +24,48 @@ const Icon = ({ name }) => {
         "aria-hidden": "true",
     };
     switch (name) {
-        case "home":    return <svg {...props}><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>;
-        case "user":    return <svg {...props}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>;
-        case "coins":   return <svg {...props}><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M3 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/><ellipse cx="17" cy="14" rx="4" ry="2"/><path d="M13 14v4c0 1.1 1.8 2 4 2s4-.9 4-2v-4"/></svg>;
-        case "chat":    return <svg {...props}><path d="M4 6.5C4 5.7 4.7 5 5.5 5h13c.8 0 1.5.7 1.5 1.5v9c0 .8-.7 1.5-1.5 1.5H10l-4 3v-3H5.5c-.8 0-1.5-.7-1.5-1.5z"/></svg>;
-        case "admin":   return <svg {...props}><path d="M12 3l8 3v5c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>;
-        case "shop":    return <svg {...props}><path d="M3 8h18l-1.5 11a2 2 0 0 1-2 1.7H6.5a2 2 0 0 1-2-1.7z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>;
-        case "package": return <svg {...props}><path d="m3.3 7 8.7-4 8.7 4v10l-8.7 4-8.7-4z"/><path d="M3.3 7 12 11l8.7-4"/><path d="M12 11v10"/></svg>;
-        default:        return null;
+        case "home":     return <svg {...props}><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>;
+        case "user":     return <svg {...props}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>;
+        case "coins":    return <svg {...props}><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M3 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/><ellipse cx="17" cy="14" rx="4" ry="2"/><path d="M13 14v4c0 1.1 1.8 2 4 2s4-.9 4-2v-4"/></svg>;
+        case "chat":     return <svg {...props}><path d="M4 6.5C4 5.7 4.7 5 5.5 5h13c.8 0 1.5.7 1.5 1.5v9c0 .8-.7 1.5-1.5 1.5H10l-4 3v-3H5.5c-.8 0-1.5-.7-1.5-1.5z"/></svg>;
+        case "admin":    return <svg {...props}><path d="M12 3l8 3v5c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>;
+        case "shop":     return <svg {...props}><path d="M3 8h18l-1.5 11a2 2 0 0 1-2 1.7H6.5a2 2 0 0 1-2-1.7z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg>;
+        case "package":  return <svg {...props}><path d="m3.3 7 8.7-4 8.7 4v10l-8.7 4-8.7-4z"/><path d="M3.3 7 12 11l8.7-4"/><path d="M12 11v10"/></svg>;
+        // Coins admin: shield + monedas adentro = gestión de saldos
+        case "shield-coins": return <svg {...props}><path d="M12 3l8 3v5c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><circle cx="12" cy="11" r="2.2"/><path d="M9 14.4c1 .8 2 1.1 3 1.1s2-.3 3-1.1"/></svg>;
+        // Settings: cog/gear minimal de 8 dientes
+        case "settings": return <svg {...props}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9 1.7 1.7 0 0 0 4.3 7.2l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>;
+        default:         return null;
     }
 };
 
-const NAV_STAFF = [
-    { path: "/inicio", label: "Inicio", icon: "home" },
-    { path: "/coins",  label: "Coins",  icon: "coins" },
-    { path: "/chat",   label: "Chat",   icon: "chat" },
-    { path: "/admin",  label: "Admin",  icon: "admin" },
-];
-
+/* ── Navs por rol ──
+   - CLIENT: user regular (4 items, no admin)
+   - OPERATOR: staff non-admin (3 items, sin admin panel acceso)
+   - ADMIN: admin (5 items, incluye shortcuts directos a admin coins +
+     setup wizard). El user pidió específicamente que el panel coins
+     de administrador tenga su propio enlace en sidebar. */
 const NAV_CLIENT = [
     { path: "/inicio",  label: "Inicio",   icon: "home" },
     { path: "/perfil",  label: "Perfil",   icon: "user" },
     { path: "/coins",   label: "Coins",    icon: "coins" },
     { path: "/chat",    label: "Chat",     icon: "chat" },
+];
+
+const NAV_OPERATOR = [
+    { path: "/inicio", label: "Inicio", icon: "home" },
+    { path: "/coins",  label: "Coins",  icon: "coins" },
+    { path: "/chat",   label: "Chat",   icon: "chat" },
+];
+
+const NAV_ADMIN = [
+    { path: "/inicio",       label: "Inicio",       icon: "home" },
+    { path: "/coins",        label: "Coins",        icon: "coins" },
+    // Shortcut directo al panel admin: AdminPanel default tab es "coins",
+    // así que /admin lleva al usuario al gestor de saldos directamente.
+    { path: "/admin",        label: "Coins Adm",    icon: "shield-coins" },
+    { path: "/chat",         label: "Chat",         icon: "chat" },
+    { path: "/admin/setup",  label: "Config",       icon: "settings" },
 ];
 
 export default function Sidebar({ mobile = false }) {
@@ -73,8 +92,11 @@ export default function Sidebar({ mobile = false }) {
         return () => clearInterval(iv);
     }, []);
 
-    const isStaff = me?.role === "operator" || me?.role === "admin";
-    const links   = isStaff ? NAV_STAFF : NAV_CLIENT;
+    const isAdmin    = me?.role === "admin";
+    const isOperator = me?.role === "operator";
+    const links      = isAdmin    ? NAV_ADMIN
+                     : isOperator ? NAV_OPERATOR
+                     :              NAV_CLIENT;
 
     const isActive = (path) =>
         location.pathname === path || location.pathname.startsWith(path + "/");
