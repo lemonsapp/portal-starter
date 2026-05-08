@@ -267,7 +267,6 @@ export default function Topbar() {
                     </div>
                     <a href={me?.username ? `/perfil/${me.username}` : "/perfil"} className="tb-drop-item" onClick={() => setUserDrop(false)}>👤 Mi Perfil</a>
                     <a href="/coins"  className="tb-drop-item" onClick={() => setUserDrop(false)}>🪙 Coins</a>
-                    {isStaff && <a href="/dashboard" className="tb-drop-item" onClick={() => setUserDrop(false)}>📊 Dashboard</a>}
                     <button className="tb-drop-item" style={{ color:"rgba(239,68,68,0.8)" }} onClick={() => { setUserDrop(false); logout(); }}>🚪 Cerrar sesión</button>
                   </div>
                 )}

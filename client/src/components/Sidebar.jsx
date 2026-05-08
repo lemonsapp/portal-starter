@@ -7,10 +7,7 @@ const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("
 
 const NAV_STAFF = [
   { path: "/inicio",         label: "Inicio",      icon: "🏠", color: "#22c55e" },
-  { path: "/dashboard",      label: "Dashboard",   icon: "📊", color: "var(--brand-primary, #f5e03a)" },
   { path: "/operator",       label: "Operador",    icon: "🗂️",  color: "var(--brand-primary, #f5e03a)" },
-  { path: "/caja",           label: "Caja",        icon: "💵", color: "#22c55e" },
-  { path: "/external",       label: "Cargas",      icon: "📦", color: "#60a5fa" },
   { path: "/coins/operator", label: "Coins",       icon: "🪙", color: "var(--brand-primary, #f5e03a)" },
   { path: "/chat",           label: "Chat",        icon: "💬", color: "#a78bfa" },
 ];
