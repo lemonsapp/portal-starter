@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ProductDeepDive from "../components/ProductDeepDive.astro";
 import RaceCinematic from "../components/RaceCinematic.astro";
+import RaceAddScrub from "../components/RaceAddScrub.astro";
 import VineDivider from "../components/VineDivider.astro";
 import FinalCTA from "../components/FinalCTA.astro";
 import { capitulos } from "../data/capitulos.js";
@@ -43,6 +44,11 @@ const canonical = `/${cap.slug}`;
     <ProductDeepDive cap={cap} />
 
     {showRaceCinematic && <RaceCinematic />}
+
+    <!-- /linea-race exclusivo: video MP4 que se "arma y desarma" con
+         scroll. Pinned section, video.currentTime mappeado al scroll
+         progress por GSAP scrollTrigger scrub. -->
+    {cap.slug === "linea-race" && <RaceAddScrub />}
 
     <VineDivider variant={dv.variant} from={cap.bgColor} to="#FFFFFF" />
 

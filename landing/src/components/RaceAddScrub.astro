@@ -1,0 +1,52 @@
+---
+// RaceAddScrub — Video MP4 scroll-scrub para /linea-race.
+// Patrón "scrolly video": el video.currentTime se mappea al scroll progress.
+// User scrolea hacia abajo → el video avanza ("se arma"); scrolea hacia
+// arriba → retrocede ("se desarma"). Pinned mientras dura el scrub para
+// que el video ocupe el viewport durante toda la animación.
+//
+// Recursos:
+//   - landing/public/video/race/race-add.mp4 (3.3MB, 1080p portrait,
+//     keyframes every frame para scrub smooth, sin audio).
+//
+// Skills aplicadas:
+//   • gsap-scrolltrigger pin + scrub        → scroll-driven scrub
+//   • gsap-core matchMedia                  → reduced-motion respect
+//   • HTMLMediaElement.currentTime          → frame-accurate playback
+---
+<section class="race-add" data-race-add aria-label="Línea Race — animación armado">
+    <div class="race-add__pin" data-race-add-pin>
+        <div class="race-add__inner">
+            <header class="race-add__header">
+                <p class="race-add__eyebrow">
+                    <span class="race-add__dot" aria-hidden="true"></span>
+                    <span>EL ARMADO</span>
+                </p>
+                <h2 class="race-add__h">
+                    <span class="race-add__line">Concentración pura.</span>
+                    <span class="race-add__line race-add__line--em">Cuatro etapas, un sistema.</span>
+                </h2>
+            </header>
+
+            <video
+                class="race-add__video"
+                data-race-add-video
+                src="/video/race/race-add.mp4"
+                preload="auto"
+                muted
+                playsinline
+                loop={false}
+                aria-hidden="true"
+            ></video>
+
+            <p class="race-add__hint" aria-hidden="true">
+                <span>SCROLL</span>
+                <span class="race-add__hint-line"></span>
+            </p>
+        </div>
+    </div>
+</section>
+
+<script>
+    import "../scripts/race-add-scrub.js";
+</script>

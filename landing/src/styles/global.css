@@ -909,6 +909,134 @@ button {
 }
 
 /* =====================================================================
+   RACE ADD SCRUB — video scrolly que se "arma y desarma" con scroll.
+   Pinned section, video.currentTime mappeado al scroll progress por
+   GSAP scrollTrigger scrub. Ver race-add-scrub.js + RaceAddScrub.astro.
+   ===================================================================== */
+.race-add {
+    position: relative;
+    isolation: isolate;
+    background: #0d0d10;
+    color: #f5f3eb;
+    overflow: hidden;
+}
+.race-add__pin {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+}
+.race-add__inner {
+    position: relative;
+    width: min(96vw, 1200px);
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    align-items: center;
+    padding: clamp(60px, 8vh, 100px) 0;
+}
+.race-add__header {
+    position: relative;
+    z-index: 5;
+    text-align: center;
+}
+.race-add__eyebrow {
+    margin: 0 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--f-text);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    color: rgba(245, 243, 235, 0.65);
+}
+.race-add__dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #c9a34e;
+    box-shadow: 0 0 0 4px rgba(201, 163, 78, 0.22);
+    animation: psl-pulse 2.6s ease-in-out infinite;
+}
+.race-add__h {
+    margin: 0;
+    font-family: var(--f-title);
+    font-weight: 900;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.race-add__line { display: block; }
+.race-add__line--em {
+    font-family: 'Gotham', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 0.75em;
+    text-transform: none;
+    letter-spacing: -0.02em;
+    color: #c9a34e;
+}
+.race-add__video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Video portrait 1080×~1446. Scaled to fit viewport con padding para
+       que el header arriba y el hint abajo no se solapen. max-height
+       respeta el viewport menos los espacios verticales. */
+    max-height: 70vh;
+    max-width: min(50vw, 480px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    pointer-events: none;
+    will-change: transform;
+    /* Filtro sutil para integrarlo con el bg dark */
+    filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.55));
+}
+.race-add__hint {
+    position: relative;
+    z-index: 5;
+    margin: 0;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--f-text);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    color: rgba(245, 243, 235, 0.55);
+    justify-self: center;
+}
+.race-add__hint-line {
+    width: 1px;
+    height: 36px;
+    background: linear-gradient(to bottom, rgba(245,243,235,0.55), transparent);
+    transform-origin: 50% 0;
+    animation: psl-scroll-line 1.6s ease-in-out infinite;
+}
+@media (max-width: 600px) {
+    .race-add__video {
+        max-width: 80vw;
+        max-height: 60vh;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .race-add__dot,
+    .race-add__hint-line { animation: none; }
+}
+
+/* =====================================================================
    RACE PORTAL — composición multi-capa estilo Ahmed Codes
    8 imágenes superpuestas absolute, cada una con parallax/rotation
    propio. Aspect ratio 16/9 para que match el formato de las imágenes.
