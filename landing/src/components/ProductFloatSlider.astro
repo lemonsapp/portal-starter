@@ -73,6 +73,8 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                         data-index={i}
                         data-slug={p.slug}
                         data-nombre={p.nombre}
+                        data-accent={p.accentColor}
+                        data-bg={p.bgColor}
                         style={`--psl-bg: ${p.bgColor}; --psl-accent: ${p.accentColor}; --psl-aspect: ${p.aspect};`}
                         role="group"
                         aria-roledescription="slide"

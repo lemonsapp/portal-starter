@@ -80,8 +80,12 @@ export const panels = [
         nombre: "ENRAIZANTE",
         linea: "PRO",
         route: "/linea-pro",
-        bgColor: "#C9A34E",
-        accentColor: "#F7F3EA",
+        // bgColor saturado actualizado al hot pink que renderiza el base.png
+        // (estaba en gold #C9A34E que no matcheaba el art real). accentColor
+        // pastel derivado del color medio sampled del art (ver
+        // landing/src/scripts/lib/sample-base-pngs.md si existe).
+        bgColor: "#E579B7",
+        accentColor: "#F3C2DE",
         aspect: 2.262,
         label: "PRO",
         layers: {

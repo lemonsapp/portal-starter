@@ -33,9 +33,29 @@ function initProductSlider() {
     const editorialEyebrow = root.querySelector("[data-psl-editorial-eyebrow]");
     const editorialLines   = gsap.utils.toArray("[data-psl-editorial-line]", root);
     const editorialSub     = root.querySelector("[data-psl-editorial-sub]");
+    const editorialDot     = root.querySelector(".psl__editorial-dot");
 
     const total = panels.length;
     if (!total || !track || !pinWrap) return;
+
+    // Pre-cache colors per panel para interpolación scroll-driven:
+    // bgColor   → color saturado (badge/dot/CTA hover)
+    // accent    → color pastel para el bg de la sección entera (legibilidad
+    //             del editorial dark + match con el card del producto activo).
+    // El style.getPropertyValue lee los inline styles que setea el .astro.
+    const panelBgs = panels.map((p) => p.style.getPropertyValue("--psl-bg").trim() || "#f7f3ea");
+    const panelAccents = panels.map((p, i) => {
+        const ds = p.dataset.accent;
+        return (ds && ds.trim()) || panelBgs[i];
+    });
+    // Interpolators precomputados — gsap.utils.interpolate(c1, c2) devuelve
+    // una function(t) → color string. Fuerza muy poca; vale precomputar.
+    const accentInterps = panelAccents.map((c, i) => {
+        const next = panelAccents[Math.min(i + 1, total - 1)];
+        return gsap.utils.interpolate(c, next);
+    });
+    // Set inicial del section bg al accent del primer panel.
+    if (root) root.style.setProperty("--psl-section-bg", panelAccents[0]);
 
     mm.add({
         ...BREAKPOINTS,
@@ -133,6 +153,10 @@ function initProductSlider() {
 
         // ============================================================
         // 1) Per-panel: idle micro-animaciones de cada capa del card
+        //    Set inicial: GSAP toma el scale CSS-base del layer para que
+        //    los tweens posteriores (y/rotation/scrub) compongan en lugar
+        //    de clobberear. Sin esto, gsap.to({y}) borra el scale: 1.22
+        //    inline del CSS.
         // ============================================================
         if (!reduceMotion) {
             panels.forEach((panel, panelIdx) => {
@@ -140,6 +164,11 @@ function initProductSlider() {
                 const hero   = panel.querySelector("[data-psl-hero]");
                 const label  = panel.querySelector("[data-psl-label]");
                 const wheels = gsap.utils.toArray("[data-psl-wheel]", panel);
+
+                // Establece scale base que matchea CSS — GSAP ahora "sabe"
+                // que el hero y wheels viven con scale > 1.
+                if (hero)   gsap.set(hero,   { scale: 1.22, transformOrigin: "center 55%" });
+                wheels.forEach((w) => gsap.set(w, { scale: 1.08, transformOrigin: "center" }));
 
                 if (hero) {
                     gsap.to(hero, {
@@ -221,7 +250,17 @@ function initProductSlider() {
                     invalidateOnRefresh: true,
                     anticipatePin: 1,
                     onUpdate: (self) => {
-                        const idx = Math.min(total - 1, Math.round(self.progress * (total - 1)));
+                        // Posición continua dentro del rango [0..total-1]:
+                        //   segIdx  → índice del panel actual (entero)
+                        //   segT    → progreso 0..1 dentro del segmento (entre
+                        //             panel segIdx y panel segIdx+1)
+                        const segments = total - 1;
+                        const segF     = self.progress * segments;
+                        const segIdx   = Math.min(segments - 1, Math.max(0, Math.floor(segF)));
+                        const segT     = Math.min(1, Math.max(0, segF - segIdx));
+                        // idx del panel "activo" (ronda al más cercano):
+                        const idx = Math.min(total - 1, Math.round(self.progress * segments));
+
                         if (hudNum) hudNum.textContent = String(idx + 1).padStart(2, "0");
 
                         steps.forEach((s, i) => {
@@ -231,10 +270,22 @@ function initProductSlider() {
                         });
                         panels.forEach((p, i) => p.classList.toggle("is-active", i === idx));
 
-                        // Mark color sync: el bg del mark sigue al panel activo
-                        if (editorialMark && panels[idx]) {
-                            const bg = panels[idx].style.getPropertyValue("--psl-bg");
-                            if (bg) editorialMark.style.background = bg;
+                        // ============================================
+                        // Section bg: interpolación entre accent[segIdx]
+                        // y accent[segIdx+1] según segT.
+                        // skill: gsap-utils.interpolate (color tween)
+                        // ============================================
+                        const interp = accentInterps[segIdx];
+                        if (interp && root) {
+                            root.style.setProperty("--psl-section-bg", interp(segT));
+                        }
+
+                        // Mark + dot color sync: usa el bg saturado del panel activo
+                        if (editorialMark) {
+                            editorialMark.style.background = panelBgs[idx];
+                        }
+                        if (editorialDot) {
+                            editorialDot.style.background = panelBgs[idx];
                         }
                     },
                 },
@@ -263,10 +314,31 @@ function initProductSlider() {
                     );
                 }
                 if (hero) {
+                    // Movimiento horizontal contraparallax + scale "kick" al
+                    // pasar por centro del panel: escala 1.22 en bordes, peak
+                    // 1.32 en centro (panel activo). Ease: sine para curva
+                    // suave que se siente como "respiro" del producto.
+                    // skill: gsap-scrolltrigger containerAnim + keyframes
                     gsap.fromTo(hero,
                         { xPercent: 18 },
                         {
                             xPercent: -18, ease: "none",
+                            scrollTrigger: {
+                                containerAnimation: scrollTween,
+                                trigger: panel,
+                                start: "left right",
+                                end:   "right left",
+                                scrub: true,
+                            },
+                        }
+                    );
+                    gsap.fromTo(hero,
+                        { scale: 1.22 },
+                        {
+                            keyframes: [
+                                { scale: 1.32, ease: "sine.inOut" }, // mid-panel peak
+                                { scale: 1.22, ease: "sine.inOut" }, // exit edge
+                            ],
                             scrollTrigger: {
                                 containerAnimation: scrollTween,
                                 trigger: panel,
@@ -364,10 +436,17 @@ function initProductSlider() {
                                 s.classList.toggle("is-active", k === i);
                                 s.setAttribute("aria-selected", k === i ? "true" : "false");
                             });
-                            if (editorialMark) {
-                                const bg = p.style.getPropertyValue("--psl-bg");
-                                if (bg) editorialMark.style.background = bg;
+                            // Mobile: cut-cambio del section bg al accent del panel
+                            // activo (no hay scrub continuo en stacked).
+                            if (root) {
+                                gsap.to(root, {
+                                    "--psl-section-bg": panelAccents[i],
+                                    duration: 0.6,
+                                    ease: "power2.out",
+                                });
                             }
+                            if (editorialMark) editorialMark.style.background = panelBgs[i];
+                            if (editorialDot)  editorialDot.style.background  = panelBgs[i];
                         }
                     },
                 });

@@ -1700,9 +1700,14 @@ button {
 .psl {
     position: relative;
     isolation: isolate;
-    background: #faf5ed;
+    /* --psl-section-bg lo setea el JS por scroll progress (interpola entre
+       accentColors consecutivos). El default es el cream base; en runtime
+       JS toma el control. */
+    --psl-section-bg: #faf5ed;
+    background: var(--psl-section-bg);
     color: #1a1a1a;
     overflow: hidden;
+    transition: background 0.4s ease;
 }
 
 /* ---------- 1) WELCOME — full-viewport bienvenida cinemática ---------- */
@@ -1898,8 +1903,11 @@ button {
     position: relative;
     height: 100vh;
     width: 100%;
-    overflow: hidden;
-    background: #f7f3ea;
+    /* Evitamos overflow:hidden para que los layers PNG (hero/wheels) puedan
+       desbordar del card (SPYLT-style). El track sigue contenido por flex
+       layout + transform xPercent. */
+    overflow: visible;
+    background: transparent;
 }
 .psl__track {
     position: relative;
@@ -2044,17 +2052,22 @@ button {
     top: 50%;
     right: clamp(28px, 5vw, 80px);
     transform: translateY(-50%);
-    width: min(52vw, 720px);
+    /* SPYLT-style: card más grande para que respire + protagonice mejor. */
+    width: min(60vw, 880px);
     aspect-ratio: var(--psl-aspect, 1.66) / 1;
-    max-height: 64vh;
-    border-radius: clamp(20px, 2.6vw, 36px);
-    overflow: hidden;
-    background: var(--psl-bg, #f7f3ea);
-    box-shadow:
-        0 30px 70px -20px rgba(26, 26, 26, 0.45),
-        0 12px 28px -10px rgba(26, 26, 26, 0.22);
+    max-height: 78vh;
+    border-radius: clamp(24px, 3vw, 44px);
+    /* Visible para que el hero PNG explote por encima de los bordes
+       (SPYLT-pure: layers que protruyen del frame). El base.png tiene
+       border-radius propia via .psl__layer--base. */
+    overflow: visible;
+    background: transparent;
     isolation: isolate;
     will-change: transform;
+    /* Halo sutil debajo del card que sigue al --psl-bg → da profundidad
+       cuando el card "flota" sobre la sección coloreada. */
+    filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.18))
+            drop-shadow(0 10px 20px rgba(0, 0, 0, 0.14));
 }
 .psl__card-shadow {
     position: absolute;
@@ -2073,7 +2086,13 @@ button {
     mix-blend-mode: multiply;
 }
 
-/* ---------- LAYERS ---------- */
+/* ---------- LAYERS ----------
+   SPYLT-style: cada PNG layer tiene su propio scale para crear depth.
+   • base   → contenido al frame del card (object-fit: cover) con la rounded
+     corner del card (border-radius hereda el del padre via mask).
+   • wheels → un poco más grandes y pueden desbordar levemente del frame.
+   • hero   → significativamente más grande y desborda el frame del card
+     hacia arriba/abajo (efecto "explode out" tipo SPYLT productos). */
 .psl__layer {
     position: absolute;
     inset: 0;
@@ -2084,9 +2103,32 @@ button {
     pointer-events: none;
     user-select: none;
 }
-.psl__layer--base   { z-index: 0;  object-fit: cover; will-change: transform; }
-.psl__layer--wheel  { z-index: 10; will-change: transform; }
-.psl__layer--hero   { z-index: 20; will-change: transform; }
+.psl__layer--base   {
+    z-index: 0;
+    object-fit: cover;
+    /* Base es el shape coloreado de fondo del card → respeta el rounded
+       corner del padre. Como el card ahora es overflow:visible, mantenemos
+       la rounded en el base.png con clip-path. */
+    border-radius: inherit;
+    will-change: transform;
+}
+.psl__layer--wheel  {
+    z-index: 10;
+    transform: scale(1.08);
+    transform-origin: center;
+    will-change: transform;
+}
+.psl__layer--hero   {
+    z-index: 20;
+    /* Hero +22% sobre el bounding del card → el packshot explota por
+       arriba y abajo (SPYLT-pure). transform-origin center mantiene
+       composición. Ojo: la altura se vuelve >100% del card, por eso
+       el card es overflow:visible (ver arriba). */
+    transform: scale(1.22);
+    transform-origin: center 55%;
+    will-change: transform;
+    filter: drop-shadow(0 28px 38px rgba(0, 0, 0, 0.28));
+}
 
 /* Label editorial overlay — reemplaza al texto.png (que venía cropped
    en 6 de 9 paneles). Se posiciona arriba-izquierda del card con un
