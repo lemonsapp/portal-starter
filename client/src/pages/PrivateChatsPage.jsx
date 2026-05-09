@@ -51,10 +51,10 @@ export default function PrivateChatsPage() {
   return (
     <div style={{ padding: isMobile ? "12px 10px 80px" : "20px 16px", maxWidth: 1100, margin: "0 auto", width: "100%" }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: isMobile ? 12 : 18, gap: 8 }}>
-        <h1 style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: isMobile ? 26 : 36, letterSpacing: 1.2, color: "#fff", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+        <h1 style={{ fontFamily: "'Gotham', sans-serif", fontSize: isMobile ? 26 : 36, letterSpacing: 1.2, color: "#fff", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
           ✉ Mensajes privados
         </h1>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: 1.6, color: "rgba(255,255,255,.4)", textTransform: "uppercase" }}>
+        <div style={{ fontFamily: "'Gotham', monospace", fontSize: 10, letterSpacing: 1.6, color: "rgba(255,255,255,.4)", textTransform: "uppercase" }}>
           {convs.length} {convs.length === 1 ? "chat" : "chats"}
         </div>
       </div>
@@ -64,9 +64,9 @@ export default function PrivateChatsPage() {
             {showList && (
             <div style={{ background: "rgba(8,9,16,.85)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 16, overflow: "hidden", maxHeight: isMobile ? "calc(100vh - 200px)" : "calc(100vh - 160px)", display: "flex", flexDirection: "column" }}>
               <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9.5, letterSpacing: 2, color: "var(--brand-primary, #f5e03a)", fontWeight: 700, textTransform: "uppercase" }}>💬 Conversaciones</span>
+                <span style={{ fontFamily: "'Gotham', monospace", fontSize: 9.5, letterSpacing: 2, color: "var(--brand-primary, #f5e03a)", fontWeight: 700, textTransform: "uppercase" }}>💬 Conversaciones</span>
                 <button onClick={loadConvs} title="Recargar"
-                  style={{ background: "transparent", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.5)", borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", fontFamily: "'DM Mono',monospace" }}>↻</button>
+                  style={{ background: "transparent", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.5)", borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", fontFamily: "'Gotham', monospace" }}>↻</button>
               </div>
               <div style={{ overflowY: "auto", flex: 1 }}>
                 {loading ? (
@@ -100,7 +100,7 @@ export default function PrivateChatsPage() {
                           style={{ background: "transparent", border: "none", padding: 0, cursor: c.username ? "pointer" : "default", fontSize: 14, fontWeight: 700, color: c.name_color || "#fff", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", textAlign: "left" }}>
                           {c.name}
                         </button>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: "rgba(255,255,255,.4)", flexShrink: 0 }}>{relTime(c.last_at)}</div>
+                        <div style={{ fontFamily: "'Gotham', monospace", fontSize: 9, color: "rgba(255,255,255,.4)", flexShrink: 0 }}>{relTime(c.last_at)}</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
                         {c.reply_to_story_id && c.reply_story_image_url && (
@@ -108,7 +108,7 @@ export default function PrivateChatsPage() {
                         )}
                         <div style={{ fontSize: 12, color: c.reply_to_story_id ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.55)", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", flex: 1, lineHeight: 1.3 }}>
                           {c.reply_to_story_id ? (
-                            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9.5, letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 700 }}>
+                            <span style={{ fontFamily: "'Gotham', monospace", fontSize: 9.5, letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 700 }}>
                               ↩ {c.last_from === c.other_id ? "Respondió tu historia" : "Respondiste su historia"}
                             </span>
                           ) : c.last_message}
@@ -209,7 +209,7 @@ function PrivateThread({ otherId, onSent, isMobile, onBack }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: target?.name_color || "#fff", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{target?.name || "Mensajes privados"}</div>
-          {target?.username && <a href={`/perfil/${target.username}`} style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--brand-primary, #f5e03a)", textDecoration: "none", letterSpacing: 1.2 }}>@{target.username}</a>}
+          {target?.username && <a href={`/perfil/${target.username}`} style={{ fontFamily: "'Gotham', monospace", fontSize: 10, color: "var(--brand-primary, #f5e03a)", textDecoration: "none", letterSpacing: 1.2 }}>@{target.username}</a>}
         </div>
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: 14, display: "flex", flexDirection: "column", gap: 8, minHeight: 0 }}>
@@ -251,13 +251,13 @@ function PrivateThread({ otherId, onSent, isMobile, onBack }) {
                       <div style={{ width: 42, height: 56, borderRadius: 4, background: "linear-gradient(135deg,var(--brand-primary, #f5e03a)33,var(--brand-accent, #ff5500)33)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>📷</div>
                     )}
                     <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0, flex: 1 }}>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: "var(--brand-primary, #f5e03a)", letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 700, lineHeight: 1.3 }}>↩ {replyLabel}</span>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "rgba(255,255,255,.55)", lineHeight: 1.3, marginTop: 2 }}>tu historia · 24h</span>
+                      <span style={{ fontFamily: "'Gotham', monospace", fontSize: 9, color: "var(--brand-primary, #f5e03a)", letterSpacing: 1.2, textTransform: "uppercase", fontWeight: 700, lineHeight: 1.3 }}>↩ {replyLabel}</span>
+                      <span style={{ fontFamily: "'Gotham', monospace", fontSize: 10, color: "rgba(255,255,255,.55)", lineHeight: 1.3, marginTop: 2 }}>tu historia · 24h</span>
                     </div>
                   </div>
                 )}
                 <div style={{ fontSize: 13, color: isOwn ? "#fff" : "#e2e8f0", lineHeight: 1.4, wordBreak: "break-word", padding: m.reply_to_story_id ? "0 6px" : 0 }}>{m.message}</div>
-                <div style={{ fontSize: 9.5, color: "rgba(255,255,255,.3)", marginTop: 4, textAlign: "right", fontFamily: "'DM Mono',monospace", padding: m.reply_to_story_id ? "0 6px" : 0 }}>
+                <div style={{ fontSize: 9.5, color: "rgba(255,255,255,.3)", marginTop: 4, textAlign: "right", fontFamily: "'Gotham', monospace", padding: m.reply_to_story_id ? "0 6px" : 0 }}>
                   {new Date(m.created_at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>

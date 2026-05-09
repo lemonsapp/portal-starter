@@ -134,7 +134,7 @@ export default function Stories({ announcements = [] }) {
         .st-circle:hover .st-ring{transform:scale(1.06)}
         .st-inner{width:100%;height:100%;border-radius:50%;background:#03040c;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden}
         .st-inner img{width:100%;height:100%;object-fit:cover}
-        .st-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px}
+        .st-label{font-family:'Gotham', monospace;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px}
         .st-pin{position:absolute;top:-2px;right:-2px;background:var(--brand-primary, #f5e03a);color:#000;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;border:2px solid #03040c}
         .st-add{position:absolute;bottom:-2px;right:-2px;background:#22c55e;color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:14px;border:2.5px solid #03040c;font-weight:900}
       `}</style>
@@ -160,7 +160,7 @@ export default function Stories({ announcements = [] }) {
               </div>
             </div>
             <div className="st-label">Tu historia</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, letterSpacing: 1, color: quota.remaining === 0 ? "#ef4444" : "rgba(255,255,255,.4)", marginTop: 2, fontWeight: 700 }}>
+            <div style={{ fontFamily: "'Gotham', monospace", fontSize: 8.5, letterSpacing: 1, color: quota.remaining === 0 ? "#ef4444" : "rgba(255,255,255,.4)", marginTop: 2, fontWeight: 700 }}>
               {quota.used}/{quota.limit}
             </div>
           </button>

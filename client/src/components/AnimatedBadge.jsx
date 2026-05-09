@@ -50,7 +50,7 @@ const EFFECTS = {
   glitch: {
     css: (c) => `@keyframes gg${c.replace('#','')}{0%,100%{box-shadow:0 0 8px ${c}88,-2px 0 #ff000033,2px 0 #00ffff33}50%{box-shadow:0 0 16px ${c}aa,2px 0 #ff000055,-2px 0 #00ffff55}}`,
     wrap: (c) => ({ animation:`gg${c.replace('#','')} 0.8s ease-in-out infinite`, background:`${c}10`, border:`1.5px solid ${c}60` }),
-    text: (c) => ({ color:c, fontFamily:"'DM Mono',monospace" }),
+    text: (c) => ({ color:c, fontFamily:"'Gotham', monospace" }),
     emoji: "none",
   },
   electric_frame: {
@@ -83,7 +83,7 @@ export function AnimatedBadge({ badge, size="normal" }) {
         display:"inline-flex", alignItems:"center",
         gap:sm?5:8, padding:sm?"4px 11px":"6px 16px",
         borderRadius:100, cursor:"default", userSelect:"none",
-        fontFamily:"'DM Mono',monospace",
+        fontFamily:"'Gotham', monospace",
         fontSize:sm?9:11, letterSpacing:"2px", textTransform:"uppercase",
         ...fx.wrap(color),
       }}>
@@ -123,7 +123,7 @@ export function BadgeRow({ badges, allItems, size="normal" }) {
         }
         const color = data.color || "var(--brand-primary, #f5e03a)";
         return (
-          <div key={bk} style={{ fontFamily:"'DM Mono',monospace", fontSize:size==="small"?9:10, letterSpacing:"1.5px", textTransform:"uppercase", padding:size==="small"?"3px 10px":"5px 13px", borderRadius:100, background:color+"15", border:"1px solid "+color+"30", color, display:"flex", alignItems:"center", gap:5 }}>
+          <div key={bk} style={{ fontFamily:"'Gotham', monospace", fontSize:size==="small"?9:10, letterSpacing:"1.5px", textTransform:"uppercase", padding:size==="small"?"3px 10px":"5px 13px", borderRadius:100, background:color+"15", border:"1px solid "+color+"30", color, display:"flex", alignItems:"center", gap:5 }}>
             <span style={{ fontSize:size==="small"?11:13 }}>{b.emoji}</span>
             {b.name}
           </div>

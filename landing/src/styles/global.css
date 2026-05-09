@@ -1,7 +1,8 @@
 /* =====================================================================
    HOLISTIC GROWSHOP — global.css
    Paleta estricta: #000, #FFF, #EEE, verde WhatsApp #25D366
-   Fuentes: Bricolage Grotesque (títulos, opsz variable), Fraunces SOFT/WONK (acentos italic cute), Inter Tight (texto), JetBrains Mono (idx)
+   Fuentes: Gotham (única familia, self-hosted en /fonts/holistic/).
+            Italics → Gotham Book Italic. Display heavy → Gotham Black.
    Mobile-first, responsive, BEM
    ===================================================================== */
 
@@ -12,7 +13,67 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+
+/* =========================================================
+   GOTHAM — única familia. Self-hosted en /fonts/holistic/.
+   Mismo bloque que el portal cliente; ranges 300-900 sin synth.
+   ========================================================= */
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-book.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-book-italic.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-bold.woff2') format('woff2');
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-bold-italic.woff2') format('woff2');
+  font-weight: 600 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-black.woff2') format('woff2');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham Rounded';
+  src: url('/fonts/holistic/gotham-rounded-light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham Rounded';
+  src: url('/fonts/holistic/gotham-rounded-book.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -25,8 +86,10 @@
     --c-wa: #25d366;
     --c-wa-hover: #1ebe5a;
 
-    --f-title: "Archivo Black", Impact, sans-serif;
-    --f-text:  "Inter", system-ui, -apple-system, sans-serif;
+    /* Una sola familia (Gotham) cubre títulos y texto.
+       --f-title usa weight 900 (Gotham Black). --f-text usa 400 (Book). */
+    --f-title: 'Gotham', system-ui, -apple-system, sans-serif;
+    --f-text:  'Gotham', system-ui, -apple-system, sans-serif;
 
     --ease: cubic-bezier(.25, .46, .45, .94);
 
@@ -530,7 +593,7 @@ button {
 /* HOLISTIC — chunky (Archivo Black). Match al SVG hgrowshop. */
 .hero-heading__word {
     display: inline-block;
-    font-family: "Archivo Black", Impact, sans-serif;
+    font-family: 'Gotham', sans-serif;
     font-weight: 900;
     letter-spacing: -0.02em;
     will-change: transform, opacity;
@@ -569,7 +632,7 @@ button {
 .hero-heading__hl-text {
     position: relative;
     z-index: 1;
-    font-family: "Archivo", "Inter", sans-serif;
+    font-family: 'Gotham', sans-serif;
     font-weight: 100;
     letter-spacing: 0.04em;
     color: var(--c-black);
@@ -1739,7 +1802,7 @@ button {
 }
 .psl__welcome-line { display: block; }
 .psl__welcome-line--em {
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 500;
     text-transform: none;
@@ -1752,7 +1815,7 @@ button {
 .psl__welcome-sub {
     margin: 0;
     max-width: 56ch;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-size: clamp(1rem, 1.3vw, 1.22rem);
     line-height: 1.55;
     color: rgba(26, 26, 26, 0.75);
@@ -3479,7 +3542,7 @@ html.is-loading body {
     z-index: 1;
     top: 32%;
     left: -3%;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 400;
     font-size: clamp(7rem, 22vw, 26rem);
@@ -3549,7 +3612,7 @@ html.is-loading body {
     letter-spacing: -0.01em;
 }
 .nutri__title-line--em {
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 500;
     text-transform: none;
@@ -3563,7 +3626,7 @@ html.is-loading body {
 }
 .nutri__lede {
     margin: 0;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-weight: 400;
     font-size: clamp(1rem, 1.25vw, 1.18rem);
     line-height: 1.55;
@@ -3831,14 +3894,14 @@ html.is-loading body {
    Pairing editorial: thin = Archivo (sans), bold = Fraunces italic
    ===================================================================== */
 .chapter__title .bold {
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 500;
     letter-spacing: -0.04em;
     text-transform: none;
 }
 .chapter__description {
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-weight: 400;
     font-size: clamp(1rem, 1.18vw, 1.15rem);
     line-height: 1.6;
@@ -3901,7 +3964,7 @@ html.is-loading body {
 .bm__col--accent .bm__col-word {
     color: #c9a34e;
     font-style: italic;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
 }
 .bm__col-track {
     display: flex;
@@ -3970,7 +4033,7 @@ html.is-loading body {
 }
 .bm__claim-line { display: block; }
 .bm__claim-line--em {
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 500;
     text-transform: none;
@@ -3982,7 +4045,7 @@ html.is-loading body {
 .bm__claim-split-word { display: inline-block; will-change: transform, opacity; }
 .bm__lede {
     margin: 0;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-size: clamp(1rem, 1.2vw, 1.16rem);
     line-height: 1.6;
     color: rgba(26, 26, 26, 0.78);
@@ -4066,7 +4129,7 @@ html.is-loading body {
 }
 .bm__stat-num {
     margin: 0;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 500;
     font-size: clamp(2.6rem, 4.6vw, 4.4rem);
@@ -4091,7 +4154,7 @@ html.is-loading body {
 }
 .bm__stat-caption {
     margin: 0;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-size: 0.86rem;
     line-height: 1.4;
     color: rgba(26, 26, 26, 0.6);
@@ -4226,7 +4289,7 @@ html.is-loading body {
 }
 .pdd__hero-line { display: block; }
 .pdd__hero-em {
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 500;
     text-transform: none;
@@ -4236,7 +4299,7 @@ html.is-loading body {
 .pdd__hero-claim {
     margin: 0;
     max-width: 60ch;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-size: clamp(1.05rem, 1.4vw, 1.3rem);
     line-height: 1.6;
     color: rgba(26, 26, 26, 0.78);
@@ -4380,7 +4443,7 @@ html.is-loading body {
    accents emocionales y Inter para body.
    ===================================================================== */
 [data-slug="linea-race"] {
-    --f-display-race: "Anton", "Archivo Black", Impact, sans-serif;
+    --f-display-race: 'Gotham', sans-serif;
 }
 
 [data-slug="linea-race"] .pdd__hero-headline,
@@ -4400,7 +4463,7 @@ html.is-loading body {
    Anton (geométrica condensada) y Fraunces italic es lo que hace el
    look editorial automotriz/luxury. */
 [data-slug="linea-race"] .pdd__hero-em {
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 500;
     letter-spacing: -0.015em;
@@ -4411,7 +4474,7 @@ html.is-loading body {
 [data-slug="linea-race"] .pdd__section-eyebrow,
 [data-slug="linea-race"] .pdd__bento-icon,
 [data-slug="linea-race"] .pdd__specs-label {
-    font-family: "Inter", sans-serif;
+    font-family: 'Gotham', sans-serif;
     font-weight: 600;
     letter-spacing: 0.22em;
 }
@@ -4422,13 +4485,13 @@ html.is-loading body {
 [data-slug="linea-race"] .pdd__bento-body,
 [data-slug="linea-race"] .pdd__system-body,
 [data-slug="linea-race"] .pdd__specs-value {
-    font-family: "Inter", sans-serif;
+    font-family: 'Gotham', sans-serif;
     font-weight: 400;
     letter-spacing: 0;
 }
 
 [data-slug="linea-race"] .pdd__pullquote-text {
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 400;
 }
@@ -4670,7 +4733,7 @@ html.is-loading body {
 .pdd__highlight-body {
     margin: 0;
     max-width: 52ch;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-size: clamp(1rem, 1.2vw, 1.18rem);
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.78);
@@ -4723,7 +4786,7 @@ html.is-loading body {
 }
 .pdd__bigstat-num {
     margin: 0;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 500;
     font-size: clamp(7rem, 18vw, 16rem);
@@ -4741,7 +4804,7 @@ html.is-loading body {
 .pdd__bigstat-body {
     margin: 0;
     max-width: 60ch;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-size: clamp(1rem, 1.2vw, 1.2rem);
     line-height: 1.6;
     color: rgba(26, 26, 26, 0.7);
@@ -4806,7 +4869,7 @@ html.is-loading body {
 }
 .pdd__bento-body {
     margin: 0;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-size: 0.98rem;
     line-height: 1.55;
     color: rgba(26, 26, 26, 0.7);
@@ -4937,7 +5000,7 @@ html.is-loading body {
 .pdd__system-body {
     margin: 0;
     max-width: 60ch;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-size: clamp(1rem, 1.2vw, 1.2rem);
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.78);
@@ -4977,7 +5040,7 @@ html.is-loading body {
 .pdd__pullquote-text {
     margin: 0 auto;
     width: min(950px, 92vw);
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-style: italic;
     font-weight: 400;
     font-size: clamp(1.6rem, 3.6vw, 3rem);
@@ -5031,7 +5094,7 @@ html.is-loading body {
 }
 .pdd__specs-value {
     margin: 0;
-    font-family: "Fraunces", serif;
+    font-family: 'Gotham', serif;
     font-size: clamp(0.98rem, 1.1vw, 1.12rem);
     line-height: 1.5;
     color: #1a1a1a;
@@ -5108,7 +5171,7 @@ html.is-loading body {
     pointer-events: none;
 }
 .header__socios-cta__label {
-    font-family: var(--f-title, "Archivo Black", sans-serif);
+    font-family: var(--f-title, 'Gotham', sans-serif);
     font-size: 12px;
     font-weight: 900;
     letter-spacing: 2.4px;
@@ -5212,7 +5275,7 @@ html.is-loading body {
 
 @theme inline {
     --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+    --font-sans: 'Gotham', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

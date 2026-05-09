@@ -57,7 +57,7 @@ export default function SkillBadges({ skills, dim = false }) {
               color: dim ? "rgba(var(--brand-primary-rgb),0.7)" : "var(--brand-primary, #f5e03a)",
               fontSize: 11,
               fontWeight: 600,
-              fontFamily: "'DM Mono', monospace",
+              fontFamily: "'Gotham', monospace",
               letterSpacing: "0.3px",
               cursor: "help",
               maxWidth: 280,

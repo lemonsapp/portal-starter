@@ -6,7 +6,66 @@
    override el tenant.
    ========================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@300;400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+/* =========================================================
+   GOTHAM — única familia. Self-hosted en /fonts/holistic/.
+   Ranges declarados para cubrir 300-900 sin synth.
+   ========================================================= */
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-book.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-book-italic.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-bold.woff2') format('woff2');
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-bold-italic.woff2') format('woff2');
+  font-weight: 600 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/holistic/gotham-black.woff2') format('woff2');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham Rounded';
+  src: url('/fonts/holistic/gotham-rounded-light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham Rounded';
+  src: url('/fonts/holistic/gotham-rounded-book.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* =========================================================
    HOLISTIC DESIGN TOKENS — premium dark theme tokens.
@@ -102,10 +161,15 @@
   --h-ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
   --h-ease-spring: cubic-bezier(0.34, 1.46, 0.64, 1);
 
-  /* ── Fonts (locked stacks; ya importados arriba) ── */
-  --h-font-sans:    'Barlow', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --h-font-display: 'Bebas Neue', 'Barlow Condensed', ui-sans-serif, sans-serif;
-  --h-font-mono:    'DM Mono', ui-monospace, 'JetBrains Mono', Menlo, monospace;
+  /* ── Fonts (Gotham única familia, self-hosted) ──
+     Sans = Gotham Book (400-500). Display = Gotham Black (800-900).
+     Tag = Gotham Bold (600-700) para uppercase tracked tags donde antes
+     iba DM Mono. Rounded = Gotham Rounded para acentos opcionales. */
+  --h-font-sans:    'Gotham', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --h-font-display: 'Gotham', ui-sans-serif, system-ui, sans-serif;
+  --h-font-tag:     'Gotham', ui-sans-serif, system-ui, sans-serif;
+  --h-font-rounded: 'Gotham Rounded', 'Gotham', ui-sans-serif, sans-serif;
+  --h-font-mono:    'Gotham', ui-monospace, 'JetBrains Mono', Menlo, monospace;
 
   /* ── Layout chrome ── */
   --h-topbar-h:    64px;
@@ -178,7 +242,7 @@ html, body {
   margin: 0; padding: 0;
   background: var(--void);
   color: var(--text);
-  font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--h-font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -248,7 +312,7 @@ body::before {
 .topbarLogo--ig {
   width: 36px; height: 36px; border-radius: 10px;
   display: grid; place-items: center;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--h-font-display);
   font-size: 20px; font-weight: 400; letter-spacing: 1px;
   color: var(--void);
   background: var(--lemon);
@@ -257,7 +321,7 @@ body::before {
 
 .topbarTitle,
 .topbarTitle--ig {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--h-font-display);
   font-size: 18px; letter-spacing: 3px;
   color: var(--text); line-height: 1;
 }
@@ -270,7 +334,7 @@ body::before {
 
 /* Nav links */
 .topbarNav a {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--h-font-tag);
   font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
   text-transform: uppercase;
 }
@@ -285,7 +349,7 @@ body::before {
 .topbarAvatar {
   width: 32px; height: 32px; border-radius: 50%;
   display: grid; place-items: center;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--h-font-display);
   font-size: 16px; font-weight: 400;
   color: var(--void); background: var(--lemon);
 }
@@ -293,7 +357,7 @@ body::before {
 .topbarRolePill {
   display: inline-flex; align-items: center;
   padding: 3px 8px; border-radius: 100px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--h-font-tag);
   font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
   background: rgba(var(--brand-primary-rgb),0.1);
   border: 1px solid rgba(var(--brand-primary-rgb),0.22);
@@ -316,7 +380,7 @@ body::before {
 }
 .topbar h1 {
   margin: 0;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--h-font-display);
   font-size: 28px; letter-spacing: 2px; font-weight: 400;
 }
 
@@ -324,7 +388,7 @@ body::before {
    Section labels (DM Mono style from landing)
    ========================================================= */
 .sectionLabel {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--h-font-tag);
   font-size: 10px; font-weight: 500;
   letter-spacing: 3px; text-transform: uppercase;
   color: var(--orange);
@@ -337,7 +401,7 @@ body::before {
 }
 
 .sectionTitle {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--h-font-display);
   font-size: clamp(28px, 4vw, 48px);
   line-height: .94; letter-spacing: .5px;
   margin-bottom: 24px;
@@ -394,12 +458,12 @@ body::before {
 }
 .cardStat:hover::before { transform: scaleX(1); }
 .cardStat .k {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--h-font-tag);
   font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
   color: var(--ghost); font-weight: 500;
 }
 .cardStat .v {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--h-font-display);
   font-size: 44px; line-height: 1; color: var(--lemon);
   margin-top: 8px;
 }
@@ -443,7 +507,7 @@ body::before {
 }
 .igStatCard:hover::before { transform: scaleX(1); }
 .igStatValue {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--h-font-display);
   font-size: 36px; line-height: 1; color: var(--lemon); margin-top: 8px;
 }
 .igStatHint { margin-top: 4px; font-size: 12px; color: var(--muted2); }
@@ -460,7 +524,7 @@ body::before {
   color: var(--text);
   padding: 10px 14px; border-radius: var(--r-md);
   outline: none; font-size: 14px;
-  font-family: 'Barlow', sans-serif;
+  font-family: var(--h-font-sans);
   transition: border-color .2s, box-shadow .2s, background .2s;
 }
 .input::placeholder { color: var(--muted2); }
@@ -487,7 +551,7 @@ select { height: 42px; border-radius: var(--r-md); }
   color: var(--text);
   padding: 10px 14px; height: 40px;
   border-radius: var(--r-md);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--h-font-tag);
   font-size: 13px; font-weight: 800; letter-spacing: 1px;
   text-transform: uppercase;
   cursor: pointer;
@@ -524,7 +588,7 @@ select { height: 42px; border-radius: var(--r-md); }
 }
 .table thead th {
   text-align: left;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--h-font-tag);
   font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
   color: var(--ghost);
   padding: 12px 14px;
@@ -543,7 +607,7 @@ select { height: 42px; border-radius: var(--r-md); }
 .pill {
   display: inline-flex; align-items: center;
   padding: 5px 12px; border-radius: 100px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--h-font-tag);
   font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase;
   color: var(--void); background: var(--lemon);
 }
@@ -649,7 +713,7 @@ select { height: 42px; border-radius: var(--r-md); }
 .loginLogoImg { width: 28px; height: 28px; object-fit: contain; }
 
 .brandText, .loginBrandTitle {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--h-font-display);
   font-size: 22px; letter-spacing: 3px;
   color: var(--text); line-height: 1;
 }
@@ -672,7 +736,7 @@ select { height: 42px; border-radius: var(--r-md); }
   gap: 12px; margin-top: 16px;
 }
 .loginFooter .link {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: var(--h-font-tag);
   font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
   background: var(--faint2); border: 1px solid var(--border2);
   padding: 9px 14px; border-radius: 100px;
@@ -689,7 +753,7 @@ select { height: 42px; border-radius: var(--r-md); }
 .badge {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 6px 12px; border-radius: 100px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--h-font-tag);
   font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase;
   border: 1px solid var(--border2);
   background: var(--faint2);
@@ -714,5 +778,50 @@ select { height: 42px; border-radius: var(--r-md); }
 .badge--delivered {
   background: var(--lemon); color: var(--void);
   border: none; box-shadow: 0 8px 20px rgba(var(--brand-primary-rgb),.2);
+}
+
+/* =========================================================
+   GOTHAM ADJUSTMENTS — last-cascade overrides para que las
+   reglas legacy heredadas de Bebas/Barlow/DM Mono se vean bien
+   con las proporciones de Gotham (más anchas que Bebas y sin
+   monospace tracking implícito de DM Mono).
+   ========================================================= */
+
+/* Display blocks (era Bebas Neue 400): bump 900 + tracking ajustada */
+.topbarLogo, .topbarLogo--ig,
+.topbarAvatar,
+.topbar h1,
+.sectionTitle,
+.cardStat .v,
+.igStatValue,
+.brandText, .loginBrandTitle {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+.topbarTitle, .topbarTitle--ig {
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+.topbar h1 {
+  letter-spacing: 0.5px;
+}
+.brandText, .loginBrandTitle {
+  letter-spacing: 1.5px;
+}
+
+/* Tag blocks (era DM Mono 500 / Barlow Condensed 700): unify weight 700 */
+.topbarRolePill,
+.sectionLabel,
+.cardStat .k,
+.table thead th,
+.pill,
+.badge {
+  font-weight: 700;
+}
+
+/* Render hint para textos finos */
+html, body {
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 .badge--delivered .dot { background: var(--void); }

@@ -77,13 +77,13 @@ const overlay = {
 const modal = {
   background: "#0a0c14", border: "1px solid rgba(var(--brand-primary-rgb),0.18)",
   maxWidth: 400, width: "100%", padding: "32px 28px",
-  fontFamily: "'Barlow',sans-serif", color: "#f0ece3",
+  fontFamily: "'Gotham', sans-serif", color: "#f0ece3",
   textAlign: "center",
 };
 
 const icon = { fontSize: 48, marginBottom: 12 };
 const title = {
-  fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, letterSpacing: -1,
+  fontFamily: "'Gotham', sans-serif", fontSize: 32, letterSpacing: -1,
   marginBottom: 14, color: "var(--brand-primary, #f5e03a)",
 };
 const desc = {
@@ -97,24 +97,24 @@ const errStyle = {
 const btnPrimary = {
   width: "100%", padding: "16px 20px", marginBottom: 10,
   background: "var(--brand-primary, #f5e03a)", color: "#000", border: "none",
-  fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, fontWeight: 800,
+  fontFamily: "'Gotham', sans-serif", fontSize: 14, fontWeight: 800,
   letterSpacing: 2, textTransform: "uppercase", cursor: "pointer",
 };
 const btnGhost = {
   width: "100%", padding: "14px 20px", marginBottom: 8,
   background: "transparent", color: "#f0ece3",
   border: "1px solid rgba(240,236,227,0.15)",
-  fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, fontWeight: 600,
+  fontFamily: "'Gotham', sans-serif", fontSize: 13, fontWeight: 600,
   letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer",
 };
 const btnLink = {
   width: "100%", padding: "10px",
   background: "transparent", color: "rgba(240,236,227,.4)",
-  border: "none", fontFamily: "'DM Mono',monospace",
+  border: "none", fontFamily: "'Gotham', monospace",
   fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase",
   cursor: "pointer", textDecoration: "underline",
 };
 const footer = {
   marginTop: 16, fontSize: 11, color: "rgba(240,236,227,.3)",
-  fontFamily: "'DM Mono',monospace", letterSpacing: 1,
+  fontFamily: "'Gotham', monospace", letterSpacing: 1,
 };

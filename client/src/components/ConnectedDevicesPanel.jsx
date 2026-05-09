@@ -145,15 +145,15 @@ export default function ConnectedDevicesPanel() {
 
 const panel = { padding: 24, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(240,236,227,0.08)", marginTop: 24 };
 const header = { marginBottom: 18 };
-const title = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, letterSpacing: -0.5, color: "var(--brand-primary, #f5e03a)", marginBottom: 4 };
+const title = { fontFamily: "'Gotham', sans-serif", fontSize: 28, letterSpacing: -0.5, color: "var(--brand-primary, #f5e03a)", marginBottom: 4 };
 const subtitle = { fontSize: 13, color: "rgba(240,236,227,.45)" };
 const errStyle = { marginBottom: 14, padding: "10px 14px", background: "rgba(var(--brand-accent-rgb),.06)", border: "1px solid rgba(var(--brand-accent-rgb),.18)", color: "#ffb07a", fontSize: 13 };
 const empty = { padding: "32px 16px", textAlign: "center", color: "rgba(240,236,227,.4)", fontSize: 13, lineHeight: 1.6 };
 const row = { display: "flex", alignItems: "center", gap: 12, padding: "14px 0", borderBottom: "1px solid rgba(240,236,227,0.06)" };
-const labelStyle = { fontFamily: "'Barlow',sans-serif", fontSize: 15, fontWeight: 600, color: "#f0ece3" };
-const meta = { fontSize: 11, color: "rgba(240,236,227,.4)", fontFamily: "'DM Mono',monospace", marginTop: 4 };
-const input = { width: "100%", background: "rgba(255,255,255,.04)", border: "1px solid rgba(var(--brand-primary-rgb),0.3)", color: "#f0ece3", padding: "8px 10px", fontFamily: "'Barlow',sans-serif", fontSize: 14, outline: "none" };
+const labelStyle = { fontFamily: "'Gotham', sans-serif", fontSize: 15, fontWeight: 600, color: "#f0ece3" };
+const meta = { fontSize: 11, color: "rgba(240,236,227,.4)", fontFamily: "'Gotham', monospace", marginTop: 4 };
+const input = { width: "100%", background: "rgba(255,255,255,.04)", border: "1px solid rgba(var(--brand-primary-rgb),0.3)", color: "#f0ece3", padding: "8px 10px", fontFamily: "'Gotham', sans-serif", fontSize: 14, outline: "none" };
 const actions = { display: "flex", gap: 6, flexShrink: 0 };
-const btnSm = { padding: "6px 12px", background: "var(--brand-primary, #f5e03a)", color: "#000", border: "none", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer" };
-const btnSmGhost = { padding: "6px 12px", background: "transparent", color: "rgba(240,236,227,.6)", border: "1px solid rgba(240,236,227,0.15)", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, cursor: "pointer" };
-const btnSmDanger = { padding: "6px 12px", background: "rgba(var(--brand-accent-rgb),0.1)", color: "#ffb07a", border: "1px solid rgba(var(--brand-accent-rgb),0.3)", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer" };
+const btnSm = { padding: "6px 12px", background: "var(--brand-primary, #f5e03a)", color: "#000", border: "none", fontFamily: "'Gotham', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer" };
+const btnSmGhost = { padding: "6px 12px", background: "transparent", color: "rgba(240,236,227,.6)", border: "1px solid rgba(240,236,227,0.15)", fontFamily: "'Gotham', sans-serif", fontSize: 12, cursor: "pointer" };
+const btnSmDanger = { padding: "6px 12px", background: "rgba(var(--brand-accent-rgb),0.1)", color: "#ffb07a", border: "1px solid rgba(var(--brand-accent-rgb),0.3)", fontFamily: "'Gotham', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer" };

@@ -26,11 +26,15 @@ const BRANDING_DEFAULTS = {
   color_bg:      "#080808",
   color_text:    "#EDE9E0",
   font_preset:   "moderna",
+  // Gotham es la única familia self-hosted del portal Holistic. Los presets
+  // legacy quedan apuntando a Gotham con stacks distintos para que el admin
+  // pueda elegir "look" sin instalar más fonts. Si en el futuro otro cliente
+  // quiere otra familia, ampliar acá + cargar @font-face en styles.css.
   fonts: {
-    moderna:  "Inter, sans-serif",
-    clasica:  "Georgia, serif",
-    tech:     "JetBrains Mono, monospace",
-    friendly: "Quicksand, sans-serif",
+    moderna:  "'Gotham', ui-sans-serif, system-ui, -apple-system, sans-serif",
+    clasica:  "'Gotham', ui-serif, Georgia, serif",
+    tech:     "'Gotham', ui-monospace, 'JetBrains Mono', monospace",
+    friendly: "'Gotham Rounded', 'Gotham', ui-sans-serif, sans-serif",
   },
 };
 const FEATURE_DEFAULTS = { chat: true, stories: true, friends: true, coins: true, webauthn: true };

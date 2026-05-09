@@ -79,12 +79,12 @@ export default function OnboardingModal({ user, onComplete }) {
 
             <div style={{ fontSize: 56, marginBottom: 18, lineHeight: 1, filter: "drop-shadow(0 0 16px rgba(var(--brand-primary-rgb),.5))" }}>🪙</div>
 
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--brand-accent, #ff8c2a)", marginBottom: 8, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ fontFamily: "'Gotham', monospace", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--brand-accent, #ff8c2a)", marginBottom: 8, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ width: 22, height: 1, background: "var(--brand-accent, #ff8c2a)" }} />
               Bienvenido
             </div>
 
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, lineHeight: .95, letterSpacing: "1.5px", color: "#fff", marginBottom: 12 }}>
+            <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: 36, lineHeight: .95, letterSpacing: "1.5px", color: "#fff", marginBottom: 12 }}>
               {needsUsername && needsPhone ? "Completá tu perfil" : needsUsername ? "Elegí tu @ usuario" : "Falta tu teléfono"}
             </div>
 
@@ -98,7 +98,7 @@ export default function OnboardingModal({ user, onComplete }) {
 
             {needsUsername && (
               <div style={{ marginBottom: 14 }}>
-                <label style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,.4)", display: "block", marginBottom: 6, fontWeight: 600 }}>
+                <label style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,.4)", display: "block", marginBottom: 6, fontWeight: 600 }}>
                   Tu @ usuario *
                 </label>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "rgba(255,255,255,.03)", border: "1px solid rgba(var(--brand-primary-rgb),.22)", borderRadius: 12 }}>
@@ -117,7 +117,7 @@ export default function OnboardingModal({ user, onComplete }) {
 
             {needsPhone && (
               <div style={{ marginBottom: 16 }}>
-                <label style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,.4)", display: "block", marginBottom: 6, fontWeight: 600 }}>
+                <label style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,.4)", display: "block", marginBottom: 6, fontWeight: 600 }}>
                   Tu teléfono *
                 </label>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "rgba(255,255,255,.03)", border: "1px solid rgba(var(--brand-primary-rgb),.22)", borderRadius: 12 }}>
@@ -141,11 +141,11 @@ export default function OnboardingModal({ user, onComplete }) {
             )}
 
             <Pop as="button" onClick={save} disabled={!valid || saving}
-              style={{ width: "100%", padding: "14px", background: valid ? "linear-gradient(135deg,var(--brand-primary, #f5e03a),#ff8c00)" : "rgba(255,255,255,.05)", color: valid ? "#000" : "#444", border: "none", borderRadius: 12, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700, cursor: valid ? "pointer" : "not-allowed", boxShadow: valid ? "0 8px 24px rgba(var(--brand-primary-rgb),.4)" : "none" }}>
+              style={{ width: "100%", padding: "14px", background: valid ? "linear-gradient(135deg,var(--brand-primary, #f5e03a),#ff8c00)" : "rgba(255,255,255,.05)", color: valid ? "#000" : "#444", border: "none", borderRadius: 12, fontFamily: "'Gotham', sans-serif", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700, cursor: valid ? "pointer" : "not-allowed", boxShadow: valid ? "0 8px 24px rgba(var(--brand-primary-rgb),.4)" : "none" }}>
               {saving ? "Guardando…" : "Guardar y continuar →"}
             </Pop>
 
-            <div style={{ marginTop: 14, fontSize: 10, color: "rgba(255,255,255,.3)", textAlign: "center", fontFamily: "'DM Mono',monospace", letterSpacing: "1.2px", lineHeight: 1.5 }}>
+            <div style={{ marginTop: 14, fontSize: 10, color: "rgba(255,255,255,.3)", textAlign: "center", fontFamily: "'Gotham', monospace", letterSpacing: "1.2px", lineHeight: 1.5 }}>
               Podés editarlo después desde tu perfil
             </div>
           </motion.div>

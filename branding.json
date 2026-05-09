@@ -9,9 +9,9 @@
   "color_text": "#EDE9E0",
   "font_preset": "moderna",
   "fonts": {
-    "moderna":  "Inter, sans-serif",
-    "clasica":  "Georgia, serif",
-    "tech":     "JetBrains Mono, monospace",
-    "friendly": "Quicksand, sans-serif"
+    "moderna":  "'Gotham', ui-sans-serif, system-ui, -apple-system, sans-serif",
+    "clasica":  "'Gotham', ui-serif, Georgia, serif",
+    "tech":     "'Gotham', ui-monospace, 'JetBrains Mono', monospace",
+    "friendly": "'Gotham Rounded', 'Gotham', ui-sans-serif, sans-serif"
   }
 }

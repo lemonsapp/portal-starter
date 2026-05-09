@@ -271,7 +271,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
                     <div style={{ fontSize: 14, fontWeight: 800, color: bucket.user?.name_color || "#fff", lineHeight: 1, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
                       {bucket.user?.name}
                     </div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "rgba(255,255,255,.55)", marginTop: 3 }}>
+                    <div style={{ fontFamily: "'Gotham', monospace", fontSize: 10, color: "rgba(255,255,255,.55)", marginTop: 3 }}>
                       {relTime(story.created_at)} · {sIdx + 1}/{bucket.stories.length}
                       {bucket.user?.online && !isSelf && <span style={{ color: "#22c55e", marginLeft: 6 }}>● en línea</span>}
                     </div>
@@ -282,7 +282,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
               <>
                 <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${story.color}25`, border: `1px solid ${story.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{story.emoji}</div>
                 <div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: "2px", color: story.color, textTransform: "uppercase", fontWeight: 700 }}>
+                  <div style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: "2px", color: story.color, textTransform: "uppercase", fontWeight: 700 }}>
                     {branding.name} {story.kind === "tip" ? "Tip" : "anuncia"}
                   </div>
                 </div>
@@ -323,7 +323,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
           <>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 32px", zIndex: 3, pointerEvents: "none" }}>
               <div style={{ fontSize: 80, marginBottom: 18, filter: `drop-shadow(0 0 24px ${story.color}aa)`, lineHeight: 1 }}>{story.emoji}</div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: "clamp(36px, 6vw, 56px)", lineHeight: .95, letterSpacing: "1px", color: "#fff", marginBottom: 16, textShadow: `0 4px 24px ${story.color}66` }}>
+              <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: "clamp(36px, 6vw, 56px)", lineHeight: .95, letterSpacing: "1px", color: "#fff", marginBottom: 16, textShadow: `0 4px 24px ${story.color}66` }}>
                 {story.title}
               </div>
               {story.body && (
@@ -335,7 +335,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
             {story.link_url && (
               <div style={{ position: "absolute", left: 20, right: 20, bottom: 28, zIndex: 5 }}>
                 <Pop as="a" href={story.link_url} target="_blank" rel="noreferrer"
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 20px", background: story.color, color: "#000", borderRadius: 14, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: "2px", fontWeight: 700, textTransform: "uppercase", textDecoration: "none", boxShadow: `0 12px 32px ${story.color}66` }}>
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 20px", background: story.color, color: "#000", borderRadius: 14, fontFamily: "'Gotham', sans-serif", fontSize: 18, letterSpacing: "2px", fontWeight: 700, textTransform: "uppercase", textDecoration: "none", boxShadow: `0 12px 32px ${story.color}66` }}>
                   {story.link_label || "Más info"} →
                 </Pop>
               </div>
@@ -367,12 +367,12 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
                   title={ls.liked ? "Quitar like" : "Like"}
                   style={{ padding: "8px 11px", borderRadius: 10, background: ls.liked ? "rgba(239,68,68,.18)" : "rgba(255,255,255,.06)", border: `1px solid ${ls.liked ? "rgba(239,68,68,.5)" : "rgba(255,255,255,.12)"}`, color: ls.liked ? "#ef4444" : "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flexShrink: 0, animation: ls.liked ? "svHeartPop .35s ease-out" : "none" }}>
                   {ls.liked ? "❤" : "🤍"}
-                  {ls.count > 0 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, fontWeight: 700 }}>{ls.count}</span>}
+                  {ls.count > 0 && <span style={{ fontFamily: "'Gotham', monospace", fontSize: 11, fontWeight: 700 }}>{ls.count}</span>}
                 </button>
               </>
             ) : (
               <button onClick={openLikers}
-                style={{ flex: 1, padding: "10px 14px", borderRadius: 10, background: "rgba(var(--brand-primary-rgb),.08)", border: "1px solid rgba(var(--brand-primary-rgb),.22)", color: "var(--brand-primary, #f5e03a)", fontFamily: "'DM Mono',monospace", fontSize: 11, letterSpacing: 1.4, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
+                style={{ flex: 1, padding: "10px 14px", borderRadius: 10, background: "rgba(var(--brand-primary-rgb),.08)", border: "1px solid rgba(var(--brand-primary-rgb),.22)", color: "var(--brand-primary, #f5e03a)", fontFamily: "'Gotham', monospace", fontSize: 11, letterSpacing: 1.4, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
                 ❤ {ls.count} {ls.count === 1 ? "like" : "likes"} · ver quién
               </button>
             )}
@@ -381,7 +381,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
 
         {/* Hint swipe abajo */}
         {buckets.length > 1 && !isUserKind && (
-          <div style={{ position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)", zIndex: 6, fontFamily: "'DM Mono',monospace", fontSize: 8, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", pointerEvents: "none" }}>
+          <div style={{ position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)", zIndex: 6, fontFamily: "'Gotham', monospace", fontSize: 8, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", pointerEvents: "none" }}>
             ← Desliza · {bIdx + 1}/{buckets.length} ·  →
           </div>
         )}
@@ -397,10 +397,10 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
             >
               <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
                 <div>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, letterSpacing: 1, color: "#fff", lineHeight: 1 }}>
+                  <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: 22, letterSpacing: 1, color: "#fff", lineHeight: 1 }}>
                     Likes de tu story
                   </div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9.5, letterSpacing: 1.4, color: "rgba(255,255,255,.4)", marginTop: 4 }}>
+                  <div style={{ fontFamily: "'Gotham', monospace", fontSize: 9.5, letterSpacing: 1.4, color: "rgba(255,255,255,.4)", marginTop: 4 }}>
                     {ls.count} {ls.count === 1 ? "persona" : "personas"} · sólo vos podés ver esta lista
                   </div>
                 </div>
@@ -425,7 +425,7 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 700, color: u.name_color || "#fff", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{u.name}</div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "rgba(255,255,255,.4)", marginTop: 3 }}>
+                        <div style={{ fontFamily: "'Gotham', monospace", fontSize: 10, color: "rgba(255,255,255,.4)", marginTop: 3 }}>
                           {u.username ? `@${u.username}` : ""} · {relTime(u.created_at)}
                         </div>
                       </div>

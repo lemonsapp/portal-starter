@@ -496,7 +496,7 @@ body.fxPartyMode { animation: fxPartyShake .25s ease-in-out 3; }
   top: 50%; left: 50%;
   transform: translate(-50%, -50%) scale(.6);
   z-index: 10000;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Gotham', sans-serif;
   font-size: clamp(60px, 14vw, 200px);
   letter-spacing: .15em;
   background: linear-gradient(135deg, var(--brand-primary, #f5e03a), var(--brand-accent, #ff8c2a), var(--brand-accent, #ff5500), var(--brand-primary, #f5e03a));

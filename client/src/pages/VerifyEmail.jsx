@@ -30,17 +30,17 @@ export default function VerifyEmail() {
   return (
     <div className="vf-root">
       <style>{`
-        .vf-root{min-height:100vh;min-height:100svh;background:#020307;color:#f0ece3;font-family:'Barlow',sans-serif;display:flex;align-items:center;justify-content:center;padding:32px;overflow:hidden;position:relative}
+        .vf-root{min-height:100vh;min-height:100svh;background:#020307;color:#f0ece3;font-family:'Gotham', sans-serif;display:flex;align-items:center;justify-content:center;padding:32px;overflow:hidden;position:relative}
         .vf-root::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.026;pointer-events:none;z-index:9}
         .vf-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
-        .vf-watermark{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(180px,22vw,360px);line-height:.78;letter-spacing:-6px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;user-select:none;top:50%;left:50%;transform:translate(-50%,-50%)}
+        .vf-watermark{position:absolute;font-family:'Gotham', sans-serif;font-size:clamp(180px,22vw,360px);line-height:.78;letter-spacing:-6px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;user-select:none;top:50%;left:50%;transform:translate(-50%,-50%)}
         .vf-logo-bg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50%;max-width:480px;opacity:.05;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
         .vf-card{position:relative;z-index:5;width:100%;max-width:560px;text-align:center;padding:56px 48px;background:linear-gradient(135deg,#07090f 0%,#020307 100%);border:1px solid rgba(240,236,227,.08);opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1)}
         .vf-card.in{opacity:1;transform:translateY(0)}
         .vf-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--lemon),var(--orange),var(--lemon));background-size:200% 100%;animation:vfBar 3s linear infinite}
         @keyframes vfBar{from{background-position:0 0}to{background-position:200% 0}}
 
-        .vf-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:var(--brand-accent, #ff5500);display:inline-flex;align-items:center;gap:12px;margin-bottom:24px}
+        .vf-eyebrow{font-family:'Gotham', monospace;font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:var(--brand-accent, #ff5500);display:inline-flex;align-items:center;gap:12px;margin-bottom:24px}
         .vf-eyebrow::before,.vf-eyebrow::after{content:'';width:28px;height:1px;background:var(--brand-accent, #ff5500)}
 
         .vf-icon{margin:0 auto 28px;width:128px;height:128px;display:flex;align-items:center;justify-content:center;position:relative}
@@ -58,17 +58,17 @@ export default function VerifyEmail() {
         .vf-x path{fill:none;stroke:var(--brand-accent, #ff5500);stroke-width:5;stroke-linecap:round;stroke-dasharray:36;stroke-dashoffset:36;animation:vfDraw .4s cubic-bezier(.2,.8,.2,1) .9s forwards}
         @keyframes vfShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
 
-        .vf-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,6vw,80px);line-height:.88;letter-spacing:-1.5px;color:#f0ece3;margin-bottom:14px}
+        .vf-title{font-family:'Gotham', sans-serif;font-size:clamp(48px,6vw,80px);line-height:.88;letter-spacing:-1.5px;color:#f0ece3;margin-bottom:14px}
         .vf-title em{font-style:normal;color:var(--brand-primary, #f5e03a)}
         .vf-title .ok{color:#22c55e}
         .vf-title .err{color:var(--brand-accent, #ff5500)}
 
         .vf-msg{font-size:15px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:24px;max-width:420px;margin-left:auto;margin-right:auto}
 
-        .vf-coins{display:inline-flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(var(--brand-primary-rgb),.06);border:1px solid rgba(var(--brand-primary-rgb),.22);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);margin-bottom:30px}
-        .vf-coins b{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;font-weight:400}
+        .vf-coins{display:inline-flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(var(--brand-primary-rgb),.06);border:1px solid rgba(var(--brand-primary-rgb),.22);font-family:'Gotham', monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);margin-bottom:30px}
+        .vf-coins b{font-family:'Gotham', sans-serif;font-size:22px;letter-spacing:1px;font-weight:400}
 
-        .vf-btn{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;background:var(--brand-primary, #f5e03a);color:#000;border:none;padding:18px 36px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:10px}
+        .vf-btn{font-family:'Gotham', sans-serif;font-size:14px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;background:var(--brand-primary, #f5e03a);color:#000;border:none;padding:18px 36px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:10px}
         .vf-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(var(--brand-primary-rgb),.18);background:var(--brand-primary, #fff7a0)}
         .vf-btn .arr{transition:transform .3s}
         .vf-btn:hover .arr{transform:translateX(4px)}

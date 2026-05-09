@@ -113,27 +113,27 @@ export default function FriendsPanel() {
         .fp-card:hover .fp-ava{border-color:rgba(var(--brand-primary-rgb),.5)}
         .fp-dot{position:absolute;bottom:1px;right:1px;width:14px;height:14px;border-radius:50%;border:2.5px solid rgba(8,9,16,.95)}
         .fp-mutual{position:absolute;top:-2px;right:-2px;font-size:14px;background:rgba(8,9,16,.95);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(34,197,94,.4)}
-        .fp-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;line-height:1.1;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .fp-seen{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;line-height:1.1}
-        .fp-section-h{display:flex;align-items:center;gap:8px;margin:14px 0 12px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+        .fp-name{font-family:'Gotham', sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;line-height:1.1;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .fp-seen{font-family:'Gotham', monospace;font-size:9px;letter-spacing:1px;line-height:1.1}
+        .fp-section-h{display:flex;align-items:center;gap:8px;margin:14px 0 12px;font-family:'Gotham', monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
         .fp-section-h::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.05)}
       `}</style>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
         <div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: 2.5, textTransform: "uppercase", color: "#22c55e", fontWeight: 600, marginBottom: 6 }}>
+          <div style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: 2.5, textTransform: "uppercase", color: "#22c55e", fontWeight: 600, marginBottom: 6 }}>
             👥 Amigos
           </div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, letterSpacing: 1.2, color: "#fff", lineHeight: 1 }}>
+          <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: 28, letterSpacing: 1.2, color: "#fff", lineHeight: 1 }}>
             En vivo
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", background: "rgba(34,197,94,.1)", border: "1px solid rgba(34,197,94,.3)", borderRadius: 999 }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 6px #22c55e", animation: "fpPulse 2s ease-in-out infinite" }} />
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: 1.5, fontWeight: 700, color: "#22c55e" }}>{online.length} ONLINE</span>
+            <span style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: 1.5, fontWeight: 700, color: "#22c55e" }}>{online.length} ONLINE</span>
           </div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: 1.2, color: "rgba(255,255,255,.4)" }}>{friends.length} en total</div>
+          <div style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: 1.2, color: "rgba(255,255,255,.4)" }}>{friends.length} en total</div>
         </div>
       </div>
 
@@ -151,9 +151,9 @@ export default function FriendsPanel() {
         <div style={{ padding: "28px 16px", textAlign: "center" }}>
           <div style={{ fontSize: 36, opacity: .35, marginBottom: 10 }}>👥</div>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)", marginBottom: 6 }}>Sin amigos todavía</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,.3)", fontFamily: "'DM Mono',monospace", letterSpacing: 1, marginBottom: 14 }}>Seguí a otros usuarios desde su perfil</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,.3)", fontFamily: "'Gotham', monospace", letterSpacing: 1, marginBottom: 14 }}>Seguí a otros usuarios desde su perfil</div>
           <button onClick={() => navigate("/perfil")}
-            style={{ padding: "9px 18px", background: "rgba(34,197,94,.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,.3)", fontFamily: "'DM Mono',monospace", fontSize: 11, letterSpacing: 1.5, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
+            style={{ padding: "9px 18px", background: "rgba(34,197,94,.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,.3)", fontFamily: "'Gotham', monospace", fontSize: 11, letterSpacing: 1.5, fontWeight: 700, cursor: "pointer", textTransform: "uppercase" }}>
             Ir a mi perfil →
           </button>
         </div>

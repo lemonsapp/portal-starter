@@ -13,16 +13,17 @@
     <!-- Open Graph / Twitter (preview en redes) -->
     <meta property="og:title" content="Mi Portal" />
     <meta property="og:description" content="Tu comunidad en un solo lugar" />
-    <meta property="og:image" content="/icons/icon-512.png" />
+    <meta property="og:image" content="icons/icon-512.png" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Mi Portal" />
     <meta name="twitter:description" content="Tu comunidad en un solo lugar" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@300;400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+    <!-- Fonts: Gotham self-hosted (WOFF2) — única familia.
+         Preload del Book + Black para que el primer paint no parpadee.
+         @font-face declarations viven en src/styles.css. -->
+    <link rel="preload" href="fonts/holistic/gotham-book.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/holistic/gotham-black.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- PWA Meta Tags -->
     <meta name="application-name" content="Mi Portal" />
@@ -32,19 +33,19 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#3B82F6" />
     <meta name="msapplication-TileColor" content="#04060d" />
-    <meta name="msapplication-TileImage" content="/icons/icon-192.png" />
+    <meta name="msapplication-TileImage" content="icons/icon-192.png" />
 
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json" />
+    <!-- Manifest (path relativo: en deploy unificado /portal/ resuelve a /portal/manifest.json) -->
+    <link rel="manifest" href="manifest.json" />
 
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
-    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
 
     <!-- Favicon — overrideado en runtime por useBranding() si admin sube uno. -->
-    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <style>
     /* ── DESIGN TOKENS (alineados al landing) ── */
     :root {
@@ -63,14 +64,14 @@
 
     *, *::before, *::after { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; overflow-x: hidden; }
-    body { background: #080808; color: #fff; font-family: 'Barlow', sans-serif; }
+    body { background: #080808; color: #fff; font-family: 'Gotham', system-ui, sans-serif; }
 
-    /* ── Helpers tipográficos del landing ── */
-    .ff-bebas { font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
-    .ff-mono  { font-family: 'DM Mono', monospace; }
-    .ff-cond  { font-family: 'Barlow Condensed', sans-serif; }
-    .lbl-mono { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ghost); }
-    .eyebrow  { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3.5px; text-transform: uppercase; color: var(--orange); display: inline-flex; align-items: center; gap: 12px; }
+    /* ── Helpers tipográficos (era Bebas/DM Mono/Barlow Condensed → todo Gotham con weight + tracking apropiados) ── */
+    .ff-bebas { font-family: 'Gotham', sans-serif; font-weight: 900; letter-spacing: 0; }
+    .ff-mono  { font-family: 'Gotham', sans-serif; font-weight: 700; letter-spacing: 0.04em; }
+    .ff-cond  { font-family: 'Gotham', sans-serif; font-weight: 700; letter-spacing: 0.02em; }
+    .lbl-mono { font-family: 'Gotham', sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--ghost); }
+    .eyebrow  { font-family: 'Gotham', sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: var(--orange); display: inline-flex; align-items: center; gap: 12px; }
     .eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--orange); }
 
     /* ── Scrollbar ── */

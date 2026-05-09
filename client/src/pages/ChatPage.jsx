@@ -602,8 +602,8 @@ function PrivateChatPanel({ targetUser, currentUser, socket, token, onClose }) {
                       <div style={{ width:42, height:56, borderRadius:4, background:"linear-gradient(135deg,#c8f53a33,#a78bfa33)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>📷</div>
                     )}
                     <div style={{ display:"flex", flexDirection:"column", justifyContent:"center", minWidth:0, flex:1 }}>
-                      <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#c8f53a", letterSpacing:1.2, textTransform:"uppercase", fontWeight:700, lineHeight:1.3 }}>↩ {replyLabel}</span>
-                      <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"rgba(255,255,255,.55)", lineHeight:1.3, marginTop:2 }}>tu historia · 24h</span>
+                      <span style={{ fontFamily:"'Gotham', monospace", fontSize:9, color:"#c8f53a", letterSpacing:1.2, textTransform:"uppercase", fontWeight:700, lineHeight:1.3 }}>↩ {replyLabel}</span>
+                      <span style={{ fontFamily:"'Gotham', monospace", fontSize:10, color:"rgba(255,255,255,.55)", lineHeight:1.3, marginTop:2 }}>tu historia · 24h</span>
                     </div>
                   </div>
                 )}
@@ -680,11 +680,11 @@ function SmilePicker({ accent, customEmojis, onPickSmile, onPickCustom, onClose 
       <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,gap:8 }}>
         <div style={{ display:"flex",gap:4 }}>
           <button onClick={()=>setTab("smiles")}
-            style={{ background:tab==="smiles"?accent+"22":"transparent",border:`1px solid ${tab==="smiles"?accent+"55":"transparent"}`,color:tab==="smiles"?accent:"#475569",padding:"4px 10px",fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:700,cursor:"pointer",borderRadius:5,textTransform:"uppercase" }}>
+            style={{ background:tab==="smiles"?accent+"22":"transparent",border:`1px solid ${tab==="smiles"?accent+"55":"transparent"}`,color:tab==="smiles"?accent:"#475569",padding:"4px 10px",fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:700,cursor:"pointer",borderRadius:5,textTransform:"uppercase" }}>
             😊 Smiles
           </button>
           <button onClick={()=>setTab("custom")} disabled={customEmojis.length===0}
-            style={{ background:tab==="custom"?accent+"22":"transparent",border:`1px solid ${tab==="custom"?accent+"55":"transparent"}`,color:customEmojis.length===0?"#1e293b":tab==="custom"?accent:"#475569",padding:"4px 10px",fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:700,cursor:customEmojis.length===0?"not-allowed":"pointer",borderRadius:5,textTransform:"uppercase" }}>
+            style={{ background:tab==="custom"?accent+"22":"transparent",border:`1px solid ${tab==="custom"?accent+"55":"transparent"}`,color:customEmojis.length===0?"#1e293b":tab==="custom"?accent:"#475569",padding:"4px 10px",fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:700,cursor:customEmojis.length===0?"not-allowed":"pointer",borderRadius:5,textTransform:"uppercase" }}>
             🪙 Custom · {customEmojis.length}
           </button>
         </div>
@@ -697,7 +697,7 @@ function SmilePicker({ accent, customEmojis, onPickSmile, onPickCustom, onClose 
               hoverScale={1.18}
               style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"6px 4px",background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.05)",cursor:"pointer",borderRadius:6 }}>
               <span style={{ fontSize:20,lineHeight:1 }}>{s.c}</span>
-              <span style={{ fontFamily:"'DM Mono',monospace",fontSize:7,color:"#475569",letterSpacing:".5px" }}>{s.k}</span>
+              <span style={{ fontFamily:"'Gotham', monospace",fontSize:7,color:"#475569",letterSpacing:".5px" }}>{s.k}</span>
             </Pop>
           ))}
         </div>
@@ -708,7 +708,7 @@ function SmilePicker({ accent, customEmojis, onPickSmile, onPickCustom, onClose 
               hoverScale={1.18}
               style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 4px",background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.05)",cursor:"pointer",borderRadius:6 }}>
               <img src={e.url} alt={e.key} style={{ width:30,height:30,objectFit:"contain",imageRendering:"auto" }}/>
-              <span style={{ fontFamily:"'DM Mono',monospace",fontSize:7,color:"#475569",letterSpacing:".3px",textOverflow:"ellipsis",overflow:"hidden",whiteSpace:"nowrap",maxWidth:"100%" }}>:{e.key}:</span>
+              <span style={{ fontFamily:"'Gotham', monospace",fontSize:7,color:"#475569",letterSpacing:".3px",textOverflow:"ellipsis",overflow:"hidden",whiteSpace:"nowrap",maxWidth:"100%" }}>:{e.key}:</span>
             </Pop>
           ))}
         </div>
@@ -739,7 +739,7 @@ function Message({ msg, currentUserId, isAdmin, onDelete, onClick, customEmojis 
         <div style={{ display:"flex",alignItems:"center",gap:5,flexWrap:"wrap" }}>
           <span onClick={()=>onClick(msg)} style={{ cursor:"pointer" }}><UserName user={msg} size={12} /></span>
           {msg.nickname&&<span style={{ fontSize:10,color:msg.nick_color||"#334155",textShadow:msg.nick_glow?`0 0 ${msg.nick_glow}px ${msg.nick_color||"#334155"}`:"none" }}>· {msg.nickname}</span>}
-          <span style={{ color:"#334155",fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"1px" }}>{formatTime(msg.created_at)}</span>
+          <span style={{ color:"#334155",fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"1px" }}>{formatTime(msg.created_at)}</span>
           {isAdmin&&<button onClick={()=>onDelete(msg.id)} style={{ background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:10,opacity:0.3,padding:0 }} onMouseEnter={e=>e.target.style.opacity=1} onMouseLeave={e=>e.target.style.opacity=0.3}>✕</button>}
         </div>
         <div style={{ color:"#cbd5e1",fontSize:isShort?28:13,lineHeight:1.45,wordBreak:"break-word",marginTop:1,letterSpacing:isShort?"2px":0 }}>
@@ -752,7 +752,7 @@ function Message({ msg, currentUserId, isAdmin, onDelete, onClick, customEmojis 
 
 function SystemMessage({ icon = "👋", text, accent = "#c8f53a" }) {
   return (
-    <div className="xat-sys" style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"10px 14px",margin:"6px 14px",background:`${accent}08`,border:`1px solid ${accent}20`,fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:"2px",textTransform:"uppercase",color:accent }}>
+    <div className="xat-sys" style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"10px 14px",margin:"6px 14px",background:`${accent}08`,border:`1px solid ${accent}20`,fontFamily:"'Gotham', monospace",fontSize:10,letterSpacing:"2px",textTransform:"uppercase",color:accent }}>
       <span style={{ fontSize:14 }}>{icon}</span>{text}
     </div>
   );
@@ -1030,15 +1030,15 @@ export default function ChatPage() {
           <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,${accent},transparent)` }}/>
           <span className="xc-room-icon" style={{ fontSize:22, filter:`drop-shadow(0 0 10px ${accent}66)` }}>{activeRoom ? ROOM_META[activeRoom.slug]?.icon : "🪙"}</span>
           <div style={{ display:"flex", flexDirection:"column", lineHeight:1 }}>
-            <div className="xc-header-eye" style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"2.5px", textTransform:"uppercase", color:"rgba(var(--brand-primary-rgb),.4)", marginBottom:4 }}>Sala activa</div>
-            <div className="xc-room-name" style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, letterSpacing:"3px", color:"#f0ece3", textTransform:"uppercase" }}>{activeRoom?.name || "Cargando…"}</div>
+            <div className="xc-header-eye" style={{ fontFamily:"'Gotham', monospace", fontSize:9, letterSpacing:"2.5px", textTransform:"uppercase", color:"rgba(var(--brand-primary-rgb),.4)", marginBottom:4 }}>Sala activa</div>
+            <div className="xc-room-name" style={{ fontFamily:"'Gotham', sans-serif", fontSize:22, letterSpacing:"3px", color:"#f0ece3", textTransform:"uppercase" }}>{activeRoom?.name || "Cargando…"}</div>
           </div>
-          <div className="xc-online-badge" style={{ display:"inline-flex", alignItems:"center", gap:6, marginLeft:8, padding:"4px 10px", background:"rgba(34,197,94,.06)", border:"1px solid rgba(34,197,94,.2)", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"2px", color:"#22c55e" }}>
+          <div className="xc-online-badge" style={{ display:"inline-flex", alignItems:"center", gap:6, marginLeft:8, padding:"4px 10px", background:"rgba(34,197,94,.06)", border:"1px solid rgba(34,197,94,.2)", fontFamily:"'Gotham', monospace", fontSize:9, letterSpacing:"2px", color:"#22c55e" }}>
             <span style={{ width:6,height:6,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 8px #22c55e" }}/>
             {onlineUsers.length} online
           </div>
           {pendingFriends.length>0 && (
-            <div className="xc-pending-badge" style={{ marginLeft:"auto", background:"rgba(245,158,11,.08)", border:"1px solid rgba(245,158,11,.25)", padding:"5px 12px", color:"#f59e0b", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"1.5px", fontWeight:500, cursor:"pointer", textTransform:"uppercase" }}>
+            <div className="xc-pending-badge" style={{ marginLeft:"auto", background:"rgba(245,158,11,.08)", border:"1px solid rgba(245,158,11,.25)", padding:"5px 12px", color:"#f59e0b", fontFamily:"'Gotham', monospace", fontSize:10, letterSpacing:"1.5px", fontWeight:500, cursor:"pointer", textTransform:"uppercase" }}>
               🔔 {pendingFriends.length} solicitud{pendingFriends.length>1?"es":""}
             </div>
           )}
@@ -1047,7 +1047,7 @@ export default function ChatPage() {
             style={{ marginLeft:pendingFriends.length>0?"8px":"auto", background:soundOn?`${accent}14`:"transparent", border:`1px solid ${soundOn?accent+"40":"rgba(240,236,227,.12)"}`, padding:"6px 12px", color:soundOn?accent:"rgba(240,236,227,.4)", fontSize:14, height:30, lineHeight:1 }}>
             {soundOn?"🔔":"🔕"}
           </button>
-          <button onClick={()=>setShowPowers(v=>!v)} className="xc-powers" style={{ background:showPowers?`${accent}14`:"transparent", border:`1px solid ${showPowers?accent+"40":"rgba(240,236,227,.12)"}`, padding:"6px 14px", color:showPowers?accent:"rgba(240,236,227,.55)", cursor:"pointer", fontFamily:"'Barlow Condensed',sans-serif", fontSize:11, fontWeight:800, letterSpacing:"2px", textTransform:"uppercase", transition:"all .25s" }}>⚡ Powers</button>
+          <button onClick={()=>setShowPowers(v=>!v)} className="xc-powers" style={{ background:showPowers?`${accent}14`:"transparent", border:`1px solid ${showPowers?accent+"40":"rgba(240,236,227,.12)"}`, padding:"6px 14px", color:showPowers?accent:"rgba(240,236,227,.55)", cursor:"pointer", fontFamily:"'Gotham', sans-serif", fontSize:11, fontWeight:800, letterSpacing:"2px", textTransform:"uppercase", transition:"all .25s" }}>⚡ Powers</button>
         </div>
 
         {/* Mensajes */}
@@ -1058,8 +1058,8 @@ export default function ChatPage() {
               <div style={{ display:"flex",alignItems:"center",gap:10,padding:"10px 18px",background:`linear-gradient(135deg,${accent}18,rgba(7,12,24,.95))`,border:`1px solid ${accent}40`,boxShadow:`0 12px 40px ${accent}22`,backdropFilter:"blur(12px)" }}>
                 <span style={{ fontSize:18,filter:`drop-shadow(0 0 8px ${accent})` }}>{ROOM_META[activeRoom.slug]?.icon||"🪙"}</span>
                 <div>
-                  <div style={{ fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"2px",color:accent,textTransform:"uppercase" }}>Bienvenido a</div>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:"3px",color:"#f0ece3",textTransform:"uppercase",lineHeight:1 }}>{activeRoom.name}</div>
+                  <div style={{ fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"2px",color:accent,textTransform:"uppercase" }}>Bienvenido a</div>
+                  <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:18,letterSpacing:"3px",color:"#f0ece3",textTransform:"uppercase",lineHeight:1 }}>{activeRoom.name}</div>
                 </div>
               </div>
             </div>
@@ -1071,8 +1071,8 @@ export default function ChatPage() {
           ) : messages.length===0 ? (
             <div style={{ textAlign:"center",marginTop:60 }}>
               <div style={{ fontSize:40,marginBottom:8 }}>{ROOM_META[activeRoom?.slug]?.icon||"🪙"}</div>
-              <div style={{ fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:"4px",color:"#475569",marginBottom:6 }}>SILENCIO ABSOLUTO</div>
-              <div style={{ fontFamily:"'DM Mono',monospace",fontSize:10,color:"#1e293b",letterSpacing:"2px",textTransform:"uppercase" }}>Sé el primero · Tipeá :) (L) (fire)</div>
+              <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:24,letterSpacing:"4px",color:"#475569",marginBottom:6 }}>SILENCIO ABSOLUTO</div>
+              <div style={{ fontFamily:"'Gotham', monospace",fontSize:10,color:"#1e293b",letterSpacing:"2px",textTransform:"uppercase" }}>Sé el primero · Tipeá :) (L) (fire)</div>
             </div>
           ) : (<>
             <SystemMessage icon="🚪" text={`ESTÁS EN ${activeRoom?.name||"el chat"} · sé respetuoso`} accent={accent} />
@@ -1109,7 +1109,7 @@ export default function ChatPage() {
               <Pop as="button" onClick={sendMessage} disabled={!input.trim()}
                 style={{ background:input.trim()?accent:"#1a2540",color:input.trim()?"#000":"#334155",border:"none",borderRadius:8,padding:"8px 16px",fontWeight:800,cursor:input.trim()?"pointer":"default",fontSize:13,flexShrink:0 }}>→</Pop>
             </div>
-            <div className="xc-hints" style={{ marginTop:6,fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"1.5px",color:"#334155",textTransform:"uppercase",display:"flex",gap:10,flexWrap:"wrap" }}>
+            <div className="xc-hints" style={{ marginTop:6,fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"1.5px",color:"#334155",textTransform:"uppercase",display:"flex",gap:10,flexWrap:"wrap" }}>
               <span>:) → 😊</span><span>(L) → 🪙</span><span>(fire) → 🔥</span><span>{`<3 → ❤️`}</span><span>(crown) → 👑</span>
             </div>
           </div>

@@ -11,9 +11,9 @@ export default function UserName({
   const gi          = glowInt   ?? (own ? ctx?.glowInt     : 0) ?? 0;
   const ns          = own ? ctx?.nameStyle : null;
   const glow = gi > 0 && gc ? `0 0 ${gi*2}px ${gc}, 0 0 ${gi*4}px ${gc}99` : "none";
-  const fontFamily = font==="bebas" ? "'Bebas Neue', sans-serif"
-    : font==="mono" ? "'DM Mono', monospace"
-    : "'Barlow', sans-serif";
+  const fontFamily = font==="bebas" ? "'Gotham', sans-serif"
+    : font==="mono" ? "'Gotham', monospace"
+    : "'Gotham', sans-serif";
   return (
     <span className={className} style={{
       fontFamily, fontSize:size, fontWeight:weight,
