@@ -2163,20 +2163,25 @@ button {
 }
 
 /* ===========================================================================
-   GOOEY PAINT REVEAL — cover SVG que dissolves al entrar a la sección.
-   z-index 200 = encima de TODO (editorial z-6, panels z varía, hud z-10).
-   pointer-events none para no bloquear interacción del slider o links.
+   CURSOR-DRIVEN GOO PAINT — blobs siguen al cursor sobre el editorial.
+   3 circles con feGaussianBlur+feColorMatrix se mergean orgánicos. r=0
+   inicial; al hover sobre la sección crecen + cursor (con lerp lag) se
+   convierte en el centro de los blobs. Color = bgColor del panel activo.
    ========================================================================= */
-.psl__paint {
+.psl__cursor-goo {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    z-index: 200;
     pointer-events: none;
-    will-change: opacity;
-    /* Display block evita el inline-default whitespace de SVG */
+    z-index: -1;            /* detrás del texto, encima del bg */
+    overflow: visible;
     display: block;
+}
+.psl__cursor-goo circle {
+    fill: var(--psl-bg, #c9a34e);
+    opacity: 0.55;
+    will-change: cx, cy, r;
 }
 .psl__track {
     position: relative;
@@ -2191,31 +2196,41 @@ button {
    panels slidean a su lado (estilo SPYLT "WE HAVE 6 FREAKING …"). */
 .psl__editorial {
     position: absolute;
-    top: clamp(70px, 11vh, 130px);
+    top: clamp(60px, 9vh, 110px);
     left: clamp(28px, 5vw, 80px);
     z-index: 6;
     will-change: transform, opacity;
-    width: clamp(300px, 42vw, 620px);
-    pointer-events: none;
+    /* Goo cursor effect: el editorial es el "hover area" donde el SVG
+       goo (z:-1 absolute inset:0) renderiza los blobs siguiendo el
+       cursor. isolation:isolate para que el filter goo no afecte resto.
+       pointer-events: auto requerido para que mousemove dispare. */
+    isolation: isolate;
+    /* Bumped width + reduced top/eyebrow gap → texto más grande cubre
+       más del blanco a la izquierda del card del slider. */
+    width: clamp(380px, 52vw, 780px);
+    pointer-events: auto;
     color: #1a1a1a;
+    cursor: default;
 }
 .psl__editorial-eyebrow {
-    margin: 0 0 18px;
+    margin: 0 0 22px;
     display: inline-flex;
     align-items: center;
     gap: 10px;
     font-family: var(--f-text);
-    font-size: 0.72rem;
+    font-size: 0.84rem;
     font-weight: 700;
     letter-spacing: 0.32em;
     text-transform: uppercase;
     color: rgba(26, 26, 26, 0.62);
+    position: relative;
+    z-index: 2;
 }
 .psl__editorial-dot {
-    width: 8px; height: 8px;
+    width: 10px; height: 10px;
     border-radius: 50%;
     background: var(--brand-primary, #f5e03a);
-    box-shadow: 0 0 0 4px rgba(245, 224, 58, 0.22);
+    box-shadow: 0 0 0 5px rgba(245, 224, 58, 0.22);
     animation: psl-pulse 2.6s ease-in-out infinite;
 }
 .psl__editorial-h {
@@ -2223,10 +2238,14 @@ button {
     font-family: var(--f-title);
     font-weight: 900;
     line-height: 0.92;
-    letter-spacing: -0.035em;
-    font-size: clamp(2.4rem, 5.6vw, 5.6rem);
+    letter-spacing: -0.04em;
+    /* Significativamente más grande para cubrir el blanco a la izquierda
+       del card. clamp pasa de (2.4-5.6) a (3.2-7.5) — ~30% más grande. */
+    font-size: clamp(3.2rem, 7.4vw, 7.5rem);
     text-transform: uppercase;
     color: #1a1a1a;
+    position: relative;
+    z-index: 2;
 }
 .psl__editorial-h .psl__editorial-line {
     display: block;
@@ -2243,12 +2262,14 @@ button {
     will-change: background;
 }
 .psl__editorial-sub {
-    margin: clamp(18px, 2.5vh, 28px) 0 0;
-    max-width: 380px;
+    margin: clamp(20px, 3vh, 36px) 0 0;
+    max-width: 480px;
     font-family: var(--f-text);
-    font-size: clamp(0.88rem, 1.05vw, 1rem);
+    font-size: clamp(1rem, 1.25vw, 1.18rem);
     line-height: 1.55;
-    color: rgba(26, 26, 26, 0.62);
+    color: rgba(26, 26, 26, 0.7);
+    position: relative;
+    z-index: 2;
 }
 
 /* ---------- LINES MASK ----------

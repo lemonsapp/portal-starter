@@ -29,66 +29,35 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
 >
     <div class="psl__pin-wrap" data-psl-pin-wrap>
 
-        <!-- ===========================================================
-             GOOEY PAINT REVEAL — patrón clásico Codrops "paint away to
-             reveal hidden content". SVG con feGaussianBlur + feColorMatrix
-             (goo filter) que masquera un rect del color de la sección.
-             Initial state: blobs r=0 → mask vacío → cover full → editorial
-             + slider HIDDEN. Scroll progress (top 90% → top top): blobs
-             grecen con stagger → mask se llena → cover dissolves → contenido
-             REVELADO de forma orgánica goey. Z-index alto, pointer-events
-             none (no bloquea interacción).
-             =========================================================== -->
-        <svg
-            class="psl__paint"
-            data-psl-paint
-            viewBox="0 0 1000 1000"
-            preserveAspectRatio="xMidYMid slice"
-            aria-hidden="true"
-        >
-            <defs>
-                <filter id="psl-goo">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="blur" />
-                    <feColorMatrix in="blur" mode="matrix" values="
-                        1 0 0 0 0
-                        0 1 0 0 0
-                        0 0 1 0 0
-                        0 0 0 22 -10
-                    " result="goo" />
-                    <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-                </filter>
-                <mask id="psl-paint-mask">
-                    <!-- Rect blanco = cover visible (editorial oculto) -->
-                    <rect x="-200" y="-200" width="1400" height="1400" fill="white" />
-                    <!-- Blobs negros con goo filter = hueco transparente
-                         (editorial visible). Crecen scroll-driven. -->
-                    <g filter="url(#psl-goo)">
-                        <circle cx="180"  cy="220" r="0" fill="black" data-psl-blob />
-                        <circle cx="780"  cy="180" r="0" fill="black" data-psl-blob />
-                        <circle cx="500"  cy="380" r="0" fill="black" data-psl-blob />
-                        <circle cx="120"  cy="620" r="0" fill="black" data-psl-blob />
-                        <circle cx="880"  cy="540" r="0" fill="black" data-psl-blob />
-                        <circle cx="380"  cy="780" r="0" fill="black" data-psl-blob />
-                        <circle cx="720"  cy="820" r="0" fill="black" data-psl-blob />
-                        <circle cx="500"  cy="500" r="0" fill="black" data-psl-blob />
-                    </g>
-                </mask>
-            </defs>
-            <!-- Cover rect del color de sección (cream default; en runtime
-                 JS lo sincroniza con --psl-section-bg para que matchee el
-                 panel activo cuando el goo dissolves). -->
-            <rect
-                x="-200" y="-200" width="1400" height="1400"
-                fill="var(--psl-section-bg, #faf5ed)"
-                mask="url(#psl-paint-mask)"
-                data-psl-paint-cover
-            />
-        </svg>
-
-        <!-- Editorial — estructura SPYLT-pure: eyebrow + h2 + sub.
-             El peso visual lo lleva el slider; el editorial es soporte
-             tipográfico, NO el protagonista. -->
+        <!-- Editorial — estructura SPYLT-pure con goo paint cursor-driven.
+             3 blob circles siguen el cursor con lerp + crecen al hover.
+             feGaussianBlur + feColorMatrix los mergea organic-style.
+             Color = panel.bgColor (saturado del producto activo). -->
         <header class="psl__editorial" data-psl-editorial>
+            <!-- SVG cursor-goo overlay; sólo activo en pointer-fine devices -->
+            <svg
+                class="psl__cursor-goo"
+                data-psl-cursor-goo
+                aria-hidden="true"
+            >
+                <defs>
+                    <filter id="psl-cursor-goo">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
+                        <feColorMatrix in="blur" mode="matrix" values="
+                            1 0 0 0 0
+                            0 1 0 0 0
+                            0 0 1 0 0
+                            0 0 0 22 -11
+                        " result="goo" />
+                    </filter>
+                </defs>
+                <g filter="url(#psl-cursor-goo)">
+                    <circle data-psl-cursor-blob data-blob-idx="0" cx="-200" cy="-200" r="0" />
+                    <circle data-psl-cursor-blob data-blob-idx="1" cx="-200" cy="-200" r="0" />
+                    <circle data-psl-cursor-blob data-blob-idx="2" cx="-200" cy="-200" r="0" />
+                </g>
+            </svg>
+
             <p class="psl__editorial-eyebrow" data-psl-editorial-eyebrow>
                 <span class="psl__editorial-dot" aria-hidden="true"></span>
                 <span>EL CATÁLOGO</span>

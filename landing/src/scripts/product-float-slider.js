@@ -34,8 +34,9 @@ function initProductSlider() {
     const editorialLines   = gsap.utils.toArray("[data-psl-editorial-line]", root);
     const editorialSub     = root.querySelector("[data-psl-editorial-sub]");
     const editorialDot     = root.querySelector(".psl__editorial-dot");
-    const paintSvg         = root.querySelector("[data-psl-paint]");
-    const paintBlobs       = gsap.utils.toArray("[data-psl-blob]", root);
+    const editorialEl      = root.querySelector("[data-psl-editorial]");
+    const cursorGooSvg     = root.querySelector("[data-psl-cursor-goo]");
+    const cursorGooBlobs   = gsap.utils.toArray("[data-psl-cursor-blob]", root);
 
     const total = panels.length;
     if (!total || !track || !pinWrap) return;
@@ -67,39 +68,70 @@ function initProductSlider() {
         const { isHorizontal, isStacked, reduceMotion } = ctx.conditions;
 
         // ============================================================
-        // 0a) GOOEY PAINT REVEAL — cover SVG dissolves al entrar al pin.
-        //     Patrón Codrops "paint away to reveal hidden content".
-        //     8 circle blobs en mask negro con feGaussianBlur+feColorMatrix
-        //     (goo filter) crecen de r=0 → r=720 con stagger fino. El cover
-        //     rect (color = --psl-section-bg) se vuelve transparent en las
-        //     áreas gooey → editorial + slider revelados orgánicamente.
-        //     Trigger: pinWrap "top 90%" → "top top" (= 1 viewport-height
-        //     de scroll antes que el pin enganche). Cuando el pin engancha,
-        //     el cover está full-disuelto y el slider toma el control.
-        //     skill: gsap-scrolltrigger scrub + gsap-utils stagger
+        // 0a) CURSOR-DRIVEN GOO PAINT — blobs siguen al cursor sobre el
+        //     editorial. Patrón Codrops cursor-goo: 3 circles con goo
+        //     filter (feGaussianBlur+feColorMatrix) se mergean orgánicos.
+        //     Initial state: blobs r=0 fuera del viewport. mouseenter →
+        //     crecen + lerp follow del cursor. mousemove → blobs lag-
+        //     follow con velocidades distintas (trail liquid). mouseleave
+        //     → blobs shrink back a r=0.
+        //     skill: gsap.utils.interpolate + requestAnimationFrame loop
         // ============================================================
-        if (paintBlobs.length && !reduceMotion) {
-            // Estado inicial: blobs r=0 → mask vacío → cover full → contenido
-            // tapado. Forzamos via gsap.set para que GSAP rastree el atributo
-            // (el HTML inicial ya tiene r=0, pero queremos consistency con
-            // el reverse del scrub si el user scrollea hacia arriba).
-            gsap.set(paintBlobs, { attr: { r: 0 } });
+        if (editorialEl && cursorGooBlobs.length && !reduceMotion) {
+            // Pointer-fine check (no toques en mobile)
+            const isPointerFine = window.matchMedia("(pointer: fine)").matches;
+            if (isPointerFine) {
+                const target = { x: -200, y: -200 };
+                // Cada blob tiene su propio "current" position que lerps
+                // hacia target con velocidad propia → trail liquid lag.
+                const state = cursorGooBlobs.map((_, i) => ({
+                    x: -200,
+                    y: -200,
+                    lerp: 0.18 - i * 0.04,    // 0.18, 0.14, 0.10 → blob 0 más rápido
+                    radius: 0,
+                    radiusTarget: 0,
+                    radiusBase: [60, 80, 50][i] || 60,  // tamaños distintos
+                }));
 
-            gsap.to(paintBlobs, {
-                attr: { r: 720 },
-                ease: "power2.in",
-                stagger: { amount: 0.4, from: "random" },
-                scrollTrigger: {
-                    trigger: pinWrap,
-                    start: "top 90%",
-                    end:   "top top",
-                    scrub: 1.0,
-                    invalidateOnRefresh: true,
-                },
-            });
-        } else if (reduceMotion && paintBlobs.length) {
-            // reduce-motion: cover ya disuelto desde el inicio (sin animación)
-            gsap.set(paintBlobs, { attr: { r: 720 } });
+                let active = false;
+                const onEnter = () => { active = true; state.forEach((s, i) => { s.radiusTarget = s.radiusBase; }); };
+                const onLeave = () => { active = false; state.forEach((s) => { s.radiusTarget = 0; }); };
+                const onMove = (e) => {
+                    const r = editorialEl.getBoundingClientRect();
+                    target.x = e.clientX - r.left;
+                    target.y = e.clientY - r.top;
+                };
+
+                editorialEl.addEventListener("pointerenter", onEnter);
+                editorialEl.addEventListener("pointerleave", onLeave);
+                editorialEl.addEventListener("pointermove",  onMove);
+
+                // RAF loop — lerps continuous (no scrolltrigger needed).
+                let rafId;
+                const tick = () => {
+                    state.forEach((s, i) => {
+                        // Lerp position toward cursor target
+                        s.x += (target.x - s.x) * s.lerp;
+                        s.y += (target.y - s.y) * s.lerp;
+                        // Lerp radius toward target (smooth grow/shrink)
+                        s.radius += (s.radiusTarget - s.radius) * 0.14;
+                        const blob = cursorGooBlobs[i];
+                        blob.setAttribute("cx", s.x.toFixed(1));
+                        blob.setAttribute("cy", s.y.toFixed(1));
+                        blob.setAttribute("r",  s.radius.toFixed(1));
+                    });
+                    rafId = requestAnimationFrame(tick);
+                };
+                tick();
+
+                // Cleanup hook
+                ctx.add(() => () => {
+                    cancelAnimationFrame(rafId);
+                    editorialEl.removeEventListener("pointerenter", onEnter);
+                    editorialEl.removeEventListener("pointerleave", onLeave);
+                    editorialEl.removeEventListener("pointermove",  onMove);
+                });
+            }
         }
 
         // ============================================================
