@@ -75,7 +75,8 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                         data-nombre={p.nombre}
                         data-accent={p.accentColor}
                         data-bg={p.bgColor}
-                        style={`--psl-bg: ${p.bgColor}; --psl-accent: ${p.accentColor}; --psl-aspect: ${p.aspect};`}
+                        data-hero-scale={p.heroScale ?? 1.22}
+                        style={`--psl-bg: ${p.bgColor}; --psl-accent: ${p.accentColor}; --psl-aspect: ${p.aspect}; --psl-hero-scale: ${p.heroScale ?? 1.22};`}
                         role="group"
                         aria-roledescription="slide"
                         aria-label={`${i + 1} de ${panels.length}: ${p.nombre}`}

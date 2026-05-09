@@ -65,8 +65,13 @@ function initProductSlider() {
         const { isHorizontal, isStacked, reduceMotion } = ctx.conditions;
 
         // ============================================================
-        // 0) EDITORIAL ENTRANCE — char reveal con SplitText + mask
-        //    skill: gsap-plugins SplitText + CustomEase 'explode'
+        // 0) EDITORIAL ENTRANCE — scroll-LINKED scrub timeline (SPYLT-pure)
+        //    El editorial se va acomodando A MEDIDA QUE EL USER SCROLLEA
+        //    hacia el slider. Empieza fuera del viewport (chars yPercent 110,
+        //    eyebrow/sub yPercent 60, mark scaled 0.6) y aterriza en su
+        //    posición final justo cuando el pin engancha (start = "top top").
+        //    Skills: gsap-plugins SplitText + CustomEase + gsap-scrolltrigger
+        //    scrub + gsap-timeline position parameter.
         // ============================================================
         let splitInstances = [];
         const lineInners = editorialLines
@@ -88,6 +93,8 @@ function initProductSlider() {
         }
 
         const allChars = splitInstances.flatMap((s) => s.chars);
+        // editorial root para el subtle x-translate during scrub
+        const editorialRoot = root.querySelector(".psl__editorial");
 
         if (reduceMotion) {
             gsap.set([editorialEyebrow, editorialSub, editorialMark, ...lineInners], {
@@ -95,49 +102,67 @@ function initProductSlider() {
             });
             if (allChars.length) gsap.set(allChars, { y: 0, autoAlpha: 1 });
         } else {
-            // Estados iniciales
-            gsap.set([editorialEyebrow, editorialSub], { autoAlpha: 0, y: 14 });
-            gsap.set(allChars, { yPercent: 110, autoAlpha: 0 });
-            // Mark: tilt -1.6 + scale + alpha 0 (rotation preservada)
+            // Estados iniciales (offscreen / "no listo todavía")
+            gsap.set(editorialEyebrow,    { autoAlpha: 0, yPercent: 60 });
+            gsap.set(editorialSub,        { autoAlpha: 0, yPercent: 60 });
+            gsap.set(allChars,            { yPercent: 110, autoAlpha: 0 });
             gsap.set(editorialMark, {
                 scaleX: 0.6, scaleY: 0.85, rotation: -1.6,
                 autoAlpha: 0, transformOrigin: "0 50%",
             });
+            if (editorialRoot) {
+                // Editorial entra desde la derecha hacia su anchor izquierdo.
+                // xPercent 22 inicial → 0 final = pequeña traslación que
+                // refuerza la sensación de "se acomoda" sin moverse mucho.
+                gsap.set(editorialRoot, { xPercent: 22, autoAlpha: 0.85 });
+            }
 
+            // Timeline scroll-LINKED: scrub vincula progress al scroll.
+            // Trigger: pinWrap. start "top bottom" = pin top entra en
+            // bottom del viewport. end "top top" = pin top toca top del
+            // viewport (= pin engancha y slider toma el control).
+            // Esto da exactamente 1 viewport-height de scroll para que
+            // el editorial se acomode antes de que el slider arranque.
             const tl = gsap.timeline({
                 defaults: { ease: "power3.out" },
                 scrollTrigger: {
                     trigger: pinWrap,
-                    start: "top 75%",
-                    toggleActions: "play none none reverse",
+                    start: "top bottom",
+                    end:   "top top",
+                    scrub: 1.2,                 // smooth-ish, no jittery
+                    invalidateOnRefresh: true,
                 },
             });
 
-            // 1. Eyebrow fade-in
-            tl.to(editorialEyebrow, { autoAlpha: 1, y: 0, duration: 0.5 }, 0);
-
-            // 2. Headline chars rise from mask con stagger fino
-            //    skill: gsap-plugins SplitText
+            // Position parameter sobre rango 0-1 del scrub para choreography
+            // 1) Eyebrow rises (0 → 0.20)
+            tl.to(editorialEyebrow, { yPercent: 0, autoAlpha: 1, duration: 0.20 }, 0);
+            // 2) Headline chars rise con stagger fino (0.05 → 0.55)
             if (allChars.length) {
                 tl.to(allChars, {
-                    yPercent: 0,
-                    autoAlpha: 1,
-                    duration: 0.85,
-                    stagger: { amount: 0.7, from: "start" },
+                    yPercent: 0, autoAlpha: 1,
+                    duration: 0.45,
+                    stagger: { amount: 0.32, from: "start" },
                     ease: "power3.out",
-                }, 0.15);
+                }, 0.05);
             }
-
-            // 3. Mark con CustomEase 'explode' (anticipation+overshoot)
-            //    skill: gsap-plugins CustomEase
+            // 3) Mark con 'explode' ease (0.30 → 0.55)
             tl.to(editorialMark, {
                 scaleX: 1, scaleY: 1, autoAlpha: 1,
-                duration: 0.85,
+                duration: 0.25,
                 ease: "explode",
-            }, "-=0.25");
-
-            // 4. Sub fade-in último
-            tl.to(editorialSub, { autoAlpha: 1, y: 0, duration: 0.55 }, "-=0.4");
+            }, 0.30);
+            // 4) Sub rises (0.45 → 0.70)
+            tl.to(editorialSub, { yPercent: 0, autoAlpha: 1, duration: 0.25 }, 0.45);
+            // 5) Editorial root slides hacia su anchor izquierdo en la
+            //    última fase del scrub (0.55 → 1.0). Termina a xPercent 0
+            //    = posición default izquierda, justo cuando el pin engancha.
+            if (editorialRoot) {
+                tl.to(editorialRoot, {
+                    xPercent: 0, autoAlpha: 1,
+                    duration: 0.45, ease: "power2.out",
+                }, 0.55);
+            }
         }
 
         // Idle: respiración muy sutil del mark
@@ -166,8 +191,11 @@ function initProductSlider() {
                 const wheels = gsap.utils.toArray("[data-psl-wheel]", panel);
 
                 // Establece scale base que matchea CSS — GSAP ahora "sabe"
-                // que el hero y wheels viven con scale > 1.
-                if (hero)   gsap.set(hero,   { scale: 1.22, transformOrigin: "center 55%" });
+                // que el hero y wheels viven con scale > 1. heroScale viene
+                // del data-hero-scale (declarado en panels.js per panel para
+                // normalizar tamaño visible del packshot).
+                const heroScale = parseFloat(panel.dataset.heroScale) || 1.22;
+                if (hero) gsap.set(hero, { scale: heroScale, transformOrigin: "center 55%" });
                 wheels.forEach((w) => gsap.set(w, { scale: 1.08, transformOrigin: "center" }));
 
                 if (hero) {
@@ -314,11 +342,12 @@ function initProductSlider() {
                     );
                 }
                 if (hero) {
-                    // Movimiento horizontal contraparallax + scale "kick" al
-                    // pasar por centro del panel: escala 1.22 en bordes, peak
-                    // 1.32 en centro (panel activo). Ease: sine para curva
-                    // suave que se siente como "respiro" del producto.
-                    // skill: gsap-scrolltrigger containerAnim + keyframes
+                    // Per-panel hero scale base (de panels.js heroScale)
+                    const baseScale = parseFloat(panel.dataset.heroScale) || 1.22;
+                    const peakScale = baseScale * 1.08;  // +8% peak al centro
+
+                    // Movimiento horizontal contraparallax sutil
+                    // skill: gsap-scrolltrigger containerAnim
                     gsap.fromTo(hero,
                         { xPercent: 18 },
                         {
@@ -332,12 +361,15 @@ function initProductSlider() {
                             },
                         }
                     );
+                    // Scale "kick" al pasar por centro del panel: escala
+                    // base en bordes, peak (+8%) en centro (panel activo).
+                    // Ease sine para curva suave de "respiro" del producto.
                     gsap.fromTo(hero,
-                        { scale: 1.22 },
+                        { scale: baseScale },
                         {
                             keyframes: [
-                                { scale: 1.32, ease: "sine.inOut" }, // mid-panel peak
-                                { scale: 1.22, ease: "sine.inOut" }, // exit edge
+                                { scale: peakScale, ease: "sine.inOut" }, // mid-panel
+                                { scale: baseScale, ease: "sine.inOut" }, // exit
                             ],
                             scrollTrigger: {
                                 containerAnimation: scrollTween,

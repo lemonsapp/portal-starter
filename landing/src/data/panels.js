@@ -6,9 +6,18 @@
 //   linea        → "PRO" | "RACE" (tag pequeño)
 //   route        → href del CTA (apunta al producto principal)
 //   bgColor      → fallback bg cuando el card no cubre 100% del panel
-//   accentColor  → color para tag/dot/highlights
+//   accentColor  → color pastel para bg de la sección (cross-fade entre
+//                  panels via gsap.utils.interpolate scroll-driven)
 //   aspect       → aspect-ratio del card (de base.png) — preserva el
 //                  diseño original sin cropping ni stretch
+//   heroScale    → multiplier del scale CSS sobre .psl__layer--hero.
+//                  Calibrado por panel para normalizar visible-height
+//                  del packshot (compensar diferencias de tamaño de
+//                  los hero.png + position dentro del canvas). Pro
+//                  packshots son canvases anchos con bottle pequeño
+//                  (~1.42); Race Celeste/Violeta-B son canvases altos
+//                  con bottle grande (~1.05). Default 1.22 si no se
+//                  declara. Aplicado via CSS var --psl-hero-scale.
 //   label        → texto que va arriba del card como tipografía editorial
 //                  (reemplaza al texto.png overlay que venía cropped en
 //                  6 de 9 panels). Si NO querés label visible, dejar "".
@@ -41,6 +50,7 @@ export const panels = [
         bgColor: "#2E8F6E",
         accentColor: "#C7F0DD",
         aspect: 2.275,
+        heroScale: 1.45,        // canvas wide, bottle ocupa solo ~38% del card
         label: "PRO",
         layers: {
             base: "/img/slider-spylt/pro-vegetativo/base.png",
@@ -55,6 +65,7 @@ export const panels = [
         bgColor: "#7AB85F",
         accentColor: "#D5EFC2",
         aspect: 1.960,
+        heroScale: 1.20,        // bottle 60% canvas; subo modesto
         label: "PRO",
         layers: {
             base: "/img/slider-spylt/pro-pre-floracion/base.png",
@@ -69,6 +80,7 @@ export const panels = [
         bgColor: "#D86E8C",
         accentColor: "#F7D6DC",
         aspect: 2.282,
+        heroScale: 1.45,        // canvas wide, bottle ~38% del card
         label: "PRO",
         layers: {
             base: "/img/slider-spylt/pro-floracion/base.png",
@@ -82,11 +94,11 @@ export const panels = [
         route: "/linea-pro",
         // bgColor saturado actualizado al hot pink que renderiza el base.png
         // (estaba en gold #C9A34E que no matcheaba el art real). accentColor
-        // pastel derivado del color medio sampled del art (ver
-        // landing/src/scripts/lib/sample-base-pngs.md si existe).
+        // pastel derivado del color medio sampled del art.
         bgColor: "#E579B7",
         accentColor: "#F3C2DE",
         aspect: 2.262,
+        heroScale: 1.45,        // canvas wide, bottle ~38% del card
         label: "PRO",
         layers: {
             base: "/img/slider-spylt/pro-enraizante/base.png",
@@ -103,6 +115,8 @@ export const panels = [
         bgColor: "#5DBED8",
         accentColor: "#C8EAF3",
         aspect: 1.259,
+        heroScale: 0.96,        // card casi cuadrado + bottle 100% canvas;
+                                // bajo de 1 para que no domine el viewport
         label: "RACE",
         layers: {
             base: "/img/slider-spylt/race-celeste/base.png",
@@ -123,6 +137,7 @@ export const panels = [
         bgColor: "#E591B6",
         accentColor: "#F7D6DC",
         aspect: 1.365,
+        heroScale: 1.04,        // bottle ya 66% canvas, ojo con cobertura vh
         label: "RACE",
         layers: {
             base: "/img/slider-spylt/race-rosado/base.png",
@@ -143,6 +158,7 @@ export const panels = [
         bgColor: "#2EC274",
         accentColor: "#C7F0DD",
         aspect: 1.591,
+        heroScale: 1.10,
         label: "RACE",
         layers: {
             base: "/img/slider-spylt/race-verde/base.png",
@@ -162,6 +178,7 @@ export const panels = [
         bgColor: "#8A5BC0",
         accentColor: "#E4D5F2",
         aspect: 1.587,
+        heroScale: 1.05,        // canvas alto + bottle 100% canvas
         label: "PART A",
         layers: {
             base: "/img/slider-spylt/race-violeta-a/base.png",
@@ -182,6 +199,7 @@ export const panels = [
         bgColor: "#6B3BAF",
         accentColor: "#B49AE0",
         aspect: 1.298,
+        heroScale: 1.02,        // card casi cuadrado, bottle ya grande
         label: "PART B",
         layers: {
             base: "/img/slider-spylt/race-violeta-b/base.png",

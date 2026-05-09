@@ -1925,6 +1925,7 @@ button {
     top: clamp(70px, 11vh, 130px);
     left: clamp(28px, 5vw, 80px);
     z-index: 6;
+    will-change: transform, opacity;
     width: clamp(300px, 42vw, 620px);
     pointer-events: none;
     color: #1a1a1a;
@@ -2052,11 +2053,15 @@ button {
     top: 50%;
     right: clamp(28px, 5vw, 80px);
     transform: translateY(-50%);
-    /* SPYLT-style: card más grande para que respire + protagonice mejor. */
-    width: min(60vw, 880px);
+    /* SPYLT-style: cositos redondos más grandes — card protagoniza la
+       composición sin tapar el editorial.
+       width 66vw / 980px bumpea +12% sobre la versión Sprint 1 (60/880).
+       max-height 80vh contiene los race-celeste (aspect 1.26 casi cuadrado)
+       que de otro modo pisaban "OBSESIVAMENTE". */
+    width: min(66vw, 980px);
     aspect-ratio: var(--psl-aspect, 1.66) / 1;
-    max-height: 78vh;
-    border-radius: clamp(24px, 3vw, 44px);
+    max-height: 80vh;
+    border-radius: clamp(28px, 3.4vw, 52px);
     /* Visible para que el hero PNG explote por encima de los bordes
        (SPYLT-pure: layers que protruyen del frame). El base.png tiene
        border-radius propia via .psl__layer--base. */
@@ -2120,11 +2125,13 @@ button {
 }
 .psl__layer--hero   {
     z-index: 20;
-    /* Hero +22% sobre el bounding del card → el packshot explota por
-       arriba y abajo (SPYLT-pure). transform-origin center mantiene
-       composición. Ojo: la altura se vuelve >100% del card, por eso
-       el card es overflow:visible (ver arriba). */
-    transform: scale(1.22);
+    /* Hero scale per-panel via --psl-hero-scale (declarado en cada panel
+       inline desde panels.js heroScale). Pro packshots ~1.45 (canvas
+       wide con bottle chico), Race Celeste/Violeta-B ~1.05-1.10 (bottle
+       ya llena el card). Default 1.22 si el panel no declara override.
+       transform-origin center 55% concentra el scale en el bottle (no
+       en la transparencia superior). */
+    transform: scale(var(--psl-hero-scale, 1.22));
     transform-origin: center 55%;
     will-change: transform;
     filter: drop-shadow(0 28px 38px rgba(0, 0, 0, 0.28));
