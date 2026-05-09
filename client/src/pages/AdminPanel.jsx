@@ -17,11 +17,15 @@ const styles = {
     minHeight: "100vh",
     background: "var(--brand-bg, #080808)",
     color: "var(--brand-text, #ede9e0)",
-    fontFamily: "var(--brand-font, Inter, sans-serif)",
+    fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
     padding: "32px 16px",
   },
   container: { maxWidth: 1100, margin: "0 auto" },
-  h1: { fontSize: 26, fontWeight: 800, margin: "0 0 6px 0" },
+  h1: {
+    fontFamily: "'Gotham', system-ui, sans-serif",
+    fontSize: 32, fontWeight: 900, margin: "0 0 6px 0",
+    letterSpacing: "-0.02em",
+  },
   sub: { color: "rgba(237,233,224,.55)", marginBottom: 22, fontSize: 14 },
   tabs: { display: "flex", gap: 6, marginBottom: 18, borderBottom: "1px solid rgba(255,255,255,.08)" },
   tab: (active) => ({

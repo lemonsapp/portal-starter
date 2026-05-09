@@ -353,27 +353,27 @@ function ReferralCard() {
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,transparent,#a78bfa,#ec4899,#a78bfa,transparent)", backgroundSize: "200% 100%", animation: "shimmerLoad 3s linear infinite" }} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
         <div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: "2.5px", textTransform: "uppercase", color: "#a78bfa", fontWeight: 600, marginBottom: 6, display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: "2.5px", textTransform: "uppercase", color: "#a78bfa", fontWeight: 600, marginBottom: 6, display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ width: 18, height: 1, background: "#a78bfa" }} />Programa de referidos
           </div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, letterSpacing: "1px", color: "#fff", lineHeight: 1 }}>
+          <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: 32, letterSpacing: "1px", color: "#fff", lineHeight: 1 }}>
             Invitá amigos · ganá <span style={{ color: "var(--brand-primary, #f5e03a)" }}>25 LC</span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginTop: 6, lineHeight: 1.5 }}>
             Tu amigo recibe 25 LC al hacer su primer envío. Vos también ganás 25 LC.
           </div>
         </div>
-        <div style={{ display: "flex", gap: 16, fontFamily: "'DM Mono',monospace" }}>
+        <div style={{ display: "flex", gap: 16, fontFamily: "'Gotham', monospace" }}>
           <div style={{ textAlign: "center" }}>
-            <CountUp value={stats.total || 0} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: "#a78bfa", lineHeight: 1, display: "block" }}>{stats.total || 0}</CountUp>
+            <CountUp value={stats.total || 0} style={{ fontFamily: "'Gotham', sans-serif", fontSize: 28, color: "#a78bfa", lineHeight: 1, display: "block" }}>{stats.total || 0}</CountUp>
             <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>Invitados</div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <CountUp value={stats.rewarded || 0} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: "#22c55e", lineHeight: 1, display: "block" }}>{stats.rewarded || 0}</CountUp>
+            <CountUp value={stats.rewarded || 0} style={{ fontFamily: "'Gotham', sans-serif", fontSize: 28, color: "#22c55e", lineHeight: 1, display: "block" }}>{stats.rewarded || 0}</CountUp>
             <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>Activos</div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <CountUp value={stats.total_coins_earned || 0} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: "var(--brand-primary, #f5e03a)", lineHeight: 1, display: "block" }}>{stats.total_coins_earned || 0}</CountUp>
+            <CountUp value={stats.total_coins_earned || 0} style={{ fontFamily: "'Gotham', sans-serif", fontSize: 28, color: "var(--brand-primary, #f5e03a)", lineHeight: 1, display: "block" }}>{stats.total_coins_earned || 0}</CountUp>
             <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>LC ganados</div>
           </div>
         </div>
@@ -381,7 +381,7 @@ function ReferralCard() {
 
       {link ? (
         <div style={{ display: "flex", gap: 8, alignItems: "center", padding: "12px 14px", background: "rgba(0,0,0,.4)", border: "1px solid rgba(167,139,250,.3)", borderRadius: 10 }}>
-          <code style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 12, color: "#a78bfa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{link}</code>
+          <code style={{ flex: 1, fontFamily: "'Gotham', monospace", fontSize: 12, color: "#a78bfa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{link}</code>
           <Pop as="button" onClick={copy}
             style={{ padding: "8px 14px", background: copied ? "#22c55e" : "linear-gradient(135deg,#a78bfa,#ec4899)", color: "#000", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0 }}>
             {copied ? "✓ Copiado" : "📋 Copiar link"}
@@ -414,16 +414,16 @@ function LoginStreak({ refreshKey }) {
       <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a),transparent)", backgroundSize:"200% 100%", animation:"shimmerLoad 3s linear infinite" }}/>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16, marginBottom:14 }}>
         <div>
-          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"2.5px", textTransform:"uppercase", color:"var(--brand-accent, #ff8c2a)", fontWeight:600, marginBottom:6, display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ fontFamily:"'Gotham', monospace", fontSize:9, letterSpacing:"2.5px", textTransform:"uppercase", color:"var(--brand-accent, #ff8c2a)", fontWeight:600, marginBottom:6, display:"flex", alignItems:"center", gap:10 }}>
             <span style={{ width:18, height:1, background:"var(--brand-accent, #ff8c2a)" }}/>Racha de login
           </div>
-          <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:32, letterSpacing:"1px", color:"#fff", lineHeight:1, display:"flex", alignItems:"baseline", gap:8 }}>
+          <div style={{ fontFamily:"'Gotham', sans-serif", fontSize:32, letterSpacing:"1px", color:"#fff", lineHeight:1, display:"flex", alignItems:"baseline", gap:8 }}>
             <CountUp value={streak} style={{ color:"var(--brand-primary, #f5e03a)", fontSize:42 }}>{streak}</CountUp>
             <span style={{ fontSize:18, color:"rgba(255,255,255,.4)" }}>{streak===1 ? "día" : "días"} seguidos</span>
             <span style={{ fontSize:24 }}>{streak >= 7 ? "🔥🔥" : streak >= 3 ? "🔥" : "✨"}</span>
           </div>
         </div>
-        <div style={{ textAlign:"right", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"1.5px", color:"rgba(255,255,255,.45)" }}>
+        <div style={{ textAlign:"right", fontFamily:"'Gotham', monospace", fontSize:10, letterSpacing:"1.5px", color:"rgba(255,255,255,.45)" }}>
           {streak >= 7 ? "MÁXIMO ✓" : `Faltan ${7 - streak} para el bonus`}
           <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 LC al completar 7</div>
         </div>
@@ -436,7 +436,7 @@ function LoginStreak({ refreshKey }) {
             border: `1px solid ${d.claimed ? "rgba(var(--brand-primary-rgb),.4)" : d.is_today ? "rgba(var(--brand-primary-rgb),.25)" : "rgba(255,255,255,.05)"}`,
             borderRadius: 10, position:"relative",
           }}>
-            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, letterSpacing:"1px", color: d.claimed ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.3)", fontWeight:700, marginBottom:4 }}>
+            <div style={{ fontFamily:"'Gotham', monospace", fontSize:8, letterSpacing:"1px", color: d.claimed ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.3)", fontWeight:700, marginBottom:4 }}>
               {d.day_short}
             </div>
             <div style={{ fontSize:18, lineHeight:1 }}>
@@ -791,23 +791,23 @@ export default function Coins() {
           <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"32px 36px",marginBottom:28,overflow:"hidden",display:"block" }}>
             <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--lemon),var(--orange),transparent)" }}/>
             <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px)",backgroundSize:"48px 48px",pointerEvents:"none",opacity:.7 }}/>
-            <div style={{ position:"absolute",right:-30,bottom:-50,fontFamily:"'Bebas Neue',sans-serif",fontSize:"clamp(140px,18vw,260px)",lineHeight:.78,letterSpacing:"-6px",color:"transparent",WebkitTextStroke:"1px rgba(var(--brand-primary-rgb),.04)",pointerEvents:"none",userSelect:"none" }}>COINS</div>
+            <div style={{ position:"absolute",right:-30,bottom:-50,fontFamily:"'Gotham', sans-serif",fontSize:"clamp(140px,18vw,260px)",lineHeight:.78,letterSpacing:"-6px",color:"transparent",WebkitTextStroke:"1px rgba(var(--brand-primary-rgb),.04)",pointerEvents:"none",userSelect:"none" }}>COINS</div>
 
             <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:24,position:"relative",zIndex:2 }}>
               <div>
-                <div style={{ fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:"3.5px",textTransform:"uppercase",color:"var(--orange)",display:"flex",alignItems:"center",gap:12,marginBottom:14 }}>
+                <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:10,letterSpacing:"2.4px",textTransform:"uppercase",color:"var(--orange)",display:"flex",alignItems:"center",gap:12,marginBottom:14 }}>
                   <span style={{ width:28,height:1,background:"var(--orange)" }}/>Coins
                 </div>
-                <div style={{ fontFamily:"'Bebas Neue',sans-serif",fontSize:"clamp(56px,7vw,96px)",lineHeight:.84,letterSpacing:"-1.5px",color:"var(--text)",marginBottom:6 }}>
+                <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:"clamp(48px,6.4vw,80px)",lineHeight:.92,letterSpacing:"-0.03em",color:"var(--text)",marginBottom:6 }}>
                   TU <em style={{ fontStyle:"normal",color:"var(--lemon)" }}>BALANCE</em>
                 </div>
                 <div style={{ display:"flex",alignItems:"baseline",gap:12,marginBottom:8 }}>
-                  <CountUp value={balance} color="var(--lemon)" style={{ fontFamily:"'Bebas Neue',sans-serif",fontSize:48,fontWeight:400,color:"var(--lemon)",lineHeight:1,letterSpacing:"1px" }}>
+                  <CountUp value={balance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
                     {loading?"—":Number(balance).toLocaleString()}
                   </CountUp>
-                  <span style={{ fontFamily:"'DM Mono',monospace",fontSize:14,color:"var(--muted2)",letterSpacing:"3px" }}>LC 🪙</span>
+                  <span style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:13,color:"var(--muted2)",letterSpacing:"2.4px" }}>LC 🪙</span>
                 </div>
-                <div style={{ fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:"2px",color:"var(--muted2)",marginBottom:18,textTransform:"uppercase" }}>Total ganado: <span style={{ color:"var(--lemon)",fontWeight:500 }}>{Number(totalEarned).toLocaleString()}</span></div>
+                <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:10,letterSpacing:"1.6px",color:"var(--muted2)",marginBottom:18,textTransform:"uppercase" }}>Total ganado: <span style={{ color:"var(--lemon)",fontWeight:900 }}>{Number(totalEarned).toLocaleString()}</span></div>
 
                 <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:10 }}>
                   <div style={{ display:"inline-flex",alignItems:"center",gap:8,background:lc.g,borderRadius:24,padding:"6px 18px",boxShadow:`0 4px 20px ${lc.c}44` }}>

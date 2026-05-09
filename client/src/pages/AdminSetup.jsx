@@ -47,9 +47,9 @@ async function testProvider(provider) {
 // ── Estilos compartidos ─────────────────────────────────────────────────────
 
 const S = {
-  shell: { minHeight: "100vh", background: "var(--brand-bg, #080808)", color: "var(--brand-text, #ede9e0)", fontFamily: "var(--brand-font, Inter, sans-serif)", padding: "32px 16px" },
+  shell: { minHeight: "100vh", background: "var(--brand-bg, #080808)", color: "var(--brand-text, #ede9e0)", fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)", padding: "32px 16px" },
   container: { maxWidth: 760, margin: "0 auto" },
-  h1: { fontSize: 28, fontWeight: 800, marginBottom: 8 },
+  h1: { fontFamily: "'Gotham', system-ui, sans-serif", fontSize: 36, fontWeight: 900, marginBottom: 8, letterSpacing: "-0.02em" },
   sub: { color: "rgba(237,233,224,.55)", marginBottom: 28, fontSize: 14 },
   stepNav: { display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap" },
   stepBtn: (active, done) => ({

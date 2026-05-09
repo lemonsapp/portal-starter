@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext.jsx";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -9,10 +11,10 @@ const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("
    Sidebar — premium dark, paleta restrained Holistic.
    Rationale: sin emojis (SVG outline 1.6 stroke, currentColor), sin
    colores rainbow per item (todo green primary), entrance animado con
-   useGSAP scoped (cleanup automático al unmount).
+   useGSAP scoped (cleanup automático al unmount + RTL re-render seguro).
 
-   Skills: gsap-react useGSAP, gsap-timeline (entrance stagger),
-   gsap-utils (random delays controlados), gsap-performance.
+   Skills: gsap-react useGSAP (scope + auto-cleanup), gsap-timeline
+   (stagger), gsap-performance (transforms only, will-change controlado).
    ===================================================================== */
 
 /* ── SVG Icons (Lucide-like, 1.6 stroke) ─────────────────────────── */
@@ -101,10 +103,32 @@ export default function Sidebar({ mobile = false }) {
     const isActive = (path) =>
         location.pathname === path || location.pathname.startsWith(path + "/");
 
-    /* ── Entrance: CSS keyframes con stagger via animation-delay.
-       Decisión: GSAP no está instalado en client/; usamos CSS keyframes
-       puras para mantener premium feel sin agregar deps. Si en futuro
-       sumamos GSAP al client, migrar a useGSAP del @gsap/react. */
+    /* ── Entrance: useGSAP scoped al nav ref, cleanup automático.
+       Stagger por item, ease editorial calm (power2.out). Reduce-motion
+       respetado vía gsap.matchMedia para no animar quien lo desactivó. */
+    const navRef = useRef(null);
+    useGSAP(() => {
+        if (!navRef.current) return;
+        const mm = gsap.matchMedia();
+        mm.add({
+            normal:  "(prefers-reduced-motion: no-preference)",
+            reduced: "(prefers-reduced-motion: reduce)",
+        }, (ctx) => {
+            const { reduced } = ctx.conditions;
+            if (reduced) {
+                gsap.set(".h-sb__btn", { opacity: 1, x: 0 });
+                return;
+            }
+            gsap.from(".h-sb__btn", {
+                opacity: 0,
+                x: -14,
+                duration: 0.52,
+                ease: "power2.out",
+                stagger: 0.06,
+            });
+        });
+    }, { scope: navRef, dependencies: [links.length] });
+
     return (
         <>
             <style>{`
@@ -155,12 +179,7 @@ export default function Sidebar({ mobile = false }) {
                         border-color var(--h-trans-base),
                         transform var(--h-trans-fast);
                     will-change: transform;
-                    opacity: 0;
-                    animation: h-sb-enter 480ms var(--h-ease-out) forwards;
-                }
-                @keyframes h-sb-enter {
-                    from { opacity: 0; transform: translateX(-12px); }
-                    to   { opacity: 1; transform: translateX(0); }
+                    /* Entrance la maneja GSAP (useGSAP) con stagger + reduce-motion. */
                 }
                 .h-sb__btn:hover {
                     color: var(--h-text-1);
@@ -240,6 +259,7 @@ export default function Sidebar({ mobile = false }) {
             `}</style>
 
             <nav
+                ref={navRef}
                 className={mobile ? "sidebar-bottom" : "h-sb"}
                 style={mobile ? {
                     display: "flex", flexDirection: "row", width: "100%",
@@ -248,14 +268,13 @@ export default function Sidebar({ mobile = false }) {
                 } : {}}
                 aria-label="Navegación principal"
             >
-                {links.map((link, i) => {
+                {links.map((link) => {
                     const active = isActive(link.path);
                     const isChat = link.path === "/chat";
                     return (
                         <button
                             key={link.path}
                             className={`h-sb__btn${active ? " is-active" : ""}`}
-                            style={{ animationDelay: `${i * 70}ms` }}
                             onClick={() => navigate(link.path)}
                             title={link.label}
                             aria-current={active ? "page" : undefined}

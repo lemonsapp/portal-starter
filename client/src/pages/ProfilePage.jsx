@@ -215,11 +215,11 @@ function AchievementCard({ ach, unlocked, stats }) {
     <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{ background:unlocked?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${unlocked?r.border:"rgba(237,233,224,.06)"}`,padding:18,position:"relative",overflow:"hidden",transition:"all .35s cubic-bezier(.2,.8,.2,1)",transform:hover?"translateY(-6px) scale(1.015)":"none",boxShadow:hover?(unlocked?`0 24px 60px rgba(0,0,0,.5),0 0 0 1px ${r.color}40,0 0 32px ${r.color}26`:"0 18px 48px rgba(0,0,0,.5)"):"none",opacity:unlocked?1:.6 }}>
       {unlocked&&<div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${r.color},${r.color}40,transparent)`,backgroundSize:"200% 100%",animation:hover?"shimmerBg 2s linear infinite":"none" }} />}
       {unlocked&&hover&&<div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse 60% 100% at 50% 100%,${r.color}14,transparent 70%)`,pointerEvents:"none"}}/>}
-      <div style={{ position:"absolute",top:10,right:10,fontFamily:"'DM Mono',monospace",fontSize:8,fontWeight:500,letterSpacing:"1.5px",textTransform:"uppercase",padding:"3px 8px",background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
+      <div style={{ position:"absolute",top:10,right:10,fontFamily:"'Gotham', monospace",fontSize:8,fontWeight:500,letterSpacing:"1.5px",textTransform:"uppercase",padding:"3px 8px",background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
       <div style={{ fontSize:32,marginBottom:10,display:"inline-block",animation:unlocked?(hover?"iconSpin .9s ease,iconPop 4s ease-in-out infinite":"iconPop 4s ease-in-out infinite"):"float 4s ease-in-out infinite",filter:unlocked?`drop-shadow(0 0 12px ${r.color}55)`:"grayscale(.6) opacity(.5)",transition:"transform .3s" }}>{unlocked?ach.icon:"🔒"}</div>
-      <div style={{ fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,fontWeight:800,color:"#e2e8f0",marginBottom:5,letterSpacing:".5px",textTransform:"uppercase" }}>{ach.name}</div>
+      <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:14,fontWeight:800,color:"#e2e8f0",marginBottom:5,letterSpacing:".5px",textTransform:"uppercase" }}>{ach.name}</div>
       <div style={{ fontSize:11,color:"rgba(255,255,255,.4)",lineHeight:1.55,marginBottom:12 }}>{ach.desc}</div>
-      <div style={{ fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",color:unlocked?r.color:"rgba(255,255,255,.2)",textTransform:"uppercase",display:"flex",alignItems:"center",gap:6 }}>
+      <div style={{ fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",color:unlocked?r.color:"rgba(255,255,255,.2)",textTransform:"uppercase",display:"flex",alignItems:"center",gap:6 }}>
         {unlocked?<>✦ Desbloqueado</>:<>{ach.reward>0?<>🪙 +{ach.reward}</>:"Bloqueado"}{pct!==null&&<span style={{marginLeft:"auto",color:"rgba(255,255,255,.45)"}}>{Math.floor(pct)}%</span>}</>}
       </div>
       {!unlocked&&pct!==null&&<div style={{ height:3,background:"rgba(255,255,255,.07)",overflow:"hidden",marginTop:10,position:"relative" }}><div style={{ height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${r.color},${r.color}88)`,boxShadow:`0 0 8px ${r.color}66`,transition:"width 1s cubic-bezier(.2,.8,.2,1)" }} /></div>}
@@ -669,7 +669,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-      <div style={{textAlign:"center",marginTop:24,fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:"3px",color:"rgba(var(--brand-primary-rgb),.4)",textTransform:"uppercase"}}>
+      <div style={{textAlign:"center",marginTop:24,fontFamily:"'Gotham', monospace",fontSize:10,letterSpacing:"3px",color:"rgba(var(--brand-primary-rgb),.4)",textTransform:"uppercase"}}>
         Cargando perfil…
       </div>
     </div>
@@ -766,15 +766,15 @@ export default function ProfilePage() {
               <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(3,4,12,.4) 0%,transparent 30%,rgba(3,4,12,.4) 60%,rgba(3,4,12,.98) 100%)",zIndex:2}}/>
               {/* Eyebrow + watermark name */}
               <div className="pf-banner-eyebrow" style={{position:"absolute",top:24,left:28,zIndex:4}}>
-                <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:"3.5px",textTransform:"uppercase",color:"var(--brand-accent, #ff5500)",display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
+                <div style={{fontFamily:"'Gotham', monospace",fontSize:10,letterSpacing:"3.5px",textTransform:"uppercase",color:"var(--brand-accent, #ff5500)",display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
                   <span style={{width:28,height:1,background:"var(--brand-accent, #ff5500)",display:"inline-block"}}/>
                   {isOwn?"Tu perfil":"Perfil"}{profile?.user?.role==="admin"?" · admin":profile?.user?.role==="operator"?" · operador":""}
                 </div>
-                <div className="pf-banner-eyebrow-name" style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"clamp(56px,7vw,86px)",lineHeight:.85,letterSpacing:"-2px",color:"rgba(240,236,227,.18)",textShadow:"0 4px 24px rgba(0,0,0,.5)",userSelect:"none"}}>
+                <div className="pf-banner-eyebrow-name" style={{fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:"clamp(48px,6.4vw,76px)",lineHeight:.92,letterSpacing:"-0.04em",color:"rgba(240,236,227,.18)",textShadow:"0 4px 24px rgba(0,0,0,.5)",userSelect:"none"}}>
                   @{username||(profile?.user?.name||"").toUpperCase().replace(/\s+/g,"")}
                 </div>
               </div>
-              {isOwn&&<button onClick={()=>setPanel("studio")} className="pf-banner-edit" style={{position:"absolute",top:24,right:24,zIndex:4,background:"rgba(2,3,7,.7)",backdropFilter:"blur(18px)",border:"1px solid rgba(var(--brand-primary-rgb),.25)",color:"var(--brand-primary, #f5e03a)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:11,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",padding:"10px 18px",cursor:"pointer",transition:"all .25s",display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(var(--brand-primary-rgb),.12)";e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.boxShadow="0 12px 32px rgba(var(--brand-primary-rgb),.18)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(2,3,7,.7)";e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=""}}>🎨 <span className="pf-banner-edit-text">Editar banner</span></button>}
+              {isOwn&&<button onClick={()=>setPanel("studio")} className="pf-banner-edit" style={{position:"absolute",top:24,right:24,zIndex:4,background:"rgba(2,3,7,.7)",backdropFilter:"blur(18px)",border:"1px solid rgba(var(--brand-primary-rgb),.25)",color:"var(--brand-primary, #f5e03a)",fontFamily:"'Gotham', sans-serif",fontSize:11,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",padding:"10px 18px",cursor:"pointer",transition:"all .25s",display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(var(--brand-primary-rgb),.12)";e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.boxShadow="0 12px 32px rgba(var(--brand-primary-rgb),.18)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(2,3,7,.7)";e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=""}}>🎨 <span className="pf-banner-edit-text">Editar banner</span></button>}
             </div>
 
             {/* HERO */}
@@ -831,9 +831,9 @@ export default function ProfilePage() {
 
               <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginBottom:8,filter:"drop-shadow(0 4px 24px rgba(var(--brand-primary-rgb),.15))"}}>
                 {isOwn?<UserNameHeader size={38}/>:<UserNameHeader className="pf-name-row" own={false} name={profile?.profile?.custom_name||(profile?.user?.name||"")} color={profile?.profile?.name_color||(profile?.user?.role==="admin"?"#ef4444":profile?.user?.role==="operator"?"#fb923c":null)} glowColor={profile?.profile?.name_glow_color} glowInt={profile?.profile?.name_glow||0} size={38}/>}
-                {!["admin","operator"].includes(profile?.user?.role) && <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:`${lc.color}14`,border:`1px solid ${lc.color}38`,color:lc.color}}>{lc.icon} {lc.label}</span>}
-                {profile?.user?.role==="admin"&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.3)",color:"#fca5a5"}}>👑 ADMIN</span>}
-                {profile?.user?.role==="operator"&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:"rgba(251,146,60,.08)",border:"1px solid rgba(251,146,60,.3)",color:"#fb923c"}}>🛡 OP</span>}
+                {!["admin","operator"].includes(profile?.user?.role) && <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:`${lc.color}14`,border:`1px solid ${lc.color}38`,color:lc.color}}>{lc.icon} {lc.label}</span>}
+                {profile?.user?.role==="admin"&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.3)",color:"#fca5a5"}}>👑 ADMIN</span>}
+                {profile?.user?.role==="operator"&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:"rgba(251,146,60,.08)",border:"1px solid rgba(251,146,60,.3)",color:"#fb923c"}}>🛡 OP</span>}
               </div>
               <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
                 <span style={{fontSize:10,color:"rgba(255,255,255,.2)"}}>#{profile?.user?.client_number}</span>
@@ -890,16 +890,16 @@ export default function ProfilePage() {
                   <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,rgba(var(--brand-primary-rgb),.15),transparent)",backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",pointerEvents:"none"}}/>
                   <span style={{fontSize:20,filter:"drop-shadow(0 0 8px rgba(var(--brand-primary-rgb),.5))",position:"relative",zIndex:1}}>🪙</span>
                   <div style={{position:"relative",zIndex:1}}>
-                    <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(var(--brand-primary-rgb),.5)",lineHeight:1}}>Coins</div>
-                    <CountUp value={profile?.coins?.balance||0} style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1.1,marginTop:2,display:"block"}}>{(profile?.coins?.balance||0).toLocaleString()}</CountUp>
+                    <div style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(var(--brand-primary-rgb),.5)",lineHeight:1}}>Coins</div>
+                    <CountUp value={profile?.coins?.balance||0} style={{fontFamily:"'Gotham', sans-serif",fontSize:24,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1.1,marginTop:2,display:"block"}}>{(profile?.coins?.balance||0).toLocaleString()}</CountUp>
                   </div>
                 </div>
                 {/* Level progress (oculto para staff) */}
                 {!["admin","operator"].includes(profile?.user?.role) && (
                 <div style={{flex:1,minWidth:200,maxWidth:280}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>Nivel <b style={{color:lc.color,fontWeight:500}}>{lc.label}</b></span>
-                    <span style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:level==="gold"?"#22c55e":"rgba(255,255,255,.25)"}}>{level==="gold"?"MAX ✓":level==="silver"?"60%":"30%"}</span>
+                    <span style={{fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>Nivel <b style={{color:lc.color,fontWeight:500}}>{lc.label}</b></span>
+                    <span style={{fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:level==="gold"?"#22c55e":"rgba(255,255,255,.25)"}}>{level==="gold"?"MAX ✓":level==="silver"?"60%":"30%"}</span>
                   </div>
                   <div style={{height:5,background:"rgba(255,255,255,.05)",borderRadius:0,overflow:"hidden",position:"relative",border:"1px solid rgba(255,255,255,.04)"}}>
                     <div style={{height:"100%",width:level==="gold"?"100%":level==="silver"?"60%":"30%",background:`linear-gradient(90deg,${lc.color},${lc.color}cc,var(--brand-accent, #ff5500))`,backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",boxShadow:`0 0 10px ${lc.color}66`}}/>
@@ -909,15 +909,15 @@ export default function ProfilePage() {
                 {/* Follow stats premium */}
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 14px",borderLeft:"1px solid rgba(255,255,255,.06)",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                    <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1}}>{followData.followers}</span>
-                    <span style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginTop:2}}>seguidores</span>
+                    <span style={{fontFamily:"'Gotham', sans-serif",fontSize:22,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1}}>{followData.followers}</span>
+                    <span style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginTop:2}}>seguidores</span>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 14px",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                    <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1}}>{followData.following}</span>
-                    <span style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginTop:2}}>siguiendo</span>
+                    <span style={{fontFamily:"'Gotham', sans-serif",fontSize:22,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1}}>{followData.following}</span>
+                    <span style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginTop:2}}>siguiendo</span>
                   </div>
                   {!isOwn && getToken() && (
-                    <button onClick={toggleFollow} disabled={followLoading} style={{height:38,padding:"0 22px",border:followData.isFollowing?"1px solid rgba(var(--brand-primary-rgb),.25)":"none",cursor:followLoading?"not-allowed":"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:12,letterSpacing:"2px",textTransform:"uppercase",background:followData.isFollowing?"transparent":"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #fff7a0))",color:followData.isFollowing?"var(--brand-primary, #f5e03a)":"#000",transition:"all .25s",opacity:followLoading?.6:1,boxShadow:followData.isFollowing?"none":"0 8px 24px rgba(var(--brand-primary-rgb),.25)"}}>
+                    <button onClick={toggleFollow} disabled={followLoading} style={{height:38,padding:"0 22px",border:followData.isFollowing?"1px solid rgba(var(--brand-primary-rgb),.25)":"none",cursor:followLoading?"not-allowed":"pointer",fontFamily:"'Gotham', sans-serif",fontWeight:800,fontSize:12,letterSpacing:"2px",textTransform:"uppercase",background:followData.isFollowing?"transparent":"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #fff7a0))",color:followData.isFollowing?"var(--brand-primary, #f5e03a)":"#000",transition:"all .25s",opacity:followLoading?.6:1,boxShadow:followData.isFollowing?"none":"0 8px 24px rgba(var(--brand-primary-rgb),.25)"}}>
                       {followLoading?"...":followData.isFollowing?"✓ Siguiendo":"+ Seguir"}
                     </button>
                   )}
@@ -939,10 +939,10 @@ export default function ProfilePage() {
                   <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,${s.c},transparent)`,opacity:.4}}/>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
                     <span style={{fontSize:18,filter:`drop-shadow(0 0 8px ${s.c}66)`,opacity:s.hide?.3:1}}>{s.ico}</span>
-                    <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{s.lbl}</div>
+                    <div style={{fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{s.lbl}</div>
                   </div>
-                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:36,letterSpacing:"1px",color:s.hide?"rgba(255,255,255,.12)":s.c,lineHeight:1,filter:s.hide?"blur(8px)":"none",transition:"filter .3s",textShadow:s.hide?"none":`0 0 20px ${s.c}33`}}>{s.v}</div>
-                  {s.hide&&<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(3,4,12,.55)",backdropFilter:"blur(2px)"}}><span style={{fontSize:18}}>🔒</span><span style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:"2px",color:"rgba(255,255,255,.35)",textTransform:"uppercase"}}>Privado</span></div>}
+                  <div style={{fontFamily:"'Gotham', sans-serif",fontSize:36,letterSpacing:"1px",color:s.hide?"rgba(255,255,255,.12)":s.c,lineHeight:1,filter:s.hide?"blur(8px)":"none",transition:"filter .3s",textShadow:s.hide?"none":`0 0 20px ${s.c}33`}}>{s.v}</div>
+                  {s.hide&&<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(3,4,12,.55)",backdropFilter:"blur(2px)"}}><span style={{fontSize:18}}>🔒</span><span style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",color:"rgba(255,255,255,.35)",textTransform:"uppercase"}}>Privado</span></div>}
                 </div>
               ))}
             </div>
@@ -1032,7 +1032,7 @@ export default function ProfilePage() {
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:22,padding:"4px 6px",background:"rgba(255,255,255,.025)",border:"1px solid rgba(var(--brand-primary-rgb),.08)",width:"fit-content"}}>
                     {PERSONALIZE_SUBTABS.map(t=>{
                       const on=subPanel===t.id;
-                      return <button key={t.id} onClick={()=>setSubPanel(t.id)} style={{display:"inline-flex",alignItems:"center",gap:7,padding:"10px 18px",cursor:"pointer",border:"none",fontFamily:"'Barlow Condensed',sans-serif",fontSize:11,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",background:on?"var(--brand-primary, #f5e03a)":"transparent",color:on?"#000":"rgba(240,236,227,.45)",transition:"all .25s"}}>
+                      return <button key={t.id} onClick={()=>setSubPanel(t.id)} style={{display:"inline-flex",alignItems:"center",gap:7,padding:"10px 18px",cursor:"pointer",border:"none",fontFamily:"'Gotham', sans-serif",fontSize:11,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",background:on?"var(--brand-primary, #f5e03a)":"transparent",color:on?"#000":"rgba(240,236,227,.45)",transition:"all .25s"}}>
                         <span style={{fontSize:14}}>{t.icon}</span>{t.label}
                       </button>;
                     })}
