@@ -34,6 +34,8 @@ function initProductSlider() {
     const editorialLines   = gsap.utils.toArray("[data-psl-editorial-line]", root);
     const editorialSub     = root.querySelector("[data-psl-editorial-sub]");
     const editorialDot     = root.querySelector(".psl__editorial-dot");
+    const paintSvg         = root.querySelector("[data-psl-paint]");
+    const paintBlobs       = gsap.utils.toArray("[data-psl-blob]", root);
 
     const total = panels.length;
     if (!total || !track || !pinWrap) return;
@@ -65,7 +67,43 @@ function initProductSlider() {
         const { isHorizontal, isStacked, reduceMotion } = ctx.conditions;
 
         // ============================================================
-        // 0) EDITORIAL ENTRANCE — simple fade-in al engancharse el pin.
+        // 0a) GOOEY PAINT REVEAL — cover SVG dissolves al entrar al pin.
+        //     Patrón Codrops "paint away to reveal hidden content".
+        //     8 circle blobs en mask negro con feGaussianBlur+feColorMatrix
+        //     (goo filter) crecen de r=0 → r=720 con stagger fino. El cover
+        //     rect (color = --psl-section-bg) se vuelve transparent en las
+        //     áreas gooey → editorial + slider revelados orgánicamente.
+        //     Trigger: pinWrap "top 90%" → "top top" (= 1 viewport-height
+        //     de scroll antes que el pin enganche). Cuando el pin engancha,
+        //     el cover está full-disuelto y el slider toma el control.
+        //     skill: gsap-scrolltrigger scrub + gsap-utils stagger
+        // ============================================================
+        if (paintBlobs.length && !reduceMotion) {
+            // Estado inicial: blobs r=0 → mask vacío → cover full → contenido
+            // tapado. Forzamos via gsap.set para que GSAP rastree el atributo
+            // (el HTML inicial ya tiene r=0, pero queremos consistency con
+            // el reverse del scrub si el user scrollea hacia arriba).
+            gsap.set(paintBlobs, { attr: { r: 0 } });
+
+            gsap.to(paintBlobs, {
+                attr: { r: 720 },
+                ease: "power2.in",
+                stagger: { amount: 0.4, from: "random" },
+                scrollTrigger: {
+                    trigger: pinWrap,
+                    start: "top 90%",
+                    end:   "top top",
+                    scrub: 1.0,
+                    invalidateOnRefresh: true,
+                },
+            });
+        } else if (reduceMotion && paintBlobs.length) {
+            // reduce-motion: cover ya disuelto desde el inicio (sin animación)
+            gsap.set(paintBlobs, { attr: { r: 720 } });
+        }
+
+        // ============================================================
+        // 0b) EDITORIAL ENTRANCE — simple fade-in al engancharse el pin.
         //    El "drama" del char reveal SPYLT-style ahora vive en el
         //    componente <ProductsHero /> que va ARRIBA del slider en el
         //    layout (sección dedicada de hero text). Acá el editorial

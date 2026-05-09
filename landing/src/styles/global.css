@@ -2161,6 +2161,23 @@ button {
     overflow: visible;
     background: transparent;
 }
+
+/* ===========================================================================
+   GOOEY PAINT REVEAL — cover SVG que dissolves al entrar a la sección.
+   z-index 200 = encima de TODO (editorial z-6, panels z varía, hud z-10).
+   pointer-events none para no bloquear interacción del slider o links.
+   ========================================================================= */
+.psl__paint {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 200;
+    pointer-events: none;
+    will-change: opacity;
+    /* Display block evita el inline-default whitespace de SVG */
+    display: block;
+}
 .psl__track {
     position: relative;
     height: 100%;
