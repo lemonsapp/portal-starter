@@ -77,6 +77,7 @@ async function migrate() {
     "nickname TEXT",
     "nick_color TEXT",
     "nick_glow INT",
+    "nick_glow_color TEXT",
     "icon_slug TEXT",
     "avatar_url TEXT",
     "custom_name TEXT",

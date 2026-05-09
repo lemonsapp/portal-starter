@@ -19,8 +19,8 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const BRANDING_DEFAULTS = {
   name: "Holistic Growshop",
   slogan: "Tu growshop de confianza · Línea Elite, Pro y Bio",
-  logo_url: "https://hgrowshop.com/wp-content/uploads/2022/01/logo2.svg",
-  favicon_url: "https://hgrowshop.com/wp-content/uploads/2022/01/logo2.svg",
+  logo_url: "/portal/icons/holistic-logo.svg",
+  favicon_url: "/portal/icons/holistic-logo.svg",
   color_primary: "#52b788",
   color_accent:  "#d4a574",
   color_bg:      "#080808",

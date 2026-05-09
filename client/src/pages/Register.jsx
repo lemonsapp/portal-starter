@@ -266,7 +266,7 @@ export default function Register() {
             </h2>
           </div>
           <p className="rg-pitch-sub">
-            Acceso completo a tus envíos, perfil, comunidad, notificaciones y Coins. Todo en un solo lugar.
+            Acceso completo a tu perfil, comunidad, chat, notificaciones y Coins. Todo en un solo lugar.
           </p>
 
           <div className="rg-perks">

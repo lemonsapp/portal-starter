@@ -14,10 +14,10 @@ const CAT_CFG = {
   general: { color: "#ede9e0", emoji: "📢" },
 };
 const TIPS = [
-  { title: "Antes de comprar consultá",   body: "Cada producto tiene reglas aduaneras distintas. Mandá link por WhatsApp y te decimos si conviene importarlo.", emoji: "💡", color: "#fbbf24" },
-  { title: "Express vs Normal",            body: "Express USA llega en 72 hs; Normal 7-10 días. La diferencia se justifica en mercadería sensible al tiempo.", emoji: "⚡", color: "var(--brand-accent, #ff8c2a)" },
-  { title: "Coins acumulan",         body: "Cada envío te suma LC. Canjealos por descuentos, items premium del perfil o powers del chat.",                  emoji: "🪙", color: "var(--brand-primary, #f5e03a)" },
-  { title: "Invitá amigos · 25 LC",        body: "Mandá tu link de referido. Cuando hacen su primer envío, vos ganás 25 LC y ellos 25.",                            emoji: "🎁", color: "#a78bfa" },
+  { title: "Bienvenido al portal",         body: "Tu cuenta es tu pase a la comunidad: posteá, sumate al chat, ganá coins y desbloqueá items premium del perfil.",   emoji: "💡", color: "#fbbf24" },
+  { title: "Stories del día",              body: "Subí hasta 5 stories diarias. Las ves vos, tus amigos y la comunidad — duran 24 hs y suman engagement.",            emoji: "⚡", color: "var(--brand-accent, #ff8c2a)" },
+  { title: "Coins acumulan",               body: "Cada interacción te suma coins. Canjealas por descuentos, items premium del perfil o powers del chat.",            emoji: "🪙", color: "var(--brand-primary, #f5e03a)" },
+  { title: "Invitá amigos · ganan ambos",  body: "Mandá tu link de referido. Cuando tu amigo se registra y activa su cuenta, ambos suman coins de bienvenida.",       emoji: "🎁", color: "#a78bfa" },
 ];
 
 /**

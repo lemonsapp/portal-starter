@@ -220,10 +220,9 @@ function Store({ balance, onBuy }) {
   }, []);
 
   const ITEMS = [
-    { id:"redeem_envio_gratis",icon:"✈️",name:"Envío Gratis",   desc:"Un envío completo sin costo",      detail:"Válido para 1 envío de cualquier peso.", cost:9500,cat:"envios",    color:"#3b82f6",badge:"PREMIUM" },
-    { id:"redeem_5kg_gratis",  icon:"📦",name:"5kg Gratis",      desc:"5kg de carga sin cargo",           detail:"Se descuentan 5kg del peso cobrable.",   cost:4500,cat:"envios",    color:"#22c55e",badge:"POPULAR" },
-    { id:"redeem_usd15",       icon:"💵",name:"USD 15 Off",       desc:"Descuento en próximo envío",       detail:"Crédito de USD 15 en tu próxima liq.",   cost:500, cat:"descuentos",color:"#a78bfa" },
-    { id:"redeem_usd8",        icon:"💸",name:"USD 8 Off",        desc:"Descuento express",                detail:"Crédito de USD 8 en tu próxima liq.",    cost:100, cat:"descuentos",color:"var(--brand-primary, #f5e03a)",badge:"FACIL" },
+    // Legacy de logística (Envío Gratis / 5kg / USD Off) removido — el portal-starter
+    // se vende como base social, los rewards de envíos quedan disponibles solo si
+    // el cliente activa el módulo de logística en una versión futura.
     { id:"power_namecolor",    icon:"🎨",name:"Name Color",       desc:"Color personalizado en el chat",   detail:"Elegí cualquier color para tu nombre.",  cost:20,  cat:"powers",   color:"#ec4899" },
     { id:"power_nameglow",     icon:"✨",name:"Name Glow",        desc:"Aura brillante en tu nombre",      detail:"Efecto glow en tu nombre del chat.",     cost:20,  cat:"powers",   color:"#8b5cf6" },
     { id:"power_namegrad",     icon:"🌈",name:"Name Gradient",    desc:"Gradiente de colores",             detail:"Tu nombre con degradado de 2 colores.",  cost:20,  cat:"powers",   color:"#06b6d4" },
@@ -237,8 +236,6 @@ function Store({ balance, onBuy }) {
 
   const FILTERS = [
     { id:"all",        label:"Todo",        icon:"⭐" },
-    { id:"envios",     label:"Envios",      icon:"✈️" },
-    { id:"descuentos", label:"Descuentos",  icon:"💰" },
     { id:"powers",     label:"Powers",      icon:"⚡" },
   ];
 
@@ -254,7 +251,7 @@ function Store({ balance, onBuy }) {
       else { url=`${API}/profile/redeem`; body={reward_id:item.id}; }
       const r = await fetch(url,{method:"POST",headers:hdrs(),body:JSON.stringify(body)});
       const d = await r.json();
-      if (d.ok) { setMsg({ok:true,text:`✅ ${item.name} activado!`}); onBuy?.(item.cost); showToast({ title: `${item.name} activado!`, subtitle: `Gastaste ${item.cost.toLocaleString()} LC`, icon: item.icon, color: item.color }); }
+      if (d.ok) { setMsg({ok:true,text:`✅ ${item.name} activado!`}); onBuy?.(item.cost); showToast({ title: `${item.name} activado!`, subtitle: `Gastaste ${item.cost.toLocaleString()} 🪙`, icon: item.icon, color: item.color }); }
       else setMsg({ok:false,text:d.error||"Error"});
     } catch { setMsg({ok:false,text:"Error de red"}); }
     setBuying(null);
@@ -357,10 +354,10 @@ function ReferralCard() {
             <span style={{ width: 18, height: 1, background: "#a78bfa" }} />Programa de referidos
           </div>
           <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: 32, letterSpacing: "1px", color: "#fff", lineHeight: 1 }}>
-            Invitá amigos · ganá <span style={{ color: "var(--brand-primary, #f5e03a)" }}>25 LC</span>
+            Invitá amigos · ganá <span style={{ color: "var(--brand-primary, #f5e03a)" }}>25 🪙</span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginTop: 6, lineHeight: 1.5 }}>
-            Tu amigo recibe 25 LC al hacer su primer envío. Vos también ganás 25 LC.
+            Tu amigo recibe 25 🪙 al activar su cuenta. Vos también ganás 25 🪙.
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, fontFamily: "'Gotham', monospace" }}>
@@ -374,7 +371,7 @@ function ReferralCard() {
           </div>
           <div style={{ textAlign: "center" }}>
             <CountUp value={stats.total_coins_earned || 0} style={{ fontFamily: "'Gotham', sans-serif", fontSize: 28, color: "var(--brand-primary, #f5e03a)", lineHeight: 1, display: "block" }}>{stats.total_coins_earned || 0}</CountUp>
-            <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>LC ganados</div>
+            <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>🪙 ganados</div>
           </div>
         </div>
       </div>
@@ -386,7 +383,7 @@ function ReferralCard() {
             style={{ padding: "8px 14px", background: copied ? "#22c55e" : "linear-gradient(135deg,#a78bfa,#ec4899)", color: "#000", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0 }}>
             {copied ? "✓ Copiado" : "📋 Copiar link"}
           </Pop>
-          <Pop as="a" href={`https://wa.me/?text=${encodeURIComponent(`Te paso mi link: ${link} — te doy 25 LC con tu primer envío 🪙`)}`} target="_blank" rel="noreferrer"
+          <Pop as="a" href={`https://wa.me/?text=${encodeURIComponent(`Te paso mi link: ${link} — sumá 25 🪙 al activar tu cuenta`)}`} target="_blank" rel="noreferrer"
             style={{ padding: "8px 14px", background: "rgba(34,197,94,.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,.4)", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0, textDecoration: "none" }}>
             💬 WA
           </Pop>
@@ -425,7 +422,7 @@ function LoginStreak({ refreshKey }) {
         </div>
         <div style={{ textAlign:"right", fontFamily:"'Gotham', monospace", fontSize:10, letterSpacing:"1.5px", color:"rgba(255,255,255,.45)" }}>
           {streak >= 7 ? "MÁXIMO ✓" : `Faltan ${7 - streak} para el bonus`}
-          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 LC al completar 7</div>
+          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 🪙 al completar 7</div>
         </div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6 }}>
@@ -683,7 +680,7 @@ function Gift({ balance, onGift }) {
               <span style={{ fontSize:26 }}>🪙</span>
               <input type="number" value={amount} onChange={e=>setAmount(Math.max(10,Math.min(balance,parseInt(e.target.value)||10)))} min={10} max={balance}
                 style={{ flex:1,background:"none",border:"none",color:"var(--brand-primary, #f5e03a)",fontSize:28,fontWeight:900,outline:"none" }}/>
-              <span style={{ color:"#333",fontSize:12 }}>LC</span>
+              <span style={{ color:"#333",fontSize:12 }}>coins</span>
             </div>
           </div>
 
@@ -698,7 +695,7 @@ function Gift({ balance, onGift }) {
           <Pop as="button" onClick={send} disabled={sending||!clientNum||amount>balance||amount<10}
             hoverScale={1.02}
             style={{ background:(!sending&&clientNum&&amount<=balance&&amount>=10)?"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))":"rgba(255,255,255,0.04)",color:(!sending&&clientNum&&amount<=balance&&amount>=10)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&clientNum&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&clientNum&&amount<=balance)?"0 8px 40px var(--brand-primary, #f5e03a)55":"none",letterSpacing:1 }}>
-            {sending?"Enviando...":`🎁 Regalar ${amount.toLocaleString()} LC`}
+            {sending?"Enviando...":`🎁 Regalar ${amount.toLocaleString()} 🪙`}
           </Pop>
         </div>
       </div>
@@ -805,7 +802,7 @@ export default function Coins() {
                   <CountUp value={balance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
                     {loading?"—":Number(balance).toLocaleString()}
                   </CountUp>
-                  <span style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:13,color:"var(--muted2)",letterSpacing:"2.4px" }}>LC 🪙</span>
+                  <span style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:13,color:"var(--muted2)",letterSpacing:"2.4px" }}>🪙</span>
                 </div>
                 <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:10,letterSpacing:"1.6px",color:"var(--muted2)",marginBottom:18,textTransform:"uppercase" }}>Total ganado: <span style={{ color:"var(--lemon)",fontWeight:900 }}>{Number(totalEarned).toLocaleString()}</span></div>
 
