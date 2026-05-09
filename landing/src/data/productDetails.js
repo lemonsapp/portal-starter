@@ -17,9 +17,9 @@
 export const productDetails = {
     "linea-elite": {
         hero: {
-            kicker: "LÍNEA ELITE",
-            headline: "Nutrición premium\nen dos partes.",
-            claim: "Part 1 + Part 2: el sistema dual para cultivadores que no negocian calidad. Concentración máxima, pH estable, resultados consistentes.",
+            kicker: "LÍNEA ELITE · FERTILIZANTE PARA HIDROPONÍA",
+            headline: "Fertilizante premium\npara hidroponía y sustrato inerte.",
+            claim: "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de hidroponía, NFT, DWC, coco y sustratos 100% inertes. Concentración máxima de NPK en cada riego, pH auto-buffer entre 5.8 y 6.2, resultados consistentes cosecha tras cosecha.",
             ctaPrimary:   { label: "COMPRAR ELITE",        href: "/shop?categoria=elite" },
             ctaSecondary: { label: "VER ESPECIFICACIONES", href: "#specs" },
             color: "#C9A34E",
@@ -48,8 +48,8 @@ export const productDetails = {
             },
             {
                 kicker: "INERTE & HIDRO",
-                title: "Pensado para sustratos inertes.",
-                body: "Coco, perlita, lana de roca, NFT, DWC. La fórmula libera nutrientes biodisponibles directamente al medio sin depender de la actividad biológica del sustrato.",
+                title: "El fertilizante ideal para coco, perlita, NFT y DWC.",
+                body: "Coco, perlita, lana de roca, NFT y DWC. Los nutrientes son 100% biodisponibles: la planta los absorbe directamente sin depender de la microbiología del sustrato.",
                 image: "/img/productos/linea-elite/500gr/parte-2-perspectiva-1l.png",
                 color: "#B8923A",
                 stat: "03",
@@ -93,7 +93,7 @@ export const productDetails = {
             body: "Elite es el corazón del catálogo. Combiná con Race para acelerar floración, con Bio Estimulante en el arranque, con Day-0 para el cierre. Un solo equipo técnico atrás de todos los productos.",
             chips: ["+ Bio Estimulante", "+ Race", "+ Day-0"],
         },
-        pullquote: "Lo que separa una cosecha buena de una excelente, está en los detalles del nutriente.",
+        pullquote: "Lo que separa una cosecha buena de una excelente está en el fertilizante que elegís. Línea Elite no deja márgenes de error.",
         techSpecs: [
             { label: "Composición",      value: "Part 1: Ca-Mg-Micros · Part 2: NPK + secundarios" },
             { label: "Forma",             value: "Líquido concentrado" },
@@ -107,9 +107,9 @@ export const productDetails = {
 
     "linea-pro": {
         hero: {
-            kicker: "LÍNEA PRO",
-            headline: "Hidrosoluble.\nPrecisión sólida.",
-            claim: "Cuatro fórmulas etapa-específicas en formato sólido. Pesás, disolvés, regás. Sin inconsistencias entre lotes, sin sorpresas.",
+            kicker: "LÍNEA PRO · FERTILIZANTE HIDROSOLUBLE",
+            headline: "Fertilizante hidrosoluble\npara sustratos compuestos.",
+            claim: "Cuatro fertilizantes etapa-específicos en formato sólido hidrosoluble para sustratos compuestos. Enraizante, Vegetativo, Preflora y Flora: cada uno con el ratio NPK exacto para esa fase. Pesás, disolvés, regás. EC programable, pH estable, mismo resultado en cada lote. Compatible con autoflorecientes y fotoperiódicas.",
             ctaPrimary:   { label: "COMPRAR PRO",            href: "/shop?categoria=pro" },
             ctaSecondary: { label: "VER ESPECIFICACIONES", href: "#specs" },
             color: "#F5948A",
@@ -132,7 +132,7 @@ export const productDetails = {
             {
                 kicker: "FORMATO SÓLIDO",
                 title: "Sin agua, sin alcohol, sin conservantes.",
-                body: "100% materia activa. Estable. Sin riesgo de descomposición de nutrientes con el calor.",
+                body: "100% materia activa. El fertilizante sólido no pierde potencia con el calor ni con el tiempo: 36 meses de vida útil garantizados.",
                 image: "/img/productos/linea-pro/1kg/vegetativo-1kg-1.png",
                 color: "#FFB39B",
                 stat: "02",
@@ -184,7 +184,7 @@ export const productDetails = {
             body: "Pro es la opción técnica del cultivador que mide. Mezclable con Bio Estimulante en arranque y con Day-0 al cierre.",
             chips: ["+ Bio Estimulante", "+ Day-0"],
         },
-        pullquote: "Si lo podés pesar, lo podés repetir. Y si lo podés repetir, lo podés mejorar.",
+        pullquote: "Si lo podés pesar, lo podés repetir. Con Línea Pro, cada cultivo indoor es mejor que el anterior.",
         techSpecs: [
             { label: "Composición",     value: "NPK + Ca-Mg-Micro etapa-ajustado" },
             { label: "Forma",            value: "Sólido cristalino hidrosoluble" },
@@ -198,9 +198,9 @@ export const productDetails = {
 
     "linea-race": {
         hero: {
-            kicker: "LÍNEA RACE",
-            headline: "Velocidad pura\npara cultivos exigentes.",
-            claim: "Cuatro fórmulas líquidas concentradas para extraer el máximo en menor tiempo. Race 1 · 2A · 2B · 3 · 4. El kit del cultivador acelerado.",
+            kicker: "LÍNEA RACE · FERTILIZANTE LÍQUIDO CONCENTRADO",
+            headline: "Fertilizantes líquidos concentrados\npara cultivo indoor de ciclo corto.",
+            claim: "Línea Race es el sistema de fertilizantes líquidos concentrados de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor: Race 1 Vegetativo, Race 2 Floración (Part A + B), Race 3 Bloom Booster y Race 4 Finalizador. Ideal para autoflorecientes, ciclos cortos y cultivadores que no quieren perder ni una semana.",
             // CTAs intencionalmente omitidos para Race — el hero queda
             // como statement editorial puro sobre el video. ProductDeepDive
             // renderiza los CTAs condicionalmente: si no están definidos,
@@ -225,32 +225,32 @@ export const productDetails = {
         highlights: [
             {
                 kicker: "VEGETATIVO",
-                title: "Race 1 — explosión foliar.",
-                body: "Concentrado nitrogenado para arranque vigoroso. Hojas grandes, internudos cortos, plantas sólidas para entrar a flora con potencia.",
+                title: "Race 1 — fertilizante vegetativo concentrado.",
+                body: "Concentrado de alta carga nitrogenada para arranque vigoroso. Hojas grandes, internudos cortos, masa vegetal sólida para entrar a floración con potencia máxima.",
                 image: "/img/race/bottle-violeta-a-roots.jpg",
                 color: "#8E24AA",
                 stat: "01",
             },
             {
                 kicker: "FLORACIÓN",
-                title: "Race 2 (Part A + B) — la pareja.",
-                body: "Sistema dual de floración: Part A entrega calcio y magnesio, Part B fósforo y potasio. La química exacta para flores densas.",
+                title: "Race 2 (Part A + B) — fertilizante de floración dual.",
+                body: "Part A aporta calcio y magnesio, Part B entrega fósforo y potasio en la proporción exacta. La química correcta para flores densas y compactas.",
                 image: "/img/race/bottle-verde-greenhouse.jpg",
                 color: "#2E8F6E",
                 stat: "02",
             },
             {
                 kicker: "BLOOM BOOSTER",
-                title: "Race 3 — empuje de mitad.",
-                body: "Bloom booster para semanas 4-6. Activa mecanismos de translocación de azúcares y agranda flores en plena fase productiva.",
+                title: "Race 3 — bloom booster para semanas 4-6.",
+                body: "Potenciador de floración que activa la translocación de azúcares y agranda flores en el pico productivo. El fertilizante que más diferencia hace en el resultado final.",
                 image: "/img/race/bottle-violeta-sunset.jpg",
                 color: "#6B3BAF",
                 stat: "03",
             },
             {
                 kicker: "FINALIZADOR",
-                title: "Race 4 — calidad final.",
-                body: "Finalizador de etapa. Compactación de tejidos, mejora de aromas y resinas, prepara la planta para el cierre con Day-0.",
+                title: "Race 4 — fertilizante finalizador.",
+                body: "Para los últimos días del ciclo. Compacta tejidos, potencia aromas y resinas, y prepara la planta para el cierre definitivo con Day-0.",
                 image: "/img/race/bottle-rosa-sunset.jpg",
                 color: "#EC407A",
                 stat: "04",
@@ -282,36 +282,36 @@ export const productDetails = {
                 size: "Vegetativo",
                 image: "/img/race/bottle-violeta-a-roots.jpg",
                 color: "#8E24AA",
-                tagline: "Explosión foliar.",
+                tagline: "Fertilizante vegetativo concentrado.",
                 description:
-                    "Concentrado nitrogenado para arranque vigoroso. Hojas grandes, internudos cortos, plantas sólidas para entrar a flora con potencia.",
+                    "Alta carga nitrogenada para arranque vigoroso. Hojas grandes, internudos cortos, masa vegetal sólida para entrar a floración con potencia máxima.",
             },
             {
                 name: "RACE 2",
                 size: "Floración",
                 image: "/img/race/bottle-verde-greenhouse.jpg",
                 color: "#2E8F6E",
-                tagline: "La pareja perfecta.",
+                tagline: "Fertilizante de floración dual.",
                 description:
-                    "Sistema dual de floración (Part A + Part B): Part A entrega calcio y magnesio, Part B fósforo y potasio. La química exacta para flores densas.",
+                    "Part A aporta calcio y magnesio, Part B entrega fósforo y potasio en la proporción exacta. La química correcta para flores densas y compactas.",
             },
             {
                 name: "RACE 3",
                 size: "Bloom Booster",
                 image: "/img/race/bottle-violeta-sunset.jpg",
                 color: "#6B3BAF",
-                tagline: "Empuje de mitad.",
+                tagline: "Potenciador de floración.",
                 description:
-                    "Bloom booster para semanas 4-6. Activa mecanismos de translocación de azúcares y agranda flores en plena fase productiva.",
+                    "Bloom booster para semanas 4-6. Activa la translocación de azúcares y agranda flores en el pico productivo. El fertilizante que más diferencia hace en el resultado final.",
             },
             {
                 name: "RACE 4",
                 size: "Finalizador",
                 image: "/img/race/bottle-rosa-sunset.jpg",
                 color: "#EC407A",
-                tagline: "Calidad final.",
+                tagline: "Fertilizante finalizador.",
                 description:
-                    "Finalizador de etapa. Compactación de tejidos, mejora de aromas y resinas, prepara la planta para el cierre con Day-0.",
+                    "Para los últimos días del ciclo. Compacta tejidos, potencia aromas y resinas, y prepara la planta para el cierre definitivo con Day-0.",
             },
         ],
         system: {
@@ -319,7 +319,7 @@ export const productDetails = {
             body: "Race es la línea más enfocada en performance. Combinable con Elite (sustrato inerte) o Pro (hidrosoluble) según preferencia. Day-0 al final, siempre.",
             chips: ["+ Elite", "+ Pro", "+ Day-0"],
         },
-        pullquote: "La velocidad sin control es ruido. Race te da las dos cosas.",
+        pullquote: "La velocidad sin control es ruido. Race es el fertilizante indoor que te da las dos cosas: velocidad y precisión.",
         techSpecs: [
             { label: "Composición",     value: "Race 1 NPK foliar · 2A Ca-Mg · 2B PK · 3 PK booster · 4 finalizador" },
             { label: "Forma",            value: "Líquido concentrado" },
@@ -333,9 +333,9 @@ export const productDetails = {
 
     "bio-estimulante": {
         hero: {
-            kicker: "BIO ESTIMULANTE",
-            headline: "El catalizador\norgánico de todo.",
-            claim: "Bioestimulante 100% orgánico fabricado en biorreactor industrial. Hasta 70% más efectivo que micorrizas tradicionales. Aplica en riego o foliar.",
+            kicker: "BIO ESTIMULANTE · ORGÁNICO PARA CULTIVO INDOOR",
+            headline: "Bioestimulante orgánico\npara cultivo indoor.",
+            claim: "Bioestimulante 100% orgánico para cultivo indoor, fabricado en biorreactor industrial con cepas seleccionadas de Azospirillum y Azotobacter. Hasta 70% más efectivo que micorrizas tradicionales. Estimula el desarrollo radicular, potencia la absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo: Línea Pro, Línea Elite y Línea Race.",
             ctaPrimary:   { label: "COMPRAR BIO",           href: "/shop?categoria=bio" },
             ctaSecondary: { label: "VER ESPECIFICACIONES", href: "#specs" },
             color: "#E8A5B1",
@@ -347,8 +347,8 @@ export const productDetails = {
         highlights: [
             {
                 kicker: "BIORREACTOR",
-                title: "Producido en escala industrial.",
-                body: "No es un té de compost casero: es un bioestimulante producido en fermentadores controlados, con cepas seleccionadas y CFU verificado.",
+                title: "Producido en biorreactor industrial.",
+                body: "No es un té de compost casero: es un bioestimulante orgánico producido en fermentadores industriales controlados, con cepas de Azospirillum y Azotobacter seleccionadas y CFU ≥10⁹ UFC/ml verificado por lote.",
                 image: "/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png",
                 color: "#E8A5B1",
                 stat: "01",
@@ -401,7 +401,7 @@ export const productDetails = {
             body: "Aplicalo en arranque, antes de cualquier otro producto. Activa raíces y defensas para que el resto del catálogo trabaje sobre una planta sana y receptiva.",
             chips: ["+ Cloner", "+ Elite", "+ Pro"],
         },
-        pullquote: "La diferencia entre cultivar y cultivar bien arranca por la raíz.",
+        pullquote: "La diferencia entre un cultivo indoor bueno y uno excelente arranca por la raíz. El Bio Estimulante es el primer paso.",
         techSpecs: [
             { label: "Composición",     value: "Microorganismos benéficos + metabolitos secundarios" },
             { label: "Forma",            value: "Líquido orgánico" },
@@ -415,9 +415,9 @@ export const productDetails = {
 
     "cloner": {
         hero: {
-            kicker: "CLONER GEL",
-            headline: "El primer paso\ndel próximo ciclo.",
-            claim: "Enraizante en gel de alta adherencia. Sella el corte, conserva humedad, dispara hormonas de enraizamiento. Sin manipulación complicada.",
+            kicker: "CLONER · GEL ENRAIZANTE PARA ESQUEJES",
+            headline: "Gel enraizante para esquejes.\nEl primer paso del ciclo.",
+            claim: "Cloner es el gel enraizante de alta adherencia de Holistic para esquejes y plantines. Fórmula de contacto rápido que acelera el prendimiento radicular con mínima manipulación. El comienzo del ciclo que define la calidad del resultado final. Compatible con todo el catálogo Holistic.",
             ctaPrimary:   { label: "COMPRAR CLONER",         href: "/shop?categoria=cloner" },
             ctaSecondary: { label: "VER ESPECIFICACIONES",   href: "#specs" },
             color: "#6B3BAF",
@@ -489,7 +489,7 @@ export const productDetails = {
             body: "Cloner es el punto de entrada del ciclo. Aplicalo junto a Bio Estimulante en el agua del propagador y entrá a vegetativo con plantas vigorosas listas para Elite o Pro.",
             chips: ["+ Bio Estimulante"],
         },
-        pullquote: "La calidad de la cosecha empieza con un corte bien hecho.",
+        pullquote: "El comienzo del ciclo define la calidad del resultado final.",
         techSpecs: [
             { label: "Forma",             value: "Gel de alta viscosidad" },
             { label: "Principio activo",  value: "IBA + NAA en vehículo protector" },
@@ -502,9 +502,9 @@ export const productDetails = {
 
     "day-0": {
         hero: {
-            kicker: "DAY-0",
-            headline: "El final\nque define todo.",
-            claim: "Tratamiento final pre-cosecha. Limpieza de residuos, mejora del sabor, calidad en el corte. La última decisión del cultivo.",
+            kicker: "DAY 0 · FINALIZADOR DE COSECHA",
+            headline: "Finalizador de cosecha.\nLa última decisión que define todo.",
+            claim: "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Limpieza profunda del sistema radicular, pulido del sabor, aroma y textura del resultado final. Lo que diferencia una cosecha buena de una perfecta. Se usa junto a Race 4 o como cierre exclusivo de cualquier sistema Holistic.",
             ctaPrimary:   { label: "COMPRAR DAY-0",          href: "/shop?categoria=day0" },
             ctaSecondary: { label: "VER ESPECIFICACIONES",   href: "#specs" },
             color: "#C9A34E",
@@ -570,7 +570,7 @@ export const productDetails = {
             body: "Day-0 es la última decisión del cultivo. Después de Elite, Pro o Race — antes del corte. Cierra el ciclo con la calidad que merece.",
             chips: ["+ Elite", "+ Pro", "+ Race"],
         },
-        pullquote: "Una buena cosecha es una decisión técnica. Una excelente, una decisión del último día.",
+        pullquote: "Lo que diferencia una cosecha buena de una perfecta se decide en los últimos días.",
         techSpecs: [
             { label: "Forma",             value: "Líquido / 250 ml" },
             { label: "Aplicación",         value: "Últimos 10-14 días pre-cosecha" },

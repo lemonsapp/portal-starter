@@ -4,18 +4,64 @@ import Footer from "../components/Footer.astro";
 import CustomCursor from "../components/CustomCursor.astro";
 import "../styles/global.css";
 
+// Defaults SEO-optimizados para Home (SEO-DOCS v3).
+// Otras páginas pasan title/description/canonical via props.
 const {
-    title = "Holistic Growshop — Productos para cultivo",
-    description = "Holistic Growshop: fertilizantes Línea Elite, Línea Pro, Bio Estimulantes y accesorios. Asesoramiento para cultivadores.",
+    title = "Fertilizantes para Cultivo Indoor | Línea Pro, Elite y Race — Holistic Growshop",
+    description = "Holistic Growshop: sistema completo de fertilizantes para cultivo indoor. Línea Pro, Línea Elite, Línea Race y Bio Estimulante. pH estable, ciclo completo, resultados superiores. Envío gratis.",
+    canonical,
+    ogImage = "/assets/productos/og-default.jpg",
 } = Astro.props;
+
+const canonicalURL = canonical
+    ? new URL(canonical, Astro.site || "https://hgrowshop.com").toString()
+    : new URL(Astro.url.pathname, Astro.site || "https://hgrowshop.com").toString();
+
+// Schema JSON-LD Organization (SEO-DOCS v3) — activa Knowledge Panel + rich results.
+const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Holistic Growshop",
+    "url": "https://hgrowshop.com",
+    "logo": "https://hgrowshop.com/assets/productos/favicon.svg",
+    "description": "Fertilizantes para cultivo indoor argentinos. Línea Pro, Línea Elite, Línea Race, Bio Estimulante, Cloner y Day 0.",
+    "sameAs": [
+        "https://www.instagram.com/holistic.arg/",
+        "https://www.tiktok.com/@holistic.pro"
+    ],
+    "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+54-11-2475-9002",
+        "contactType": "customer service",
+        "availableLanguage": "Spanish",
+        "hoursAvailable": "Mo-Sa 10:00-19:00"
+    }
+};
 ---
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#080808" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    {/* Open Graph */}
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:site_name" content="Holistic Growshop" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImage} />
+
+    {/* Twitter Card */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
 
     <link rel="icon" type="image/svg+xml" href="/assets/productos/favicon.svg" />
 
@@ -23,6 +69,9 @@ const {
         (los más usados) para que el title no parpadee al primer paint. */}
     <link rel="preload" href="/fonts/holistic/gotham-book.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/holistic/gotham-black.woff2" as="font" type="font/woff2" crossorigin />
+
+    {/* Schema JSON-LD Organization — Google rich results */}
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
 </head>
 <body>
     <script>

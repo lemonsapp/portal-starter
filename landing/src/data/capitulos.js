@@ -1,3 +1,18 @@
+// Datos canónicos de cada capítulo (línea de producto) de la landing.
+// Cada capítulo se renderiza en /[slug] via [categoria].astro y aparece
+// también como ChapterSection en el index.astro.
+//
+// Copy SEO actualizado desde IMAGENES-HOLISTIC/SEO-DOCS/v3 (Marzo 2026).
+// Cada entry tiene:
+//   - seoTitle / seoDescription → meta tags + <title> de la página /[slug]
+//   - h1 → headline indexable que la página debe pintar arriba del hero
+//   - parrafoIntro → párrafo SEO debajo del h1
+//   - tagline → copy emocional corto (era el subtítulo del componente hero)
+//   - descripcion → meta legacy, mantenida para back-compat con componentes
+//     que la consumen como fallback. Idéntica a parrafoIntro acortado.
+//   - quote → línea de cierre (pull-quote)
+//   - keywords → para referencia documental, no se renderizan automático
+
 export const capitulos = [
     {
         slug: "bio-estimulante",
@@ -5,9 +20,22 @@ export const capitulos = [
         kicker: "ETAPA 01 · DESPERTAR",
         nombreCorto: "BIO",
         nombreDestacado: "Estimulante",
-        tagline: "El catalizador orgánico que potencia todo.",
+
+        // SEO meta — v3 §5
+        seoTitle: "Bioestimulante Orgánico para Cultivo Indoor | Holistic Growshop",
+        seoDescription:
+            "Bio Estimulante Holistic: bioestimulante orgánico para cultivo indoor fabricado en biorreactor industrial. Estimula raíces, potencia absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo. Envío gratis.",
+        keywords: ["bioestimulante orgánico", "cultivo indoor", "estimulador de raíces", "Azospirillum", "Azotobacter", "absorción de nutrientes"],
+
+        // Copy visible — v3 §5
+        h1: "Bioestimulante orgánico para cultivo indoor",
+        tagline: "El catalizador que potencia todo lo demás.",
+        parrafoIntro:
+            "Bioestimulante 100% orgánico para cultivo indoor, fabricado en biorreactor industrial con cepas seleccionadas de Azospirillum y Azotobacter. Hasta 70% más efectivo que micorrizas tradicionales. Estimula el desarrollo radicular, potencia la absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo: Línea Pro, Línea Elite y Línea Race.",
         descripcion:
-            "Bioestimulante 100% orgánico fabricado en biorreactor industrial. 70% más efectivo que cualquier micorriza tradicional. Acelera la absorción de nutrientes y fortalece el desarrollo radicular desde el primer día.",
+            "Bioestimulante 100% orgánico para cultivo indoor. Fabricado en biorreactor industrial con Azospirillum y Azotobacter — 70% más efectivo que las micorrizas tradicionales. Estimula raíces, potencia absorción de nutrientes y activa defensas naturales.",
+        quote: "La diferencia entre un cultivo indoor bueno y uno excelente arranca por la raíz. El Bio Estimulante es el primer paso.",
+
         producto: "/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png",
         productoSecundario: "/img/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png",
         ctaTexto: "Ver Bio Estimulante",
@@ -22,9 +50,22 @@ export const capitulos = [
         kicker: "ETAPA 02 · NACIMIENTO",
         nombreCorto: "CLONER",
         nombreDestacado: "Gel",
+
+        // SEO meta — v3 §6
+        seoTitle: "Gel Enraizante para Esquejes | Cloner — Holistic Growshop",
+        seoDescription:
+            "Cloner Holistic: gel enraizante de alta adherencia para esquejes. Prendimiento rápido y uniforme, mínima manipulación. El punto de partida de cada ciclo de cultivo indoor. Envío gratis.",
+        keywords: ["gel enraizante", "esquejes", "prendimiento rápido", "cultivo indoor", "enraizante para clones"],
+
+        // Copy visible — v3 §6
+        h1: "Gel enraizante para esquejes. El primer paso del ciclo.",
         tagline: "Todo empieza con un corte.",
+        parrafoIntro:
+            "Cloner es el gel enraizante de alta adherencia de Holistic para esquejes y plantines. Fórmula de contacto rápido que acelera el prendimiento radicular con mínima manipulación. El comienzo del ciclo que define la calidad del resultado final. Compatible con todo el catálogo Holistic.",
         descripcion:
-            "Enraizante en gel de alta adherencia para esquejes. El primer paso del ciclo: prendimiento rápido y uniforme con mínima manipulación. Donde nace la próxima cosecha.",
+            "Gel enraizante de alta adherencia para esquejes y plantines. Fórmula de contacto rápido para prendimiento radicular con mínima manipulación. Donde nace la próxima cosecha.",
+        quote: "El comienzo del ciclo define la calidad del resultado final.",
+
         producto: "/assets/productos/cloner2.png",
         productoSecundario: null,
         ctaTexto: "Ver Cloner",
@@ -39,9 +80,22 @@ export const capitulos = [
         kicker: "ETAPA 03 · VELOCIDAD",
         nombreCorto: "LÍNEA",
         nombreDestacado: "RACE",
+
+        // SEO meta — v3 §4
+        seoTitle: "Fertilizante Líquido Concentrado para Cultivo Indoor | Línea Race — Holistic",
+        seoDescription:
+            "Línea Race Holistic: 4 fertilizantes líquidos concentrados para el ciclo completo. Race 1 Vegetativo, Race 2 Floración, Race 3 Bloom Booster y Race 4 Finalizador. Diseñado para autoflorecientes e indoor de ciclo corto. Envío gratis.",
+        keywords: ["fertilizante líquido concentrado", "cultivo indoor", "bloom booster", "fertilizante vegetativo", "fertilizante de floración", "autoflorecientes", "ciclos cortos"],
+
+        // Copy visible — v3 §4
+        h1: "Fertilizantes líquidos concentrados para cultivo indoor de ciclo corto.",
         tagline: "Velocidad pura para cultivos exigentes.",
+        parrafoIntro:
+            "Línea Race es el sistema de fertilizantes líquidos concentrados de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor: Race 1 Vegetativo, Race 2 Floración (Part A + B), Race 3 Bloom Booster y Race 4 Finalizador. Ideal para autoflorecientes, ciclos cortos y cultivadores que no quieren perder ni una semana.",
         descripcion:
-            "Línea premium en 4 fórmulas líquidas concentradas: Race 1 Vegetativo, Race 2 (Part A + Part B) Floración, Race 3 Bloom Booster y Race 4 Finalizador. Diseñada para extraer el máximo rendimiento en cada ciclo, con una facilidad de uso que la hace ideal para cualquier cultivador.",
+            "Línea premium en 4 fórmulas líquidas concentradas: Race 1 Vegetativo, Race 2 (Part A + B) Floración, Race 3 Bloom Booster y Race 4 Finalizador. Diseñada para extraer el máximo rendimiento en cada ciclo indoor.",
+        quote: "La velocidad sin control es ruido. Race es el fertilizante indoor que te da las dos cosas: velocidad y precisión.",
+
         producto: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
         productoSecundario: "/img/productos/linea-race/500ml/race-3-rosa-500ml.png",
         ctaTexto: "Ver Línea Race",
@@ -56,9 +110,22 @@ export const capitulos = [
         kicker: "ETAPA 04 · MÁXIMO RENDIMIENTO",
         nombreCorto: "LÍNEA",
         nombreDestacado: "ELITE",
+
+        // SEO meta — v3 §3
+        seoTitle: "Fertilizante para Hidroponía y Sustrato Inerte | Línea Elite — Holistic",
+        seoDescription:
+            "Línea Elite Holistic: fertilizante líquido en dos partes (Part 1 + Part 2) para hidroponía, NFT, DWC, coco y sustratos inertes. NPK completo, pH auto-buffer 5.8–6.2, ciclo completo sin cambiar de producto. Envío gratis.",
+        keywords: ["fertilizante para hidroponía", "fertilizante para sustrato inerte", "NFT", "DWC", "coco", "NPK completo", "pH auto-buffer", "ciclo completo"],
+
+        // Copy visible — v3 §3
+        h1: "Fertilizante premium para hidroponía y sustrato inerte. Dos partes, un ciclo completo.",
         tagline: "Cuando buscás el resultado superior.",
+        parrafoIntro:
+            "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de hidroponía, NFT, DWC, coco y sustratos 100% inertes. Concentración máxima de NPK en cada riego, pH auto-buffer entre 5.8 y 6.2, resultados consistentes cosecha tras cosecha.",
         descripcion:
-            "El sistema premium de dos componentes (Part 1 + Part 2) para sustratos inertes e hidroponía. Aplicado en todo el ciclo brinda nutrientes en su máxima concentración. Para cultivadores que no negocian calidad.",
+            "Sistema premium de dos componentes (Part 1 + Part 2) para hidroponía, NFT, DWC, coco y sustratos inertes. NPK completo, pH auto-buffer 5.8–6.2, todo el ciclo sin cambiar de producto.",
+        quote: "Lo que separa una cosecha buena de una excelente está en el fertilizante que elegís. Línea Elite no deja márgenes de error.",
+
         producto: "/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png",
         productoSecundario: "/img/productos/linea-elite/1l/juntos-1l.png",
         ctaTexto: "Ver Línea Elite",
@@ -73,9 +140,22 @@ export const capitulos = [
         kicker: "ETAPA 05 · PRECISIÓN",
         nombreCorto: "LÍNEA",
         nombreDestacado: "PRO",
-        tagline: "Precisión en cada etapa del crecimiento.",
+
+        // SEO meta — v3 §2
+        seoTitle: "Fertilizante Hidrosoluble para Sustratos Compuestos | Línea Pro — Holistic",
+        seoDescription:
+            "Línea Pro Holistic: 4 fertilizantes hidrosolubles para el ciclo completo en sustratos compuestos. Enraizante, Vegetativo, Preflora y Flora. EC programable, pH estable, 36 meses de vida útil. Disponible en 25g, 100g, 500g y 1kg. Envío gratis.",
+        keywords: ["fertilizante hidrosoluble", "fertilizante para sustratos compuestos", "ciclo completo", "enraizante", "vegetativo", "prefloración", "floración", "EC programable", "pH estable"],
+
+        // Copy visible — v3 §2
+        h1: "Fertilizante hidrosoluble para sustratos compuestos. Precisión en cada etapa.",
+        tagline: "Hidrosoluble. Precisión sólida.",
+        parrafoIntro:
+            "Cuatro fertilizantes etapa-específicos en formato sólido hidrosoluble para sustratos compuestos. Enraizante, Vegetativo, Preflora y Flora: cada uno con el ratio NPK exacto para esa fase. Pesás, disolvés, regás. EC programable, pH estable, mismo resultado en cada lote. Compatible con autoflorecientes y fotoperiódicas.",
         descripcion:
-            "Sistema sólido hidrosoluble con 4 fórmulas específicas — Enraizante, Vegetativo, Preflora y Flora — disponibles en 25gr, 100gr, 500gr y 1KG. Cada una aporta lo que tu planta necesita en su momento exacto, con un pH siempre estable.",
+            "Sistema sólido hidrosoluble con 4 fórmulas específicas — Enraizante, Vegetativo, Preflora y Flora — disponibles en 25g, 100g, 500g y 1kg. NPK exacto por etapa, pH estable, 36 meses de vida útil.",
+        quote: "Si lo podés pesar, lo podés repetir. Con Línea Pro, cada cultivo indoor es mejor que el anterior.",
+
         producto: "/img/productos/linea-pro/1kg/flora-1kg-1.png",
         productoSecundario: "/img/productos/linea-pro/1kg/vegetativo-1kg-1.png",
         ctaTexto: "Ver Línea Pro",
@@ -90,9 +170,22 @@ export const capitulos = [
         kicker: "ETAPA 06 · COSECHA",
         nombreCorto: "DAY",
         nombreDestacado: "0",
+
+        // SEO meta — v3 §7
+        seoTitle: "Finalizador de Cosecha para Cultivo Indoor | Day 0 — Holistic",
+        seoDescription:
+            "Day 0 Holistic: tratamiento finalizador previo a cosecha. Limpieza profunda, mejora de sabor y pulido del resultado final. La última decisión antes de cortar. Envío gratis.",
+        keywords: ["finalizador de cosecha", "lavado de raíces", "tratamiento pre-cosecha", "cultivo indoor", "sabor", "aroma"],
+
+        // Copy visible — v3 §7
+        h1: "Finalizador de cosecha. La última decisión que define todo.",
         tagline: "El final que define todo.",
+        parrafoIntro:
+            "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Limpieza profunda del sistema radicular, pulido del sabor, aroma y textura del resultado final. Lo que diferencia una cosecha buena de una perfecta. Se usa junto a Race 4 o como cierre exclusivo de cualquier sistema Holistic.",
         descripcion:
-            "Tratamiento final previo a cosecha. Limpieza, pulido y mejora del sabor. La última decisión antes del resultado. El momento que separa una cosecha buena de una perfecta.",
+            "Tratamiento finalizador previo a cosecha: limpieza profunda, mejora de sabor y pulido del resultado final. La última decisión antes del corte.",
+        quote: "Lo que diferencia una cosecha buena de una perfecta se decide en los últimos días.",
+
         producto: "/img/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png",
         productoSecundario: "/img/productos/day-0/lateral-grande-amarillo-sin-fondo.png",
         ctaTexto: "Ver Day-0",

@@ -2,30 +2,37 @@
 // Si el cliente cambia el WhatsApp / IG / mail, se edita solo acá y se
 // propaga a Header, Footer, Channels, WhatsAppBanner, HumanSupport.
 //
-// PLACEHOLDERS marcados con TODO_HOLISTIC: confirmar con el cliente y
-// reemplazar antes del lanzamiento publico.
+// Datos confirmados desde IMAGENES-HOLISTIC/SEO-DOCS/v3 (Marzo 2026).
 
 export const CONTACTO = {
     // ── WhatsApp ─────────────────────────────────────────────────────────────
-    // Numero en formato internacional sin "+". Ej: 5491155555555
-    // TODO_HOLISTIC: pedirle al cliente el numero real
-    whatsapp_number: "5491100000000",
+    // Numero en formato internacional sin "+". Confirmado SEO-DOCS v3.
+    whatsapp_number: "5491124759002",
     get whatsapp_url() {
         return `https://wa.me/${this.whatsapp_number}`;
     },
     // Mensaje pre-llenado opcional (URL-encoded)
     get whatsapp_url_with_message() {
-        return `${this.whatsapp_url}?text=${encodeURIComponent("Hola Holistic, vengo desde la web 👋")}`;
+        return `${this.whatsapp_url}?text=${encodeURIComponent("Hola Holistic, vengo desde la web — quería consultarles por su línea de fertilizantes 👋")}`;
     },
 
     // ── Instagram ────────────────────────────────────────────────────────────
-    // TODO_HOLISTIC: confirmar handle exacto (probable: holisticgrowshop)
-    instagram_handle: "holisticgrowshop",
+    // Handle oficial confirmado en SEO-DOCS v3.
+    instagram_handle: "holistic.arg",
     get instagram_url() {
         return `https://instagram.com/${this.instagram_handle}`;
     },
     get instagram_handle_at() {
         return `@${this.instagram_handle}`;
+    },
+
+    // ── TikTok ──────────────────────────────────────────────────────────────
+    tiktok_handle: "holistic.pro",
+    get tiktok_url() {
+        return `https://tiktok.com/@${this.tiktok_handle}`;
+    },
+    get tiktok_handle_at() {
+        return `@${this.tiktok_handle}`;
     },
 
     // ── Email ────────────────────────────────────────────────────────────────
@@ -35,9 +42,9 @@ export const CONTACTO = {
     },
 
     // ── Telefono ─────────────────────────────────────────────────────────────
-    // TODO_HOLISTIC: pedirle al cliente
-    phone_display: "+54 11 0000-0000",
-    phone_dial: "+5411000000000",  // sin espacios, formato tel:
+    // Confirmado SEO-DOCS v3.
+    phone_display: "+54 11 2475-9002",
+    phone_dial: "+541124759002",  // sin espacios, formato tel:
     get phone_url() {
         return `tel:${this.phone_dial}`;
     },
