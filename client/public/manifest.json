@@ -2,7 +2,8 @@
   "name": "Mi Portal",
   "short_name": "Portal",
   "description": "Portal de la comunidad",
-  "start_url": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#080808",
   "theme_color": "#3B82F6",
@@ -11,19 +12,19 @@
   "categories": ["productivity", "social"],
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon.svg",
+      "src": "icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
@@ -34,15 +35,15 @@
       "name": "Inicio",
       "short_name": "Inicio",
       "description": "Ir al inicio",
-      "url": "/inicio",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "url": "../inicio",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Mi perfil",
       "short_name": "Perfil",
       "description": "Editar mi perfil",
-      "url": "/perfil",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "url": "../perfil",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "screenshots": [],

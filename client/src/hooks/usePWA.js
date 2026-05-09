@@ -14,8 +14,11 @@ export function usePWA() {
   // Registrar Service Worker
   useEffect(() => {
     if ('serviceWorker' in navigator) {
+      // Usar BASE_URL de Vite para que el path resuelva tanto en dev (/) como
+      // en prod bajo /portal/ (Sprint 13 deploy unificado con landing).
+      const SW_URL = `${import.meta.env.BASE_URL || '/'}sw.js`;
       navigator.serviceWorker
-        .register('/sw.js')
+        .register(SW_URL)
         .then((reg) => {
           console.log('[PWA] Service Worker registrado:', reg.scope);
           setSwRegistered(true);
