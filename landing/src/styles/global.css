@@ -1788,32 +1788,34 @@ button {
     color: rgba(26, 26, 26, 0.66);
     will-change: transform, opacity;
 }
-.psh__scroll-hint {
-    margin: clamp(20px, 4vh, 40px) 0 0;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--f-text);
-    font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.36em;
-    text-transform: uppercase;
-    color: rgba(26, 26, 26, 0.45);
+/* Connector animado entre el ProductsHero y el ProductFloatSlider.
+   SVG vertical 24×240 con line + dot que dibuja scroll-driven. Position
+   absolute al fondo del .psh, sticking out por debajo (el dot final cae
+   en la zona del slider, dando continuidad visual entre secciones). */
+.psh__connector {
+    position: absolute;
+    bottom: -100px;             /* extiende por debajo del hero, hacia el slider */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 240px;
+    pointer-events: none;
+    color: #c9a34e;             /* brand gold, como el dot del eyebrow */
+    z-index: 5;
+    will-change: transform;
 }
-.psh__scroll-line {
-    width: 1px;
-    height: 36px;
-    background: linear-gradient(to bottom, rgba(26,26,26,0.45), transparent);
-    transform-origin: 50% 0;
-    animation: psl-scroll-line 1.6s ease-in-out infinite;
+.psh__connector-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
 }
+
 @media (max-width: 600px) {
     .psh__h { font-size: clamp(2.4rem, 13vw, 4.5rem); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .psh__dot,
-    .psh__scroll-line { animation: none; }
+    .psh__dot { animation: none; }
 }
 
 /* =====================================================================

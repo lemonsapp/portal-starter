@@ -20,18 +20,18 @@
         </p>
 
         <h2 class="psh__h" data-psh-h>
-            <span class="psh__line" data-psh-line>
+            <span class="psh__line" data-psh-line data-psh-line-idx="0">
                 <span class="psh__line-inner">TENEMOS 6</span>
             </span>
-            <span class="psh__line" data-psh-line>
+            <span class="psh__line" data-psh-line data-psh-line-idx="1">
                 <span class="psh__line-inner">PRODUCTOS</span>
             </span>
-            <span class="psh__line psh__line--mark-row" data-psh-line>
+            <span class="psh__line psh__line--mark-row" data-psh-line data-psh-line-idx="2">
                 <span class="psh__line-inner">
                     <mark class="psh__mark" data-psh-mark>OBSESIVAMENTE</mark>
                 </span>
             </span>
-            <span class="psh__line" data-psh-line>
+            <span class="psh__line" data-psh-line data-psh-line-idx="3">
                 <span class="psh__line-inner">DISEÑADOS.</span>
             </span>
         </h2>
@@ -40,12 +40,37 @@
             Del esqueje al corte. Fórmulas de precisión
             para cada momento del cultivo.
         </p>
-
-        <p class="psh__scroll-hint" aria-hidden="true">
-            <span>SCROLL</span>
-            <span class="psh__scroll-line"></span>
-        </p>
     </header>
+
+    <!-- Conector animado: vertical line + dot que descienden desde el final
+         del hero hacia el slider abajo. Stroke draws scroll-driven. El dot
+         "aterriza" cerca de donde vive el eyebrow del slider, conectando
+         visualmente las dos secciones. SPYLT-pure: thin hairline, brand color,
+         y el bullet circular al final como anchor visual. -->
+    <div class="psh__connector" data-psh-connector aria-hidden="true">
+        <svg viewBox="0 0 24 240" preserveAspectRatio="xMidYMin meet" class="psh__connector-svg">
+            <!-- Línea principal: dasharray full-length oculta, JS anima dashoffset -->
+            <path
+                d="M 12 0 L 12 220"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                pathLength="100"
+                stroke-dasharray="100"
+                stroke-dashoffset="100"
+                data-psh-connector-line
+            />
+            <!-- Dot al final que pulsa cuando termina el draw -->
+            <circle
+                cx="12"
+                cy="232"
+                r="0"
+                fill="currentColor"
+                data-psh-connector-dot
+            />
+        </svg>
+    </div>
 </section>
 
 <script>
