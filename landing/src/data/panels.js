@@ -62,10 +62,15 @@ export const panels = [
         nombre: "PRE FLORACIÓN",
         linea: "PRO",
         route: "/linea-pro",
-        bgColor: "#7AB85F",
-        accentColor: "#D5EFC2",
+        // bgColor saturado actualizado al rojo intenso que renderiza el
+        // base.png (motivos florales rojos sobre verde claro). El verde
+        // claro #7AB85F era literal del bg, pero el peso visual lo lleva
+        // el rojo de las flores → user lo percibe como "rosa/rojo".
+        // accentColor pastel coral matchea esa percepción al pasar el panel.
+        bgColor: "#DF3D52",
+        accentColor: "#F0A7B1",
         aspect: 1.960,
-        heroScale: 1.20,        // bottle 60% canvas; subo modesto
+        heroScale: 1.20,
         label: "PRO",
         layers: {
             base: "/img/slider-spylt/pro-pre-floracion/base.png",

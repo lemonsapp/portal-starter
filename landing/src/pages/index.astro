@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Loader from "../components/Loader.astro";
 import VideoHero from "../components/VideoHero.astro";
+import ProductsHero from "../components/ProductsHero.astro";
 import BrandManifest from "../components/BrandManifest.astro";
 import Marquee from "../components/Marquee.astro";
 import LiquidPour from "../components/LiquidPour.astro";
@@ -34,6 +35,12 @@ const dividers = [
     <!-- HERO PRINCIPAL — video cinematográfico (race-clip-04) con
          partículas + headline editorial, pausa en último frame. -->
     <VideoHero />
+
+    <!-- HERO TEXT — sección text-only ANTES del slider (SPYLT-pure).
+         "TENEMOS 6 PRODUCTOS OBSESIVAMENTE DISEÑADOS." big centered con
+         char reveal scroll-driven. Justo después viene el slider con el
+         mismo texto acomodado a la izquierda. -->
+    <ProductsHero />
 
     <!-- 6 productos: pin horizontal SPYLT.
          showWelcome={false} oculta el welcome interno del slider:

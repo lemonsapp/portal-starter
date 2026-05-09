@@ -1,0 +1,53 @@
+---
+// ProductsHero — Sección hero text-only ANTES del slider (SPYLT-pure).
+// Replica el patrón de SPYLT.com "Stir up your fearless past" — texto big
+// centered con char reveal scroll-driven, sin slider asociado. Justo
+// después viene <ProductFloatSlider /> con el mismo texto acomodado a la
+// izquierda y el slider de productos a la derecha.
+//
+// Skills aplicadas:
+//   • gsap-plugins SplitText            → char reveal dramatic
+//   • gsap-plugins CustomEase 'explode' → mark entrance overshoot
+//   • gsap-timeline                     → choreography multi-step
+//   • gsap-scrolltrigger scrub          → entrance scroll-LINKED
+//   • gsap-core matchMedia              → prefers-reduced-motion respect
+---
+<section class="psh" data-products-hero>
+    <header class="psh__editorial" data-psh-editorial>
+        <p class="psh__eyebrow" data-psh-eyebrow>
+            <span class="psh__dot" aria-hidden="true"></span>
+            <span>NUESTROS PRODUCTOS</span>
+        </p>
+
+        <h2 class="psh__h" data-psh-h>
+            <span class="psh__line" data-psh-line>
+                <span class="psh__line-inner">TENEMOS 6</span>
+            </span>
+            <span class="psh__line" data-psh-line>
+                <span class="psh__line-inner">PRODUCTOS</span>
+            </span>
+            <span class="psh__line psh__line--mark-row" data-psh-line>
+                <span class="psh__line-inner">
+                    <mark class="psh__mark" data-psh-mark>OBSESIVAMENTE</mark>
+                </span>
+            </span>
+            <span class="psh__line" data-psh-line>
+                <span class="psh__line-inner">DISEÑADOS.</span>
+            </span>
+        </h2>
+
+        <p class="psh__sub" data-psh-sub>
+            Del esqueje al corte. Fórmulas de precisión
+            para cada momento del cultivo.
+        </p>
+
+        <p class="psh__scroll-hint" aria-hidden="true">
+            <span>SCROLL</span>
+            <span class="psh__scroll-line"></span>
+        </p>
+    </header>
+</section>
+
+<script>
+    import "../scripts/products-hero.js";
+</script>

@@ -65,23 +65,22 @@ function initProductSlider() {
         const { isHorizontal, isStacked, reduceMotion } = ctx.conditions;
 
         // ============================================================
-        // 0) EDITORIAL ENTRANCE — scroll-LINKED scrub timeline (SPYLT-pure)
-        //    El editorial se va acomodando A MEDIDA QUE EL USER SCROLLEA
-        //    hacia el slider. Empieza fuera del viewport (chars yPercent 110,
-        //    eyebrow/sub yPercent 60, mark scaled 0.6) y aterriza en su
-        //    posición final justo cuando el pin engancha (start = "top top").
-        //    Skills: gsap-plugins SplitText + CustomEase + gsap-scrolltrigger
-        //    scrub + gsap-timeline position parameter.
+        // 0) EDITORIAL ENTRANCE — simple fade-in al engancharse el pin.
+        //    El "drama" del char reveal SPYLT-style ahora vive en el
+        //    componente <ProductsHero /> que va ARRIBA del slider en el
+        //    layout (sección dedicada de hero text). Acá el editorial
+        //    sólo necesita acomodarse en su anchor izquierdo cuando la
+        //    sección entra en viewport — sin char reveal redundante.
+        //    Skills: gsap-scrolltrigger toggleActions + gsap-timeline.
         // ============================================================
+        // SplitText preservado por compatibilidad con el char-mask CSS,
+        // pero los chars se setean visible inmediatamente (no rise).
         let splitInstances = [];
         const lineInners = editorialLines
             .map((line) => line.querySelector(".psl__editorial-line-inner"))
             .filter(Boolean);
 
         if (lineInners.length) {
-            // SplitText sólo en lines de texto puro. La line con <mark>
-            // queda fuera del split — el mark se anima por separado con
-            // 'explode' ease.
             lineInners.forEach((inner) => {
                 if (inner.querySelector("mark")) return;
                 const split = SplitText.create(inner, {
@@ -93,7 +92,6 @@ function initProductSlider() {
         }
 
         const allChars = splitInstances.flatMap((s) => s.chars);
-        // editorial root para el subtle x-translate during scrub
         const editorialRoot = root.querySelector(".psl__editorial");
 
         if (reduceMotion) {
@@ -102,76 +100,38 @@ function initProductSlider() {
             });
             if (allChars.length) gsap.set(allChars, { y: 0, autoAlpha: 1 });
         } else {
-            // Estados iniciales DRAMÁTICOS — texto entra grande + offset y se
-            // acomoda a izquierda en su tamaño final. SPYLT-style cinematic.
-            gsap.set(editorialEyebrow,    { autoAlpha: 0, yPercent: 80 });
-            gsap.set(editorialSub,        { autoAlpha: 0, yPercent: 80 });
-            gsap.set(allChars,            { yPercent: 130, autoAlpha: 0 });
+            // Editorial chars ya en posición final desde el inicio (no rise).
+            // Solo eyebrow/sub/mark hacen un fade-in suave cuando la sección
+            // entra en viewport — discreto, sin competir con el hero text.
+            gsap.set(allChars, { yPercent: 0, autoAlpha: 1 });
+            gsap.set(editorialEyebrow, { autoAlpha: 0, yPercent: 30 });
+            gsap.set(editorialSub,     { autoAlpha: 0, yPercent: 30 });
             gsap.set(editorialMark, {
-                scaleX: 0.5, scaleY: 0.8, rotation: -1.6,
+                scaleX: 0.92, scaleY: 0.96, rotation: -1.6,
                 autoAlpha: 0, transformOrigin: "0 50%",
             });
-            if (editorialRoot) {
-                // Editorial empieza GRANDE + desplazado hacia centro (xPercent 35
-                // = bastante a la derecha del anchor final). Termina en xPercent 0
-                // (anchor izquierdo) + scale 1 = forma final del slider en uso.
-                gsap.set(editorialRoot, {
-                    xPercent: 35,
-                    scale: 1.18,
-                    autoAlpha: 0.5,
-                    transformOrigin: "0 50%",
-                });
-            }
 
-            // Timeline scroll-LINKED: trigger DESPUÉS de que la sección esté
-            // visible, así el user efectivamente VE la animación.
-            //
-            // start "top 75%" → cuando el top del pinWrap está al 75% del viewport
-            //                  (la sección está apareciendo, ~25% visible al fondo)
-            // end   "top top"  → cuando el pin engancha (full visible, slider arranca)
-            //
-            // Esto da ~225px de scroll dramático JUSTO cuando la sección entra
-            // en pantalla. Antes lo tenía a "top bottom" (= empezaba a scroll=0,
-            // mientras user todavía estaba en VideoHero, invisible).
+            // Fade-in toggleActions cuando el pinWrap entra al 75% del viewport
             const tl = gsap.timeline({
                 defaults: { ease: "power3.out" },
                 scrollTrigger: {
                     trigger: pinWrap,
-                    start: "top 75%",
-                    end:   "top top",
-                    scrub: 1.2,
-                    invalidateOnRefresh: true,
+                    start: "top 80%",
+                    toggleActions: "play none none reverse",
                 },
             });
+            tl.to(editorialEyebrow, { yPercent: 0, autoAlpha: 1, duration: 0.5 }, 0)
+              .to(editorialMark, { scaleX: 1, scaleY: 1, autoAlpha: 1, duration: 0.55, ease: "explode" }, 0.10)
+              .to(editorialSub, { yPercent: 0, autoAlpha: 1, duration: 0.5 }, 0.15);
 
-            // Choreography sobre rango 0-1 del scrub.
-            // Phase 1 (0-0.55): chars + eyebrow + sub appear, mark explodes
-            tl.to(editorialEyebrow, { yPercent: 0, autoAlpha: 1, duration: 0.18 }, 0);
-            if (allChars.length) {
-                tl.to(allChars, {
-                    yPercent: 0, autoAlpha: 1,
-                    duration: 0.40,
-                    stagger: { amount: 0.28, from: "start" },
-                    ease: "power3.out",
-                }, 0.04);
-            }
-            tl.to(editorialMark, {
-                scaleX: 1, scaleY: 1, autoAlpha: 1,
-                duration: 0.22,
-                ease: "explode",
-            }, 0.28);
-            tl.to(editorialSub, { yPercent: 0, autoAlpha: 1, duration: 0.20 }, 0.40);
-
-            // Phase 2 (0.30-1.0): editorial root SHRINKS y se ACOMODA a la
-            // izquierda. Esta es la fase visualmente más dramática — el texto
-            // entró grande+centrado y termina chico+izquierdo. Match exacto
-            // con "se va acomodando" del pedido del user.
-            if (editorialRoot) {
-                tl.to(editorialRoot, {
-                    xPercent: 0, scale: 1, autoAlpha: 1,
-                    duration: 0.70, ease: "power2.inOut",
-                }, 0.30);
-            }
+            // Idle: respiración sutil del mark
+            gsap.to(editorialMark, {
+                scale: 1.018,
+                duration: 2.8,
+                ease: "sine.inOut",
+                yoyo: true,
+                repeat: -1,
+            });
         }
 
         // Idle: respiración muy sutil del mark
