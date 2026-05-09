@@ -273,7 +273,7 @@ export default function Login() {
         <div className="lg-left-inner">
           <div className="lg-top">
             <div className="lg-logo">{(branding.name || "Mi Portal").toUpperCase()}</div>
-            <div className="lg-eyebrow">{branding.slogan || "Portal de envíos"}</div>
+            <div className="lg-eyebrow">{branding.slogan || "Portal exclusivo"}</div>
           </div>
         </div>
       </div>
@@ -284,7 +284,7 @@ export default function Login() {
         <div ref={formRef} className="lg-form-wrap">
           <div className="lg-form-eyebrow">Acceso seguro</div>
           <div className="lg-form-title">Bienvenido <em>de vuelta</em></div>
-          <div className="lg-form-desc">Ingresá con tu cuenta para acceder al portal y seguir tus envíos.</div>
+          <div className="lg-form-desc">Ingresá con tu cuenta para acceder al portal y a tu comunidad.</div>
 
           {needsVerification && (
             <div className="lg-err" style={{ flexDirection: "column", alignItems: "stretch", gap: 10 }}>

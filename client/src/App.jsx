@@ -167,8 +167,10 @@ export default function App() {
         {/* Publicas sin sidebar */}
         <Route path="/setup-admin"    element={<SetupAdmin />} />
         <Route path="/"                element={<LoginOrBootstrap />} />
+        <Route path="/login"            element={<LoginOrBootstrap />} />
         <Route path="/forgot-password"  element={<ForgotPassword />} />
         <Route path="/register"          element={<Register />} />
+        <Route path="/registro"          element={<Register />} />
         <Route path="/verify-email"      element={<VerifyEmail />} />
         <Route path="/reset-password"  element={<ResetPassword />} />
 
