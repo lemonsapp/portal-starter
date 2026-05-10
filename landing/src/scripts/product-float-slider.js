@@ -35,8 +35,10 @@ function initProductSlider() {
     const editorialSub     = root.querySelector("[data-psl-editorial-sub]");
     const editorialDot     = root.querySelector(".psl__editorial-dot");
     const editorialEl      = root.querySelector("[data-psl-editorial]");
-    const cursorGooSvg     = root.querySelector("[data-psl-cursor-goo]");
-    const cursorGooBlobs   = gsap.utils.toArray("[data-psl-cursor-blob]", root);
+    const maskSvg          = root.querySelector("[data-psl-mask]");
+    const maskRect         = root.querySelector("[data-psl-mask-rect]");
+    const maskCover        = root.querySelector("[data-psl-mask-cover]");
+    const maskBlobs        = gsap.utils.toArray("[data-psl-mask-blob]", root);
 
     const total = panels.length;
     if (!total || !track || !pinWrap) return;
@@ -68,34 +70,57 @@ function initProductSlider() {
         const { isHorizontal, isStacked, reduceMotion } = ctx.conditions;
 
         // ============================================================
-        // 0a) CURSOR-DRIVEN GOO PAINT — blobs siguen al cursor sobre el
-        //     editorial. Patrón Codrops cursor-goo: 3 circles con goo
-        //     filter (feGaussianBlur+feColorMatrix) se mergean orgánicos.
-        //     Initial state: blobs r=0 fuera del viewport. mouseenter →
-        //     crecen + lerp follow del cursor. mousemove → blobs lag-
-        //     follow con velocidades distintas (trail liquid). mouseleave
-        //     → blobs shrink back a r=0.
-        //     skill: gsap.utils.interpolate + requestAnimationFrame loop
+        // 0a) CURSOR-PAINT REVEAL — texto invisible por default, blobs
+        //     gooey siguen cursor revelando el texto debajo del cover.
+        //     Patrón Codrops "Paint Away the Screen to Reveal Hidden Content".
+        //     SVG mask con rect blanco (cover opaco) + 3 blobs negros
+        //     (huecos transparentes) bajo feGaussianBlur+feColorMatrix
+        //     (goo filter). Cover rect = bg color de sección.
+        //     Mouseenter → blobs crecen. Mousemove → blobs lag-follow
+        //     cursor con velocidades distintas (trail liquid). Mouseleave
+        //     → blobs shrink → cover full → texto oculto otra vez.
+        //     ResizeObserver actualiza viewBox para circles perfectos.
+        //     skill: requestAnimationFrame + ResizeObserver + SVG mask
         // ============================================================
-        if (editorialEl && cursorGooBlobs.length && !reduceMotion) {
-            // Pointer-fine check (no toques en mobile)
-            const isPointerFine = window.matchMedia("(pointer: fine)").matches;
-            if (isPointerFine) {
-                const target = { x: -200, y: -200 };
-                // Cada blob tiene su propio "current" position que lerps
-                // hacia target con velocidad propia → trail liquid lag.
-                const state = cursorGooBlobs.map((_, i) => ({
-                    x: -200,
-                    y: -200,
-                    lerp: 0.18 - i * 0.04,    // 0.18, 0.14, 0.10 → blob 0 más rápido
+        if (editorialEl && maskSvg && maskBlobs.length && !reduceMotion) {
+            {
+                // ViewBox dinámico → coords en píxeles directos del DOM.
+                // Sin esto, en aspect ratios distintos los circles se
+                // verían eliptizados (preserveAspectRatio=none + viewBox
+                // 1000×1000 estiraría). Esta solución da circles perfectos.
+                const updateViewBox = () => {
+                    const r = editorialEl.getBoundingClientRect();
+                    const w = Math.round(r.width);
+                    const h = Math.round(r.height);
+                    if (w > 0 && h > 0) {
+                        maskSvg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+                        // Cover rect + mask rect cubren todo el área.
+                        if (maskRect)  maskRect.setAttribute("width",  w);
+                        if (maskRect)  maskRect.setAttribute("height", h);
+                        if (maskCover) maskCover.setAttribute("width",  w);
+                        if (maskCover) maskCover.setAttribute("height", h);
+                    }
+                };
+                updateViewBox();
+                const ro = new ResizeObserver(updateViewBox);
+                ro.observe(editorialEl);
+
+                const target = { x: -300, y: -300 };
+                // Cada blob lerps con velocidad distinta = trail liquid.
+                // Radius bases más grandes (vs versión anterior 60/80/50)
+                // porque ahora son HUECOS en el mask y deben revelar área
+                // suficiente para que el texto se lea.
+                const state = maskBlobs.map((_, i) => ({
+                    x: -300,
+                    y: -300,
+                    lerp: 0.20 - i * 0.05,    // 0.20, 0.15, 0.10
                     radius: 0,
                     radiusTarget: 0,
-                    radiusBase: [60, 80, 50][i] || 60,  // tamaños distintos
+                    radiusBase: [120, 90, 70][i] || 100,
                 }));
 
-                let active = false;
-                const onEnter = () => { active = true; state.forEach((s, i) => { s.radiusTarget = s.radiusBase; }); };
-                const onLeave = () => { active = false; state.forEach((s) => { s.radiusTarget = 0; }); };
+                const onEnter = () => state.forEach((s, i) => { s.radiusTarget = s.radiusBase; });
+                const onLeave = () => state.forEach((s)    => { s.radiusTarget = 0; });
                 const onMove = (e) => {
                     const r = editorialEl.getBoundingClientRect();
                     target.x = e.clientX - r.left;
@@ -106,16 +131,13 @@ function initProductSlider() {
                 editorialEl.addEventListener("pointerleave", onLeave);
                 editorialEl.addEventListener("pointermove",  onMove);
 
-                // RAF loop — lerps continuous (no scrolltrigger needed).
                 let rafId;
                 const tick = () => {
                     state.forEach((s, i) => {
-                        // Lerp position toward cursor target
                         s.x += (target.x - s.x) * s.lerp;
                         s.y += (target.y - s.y) * s.lerp;
-                        // Lerp radius toward target (smooth grow/shrink)
-                        s.radius += (s.radiusTarget - s.radius) * 0.14;
-                        const blob = cursorGooBlobs[i];
+                        s.radius += (s.radiusTarget - s.radius) * 0.18;
+                        const blob = maskBlobs[i];
                         blob.setAttribute("cx", s.x.toFixed(1));
                         blob.setAttribute("cy", s.y.toFixed(1));
                         blob.setAttribute("r",  s.radius.toFixed(1));
@@ -124,14 +146,17 @@ function initProductSlider() {
                 };
                 tick();
 
-                // Cleanup hook
                 ctx.add(() => () => {
                     cancelAnimationFrame(rafId);
+                    ro.disconnect();
                     editorialEl.removeEventListener("pointerenter", onEnter);
                     editorialEl.removeEventListener("pointerleave", onLeave);
                     editorialEl.removeEventListener("pointermove",  onMove);
                 });
             }
+        } else if (reduceMotion && maskSvg) {
+            // reduce-motion: NO cover, texto siempre visible.
+            maskSvg.style.display = "none";
         }
 
         // ============================================================

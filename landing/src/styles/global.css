@@ -2163,25 +2163,31 @@ button {
 }
 
 /* ===========================================================================
-   CURSOR-DRIVEN GOO PAINT — blobs siguen al cursor sobre el editorial.
-   3 circles con feGaussianBlur+feColorMatrix se mergean orgánicos. r=0
-   inicial; al hover sobre la sección crecen + cursor (con lerp lag) se
-   convierte en el centro de los blobs. Color = bgColor del panel activo.
+   CURSOR-PAINT REVEAL — overlay SVG con goo mask sobre el editorial.
+   Texto INVISIBLE por default (cover del color de sección lo tapa). Al
+   hover, blobs siguen cursor "cortando" huecos gooey en el cover →
+   texto revelado por donde pasó el cursor.
+
+   z-index 5 = ENCIMA del texto (eyebrow/h2/sub están z-2).
+   pointer-events none = transparente al mouse, los handlers van al
+   editorial container.
    ========================================================================= */
-.psl__cursor-goo {
+.psl__editorial-mask {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
+    z-index: 5;
     pointer-events: none;
-    z-index: -1;            /* detrás del texto, encima del bg */
     overflow: visible;
     display: block;
 }
-.psl__cursor-goo circle {
-    fill: var(--psl-bg, #c9a34e);
-    opacity: 0.55;
+.psl__editorial-mask circle {
     will-change: cx, cy, r;
+}
+/* Touch/mobile: ocultar cover (no hay hover) → texto siempre visible */
+@media (hover: none), (max-width: 900px) {
+    .psl__editorial-mask { display: none; }
 }
 .psl__track {
     position: relative;

@@ -29,35 +29,14 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
 >
     <div class="psl__pin-wrap" data-psl-pin-wrap>
 
-        <!-- Editorial — estructura SPYLT-pure con goo paint cursor-driven.
-             3 blob circles siguen el cursor con lerp + crecen al hover.
-             feGaussianBlur + feColorMatrix los mergea organic-style.
-             Color = panel.bgColor (saturado del producto activo). -->
+        <!-- Editorial con cursor-paint REVEAL pattern (Codrops):
+             texto cubierto por overlay del color de la sección (texto
+             invisible por default). Mask SVG con goo filter + 3 blobs que
+             siguen el cursor → al pasar el mouse, los blobs "cortan
+             huecos" en el cover, revelando el texto debajo. Donde no pasó
+             el cursor, sigue oculto. Pointer leave → blobs shrink a 0
+             → cover full → texto oculto de nuevo. -->
         <header class="psl__editorial" data-psl-editorial>
-            <!-- SVG cursor-goo overlay; sólo activo en pointer-fine devices -->
-            <svg
-                class="psl__cursor-goo"
-                data-psl-cursor-goo
-                aria-hidden="true"
-            >
-                <defs>
-                    <filter id="psl-cursor-goo">
-                        <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" />
-                        <feColorMatrix in="blur" mode="matrix" values="
-                            1 0 0 0 0
-                            0 1 0 0 0
-                            0 0 1 0 0
-                            0 0 0 22 -11
-                        " result="goo" />
-                    </filter>
-                </defs>
-                <g filter="url(#psl-cursor-goo)">
-                    <circle data-psl-cursor-blob data-blob-idx="0" cx="-200" cy="-200" r="0" />
-                    <circle data-psl-cursor-blob data-blob-idx="1" cx="-200" cy="-200" r="0" />
-                    <circle data-psl-cursor-blob data-blob-idx="2" cx="-200" cy="-200" r="0" />
-                </g>
-            </svg>
-
             <p class="psl__editorial-eyebrow" data-psl-editorial-eyebrow>
                 <span class="psl__editorial-dot" aria-hidden="true"></span>
                 <span>EL CATÁLOGO</span>
@@ -81,6 +60,51 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                 Cada fertilizante para su etapa.
                 Línea Pro · Elite · Race · Bio · Cloner · Day-0.
             </p>
+
+            <!-- Mask cover ON TOP del texto (z:5). rect del color del bg
+                 cubre todo el editorial = texto INVISIBLE. Mask con goo
+                 filter + 3 blobs negros que siguen cursor → "cortan
+                 huecos" en el cover → texto se ve por las áreas pintadas.
+                 viewBox dinámico actualizado por ResizeObserver para que
+                 los circles sean perfectos en cualquier aspect ratio. -->
+            <svg
+                class="psl__editorial-mask"
+                data-psl-mask
+                preserveAspectRatio="none"
+                aria-hidden="true"
+            >
+                <defs>
+                    <filter id="psl-mask-goo">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="blur" />
+                        <feColorMatrix in="blur" mode="matrix" values="
+                            1 0 0 0 0
+                            0 1 0 0 0
+                            0 0 1 0 0
+                            0 0 0 22 -11
+                        " result="goo" />
+                    </filter>
+                    <mask id="psl-mask-id">
+                        <!-- Rect blanco = cover OPACO (texto oculto) -->
+                        <rect data-psl-mask-rect x="0" y="0" width="2000" height="2000" fill="white" />
+                        <!-- Blobs negros con goo = HUECOS transparentes -->
+                        <g filter="url(#psl-mask-goo)">
+                            <circle data-psl-mask-blob data-blob-idx="0" cx="-300" cy="-300" r="0" fill="black" />
+                            <circle data-psl-mask-blob data-blob-idx="1" cx="-300" cy="-300" r="0" fill="black" />
+                            <circle data-psl-mask-blob data-blob-idx="2" cx="-300" cy="-300" r="0" fill="black" />
+                        </g>
+                    </mask>
+                </defs>
+                <!-- Cover rect del color de la sección. Donde el mask es
+                     blanco (default), este rect es visible = texto oculto.
+                     Donde el mask es negro (blobs), rect transparent =
+                     texto se ve. fill sigue el bg dinámico de la sección. -->
+                <rect
+                    data-psl-mask-cover
+                    x="0" y="0" width="2000" height="2000"
+                    fill="var(--psl-section-bg, #faf5ed)"
+                    mask="url(#psl-mask-id)"
+                />
+            </svg>
         </header>
 
         <!-- Track con panels -->
