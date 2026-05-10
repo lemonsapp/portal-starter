@@ -38,7 +38,8 @@ function initProductSlider() {
     const maskSvg          = root.querySelector("[data-psl-mask]");
     const maskRect         = root.querySelector("[data-psl-mask-rect]");
     const maskCover        = root.querySelector("[data-psl-mask-cover]");
-    const maskBlobs        = gsap.utils.toArray("[data-psl-mask-blob]", root);
+    const maskGroup        = root.querySelector("[data-psl-mask-group]");
+    const globalBlob       = root.querySelector("[data-psl-global-blob]");
 
     const total = panels.length;
     if (!total || !track || !pinWrap) return;
@@ -82,78 +83,107 @@ function initProductSlider() {
         //     ResizeObserver actualiza viewBox para circles perfectos.
         //     skill: requestAnimationFrame + ResizeObserver + SVG mask
         // ============================================================
-        if (editorialEl && maskSvg && maskBlobs.length && !reduceMotion) {
-            {
-                // ViewBox dinámico → coords en píxeles directos del DOM.
-                // Sin esto, en aspect ratios distintos los circles se
-                // verían eliptizados (preserveAspectRatio=none + viewBox
-                // 1000×1000 estiraría). Esta solución da circles perfectos.
-                const updateViewBox = () => {
-                    const r = editorialEl.getBoundingClientRect();
-                    const w = Math.round(r.width);
-                    const h = Math.round(r.height);
-                    if (w > 0 && h > 0) {
-                        maskSvg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-                        // Cover rect + mask rect cubren todo el área.
-                        if (maskRect)  maskRect.setAttribute("width",  w);
-                        if (maskRect)  maskRect.setAttribute("height", h);
-                        if (maskCover) maskCover.setAttribute("width",  w);
-                        if (maskCover) maskCover.setAttribute("height", h);
+        if (editorialEl && maskSvg && maskGroup && !reduceMotion) {
+            // ViewBox dinámico → coords en píxeles directos del DOM.
+            // Sin esto, en aspect ratios distintos los circles se
+            // verían eliptizados (preserveAspectRatio=none + viewBox fijo
+            // estiraría). Esta solución da circles perfectos.
+            let edW = 0, edH = 0, edDiagonal = 0;
+            const updateViewBox = () => {
+                const r = editorialEl.getBoundingClientRect();
+                const w = Math.round(r.width);
+                const h = Math.round(r.height);
+                if (w > 0 && h > 0) {
+                    edW = w; edH = h;
+                    edDiagonal = Math.hypot(w, h);
+                    maskSvg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+                    if (maskRect)  { maskRect.setAttribute("width", w);  maskRect.setAttribute("height", h); }
+                    if (maskCover) { maskCover.setAttribute("width", w); maskCover.setAttribute("height", h); }
+                    // Global blob centrado en píxeles (no %)
+                    if (globalBlob) {
+                        globalBlob.setAttribute("cx", w / 2);
+                        globalBlob.setAttribute("cy", h / 2);
                     }
-                };
-                updateViewBox();
-                const ro = new ResizeObserver(updateViewBox);
-                ro.observe(editorialEl);
+                }
+            };
+            updateViewBox();
+            const ro = new ResizeObserver(updateViewBox);
+            ro.observe(editorialEl);
 
-                const target = { x: -300, y: -300 };
-                // Cada blob lerps con velocidad distinta = trail liquid.
-                // Radius bases más grandes (vs versión anterior 60/80/50)
-                // porque ahora son HUECOS en el mask y deben revelar área
-                // suficiente para que el texto se lea.
-                const state = maskBlobs.map((_, i) => ({
-                    x: -300,
-                    y: -300,
-                    lerp: 0.20 - i * 0.05,    // 0.20, 0.15, 0.10
-                    radius: 0,
-                    radiusTarget: 0,
-                    radiusBase: [120, 90, 70][i] || 100,
-                }));
-
-                const onEnter = () => state.forEach((s, i) => { s.radiusTarget = s.radiusBase; });
-                const onLeave = () => state.forEach((s)    => { s.radiusTarget = 0; });
-                const onMove = (e) => {
-                    const r = editorialEl.getBoundingClientRect();
-                    target.x = e.clientX - r.left;
-                    target.y = e.clientY - r.top;
-                };
-
-                editorialEl.addEventListener("pointerenter", onEnter);
-                editorialEl.addEventListener("pointerleave", onLeave);
-                editorialEl.addEventListener("pointermove",  onMove);
-
-                let rafId;
-                const tick = () => {
-                    state.forEach((s, i) => {
-                        s.x += (target.x - s.x) * s.lerp;
-                        s.y += (target.y - s.y) * s.lerp;
-                        s.radius += (s.radiusTarget - s.radius) * 0.18;
-                        const blob = maskBlobs[i];
-                        blob.setAttribute("cx", s.x.toFixed(1));
-                        blob.setAttribute("cy", s.y.toFixed(1));
-                        blob.setAttribute("r",  s.radius.toFixed(1));
-                    });
-                    rafId = requestAnimationFrame(tick);
-                };
-                tick();
-
-                ctx.add(() => () => {
-                    cancelAnimationFrame(rafId);
-                    ro.disconnect();
-                    editorialEl.removeEventListener("pointerenter", onEnter);
-                    editorialEl.removeEventListener("pointerleave", onLeave);
-                    editorialEl.removeEventListener("pointermove",  onMove);
+            // ============================================================
+            // (a) AUTO-REVEAL SCROLL-DRIVEN — global blob crece para revelar
+            //     TODO el texto cuando el user llega scrolleando al pin.
+            //     Trigger: pinWrap "top 90%" → "top top" (1 viewport-height
+            //     de scroll). Por pin engagement el cover está full disuelto.
+            // ============================================================
+            if (globalBlob) {
+                gsap.set(globalBlob, { attr: { r: 0 } });
+                gsap.to(globalBlob, {
+                    attr: { r: () => edDiagonal * 0.85 || 900 },  // diagonal/2 + buffer
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: pinWrap,
+                        start: "top 90%",
+                        end:   "top top",
+                        scrub: 1.2,
+                        invalidateOnRefresh: true,
+                    },
                 });
             }
+
+            // ============================================================
+            // (b) CURSOR PERSISTENT TRAIL — cada pointermove appenda un nuevo
+            //     <circle> al mask. Los circles persisten para siempre →
+            //     huecos revelados quedan visibles. Throttle por distancia
+            //     para evitar miles de circles consecutivos.
+            // ============================================================
+            const SVG_NS = "http://www.w3.org/2000/svg";
+            const TRAIL_RADIUS = 70;
+            const MIN_DISTANCE = 28;        // skip si cursor movió <28px
+            const MAX_TRAIL_BLOBS = 240;    // cap para performance/memory
+            const trailBlobs = [];
+            let lastTrailX = -9999, lastTrailY = -9999;
+
+            const addTrailBlob = (cx, cy) => {
+                const c = document.createElementNS(SVG_NS, "circle");
+                c.setAttribute("cx", cx);
+                c.setAttribute("cy", cy);
+                c.setAttribute("r", "0");
+                c.setAttribute("fill", "black");
+                maskGroup.appendChild(c);
+                trailBlobs.push(c);
+                // Anim radius 0 → TRAIL_RADIUS (small grow para feel orgánico)
+                gsap.to(c, {
+                    attr: { r: TRAIL_RADIUS },
+                    duration: 0.45,
+                    ease: "power2.out",
+                });
+                // Cap memory: si pasa límite, remove oldest
+                if (trailBlobs.length > MAX_TRAIL_BLOBS) {
+                    const old = trailBlobs.shift();
+                    if (old && old.parentNode) old.parentNode.removeChild(old);
+                }
+            };
+
+            const onMove = (e) => {
+                const r = editorialEl.getBoundingClientRect();
+                const cx = e.clientX - r.left;
+                const cy = e.clientY - r.top;
+                const dist = Math.hypot(cx - lastTrailX, cy - lastTrailY);
+                if (dist < MIN_DISTANCE) return;
+                lastTrailX = cx; lastTrailY = cy;
+                addTrailBlob(cx, cy);
+            };
+
+            editorialEl.addEventListener("pointermove", onMove);
+
+            ctx.add(() => () => {
+                ro.disconnect();
+                editorialEl.removeEventListener("pointermove", onMove);
+                // Cleanup trail blobs en re-init de mm context
+                trailBlobs.forEach((b) => b.parentNode && b.parentNode.removeChild(b));
+                trailBlobs.length = 0;
+            });
         } else if (reduceMotion && maskSvg) {
             // reduce-motion: NO cover, texto siempre visible.
             maskSvg.style.display = "none";

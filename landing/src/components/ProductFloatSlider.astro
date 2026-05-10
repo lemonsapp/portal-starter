@@ -86,11 +86,16 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                     <mask id="psl-mask-id">
                         <!-- Rect blanco = cover OPACO (texto oculto) -->
                         <rect data-psl-mask-rect x="0" y="0" width="2000" height="2000" fill="white" />
-                        <!-- Blobs negros con goo = HUECOS transparentes -->
-                        <g filter="url(#psl-mask-goo)">
-                            <circle data-psl-mask-blob data-blob-idx="0" cx="-300" cy="-300" r="0" fill="black" />
-                            <circle data-psl-mask-blob data-blob-idx="1" cx="-300" cy="-300" r="0" fill="black" />
-                            <circle data-psl-mask-blob data-blob-idx="2" cx="-300" cy="-300" r="0" fill="black" />
+                        <!-- <g> donde JS appendará circles negros con goo
+                             como HUECOS transparentes. Inicialmente vacío.
+                             Contiene:
+                             • 1 circle "global" (data-psl-global-blob) que
+                               crece scroll-driven para revelar TODO al
+                               entrar al pin (auto-reveal)
+                             • N circles persistentes appendados dinámicamente
+                               en cada pointermove → cursor trail acumulativo -->
+                        <g filter="url(#psl-mask-goo)" data-psl-mask-group>
+                            <circle data-psl-global-blob cx="50%" cy="50%" r="0" fill="black" />
                         </g>
                     </mask>
                 </defs>
