@@ -70,18 +70,44 @@ function initVideoHero() {
             } catch (_) {}
         };
 
-        // Asegurar arranque desde 0 cuando los metadata están listos
-        // (algunos browsers retoman currentTime entre navegaciones).
-        const startFromZero = () => {
+        // Asegurar arranque desde 0 cuando los metadata están listos.
+        // En real browsers la autoplay policy puede rechazar el play()
+        // aunque el video sea muted+playsinline (depende del Media
+        // Engagement Index del site para el user). Fallback: arrancar
+        // al primer gesto del user (scroll/click/keydown/touch).
+        let attemptedKick = false;
+        const kick = () => {
+            if (attemptedKick) return;
+            attemptedKick = true;
             try { video.currentTime = 0; } catch (_) {}
             const p = video.play();
-            if (p && typeof p.catch === "function") p.catch(() => {});
+            if (p && typeof p.then === "function") {
+                p.then(() => { /* ok */ }).catch(() => {
+                    // Autoplay bloqueado → esperar gesto del user
+                    attemptedKick = false;
+                    const onGesture = () => {
+                        if (attemptedKick) return;
+                        attemptedKick = true;
+                        try { video.currentTime = 0; } catch (_) {}
+                        const p2 = video.play();
+                        if (p2 && typeof p2.catch === "function") p2.catch(() => {});
+                    };
+                    ["pointerdown", "keydown", "scroll", "touchstart"].forEach((ev) =>
+                        window.addEventListener(ev, onGesture, { once: true, passive: true })
+                    );
+                });
+            }
         };
 
-        if (video.readyState >= 1 /* HAVE_METADATA */) {
-            startFromZero();
+        // Intentar en varios puntos para cubrir todos los casos:
+        // - readyState ya alto (script late, video ya bufferado)
+        // - loadedmetadata (sabemos duration)
+        // - canplay (data suficiente para empezar)
+        if (video.readyState >= 2 /* HAVE_CURRENT_DATA */) {
+            kick();
         } else {
-            video.addEventListener("loadedmetadata", startFromZero, { once: true });
+            video.addEventListener("loadedmetadata", kick, { once: true });
+            video.addEventListener("canplay", kick, { once: true });
         }
 
         // Pre-end freeze: dispara ~2 frames antes del fin → margen de seguridad
