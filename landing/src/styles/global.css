@@ -2309,30 +2309,6 @@ button {
     isolation: isolate;
 }
 
-/* ---------- PANEL BACKGROUND (textured paper) ----------
-   Capa de fondo del panel — JPG textured paper del cliente
-   (Vegetativo verde, Floración lila, Enraizante magenta).
-   Cubre full-panel debajo de la silueta. z:-1 va detrás del card. */
-.psl__panel-bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    z-index: -1;
-    pointer-events: none;
-    user-select: none;
-}
-
-/* Cuando el panel tiene background.jpg textured, la silueta va encima
-   con blend-mode multiply para que el motivo se "pinte" sobre la
-   textura del papel (efecto print/screen orgánico). */
-.psl__panel:has(.psl__panel-bg) .psl__panel-silhouette {
-    mix-blend-mode: multiply;
-    opacity: 0.78;
-}
-
 /* ---------- PANEL SILHOUETTE ----------
    Capa decorativa de fondo (motivos florales/leaves/roots pastel sobre
    el bgColor saturado del panel). Pattern del ejemplo Pre-Flora: la
@@ -2355,19 +2331,16 @@ button {
     opacity: 0.85;
 }
 
-/* Para los 5 panels nuevos del catálogo (Bio/Pro/Race/Elite/Day-0) que
-   usan silhouette en lugar de base.png:
-   el card actúa como wrapper transparente del packshot (sin rounded
-   frame, sin shadow, sin bg). El packshot flota directo sobre la
-   silueta + bgColor. */
+/* Para los 5 panels nuevos del catálogo (Bio/Pro/Race/Elite/Day-0):
+   el card es el "redondelito" rounded de color saturado bgColor que va
+   ATRÁS del packshot. La silueta cubre el panel detrás del card como
+   decorativo (encuadrando edges). Pattern análogo al ejemplo Pre-Flora
+   del cliente pero con paleta pastel section bg + accent saturado en
+   el redondelito. */
 .psl__panel:has(.psl__panel-silhouette) .psl__card {
-    background: transparent;
-    filter: none;
-    border-radius: 0;
-    overflow: visible;
-}
-.psl__panel:has(.psl__panel-silhouette) .psl__card-shadow {
-    display: none;
+    background: var(--psl-bg);
+    /* mantiene border-radius + drop-shadow + overflow:visible de la
+       regla base .psl__card */
 }
 
 /* Step number arriba-derecha (pequeño, discreto) */

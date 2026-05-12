@@ -135,18 +135,6 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                         <span class="psl__panel-step" aria-hidden="true">{num}</span>
                         <p class="psl__panel-line">LÍNEA {p.linea}</p>
 
-                        {p.layers.background && (
-                            <img
-                                class="psl__panel-bg"
-                                src={p.layers.background}
-                                alt=""
-                                aria-hidden="true"
-                                data-psl-panel-bg
-                                draggable="false"
-                                loading={i === 0 ? "eager" : "lazy"}
-                            />
-                        )}
-
                         {p.layers.silhouette && (
                             <img
                                 class="psl__panel-silhouette"

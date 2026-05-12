@@ -46,7 +46,6 @@ export const panels = [
         heroScale: 0.92,          // packshot ya llena el card cuadrado
         label: "BIO",
         layers: {
-            background: "/img/slider-spylt/bioestimulante/background.jpg",
             hero: "/img/slider-spylt/bioestimulante/hero.png",
             silhouette: "/img/slider-spylt/bioestimulante/silhouette.png",
         },
@@ -66,7 +65,6 @@ export const panels = [
         heroScale: 1.20,          // hero wide → scale moderado
         label: "PRO",
         layers: {
-            background: "/img/slider-spylt/linea-pro/background.jpg",
             hero: "/img/slider-spylt/linea-pro/hero.png",
             silhouette: "/img/slider-spylt/linea-pro/silhouette.png",
         },
@@ -86,7 +84,6 @@ export const panels = [
         heroScale: 1.18,
         label: "RACE",
         layers: {
-            background: "/img/slider-spylt/linea-race/background.jpg",
             hero: "/img/slider-spylt/linea-race/hero.png",
             silhouette: "/img/slider-spylt/linea-race/silhouette.png",
         },
