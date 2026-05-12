@@ -2309,6 +2309,43 @@ button {
     isolation: isolate;
 }
 
+/* ---------- PANEL SILHOUETTE ----------
+   Capa decorativa de fondo (motivos florales/leaves/roots pastel sobre
+   el bgColor saturado del panel). Pattern del ejemplo Pre-Flora: la
+   silueta encuadra arriba y abajo, centro queda libre para el packshot.
+   object-fit: cover + opacity moderada → el motivo se sienta bien
+   mezclado con el bg saturado sin pisar el packshot. */
+.psl__panel-silhouette {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+    /* Opacidad moderada — la silueta es decorativa, no protagónica.
+       Mezcla con multiply para que se sienta "pintada sobre" el bg. */
+    mix-blend-mode: normal;
+    opacity: 0.85;
+}
+
+/* Para los 5 panels nuevos del catálogo (Bio/Pro/Race/Elite/Day-0) que
+   usan silhouette en lugar de base.png:
+   el card actúa como wrapper transparente del packshot (sin rounded
+   frame, sin shadow, sin bg). El packshot flota directo sobre la
+   silueta + bgColor. */
+.psl__panel:has(.psl__panel-silhouette) .psl__card {
+    background: transparent;
+    filter: none;
+    border-radius: 0;
+    overflow: visible;
+}
+.psl__panel:has(.psl__panel-silhouette) .psl__card-shadow {
+    display: none;
+}
+
 /* Step number arriba-derecha (pequeño, discreto) */
 .psl__panel-step {
     position: absolute;

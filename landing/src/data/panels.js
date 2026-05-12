@@ -26,6 +26,10 @@
 //     base       → OPCIONAL. Si no existe, el card se renderea con
 //                  bgColor solid (fallback en .psl__card background).
 //     hero       → packshot del producto (PNG transparente).
+//     silhouette → PNG decorativo que cubre todo el panel detrás del
+//                  card. Pattern del ejemplo Pre-Flora (motivos florales
+//                  pastel sobre bg saturado). Re-tintado al color del
+//                  producto via Pillow.
 //     wheels     → array opcional de ruedas (solo Race original tenía).
 export const panels = [
     // ─── 01 · BIOESTIMULANTE ───────────────────────────────────────
@@ -43,6 +47,7 @@ export const panels = [
         label: "BIO",
         layers: {
             hero: "/img/slider-spylt/bioestimulante/hero.png",
+            silhouette: "/img/slider-spylt/bioestimulante/silhouette.png",
         },
     },
 
@@ -61,6 +66,7 @@ export const panels = [
         label: "PRO",
         layers: {
             hero: "/img/slider-spylt/linea-pro/hero.png",
+            silhouette: "/img/slider-spylt/linea-pro/silhouette.png",
         },
     },
 
@@ -79,6 +85,7 @@ export const panels = [
         label: "RACE",
         layers: {
             hero: "/img/slider-spylt/linea-race/hero.png",
+            silhouette: "/img/slider-spylt/linea-race/silhouette.png",
         },
     },
 
@@ -97,6 +104,7 @@ export const panels = [
         label: "ELITE",
         layers: {
             hero: "/img/slider-spylt/linea-elite/hero.png",
+            silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
         },
     },
 
@@ -114,6 +122,7 @@ export const panels = [
         label: "DAY 0",
         layers: {
             hero: "/img/slider-spylt/day-0/hero.png",
+            silhouette: "/img/slider-spylt/day-0/silhouette.png",
         },
     },
 ];
