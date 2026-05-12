@@ -46,17 +46,56 @@ function initVideoHero() {
     const particles = gsap.utils.toArray("[data-video-hero-particle]");
 
     // ========== Video lifecycle ==========
+    // Play una vez desde frame 0 → freeze en el último frame visible.
+    //
+    // Por qué `timeupdate` y no `ended`:
+    //   En varios browsers el evento `ended` llega después de que el
+    //   reproductor ya pausó y/o reseteó currentTime, y un seek post-pause
+    //   no siempre rendea el nuevo frame. Pausamos NOSOTROS ~1 frame antes
+    //   del final y seteamos currentTime a (duration - ~1 frame): el último
+    //   frame queda renderizado y el reproductor nunca dispara `ended`.
     if (video) {
-        video.addEventListener("ended", () => {
+        const FRAME = 1 / 30;        // asumimos 30 fps source (inicio.mp4 es 30fps)
+        const FREEZE_OFFSET = FRAME; // último frame visible
+
+        let frozen = false;
+        const freeze = () => {
+            if (frozen) return;
+            frozen = true;
             try {
                 video.pause();
                 if (Number.isFinite(video.duration)) {
-                    video.currentTime = Math.max(0, video.duration - 0.05);
+                    video.currentTime = Math.max(0, video.duration - FREEZE_OFFSET);
                 }
             } catch (_) {}
+        };
+
+        // Asegurar arranque desde 0 cuando los metadata están listos
+        // (algunos browsers retoman currentTime entre navegaciones).
+        const startFromZero = () => {
+            try { video.currentTime = 0; } catch (_) {}
+            const p = video.play();
+            if (p && typeof p.catch === "function") p.catch(() => {});
+        };
+
+        if (video.readyState >= 1 /* HAVE_METADATA */) {
+            startFromZero();
+        } else {
+            video.addEventListener("loadedmetadata", startFromZero, { once: true });
+        }
+
+        // Pre-end freeze: dispara ~2 frames antes del fin → margen de seguridad
+        // para evitar que el browser ya haya hecho su propio auto-pause.
+        video.addEventListener("timeupdate", () => {
+            if (frozen) return;
+            const d = video.duration;
+            if (Number.isFinite(d) && video.currentTime >= d - FRAME * 2) {
+                freeze();
+            }
         });
-        const p = video.play();
-        if (p && typeof p.catch === "function") p.catch(() => {});
+
+        // Fallback por las dudas (si timeupdate se saltea el threshold).
+        video.addEventListener("ended", freeze);
     }
 
     // ========== CTA: liquid fill que sale desde el cursor ==========
