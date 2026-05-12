@@ -70,11 +70,18 @@ function initVideoHero() {
             } catch (_) {}
         };
 
-        // Asegurar arranque desde 0 cuando los metadata están listos.
-        // En real browsers la autoplay policy puede rechazar el play()
-        // aunque el video sea muted+playsinline (depende del Media
-        // Engagement Index del site para el user). Fallback: arrancar
-        // al primer gesto del user (scroll/click/keydown/touch).
+        // Arranque sincronizado con el LOADER:
+        // El Loader del site tapa la pantalla ~2.85s al cargar. Si el
+        // video tiene `autoplay` HTML, empieza a reproducirse detrás del
+        // loader → cuando el loader se va, el video ya está mid-playback
+        // y el user nunca ve el frame 0. Solución: NO autoplay HTML,
+        // disparamos play() al recibir `loader:done` (custom event del
+        // Loader) o al detectar `<html class="is-loaded">` ya seteada
+        // (si este script corre después del loader, como en reduce-motion).
+        //
+        // Fallback adicional: si el browser bloquea autoplay incluso
+        // post-loader, primer gesto del user (scroll/click/keydown/touch)
+        // dispara el play.
         let attemptedKick = false;
         const kick = () => {
             if (attemptedKick) return;
@@ -83,7 +90,6 @@ function initVideoHero() {
             const p = video.play();
             if (p && typeof p.then === "function") {
                 p.then(() => { /* ok */ }).catch(() => {
-                    // Autoplay bloqueado → esperar gesto del user
                     attemptedKick = false;
                     const onGesture = () => {
                         if (attemptedKick) return;
@@ -99,15 +105,29 @@ function initVideoHero() {
             }
         };
 
-        // Intentar en varios puntos para cubrir todos los casos:
-        // - readyState ya alto (script late, video ya bufferado)
-        // - loadedmetadata (sabemos duration)
-        // - canplay (data suficiente para empezar)
-        if (video.readyState >= 2 /* HAVE_CURRENT_DATA */) {
-            kick();
+        // 1) Si el loader ya terminó (reduce-motion, navegación cached),
+        //    arrancar el video ya — pero esperando readyState mínimo.
+        const tryKickWhenReady = () => {
+            if (video.readyState >= 2 /* HAVE_CURRENT_DATA */) {
+                kick();
+            } else {
+                video.addEventListener("loadedmetadata", kick, { once: true });
+                video.addEventListener("canplay", kick, { once: true });
+            }
+        };
+
+        if (document.documentElement.classList.contains("is-loaded")) {
+            tryKickWhenReady();
         } else {
-            video.addEventListener("loadedmetadata", kick, { once: true });
-            video.addEventListener("canplay", kick, { once: true });
+            // 2) Esperar al evento custom del Loader
+            window.addEventListener("loader:done", tryKickWhenReady, { once: true });
+            // Red de seguridad: si por algún motivo no llega el evento
+            // (Loader fue removido / script crashed) y is-loaded nunca
+            // aparece → forzar play tras 4.5s (el Loader tiene timeout
+            // de 4s, así que ya debería estar libre).
+            window.setTimeout(() => {
+                if (!attemptedKick) tryKickWhenReady();
+            }, 4500);
         }
 
         // Pre-end freeze: dispara ~2 frames antes del fin → margen de seguridad

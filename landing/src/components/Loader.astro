@@ -42,6 +42,13 @@
         if (window.__lenis && typeof window.__lenis.start === "function") {
             try { window.__lenis.start(); } catch (_) {}
         }
+
+        // Notificar a quien quiera sincronizar con el fin del loader.
+        // VideoHero lo usa para arrancar el video EN ese momento (no antes,
+        // o el user nunca ve el frame 0 porque el loader lo tapa).
+        try {
+            window.dispatchEvent(new CustomEvent("loader:done"));
+        } catch (_) {}
     }
 
     function hideLoader() {
