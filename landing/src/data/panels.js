@@ -1,220 +1,119 @@
-// panels.js — 9 panels SPYLT-style del slider home (post VideoHero).
+// panels.js — 5 panels SPYLT-style del slider home (post VideoHero).
+//
+// Reducido de 9 (sub-SKUs Pro+Race separados) a 5 LÍNEAS principales
+// del catálogo, en este orden canónico definido por el cliente:
+//   01 BIOESTIMULANTE
+//   02 LÍNEA PRO       (4 potes 100gr unificados como hero)
+//   03 LÍNEA RACE      (5 bidones juntos como hero)
+//   04 LÍNEA ELITE     (PART-1 + PART-2 juntos)
+//   05 DAY 0           (finalizador de cosecha)
 //
 // Estructura por panel:
 //   slug         → folder en /img/slider-spylt/
 //   nombre       → caption visible (debajo del card)
-//   linea        → "PRO" | "RACE" (tag pequeño)
-//   route        → href del CTA (apunta al producto principal)
-//   bgColor      → fallback bg cuando el card no cubre 100% del panel
+//   linea        → tag pequeño arriba del card
+//   route        → href del CTA (apunta al producto/categoría)
+//   bgColor      → fallback bg cuando el card no cubre 100% del panel +
+//                  bg del .psl__card cuando NO hay base.png
 //   accentColor  → color pastel para bg de la sección (cross-fade entre
 //                  panels via gsap.utils.interpolate scroll-driven)
-//   aspect       → aspect-ratio del card (de base.png) — preserva el
-//                  diseño original sin cropping ni stretch
+//   aspect       → aspect-ratio del card. Para los 5 nuevos lo derivo del
+//                  hero.png (los packshots tienen aspect propio).
 //   heroScale    → multiplier del scale CSS sobre .psl__layer--hero.
-//                  Calibrado por panel para normalizar visible-height
-//                  del packshot (compensar diferencias de tamaño de
-//                  los hero.png + position dentro del canvas). Pro
-//                  packshots son canvases anchos con bottle pequeño
-//                  (~1.42); Race Celeste/Violeta-B son canvases altos
-//                  con bottle grande (~1.05). Default 1.22 si no se
-//                  declara. Aplicado via CSS var --psl-hero-scale.
-//   label        → texto que va arriba del card como tipografía editorial
-//                  (reemplaza al texto.png overlay que venía cropped en
-//                  6 de 9 panels). Si NO querés label visible, dejar "".
+//                  Calibrado per-panel para normalizar visible-height.
+//   label        → texto editorial grande encima del card.
 //   layers:
-//     base       → fondo de la card (el shape coloreado + ornamentos)
-//     hero       → producto principal (Pote / Bidón / WEB ELEMENTOS)
-//     wheels     → array opcional de ruedas (sólo RACE; cada rueda es
-//                  layer independiente para spin/parallax individual).
-//                  Para Race Verde usamos Ruedas Unificadas (single
-//                  layer con las 4 ruedas) porque su Rueda 3 venía
-//                  cropped al bounding box.
-//
-// Aspectos por panel (base.png dimensions):
-//   PRO Vegetativo   2.275  (1718×755 — muy wide)
-//   PRO Pre Floración 1.960  (1719×877)
-//   PRO Floración    2.282  (1718×753 — muy wide)
-//   PRO Enraizante   2.262  (1710×756 — muy wide)
-//   RACE Celeste     1.259  (1718×1365 — casi cuadrado)
-//   RACE Rosado      1.365  (1807×1324)
-//   RACE Verde       1.591  (1726×1085)
-//   RACE Violeta A   1.587  (1718×1083)
-//   RACE Violeta B   1.298  (1718×1324)
+//     base       → OPCIONAL. Si no existe, el card se renderea con
+//                  bgColor solid (fallback en .psl__card background).
+//     hero       → packshot del producto (PNG transparente).
+//     wheels     → array opcional de ruedas (solo Race original tenía).
 export const panels = [
-    // ─── LÍNEA PRO ─── (etapas del cultivo, orden cronológico)
+    // ─── 01 · BIOESTIMULANTE ───────────────────────────────────────
+    // 2 botellas pastel (teal + rosa) con sticker BIO-ESTIMULANTE.
+    // Color del panel: lila pastel matching el sticker color.
     {
-        slug: "pro-vegetativo",
-        nombre: "VEGETATIVO",
-        linea: "PRO",
-        route: "/linea-pro",
-        bgColor: "#2E8F6E",
-        accentColor: "#C7F0DD",
-        aspect: 2.275,
-        heroScale: 1.45,        // canvas wide, bottle ocupa solo ~38% del card
-        label: "PRO",
+        slug: "bioestimulante",
+        nombre: "BIOESTIMULANTE",
+        linea: "HOLISTIC",
+        route: "/bio-estimulante",
+        bgColor: "#B8A4D9",       // lila pastel
+        accentColor: "#E5DCF0",   // lila más claro para section bg
+        aspect: 1.0,              // hero 1200x1200
+        heroScale: 0.92,          // packshot ya llena el card cuadrado
+        label: "BIO",
         layers: {
-            base: "/img/slider-spylt/pro-vegetativo/base.png",
-            hero: "/img/slider-spylt/pro-vegetativo/hero.png",
-        },
-    },
-    {
-        slug: "pro-pre-floracion",
-        nombre: "PRE FLORACIÓN",
-        linea: "PRO",
-        route: "/linea-pro",
-        // bgColor saturado actualizado al rojo intenso que renderiza el
-        // base.png (motivos florales rojos sobre verde claro). El verde
-        // claro #7AB85F era literal del bg, pero el peso visual lo lleva
-        // el rojo de las flores → user lo percibe como "rosa/rojo".
-        // accentColor pastel coral matchea esa percepción al pasar el panel.
-        bgColor: "#DF3D52",
-        accentColor: "#F0A7B1",
-        aspect: 1.960,
-        heroScale: 1.20,
-        label: "PRO",
-        layers: {
-            base: "/img/slider-spylt/pro-pre-floracion/base.png",
-            hero: "/img/slider-spylt/pro-pre-floracion/hero.png",
-        },
-    },
-    {
-        slug: "pro-floracion",
-        nombre: "FLORACIÓN",
-        linea: "PRO",
-        route: "/linea-pro",
-        bgColor: "#D86E8C",
-        accentColor: "#F7D6DC",
-        aspect: 2.282,
-        heroScale: 1.45,        // canvas wide, bottle ~38% del card
-        label: "PRO",
-        layers: {
-            base: "/img/slider-spylt/pro-floracion/base.png",
-            hero: "/img/slider-spylt/pro-floracion/hero.png",
-        },
-    },
-    {
-        slug: "pro-enraizante",
-        nombre: "ENRAIZANTE",
-        linea: "PRO",
-        route: "/linea-pro",
-        // bgColor saturado actualizado al hot pink que renderiza el base.png
-        // (estaba en gold #C9A34E que no matcheaba el art real). accentColor
-        // pastel derivado del color medio sampled del art.
-        bgColor: "#E579B7",
-        accentColor: "#F3C2DE",
-        aspect: 2.262,
-        heroScale: 1.45,        // canvas wide, bottle ~38% del card
-        label: "PRO",
-        layers: {
-            base: "/img/slider-spylt/pro-enraizante/base.png",
-            hero: "/img/slider-spylt/pro-enraizante/hero.png",
+            hero: "/img/slider-spylt/bioestimulante/hero.png",
         },
     },
 
-    // ─── LÍNEA RACE ─── (intensidad creciente del color)
+    // ─── 02 · LÍNEA PRO ────────────────────────────────────────────
+    // 4 potes Holistic Pro alineados (Vegetativo / Pre-Floración /
+    // Floración / Enraizante). Hero canvas WIDE (3.52:1).
     {
-        slug: "race-celeste",
-        nombre: "RACE CELESTE",
-        linea: "RACE",
-        route: "/linea-race",
-        bgColor: "#5DBED8",
-        accentColor: "#C8EAF3",
-        aspect: 1.259,
-        heroScale: 0.96,        // card casi cuadrado + bottle 100% canvas;
-                                // bajo de 1 para que no domine el viewport
-        label: "RACE",
-        layers: {
-            base: "/img/slider-spylt/race-celeste/base.png",
-            hero: "/img/slider-spylt/race-celeste/hero.png",
-            wheels: [
-                "/img/slider-spylt/race-celeste/rueda-1.png",
-                "/img/slider-spylt/race-celeste/rueda-2.png",
-                "/img/slider-spylt/race-celeste/rueda-3.png",
-                "/img/slider-spylt/race-celeste/rueda-4.png",
-            ],
-        },
-    },
-    {
-        slug: "race-rosado",
-        nombre: "RACE ROSADO",
-        linea: "RACE",
-        route: "/linea-race",
-        bgColor: "#E591B6",
-        accentColor: "#F7D6DC",
-        aspect: 1.365,
-        heroScale: 1.04,        // bottle ya 66% canvas, ojo con cobertura vh
-        label: "RACE",
-        layers: {
-            base: "/img/slider-spylt/race-rosado/base.png",
-            hero: "/img/slider-spylt/race-rosado/hero.png",
-            wheels: [
-                "/img/slider-spylt/race-rosado/rueda-1.png",
-                "/img/slider-spylt/race-rosado/rueda-2.png",
-                "/img/slider-spylt/race-rosado/rueda-3.png",
-                "/img/slider-spylt/race-rosado/rueda-4.png",
-            ],
-        },
-    },
-    {
-        slug: "race-verde",
-        nombre: "RACE VERDE",
-        linea: "RACE",
-        route: "/linea-race",
-        bgColor: "#2EC274",
+        slug: "linea-pro",
+        nombre: "LÍNEA PRO",
+        linea: "PRO",
+        route: "/linea-pro",
+        bgColor: "#2E8F6E",       // verde Holistic
         accentColor: "#C7F0DD",
-        aspect: 1.591,
-        heroScale: 1.10,
+        aspect: 1.66,             // card más estándar — hero ultra-wide cabe centrado
+        heroScale: 1.20,          // hero wide → scale moderado
+        label: "PRO",
+        layers: {
+            hero: "/img/slider-spylt/linea-pro/hero.png",
+        },
+    },
+
+    // ─── 03 · LÍNEA RACE ───────────────────────────────────────────
+    // 5 bidones Race juntos (1 verde / 2 celeste / 3 violetaA /
+    // 3 violetaB / 4 rosa). Hero asp 1.89.
+    {
+        slug: "linea-race",
+        nombre: "LÍNEA RACE",
+        linea: "RACE",
+        route: "/linea-race",
+        bgColor: "#6B3BAF",       // violeta Race (color líder del set)
+        accentColor: "#B49AE0",
+        aspect: 1.66,
+        heroScale: 1.18,
         label: "RACE",
         layers: {
-            base: "/img/slider-spylt/race-verde/base.png",
-            hero: "/img/slider-spylt/race-verde/hero.png",
-            // Race Verde: usamos Ruedas Unificadas (single layer) porque
-            // Rueda 3 estaba cropped al bounding box (365×405).
-            wheels: [
-                "/img/slider-spylt/race-verde/ruedas-unificadas.png",
-            ],
+            hero: "/img/slider-spylt/linea-race/hero.png",
         },
     },
+
+    // ─── 04 · LÍNEA ELITE ──────────────────────────────────────────
+    // 2 bidones premium (PART-1 + PART-2). Tonos blanco-orange editorial.
+    // bg charcoal premium contrasta con el packshot claro.
     {
-        slug: "race-violeta-a",
-        nombre: "RACE VIOLETA · PART A",
-        linea: "RACE",
-        route: "/linea-race",
-        bgColor: "#8A5BC0",
-        accentColor: "#E4D5F2",
-        aspect: 1.587,
-        heroScale: 1.05,        // canvas alto + bottle 100% canvas
-        label: "PART A",
+        slug: "linea-elite",
+        nombre: "LÍNEA ELITE",
+        linea: "ELITE",
+        route: "/linea-elite",
+        bgColor: "#1F1A14",       // charcoal warm premium
+        accentColor: "#D9A86A",   // gold/orange Elite
+        aspect: 1.0,              // hero 1200x1200
+        heroScale: 0.95,
+        label: "ELITE",
         layers: {
-            base: "/img/slider-spylt/race-violeta-a/base.png",
-            hero: "/img/slider-spylt/race-violeta-a/hero.png",
-            wheels: [
-                "/img/slider-spylt/race-violeta-a/rueda-1.png",
-                "/img/slider-spylt/race-violeta-a/rueda-2.png",
-                "/img/slider-spylt/race-violeta-a/rueda-3.png",
-                "/img/slider-spylt/race-violeta-a/rueda-4.png",
-            ],
+            hero: "/img/slider-spylt/linea-elite/hero.png",
         },
     },
+
+    // ─── 05 · DAY 0 ────────────────────────────────────────────────
+    // 2 botellitas amarillas — finalizador de cosecha.
     {
-        slug: "race-violeta-b",
-        nombre: "RACE VIOLETA · PART B",
-        linea: "RACE",
-        route: "/linea-race",
-        bgColor: "#6B3BAF",
-        accentColor: "#B49AE0",
-        aspect: 1.298,
-        heroScale: 1.02,        // card casi cuadrado, bottle ya grande
-        label: "PART B",
+        slug: "day-0",
+        nombre: "DAY 0",
+        linea: "FINISHER",
+        route: "/day-0",
+        bgColor: "#F4D03F",       // amarillo Day-0
+        accentColor: "#FBE89C",
+        aspect: 1.0,
+        heroScale: 0.92,
+        label: "DAY 0",
         layers: {
-            base: "/img/slider-spylt/race-violeta-b/base.png",
-            hero: "/img/slider-spylt/race-violeta-b/hero.png",
-            wheels: [
-                "/img/slider-spylt/race-violeta-b/rueda-1.png",
-                "/img/slider-spylt/race-violeta-b/rueda-2.png",
-                "/img/slider-spylt/race-violeta-b/rueda-3.png",
-                "/img/slider-spylt/race-violeta-b/rueda-4.png",
-            ],
+            hero: "/img/slider-spylt/day-0/hero.png",
         },
     },
 ];

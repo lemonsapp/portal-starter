@@ -138,15 +138,17 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                         <div class="psl__card" data-psl-card>
                             <span class="psl__card-shadow" aria-hidden="true"></span>
 
-                            <img
-                                class="psl__layer psl__layer--base"
-                                src={p.layers.base}
-                                alt=""
-                                aria-hidden="true"
-                                data-psl-base
-                                draggable="false"
-                                loading={i === 0 ? "eager" : "lazy"}
-                            />
+                            {p.layers.base && (
+                                <img
+                                    class="psl__layer psl__layer--base"
+                                    src={p.layers.base}
+                                    alt=""
+                                    aria-hidden="true"
+                                    data-psl-base
+                                    draggable="false"
+                                    loading={i === 0 ? "eager" : "lazy"}
+                                />
+                            )}
 
                             {wheels.map((w, k) => (
                                 <img

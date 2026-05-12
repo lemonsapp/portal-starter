@@ -2360,9 +2360,12 @@ button {
     border-radius: clamp(28px, 3.4vw, 52px);
     /* Visible para que el hero PNG explote por encima de los bordes
        (SPYLT-pure: layers que protruyen del frame). El base.png tiene
-       border-radius propia via .psl__layer--base. */
+       border-radius propia via .psl__layer--base.
+       Si el panel NO declara base.png (los 5 panels nuevos del catálogo:
+       Bioestimulante / Linea Pro / Linea Race / Linea Elite / Day 0),
+       el bgColor del panel se ve directamente como fondo del card. */
     overflow: visible;
-    background: transparent;
+    background: var(--psl-bg, transparent);
     isolation: isolate;
     will-change: transform;
     /* Halo sutil debajo del card que sigue al --psl-bg → da profundidad
