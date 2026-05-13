@@ -491,36 +491,24 @@ function initProductSlider() {
                         }
 
                         // ============================================
-                        // SMOOTH PANEL TRANSITION — cross-fade de cada
-                        // panel silhouette + scale del card según
-                        // distancia al center. Suaviza el "border"
-                        // visual entre paneles durante el horizontal
-                        // scroll (skill: gsap-performance).
+                        // SMOOTH PANEL TRANSITION — escribimos un CSS
+                        // var --sil-focus per panel (0..1 factor según
+                        // distancia al active). El CSS de la silhouette
+                        // multiplica por --sil-base default (0.85 para
+                        // panels normales, 1 para PRO/BIO/DAY 0 con
+                        // fondo wide). Esto preserva el opacity base de
+                        // cada panel y NO conflicta con transforms gsap.
+                        // skill: gsap-performance (single CSS var write).
                         // ============================================
+                        const continuousIdx = self.progress * segments;
                         panels.forEach((p, i) => {
-                            // Distancia del panel i al "active" (continuo, no
-                            // round). distFloat: 0 cuando i es el active continuo,
-                            // 1 cuando está 1 panel apartado, etc.
-                            const continuousIdx = self.progress * segments;
                             const distFloat = Math.abs(i - continuousIdx);
                             const distNorm = Math.min(1, distFloat);
-                            // Opacity de la silueta: 1 en center, 0.35 a 1 de
-                            // distancia → el panel adyacente aún se ve sutil
-                            // pero el active es protagónico.
-                            const sil = p.querySelector(".psl__panel-silhouette");
-                            if (sil) {
-                                sil.style.opacity = String(1 - distNorm * 0.5);
-                            }
-                            // Scale + opacity del card mismo: active en
-                            // scale 1, edges 0.92 + leve fade. Da efecto
-                            // de "focus" / depth.
-                            const cardEl = p.querySelector("[data-psl-card]");
-                            if (cardEl) {
-                                const scale = 1 - distNorm * 0.06;
-                                const alpha = 1 - distNorm * 0.18;
-                                cardEl.style.transform =
-                                    `translateY(-50%) scale(${scale.toFixed(3)})`;
-                                cardEl.style.opacity = alpha.toFixed(3);
+                            const focus = (1 - distNorm * 0.45).toFixed(3);
+                            // Throttle: solo escribir si cambia
+                            if (p.dataset.sf !== focus) {
+                                p.style.setProperty("--sil-focus", focus);
+                                p.dataset.sf = focus;
                             }
                         });
                     },

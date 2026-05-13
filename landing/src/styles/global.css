@@ -2329,18 +2329,19 @@ button {
     z-index: 0;
     pointer-events: none;
     user-select: none;
-    /* Opacidad moderada — la silueta es decorativa, no protagónica.
-       Mezcla con multiply para que se sienta "pintada sobre" el bg. */
     mix-blend-mode: normal;
-    opacity: 0.85;
+    /* opacity = base × focus. base per panel (CSS abajo).
+       focus 0..1 dynamic via JS scroll-driven. */
+    --sil-base: 0.85;
+    opacity: calc(var(--sil-base, 0.85) * var(--sil-focus, 1));
+    transition: opacity 0.18s ease;
 }
 /* PRO, BIO y DAY 0 usan imágenes Fondo.png del cliente como silhouette
-   (fondo completo del panel, no motif decorativo). opacity 1 →
-   la imagen domina sin mezclarse con el pastel del section bg. */
+   (fondo completo, no motif decorativo). base 1 → la imagen domina. */
 .psl__panel[data-slug="linea-pro"] .psl__panel-silhouette,
 .psl__panel[data-slug="bioestimulante"] .psl__panel-silhouette,
 .psl__panel[data-slug="day-0"] .psl__panel-silhouette {
-    opacity: 1;
+    --sil-base: 1;
 }
 
 /* Para los 5 panels nuevos del catálogo (Bio/Pro/Race/Elite/Day-0):
