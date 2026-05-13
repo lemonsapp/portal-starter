@@ -5439,6 +5439,51 @@ html.is-loading body {
 }
 .pdd__pullquote-word { display: inline-block; will-change: transform, opacity; }
 
+/* ---------- ELEMENTO BOTÁNICO DECORATIVO ----------
+   Motivo realista (hojas/raíces/brotes/flores del pack Elementos/Linea PRO)
+   posicionado a IZQ + DER del pullquote para enmarcar la cita. Tamaño
+   moderado (no domina), opacity 0.55 + slight blur → se siente como
+   "fondo orgánico" sin pisar el texto. */
+.pdd__elemento {
+    position: absolute;
+    top: 50%;
+    width: clamp(140px, 18vw, 280px);
+    height: auto;
+    transform: translateY(-50%);
+    opacity: 0.55;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.08));
+    will-change: transform, opacity;
+}
+.pdd__elemento--left {
+    left: clamp(-40px, -2vw, 0);
+    transform: translateY(-50%) rotate(-8deg);
+}
+.pdd__elemento--right {
+    right: clamp(-40px, -2vw, 0);
+    transform: translateY(-50%) rotate(8deg) scaleX(-1);
+}
+.pdd__pullquote-text {
+    position: relative;
+    z-index: 1;
+}
+
+/* Mobile: solo uno (derecho) más chico + ajusta opacity para legibilidad */
+@media (max-width: 700px) {
+    .pdd__elemento--left { display: none; }
+    .pdd__elemento--right {
+        width: clamp(100px, 28vw, 180px);
+        opacity: 0.4;
+        right: -20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pdd__elemento { will-change: auto; }
+}
+
 /* ---------- 8) TECH SPECS ---------- */
 .pdd__specs {
     position: relative;

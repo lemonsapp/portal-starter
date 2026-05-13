@@ -44,6 +44,20 @@ const HIGHLIGHT_EYEBROW = {
 };
 const highlightEyebrow = HIGHLIGHT_EYEBROW[cap.slug] || "BACKSTAGE";
 
+// Elemento botánico decorativo (motivo realista) por producto. Las 4 imágenes
+// de IMAGENES-HOLISTIC/Elementos/Linea PRO mapean al stage del cultivo cuyo
+// color/temática matchea el producto. Va como decorativo del pullquote +
+// system sections (sin tapar contenido — opacity baja + position flotante).
+const ELEMENTO_BY_SLUG = {
+    "linea-pro":       "/img/elementos/vegetativo.png",  // hojas verdes (match brand)
+    "linea-race":      "/img/elementos/enraizante.png",  // raíces violeta (match Race)
+    "linea-elite":     "/img/elementos/preflora.png",    // brotes marrón premium
+    "bio-estimulante": "/img/elementos/floracion.png",   // flores pastel suaves
+    "day-0":           "/img/elementos/floracion.png",   // flores → cosecha cierre
+    "cloner":          "/img/elementos/enraizante.png",  // raíces (concepto clonar)
+};
+const elemento = ELEMENTO_BY_SLUG[cap.slug] || null;
+
 // Fallback: si no hay detalle definido, generamos contenido mínimo desde cap.
 const d = detail || {
     hero: {
@@ -364,12 +378,34 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
 
     {d.pullquote && (
         <!-- ============================================================
-             7) PULLQUOTE
+             7) PULLQUOTE — con elemento botánico decorativo por color.
              ============================================================ -->
         <section class="pdd__pullquote" data-pdd-pullquote>
+            {elemento && (
+                <img
+                    class="pdd__elemento pdd__elemento--left"
+                    src={elemento}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    data-pdd-elemento
+                    data-pdd-elemento-side="left"
+                />
+            )}
             <blockquote class="pdd__pullquote-text" data-pdd-pullquote-text>
                 <span class="pdd__pullquote-mark">&ldquo;</span>{d.pullquote}<span class="pdd__pullquote-mark">&rdquo;</span>
             </blockquote>
+            {elemento && (
+                <img
+                    class="pdd__elemento pdd__elemento--right"
+                    src={elemento}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    data-pdd-elemento
+                    data-pdd-elemento-side="right"
+                />
+            )}
         </section>
     )}
 
