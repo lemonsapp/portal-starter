@@ -40,8 +40,11 @@ export const panels = [
         nombre: "BIOESTIMULANTE",
         linea: "HOLISTIC",
         route: "/bio-estimulante",
-        bgColor: "#B8A4D9",       // lila pastel
-        accentColor: "#E5DCF0",   // lila más claro para section bg
+        // Colores derivados del dominante real del base.png Enraizante
+        // (sampled #f37abf hot pink). bgColor = saturated del redondelito,
+        // accentColor = section bg pastel light matched al redondelito.
+        bgColor: "#f37abf",       // hot pink saturated del redondelito
+        accentColor: "#fbd9ed",   // pastel pink claro para section bg
         aspect: 2.27,             // matchea base.png Enraizante (hot pink leaves)
         heroScale: 1.30,          // canvas wide del base → packshot necesita scale mayor
         label: "BIO",
@@ -60,8 +63,8 @@ export const panels = [
         nombre: "LÍNEA PRO",
         linea: "PRO",
         route: "/linea-pro",
-        bgColor: "#2E8F6E",       // verde Holistic
-        accentColor: "#C7F0DD",
+        bgColor: "#34ad63",       // verde Holistic saturated del base.png Vegetativo
+        accentColor: "#c6e8d3",   // pastel verde claro section bg
         aspect: 2.28,             // matchea base.png Vegetativo (verde leaves)
         heroScale: 1.25,          // packshot 4 potes ya es wide
         label: "PRO",
@@ -80,8 +83,8 @@ export const panels = [
         nombre: "LÍNEA RACE",
         linea: "RACE",
         route: "/linea-race",
-        bgColor: "#6B3BAF",       // violeta Race (color líder del set)
-        accentColor: "#B49AE0",
+        bgColor: "#c078e5",       // violeta del base.png Race Violeta Parte A
+        accentColor: "#edd9f7",   // pastel lila claro section bg
         aspect: 1.59,             // matchea base.png Race Violeta Parte A
         heroScale: 1.10,
         label: "RACE",
@@ -100,8 +103,8 @@ export const panels = [
         nombre: "LÍNEA ELITE",
         linea: "ELITE",
         route: "/linea-elite",
-        bgColor: "#1F1A14",       // charcoal warm premium
-        accentColor: "#D9A86A",   // gold/orange Elite
+        bgColor: "#bd6ee6",       // violeta del base.png Race Violeta Parte B
+        accentColor: "#ecd6f8",   // pastel lila claro section bg
         aspect: 1.30,             // matchea base.png Race Violeta Parte B (darker)
         heroScale: 1.05,
         label: "ELITE",
@@ -119,8 +122,8 @@ export const panels = [
         nombre: "DAY 0",
         linea: "FINISHER",
         route: "/day-0",
-        bgColor: "#F4D03F",       // amarillo Day-0
-        accentColor: "#FBE89C",
+        bgColor: "#d2d5db",       // gris-lila del base.png Floración (matched)
+        accentColor: "#f2f3f4",   // pastel claro section bg
         aspect: 2.28,             // matchea base.png Floración
         heroScale: 1.25,
         label: "DAY 0",

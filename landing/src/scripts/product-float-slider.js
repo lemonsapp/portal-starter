@@ -56,10 +56,22 @@ function initProductSlider() {
     });
     // Interpolators precomputados — gsap.utils.interpolate(c1, c2) devuelve
     // una function(t) → color string. Fuerza muy poca; vale precomputar.
+    // Necesitamos DOS sets: uno para el section bg pastel (accent) y otro
+    // para el bg saturado del redondelito que también afecta mark+dot
+    // (sino el badge cambia abrupt al pasar de panel a panel).
     const accentInterps = panelAccents.map((c, i) => {
         const next = panelAccents[Math.min(i + 1, total - 1)];
         return gsap.utils.interpolate(c, next);
     });
+    const bgInterps = panelBgs.map((c, i) => {
+        const next = panelBgs[Math.min(i + 1, total - 1)];
+        return gsap.utils.interpolate(c, next);
+    });
+
+    // Ease function aplicada al segT antes de interp — suaviza el cambio
+    // de fondo (no lineal entre paneles). power2.inOut da el sweet spot:
+    // arranque lento, mid rápido, end lento → siente "natural".
+    const segEase = gsap.parseEase("power2.inOut");
     // Set inicial del section bg al accent del primer panel.
     if (root) root.style.setProperty("--psl-section-bg", panelAccents[0]);
 
@@ -393,21 +405,26 @@ function initProductSlider() {
                         panels.forEach((p, i) => p.classList.toggle("is-active", i === idx));
 
                         // ============================================
-                        // Section bg: interpolación entre accent[segIdx]
-                        // y accent[segIdx+1] según segT.
+                        // Section bg: interpolación SUAVIZADA entre accent[segIdx]
+                        // y accent[segIdx+1] según segT. Aplicamos easing al
+                        // progreso del segmento → cross-fade no lineal,
+                        // arranca y termina suave (efecto velvet).
                         // skill: gsap-utils.interpolate (color tween)
                         // ============================================
+                        const easedT = segEase(segT);
                         const interp = accentInterps[segIdx];
                         if (interp && root) {
-                            root.style.setProperty("--psl-section-bg", interp(segT));
+                            root.style.setProperty("--psl-section-bg", interp(easedT));
                         }
 
-                        // Mark + dot color sync: usa el bg saturado del panel activo
-                        if (editorialMark) {
-                            editorialMark.style.background = panelBgs[idx];
-                        }
-                        if (editorialDot) {
-                            editorialDot.style.background = panelBgs[idx];
+                        // Mark + dot color: interp continuo entre bgs saturados
+                        // (antes saltaba abrupt al rondar idx). Usa el mismo
+                        // easedT para sincronizar con el section bg.
+                        const bgInterp = bgInterps[segIdx];
+                        if (bgInterp) {
+                            const currentBg = bgInterp(easedT);
+                            if (editorialMark) editorialMark.style.background = currentBg;
+                            if (editorialDot)  editorialDot.style.background  = currentBg;
                         }
                     },
                 },
@@ -571,8 +588,20 @@ function initProductSlider() {
                                     ease: "power2.out",
                                 });
                             }
-                            if (editorialMark) editorialMark.style.background = panelBgs[i];
-                            if (editorialDot)  editorialDot.style.background  = panelBgs[i];
+                            // Smooth bg fade del badge mark + dot también
+                            // (en lugar de assignment directo que saltaba abrupt).
+                            if (editorialMark) {
+                                gsap.to(editorialMark, {
+                                    background: panelBgs[i],
+                                    duration: 0.6, ease: "power2.out",
+                                });
+                            }
+                            if (editorialDot) {
+                                gsap.to(editorialDot, {
+                                    background: panelBgs[i],
+                                    duration: 0.6, ease: "power2.out",
+                                });
+                            }
                         }
                     },
                 });
