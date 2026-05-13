@@ -237,31 +237,94 @@ function initProductSlider() {
             });
             if (allChars.length) gsap.set(allChars, { y: 0, autoAlpha: 1 });
         } else {
-            // Editorial chars ya en posición final desde el inicio (no rise).
-            // Solo eyebrow/sub/mark hacen un fade-in suave cuando la sección
-            // entra en viewport — discreto, sin competir con el hero text.
-            gsap.set(allChars, { yPercent: 0, autoAlpha: 1 });
-            gsap.set(editorialEyebrow, { autoAlpha: 0, yPercent: 30 });
+            // ===== CHAR ASSEMBLE SCROLL-LINKED =====
+            // Patrón innovador: cada char inicia DISPERSO con offsets random
+            // (x/y/rotation/scale/blur). El scroll progress del pinWrap mappea
+            // a chars convergiendo a su posición final → "se arman las letras"
+            // mientras el usuario scrollea hacia el slider.
+            //
+            // Skills:
+            //   • gsap-plugins SplitText (chars)
+            //   • gsap-scrolltrigger scrub (scroll-linked progress)
+            //   • gsap-utils.random (per-char dispersión única)
+            //   • gsap-performance (transforms only, will-change, blur filter)
+            //
+            // Estado inicial PER CHAR (cada uno con offset distinto):
+            allChars.forEach((ch) => {
+                gsap.set(ch, {
+                    x: gsap.utils.random(-220, 220),
+                    y: gsap.utils.random(-160, 160),
+                    rotation: gsap.utils.random(-65, 65),
+                    scale: gsap.utils.random(0.35, 0.9),
+                    autoAlpha: 0,
+                    filter: "blur(8px)",
+                    transformOrigin: "50% 50%",
+                    willChange: "transform, opacity, filter",
+                });
+            });
+
+            // Estado inicial de chrome (eyebrow/sub/mark) — coordinado con
+            // el char assemble. Mark con la rotation editorial -1.6deg
+            // pero scale chico + autoAlpha 0.
+            gsap.set(editorialEyebrow, { autoAlpha: 0, yPercent: 40 });
             gsap.set(editorialSub,     { autoAlpha: 0, yPercent: 30 });
             gsap.set(editorialMark, {
                 scaleX: 0.92, scaleY: 0.96, rotation: -1.6,
                 autoAlpha: 0, transformOrigin: "0 50%",
             });
 
-            // Fade-in toggleActions cuando el pinWrap entra al 75% del viewport
-            const tl = gsap.timeline({
-                defaults: { ease: "power3.out" },
+            // Scroll-LINKED scrub timeline: el progreso del pinWrap al
+            // entrar mappea a chars assembling. start "top 90%" → end
+            // "top 25%" (cubre ~65% del viewport en scroll → tiempo
+            // amplio para que el ensamble se sienta y no flashee).
+            const assembleTl = gsap.timeline({
                 scrollTrigger: {
                     trigger: pinWrap,
-                    start: "top 80%",
-                    toggleActions: "play none none reverse",
+                    start: "top 90%",
+                    end:   "top 25%",
+                    scrub: 0.6,            // smooth chase del scroll
+                    invalidateOnRefresh: true,
                 },
             });
-            tl.to(editorialEyebrow, { yPercent: 0, autoAlpha: 1, duration: 0.5 }, 0)
-              .to(editorialMark, { scaleX: 1, scaleY: 1, autoAlpha: 1, duration: 0.55, ease: "explode" }, 0.10)
-              .to(editorialSub, { yPercent: 0, autoAlpha: 1, duration: 0.5 }, 0.15);
 
-            // Idle: respiración sutil del mark
+            // Acto 1 (0..0.20): eyebrow rises in
+            assembleTl.to(editorialEyebrow, {
+                autoAlpha: 1, yPercent: 0,
+                ease: "power2.out", duration: 0.20,
+            }, 0);
+
+            // Acto 2 (0.10..0.85): chars ENSAMBLAN — cada uno desde su
+            // posición random a la final, con stagger from "random" para
+            // que se acomoden en orden caótico (no izq→der lineal).
+            //   • duration grande (0.75 del scrub range) → smooth
+            //   • stagger 0.02 from:random → caos organizado
+            //   • ease back.out(1.6) → snap satisfactorio al landing
+            assembleTl.to(allChars, {
+                x: 0, y: 0, rotation: 0, scale: 1,
+                autoAlpha: 1,
+                filter: "blur(0px)",
+                duration: 0.75,
+                stagger: { each: 0.02, from: "random" },
+                ease: "back.out(1.6)",
+            }, 0.10);
+
+            // Acto 3 (0.65..0.90): mark se "imprime" con explode + rotation
+            // ligero — pop final que cierra el ensamble.
+            assembleTl.to(editorialMark, {
+                scaleX: 1, scaleY: 1, rotation: -1.6,
+                autoAlpha: 1,
+                duration: 0.25,
+                ease: "explode",
+            }, 0.65);
+
+            // Acto 4 (0.80..1.00): sub fade-in (último, contextual)
+            assembleTl.to(editorialSub, {
+                autoAlpha: 1, yPercent: 0,
+                duration: 0.20,
+                ease: "power2.out",
+            }, 0.80);
+
+            // Idle: respiración sutil del mark POST-assemble (no afecta scrub)
             gsap.to(editorialMark, {
                 scale: 1.018,
                 duration: 2.8,

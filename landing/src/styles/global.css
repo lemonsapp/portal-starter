@@ -2212,8 +2212,10 @@ button {
        pointer-events: auto requerido para que mousemove dispare. */
     isolation: isolate;
     /* Bumped width + reduced top/eyebrow gap → texto más grande cubre
-       más del blanco a la izquierda del card del slider. */
-    width: clamp(380px, 52vw, 780px);
+       más del blanco a la izquierda del card del slider.
+       Ahora con 4 líneas (ESTOS SON / NUESTROS 5 / PRODUCTOS / ESTRELLA)
+       width amplía un poco para acomodar palabras más largas. */
+    width: clamp(420px, 56vw, 860px);
     pointer-events: auto;
     color: #1a1a1a;
     cursor: default;
@@ -2243,11 +2245,13 @@ button {
     margin: 0;
     font-family: var(--f-title);
     font-weight: 900;
-    line-height: 0.92;
-    letter-spacing: -0.04em;
-    /* Significativamente más grande para cubrir el blanco a la izquierda
-       del card. clamp pasa de (2.4-5.6) a (3.2-7.5) — ~30% más grande. */
-    font-size: clamp(3.2rem, 7.4vw, 7.5rem);
+    line-height: 0.88;
+    letter-spacing: -0.045em;
+    /* 4 líneas (ESTOS SON / NUESTROS 5 / PRODUCTOS / ESTRELLA) —
+       font-size bumpeado para llenar más visualmente el costado izq.
+       clamp (3.6 - 8.2vw - 8.4rem) → ~12% más grande que la versión
+       anterior de 3 líneas. */
+    font-size: clamp(3.6rem, 8.2vw, 8.4rem);
     text-transform: uppercase;
     color: #1a1a1a;
     position: relative;
