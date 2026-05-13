@@ -9,6 +9,7 @@ import ProductFloatSlider from "../components/ProductFloatSlider.astro";
 import ChapterSection from "../components/ChapterSection.astro";
 import VineDivider from "../components/VineDivider.astro";
 import HumanSupport from "../components/HumanSupport.astro";
+import OrganicConnector from "../components/OrganicConnector.astro";
 import FinalCTA from "../components/FinalCTA.astro";
 import { capitulos } from "../data/capitulos.js";
 
@@ -48,6 +49,11 @@ const dividers = [
          debajo del hero. Antes estaba más abajo; el user pidió subirla
          para que sea lo primero post-video. -->
     <HumanSupport />
+
+    <!-- CONECTOR ORGÁNICO — sistema de raíces growing scroll-driven que
+         visualiza "el asesoramiento humano nutre los productos como las
+         raíces nutren la planta". GSAP + DrawSVG + MotionPath. -->
+    <OrganicConnector />
 
     <!-- 5 productos: pin horizontal SPYLT.
          showWelcome={false} oculta el welcome interno del slider:
