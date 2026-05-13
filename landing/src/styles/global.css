@@ -3841,10 +3841,16 @@ html.is-loading body {
     text-transform: uppercase;
     margin: 4px 0 12px;
     max-width: 18ch;
+    /* Evita roturas en medio de palabras cuando SplitText las divide
+       en char spans (cada char es un inline-element que el browser
+       podría usar como break point natural). */
+    overflow-wrap: normal;
+    word-break: keep-all;
 }
 
 .human-support__title .line {
     display: inline;
+    white-space: nowrap;          /* cada línea es una palabra/frase indivisible */
 }
 
 .human-support__title .line--em {
@@ -4033,6 +4039,12 @@ html.is-loading body {
     .human-support { padding: 14vh 0 12vh; }
     .human-support__milestones { grid-template-columns: 1fr; gap: 16px; }
     .milestone { padding-top: 56px; }
+    /* Title más chico en mobile para que "PERSONALIZADOS." (15 chars)
+       quepa en una línea con white-space:nowrap del .line. */
+    .human-support__title {
+        font-size: clamp(1.85rem, 8.4vw, 3rem);
+        max-width: 100%;
+    }
 }
 
 /* =====================================================================

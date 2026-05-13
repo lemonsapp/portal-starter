@@ -1,9 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Loader from "../components/Loader.astro";
 import VideoHero from "../components/VideoHero.astro";
 import ProductsHero from "../components/ProductsHero.astro";
-import BrandManifest from "../components/BrandManifest.astro";
 import Marquee from "../components/Marquee.astro";
 import LiquidPour from "../components/LiquidPour.astro";
 import EaseOfUse from "../components/EaseOfUse.astro";
@@ -30,27 +28,37 @@ const dividers = [
     description="Holistic Growshop: sistema completo de fertilizantes para cultivo indoor. Línea Pro, Línea Elite, Línea Race y Bio Estimulante. pH estable, ciclo completo, resultados superiores. Envío gratis."
     canonical="/"
 >
-    <Loader />
+    <!-- Reemplazo del Loader.astro removido: marca la página como
+         is-loaded inmediato + dispara el evento que VideoHero escucha
+         para empezar a reproducir en frame 0. Sin esto, VideoHero
+         esperaría 4.5s al fallback timeout. -->
+    <script is:inline>
+        document.documentElement.classList.add("is-loaded");
+        try {
+            window.dispatchEvent(new CustomEvent("loader:done"));
+        } catch (_) {}
+    </script>
 
     <!-- HERO PRINCIPAL — video cinematográfico (race-clip-04) con
-         partículas + headline editorial, pausa en último frame. -->
+         partículas + headline editorial, pausa en último frame.
+         (Loader/NUTRICIÓN SUPERIOR removido: el video es lo primero.) -->
     <VideoHero />
 
+    <!-- ASESORAMIENTO SIN CARGO — promesa humana inmediatamente
+         debajo del hero. Antes estaba más abajo; el user pidió subirla
+         para que sea lo primero post-video. -->
+    <HumanSupport />
+
     <!-- HERO TEXT — sección text-only ANTES del slider (SPYLT-pure).
-         "TENEMOS 6 PRODUCTOS OBSESIVAMENTE DISEÑADOS." big centered con
+         "TENEMOS 5 PRODUCTOS OBSESIVAMENTE DISEÑADOS." big centered con
          char reveal scroll-driven. Justo después viene el slider con el
          mismo texto acomodado a la izquierda. -->
     <ProductsHero />
 
-    <!-- 6 productos: pin horizontal SPYLT.
+    <!-- 5 productos: pin horizontal SPYLT.
          showWelcome={false} oculta el welcome interno del slider:
          ya tenemos el VideoHero arriba como intro cinemática. -->
     <ProductFloatSlider showWelcome={false} />
-
-    <!-- MANIFIESTO HOLISTIC — reemplazó al hero antiguo "Nutrición Superior" -->
-    <BrandManifest />
-
-    <HumanSupport />
 
     <Marquee variant="dark" />
 
