@@ -5913,6 +5913,138 @@ html.is-loading body {
     --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* =====================================================================
+   MOBILE SWEEP — ajustes responsive coordinados para que toda la
+   landing se vea bien en pantallas pequeñas. Cubre slider, hero,
+   editorial, hotspots touch UX y safety nets generales.
+   ===================================================================== */
+
+/* --- SLIDER PRODUCTOS · MOBILE --- */
+@media (max-width: 900px) {
+    /* Editorial: font más chico, line-height más compacto */
+    .psl__editorial-h {
+        font-size: clamp(2.4rem, 9vw, 4.5rem);
+        line-height: 0.9;
+        letter-spacing: -0.03em;
+    }
+    .psl__editorial-eyebrow { font-size: 0.72rem; }
+    .psl__editorial-sub {
+        font-size: clamp(0.92rem, 2.6vw, 1.1rem);
+        max-width: 100%;
+    }
+    .psl__editorial { width: 100%; padding: 0 16px; }
+    /* Card: ya tiene 92vw — limit max-height para no dominar el viewport */
+    .psl__card {
+        max-height: 60vh;
+        aspect-ratio: var(--psl-aspect, 1.5) / 1;
+    }
+    /* HUD bottom + counter: centrado, más compacto */
+    .psl__hud {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        padding: 0 16px;
+    }
+}
+@media (max-width: 600px) {
+    /* Stack más compacto en mobile pequeño */
+    .psl__editorial-h { font-size: clamp(2rem, 11vw, 3.4rem); }
+    .psl__editorial { padding: 0 14px; }
+    /* Hotspot tap-feedback (no hover en touch). Pulsamos el hotspot
+       y vemos un breve glow + scale acknowledge antes del swap. */
+    .psl__hotspot:active {
+        opacity: 1 !important;
+        transform: scale(0.97);
+        transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    /* En touch screens NO usamos hover-glow — el tap dispara swap directo */
+    @media (hover: none) {
+        .psl__hotspot {
+            background: transparent !important;
+            mix-blend-mode: normal !important;
+            opacity: 0 !important;
+        }
+        .psl__hotspot:active {
+            background: radial-gradient(ellipse 65% 75% at 50% 60%,
+                color-mix(in srgb, var(--hs-accent, #fff) 60%, transparent) 0%,
+                transparent 78%) !important;
+            mix-blend-mode: screen !important;
+            opacity: 0.9 !important;
+        }
+    }
+    /* Card más compacto en mobile pequeño */
+    .psl__card { max-height: 52vh; width: 94vw; }
+}
+
+/* --- PRODUCTS HERO · MOBILE --- */
+@media (max-width: 700px) {
+    .psh__h {
+        font-size: clamp(2.4rem, 11vw, 4.2rem);
+        line-height: 0.96;
+    }
+    .psh__editorial { padding: 0 18px; }
+    .psh__sub {
+        font-size: clamp(0.95rem, 3vw, 1.1rem);
+        margin-top: 18px;
+    }
+    .psh__connector { display: none; }
+}
+
+/* --- VIDEO HERO · MOBILE --- */
+@media (max-width: 700px) {
+    .vh__display { font-size: clamp(2.4rem, 14vw, 4.5rem); }
+    .vh__display-line--em { font-size: clamp(2rem, 11vw, 3.6rem); }
+    .vh__claim {
+        font-size: clamp(0.92rem, 2.8vw, 1.1rem);
+        margin: 12px 0 18px;
+    }
+    .vh__kicker { font-size: 0.66rem; }
+    .vh__band { padding: 0 16px; font-size: 0.62rem; }
+    .vh__stage {
+        left: 18px; right: 18px;
+        bottom: clamp(70px, 14vh, 140px);
+    }
+}
+
+/* --- HEADER NAV · MOBILE --- */
+@media (max-width: 720px) {
+    .header__nav {
+        display: none;  /* navegación oculta en pantallas chicas */
+    }
+    .header__inner {
+        justify-content: space-between;
+        gap: 16px;
+    }
+    .header__icons {
+        gap: 8px;
+    }
+    .header__socios-cta__inner {
+        padding: 8px 14px !important;
+    }
+    .header__socios-cta__label { font-size: 0.66rem !important; }
+}
+
+/* --- HOTSPOTS TOUCH SAFETY --- */
+/* En cualquier viewport touch, evitamos el delay de los 300ms de tap */
+@media (hover: none) {
+    .psl__hotspot {
+        touch-action: manipulation;
+    }
+}
+
+/* --- GENERAL MOBILE SAFETY --- */
+@media (max-width: 900px) {
+    /* Imágenes never larger than container — evita overflows */
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+    /* Touch-friendly tap target — mínimo 44px botones */
+    button, a {
+        min-height: 32px;
+    }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
