@@ -199,25 +199,60 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                                 POPUP MOCKUP (estilo ventana de chat de juego)
                                 que vive fuera del card. El packshot unificado
                                 NUNCA cambia. */}
-                            {p.subProducts && p.subProducts.map((sub) => (
-                                <button
-                                    type="button"
-                                    class="psl__hotspot"
-                                    data-psl-hotspot
-                                    data-panel-slug={p.slug}
-                                    data-sub-slug={sub.slug}
-                                    data-sub-base={sub.base}
-                                    data-sub-pote={sub.pote}
-                                    data-sub-texto={sub.texto || ""}
-                                    data-sub-nombre={sub.nombre}
-                                    data-sub-tagline={sub.tagline || ""}
-                                    data-sub-accent={sub.accentColor || ""}
-                                    data-panel-nombre={p.nombre}
-                                    style={`--hs-x: ${sub.hotspot.x}%; --hs-y: ${sub.hotspot.y}%; --hs-w: ${sub.hotspot.w}%; --hs-h: ${sub.hotspot.h}%;`}
-                                    aria-label={`Ver ${sub.nombre}`}
-                                    data-cursor="hover"
-                                ></button>
-                            ))}
+                            {p.subProducts && (
+                                <>
+                                    {/* Sub-layers: TODO el redondelito cambia al click
+                                        de un hotspot al packshot individual del producto.
+                                        Layers stackeados sobre el unificado (z mayor),
+                                        con autoAlpha 0 inicial. Click hace cross-fade
+                                        del unificado al individual con GSAP timeline. */}
+                                    <img
+                                        class="psl__layer psl__layer--sub-base"
+                                        data-psl-sub-base
+                                        alt="" aria-hidden="true"
+                                        draggable="false" loading="lazy"
+                                    />
+                                    <img
+                                        class="psl__layer psl__layer--sub-wheels"
+                                        data-psl-sub-wheels
+                                        alt="" aria-hidden="true"
+                                        draggable="false" loading="lazy"
+                                    />
+                                    <img
+                                        class="psl__layer psl__layer--sub-pote"
+                                        data-psl-sub-pote
+                                        alt="" data-psl-hero-alt
+                                        draggable="false" loading="lazy"
+                                    />
+                                    <img
+                                        class="psl__layer psl__layer--sub-texto"
+                                        data-psl-sub-texto
+                                        alt="" aria-hidden="true"
+                                        draggable="false" loading="lazy"
+                                    />
+                                    {/* Hotspots clickeables — outline invisible. Cursor
+                                        pointer + label sutil al hover indica clickable.
+                                        Click → swap del redondelito. */}
+                                    {p.subProducts.map((sub) => (
+                                        <button
+                                            type="button"
+                                            class="psl__hotspot"
+                                            data-psl-hotspot
+                                            data-panel-slug={p.slug}
+                                            data-sub-slug={sub.slug}
+                                            data-sub-base={sub.base}
+                                            data-sub-pote={sub.pote}
+                                            data-sub-ruedas={sub.ruedas || ""}
+                                            data-sub-texto={sub.texto || ""}
+                                            data-sub-nombre={sub.nombre}
+                                            data-sub-accent={sub.accentColor || ""}
+                                            style={`--hs-x: ${sub.hotspot.x}%; --hs-y: ${sub.hotspot.y}%; --hs-w: ${sub.hotspot.w}%; --hs-h: ${sub.hotspot.h}%;`}
+                                            aria-label={`Ver ${sub.nombre}`}
+                                            data-cursor="hover"
+                                        ></button>
+                                    ))}
+                                </>
+                            )}
                         </div>
 
                         <footer class="psl__panel-meta">
@@ -270,26 +305,6 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
         </div>
     </div>
 
-    {/* ============================================================
-        POPUP MINI — mini-redondelito del producto que aparece flotante
-        sobre el pote al hover. Mismo estilo que el card grande del
-        slider (base.png + pote.png + texto.png) pero en tamaño chico.
-        Floats fixed-position con coords pintadas desde JS basadas en
-        getBoundingClientRect del hotspot.
-        Skills: gsap-core (entry tween), gsap-utils, frontend-design.
-        ============================================================ */}
-    <div
-        class="psl-popup"
-        data-psl-popup
-        role="tooltip"
-        aria-hidden="true"
-    >
-        <div class="psl-popup__card" data-psl-popup-card>
-            <img class="psl-popup__base"  data-psl-popup-base  src="" alt="" aria-hidden="true" draggable="false" />
-            <img class="psl-popup__pote"  data-psl-popup-pote  src="" alt="" draggable="false" />
-            <img class="psl-popup__texto" data-psl-popup-texto src="" alt="" aria-hidden="true" draggable="false" />
-        </div>
-    </div>
 </section>
 
 <script>

@@ -692,137 +692,155 @@ if (document.readyState === "loading") {
 }
 
 /* ====================================================================
-   SUB-PRODUCT POPUP MINI — mini-redondelito del producto que aparece
-   flotante ARRIBA del pote al hover. Mismo estilo que el card grande
-   del slider (base + pote + texto stacked) pero en tamaño chico.
-   - Hover en hotspot → popup pop-in con scale + bounce.
-   - Mouse leave → popup pop-out.
-   - Auto-flip arriba/abajo según viewport.
-   - Idle float yoyo sutil.
+   SUB-PRODUCT CLICK-SWAP — al click en un hotspot, TODO el redondelito
+   del card cambia al packshot individual del producto (base + pote +
+   wheels + texto stacked, estilo Ejemplo.png del cliente). Click el
+   mismo otra vez → vuelve al unificado.
+   - GSAP timeline para la swap-in/swap-out animation.
+   - Wheels (solo Race) rotan al entrar (stagger).
+   - Click outside del card también resetea.
    ==================================================================== */
-function initSubProductPopup() {
-    const popup = document.querySelector("[data-psl-popup]");
-    const hotspots = document.querySelectorAll("[data-psl-hotspot]");
-    if (!popup || !hotspots.length) return;
-
-    // gsap viene del import del top del archivo (registerGsap.js).
-    // No usar window.gsap — los imports ESM de Astro no exponen al global.
+function initSubProductSwap() {
+    const cards = document.querySelectorAll("[data-psl-card]");
+    if (!cards.length) return;
     const gsapLib = gsap;
-    const baseEl  = popup.querySelector("[data-psl-popup-base]");
-    const poteEl  = popup.querySelector("[data-psl-popup-pote]");
-    const textoEl = popup.querySelector("[data-psl-popup-texto]");
 
-    let currentSlug = null;
-    let idleTween = null;
+    cards.forEach((card) => {
+        const hotspots = card.querySelectorAll("[data-psl-hotspot]");
+        if (!hotspots.length) return;
 
-    const POPUP_W = 240;
-    const POPUP_H = 200;
-    const GAP = 14;
+        const baseEl   = card.querySelector("[data-psl-sub-base]");
+        const poteEl   = card.querySelector("[data-psl-sub-pote]");
+        const wheelsEl = card.querySelector("[data-psl-sub-wheels]");
+        const textoEl  = card.querySelector("[data-psl-sub-texto]");
+        const heroEl   = card.querySelector("[data-psl-hero]");
+        const baseUnifEl = card.querySelector("[data-psl-base]");
 
-    const positionPopup = (rect) => {
-        const cx = rect.left + rect.width / 2;
-        let x = cx - POPUP_W / 2;
-        let y = rect.top - POPUP_H - GAP;
-        let placement = "top";
-        if (y < 12) {
-            y = rect.bottom + GAP;
-            placement = "bottom";
-        }
-        const maxX = window.innerWidth - POPUP_W - 12;
-        if (x < 12) x = 12;
-        else if (x > maxX) x = maxX;
-        popup.style.left = `${x}px`;
-        popup.style.top = `${y}px`;
-        popup.dataset.placement = placement;
-    };
+        if (!baseEl || !poteEl) return;
 
-    const fillContent = (h) => {
-        baseEl.src  = h.dataset.subBase || "";
-        poteEl.src  = h.dataset.subPote || "";
-        poteEl.alt  = h.dataset.subNombre || "";
-        const texto = h.dataset.subTexto || "";
-        if (texto) {
-            textoEl.src = texto;
-            textoEl.style.display = "";
-        } else {
-            textoEl.removeAttribute("src");
-            textoEl.style.display = "none";
-        }
-        const accent = h.dataset.subAccent || "";
-        if (accent) popup.style.setProperty("--popup-accent", accent);
-    };
+        // Estado inicial: sub-layers invisibles
+        const subLayers = [baseEl, wheelsEl, poteEl, textoEl].filter(Boolean);
+        gsapLib.set(subLayers, { autoAlpha: 0 });
 
-    const openPopup = (h) => {
-        const slug = h.dataset.subSlug;
-        if (currentSlug === slug) {
-            positionPopup(h.getBoundingClientRect());
-            return;
-        }
-        currentSlug = slug;
-        fillContent(h);
-        positionPopup(h.getBoundingClientRect());
-        popup.setAttribute("aria-hidden", "false");
-        popup.dataset.open = "true";
+        let lockedSub = null;
+        let activeTimeline = null;
 
-        if (!gsapLib) return;
-        gsapLib.killTweensOf(popup);
-        if (idleTween) idleTween.kill();
-
-        gsapLib.fromTo(popup,
-            { autoAlpha: 0, scale: 0.55, y: 10 },
-            {
-                autoAlpha: 1, scale: 1, y: 0,
-                duration: 0.45, ease: "back.out(1.8)",
-                onComplete: () => {
-                    idleTween = gsapLib.to(popup, {
-                        y: -3, duration: 2.0,
-                        ease: "sine.inOut",
-                        yoyo: true, repeat: -1,
-                    });
-                },
+        const fillSrcs = (h) => {
+            baseEl.src  = h.dataset.subBase || "";
+            poteEl.src  = h.dataset.subPote || "";
+            poteEl.alt  = h.dataset.subNombre || "";
+            const ruedas = h.dataset.subRuedas || "";
+            if (wheelsEl) {
+                if (ruedas) {
+                    wheelsEl.src = ruedas;
+                    wheelsEl.style.display = "";
+                } else {
+                    wheelsEl.removeAttribute("src");
+                    wheelsEl.style.display = "none";
+                }
             }
-        );
-    };
+            if (textoEl) {
+                const t = h.dataset.subTexto || "";
+                if (t) {
+                    textoEl.src = t;
+                    textoEl.style.display = "";
+                } else {
+                    textoEl.removeAttribute("src");
+                    textoEl.style.display = "none";
+                }
+            }
+        };
 
-    const closePopup = () => {
-        currentSlug = null;
-        popup.setAttribute("aria-hidden", "true");
-        popup.dataset.open = "false";
-        if (!gsapLib) return;
-        if (idleTween) { idleTween.kill(); idleTween = null; }
-        gsapLib.killTweensOf(popup);
-        gsapLib.to(popup, {
-            autoAlpha: 0, scale: 0.75, y: 6,
-            duration: 0.2, ease: "power3.in",
+        const swapToSub = (h) => {
+            if (activeTimeline) activeTimeline.kill();
+            fillSrcs(h);
+
+            // Marca hotspot activo
+            hotspots.forEach((x) => x.classList.toggle("is-locked", x === h));
+
+            // Timeline: fade-out unificado → fade-in sub layers staggered
+            activeTimeline = gsapLib.timeline();
+
+            // Fase 1: unificado fade-out + scale down
+            activeTimeline.to([heroEl, baseUnifEl].filter(Boolean), {
+                autoAlpha: 0, scale: 0.92,
+                duration: 0.28, ease: "power2.in",
+            }, 0);
+
+            // Fase 2: sub-base fade-in primero (la "tela" detrás)
+            activeTimeline.fromTo(baseEl,
+                { autoAlpha: 0, scale: 1.05 },
+                { autoAlpha: 1, scale: 1, duration: 0.4, ease: "power3.out" },
+                0.18
+            );
+            // Fase 3: wheels (Race) entran rotando desde fuera
+            if (wheelsEl && wheelsEl.getAttribute("src")) {
+                activeTimeline.fromTo(wheelsEl,
+                    { autoAlpha: 0, rotation: -45, scale: 0.7 },
+                    { autoAlpha: 1, rotation: 0, scale: 1,
+                      duration: 0.7, ease: "back.out(1.6)" },
+                    0.3
+                );
+            }
+            // Fase 4: pote entra con scale bounce
+            activeTimeline.fromTo(poteEl,
+                { autoAlpha: 0, scale: 0.75, y: 20 },
+                { autoAlpha: 1, scale: 1, y: 0,
+                  duration: 0.55, ease: "back.out(1.8)" },
+                0.35
+            );
+            // Fase 5: texto slide-in desde arriba
+            if (textoEl && textoEl.getAttribute("src")) {
+                activeTimeline.fromTo(textoEl,
+                    { autoAlpha: 0, y: -16, scale: 0.92 },
+                    { autoAlpha: 1, y: 0, scale: 1,
+                      duration: 0.42, ease: "power3.out" },
+                    0.45
+                );
+            }
+        };
+
+        const resetToUnified = () => {
+            if (activeTimeline) activeTimeline.kill();
+            hotspots.forEach((x) => x.classList.remove("is-locked"));
+
+            activeTimeline = gsapLib.timeline();
+            // Sub layers fade-out + slight shrink
+            activeTimeline.to(subLayers, {
+                autoAlpha: 0,
+                scale: 0.95,
+                duration: 0.28,
+                ease: "power2.in",
+                stagger: 0.04,
+            }, 0);
+            // Unificado fade-in
+            activeTimeline.to([heroEl, baseUnifEl].filter(Boolean), {
+                autoAlpha: 1, scale: 1,
+                duration: 0.5,
+                ease: "power3.out",
+            }, 0.15);
+        };
+
+        hotspots.forEach((h) => {
+            h.addEventListener("click", (e) => {
+                e.preventDefault();
+                const slug = h.dataset.subSlug;
+                if (lockedSub === slug) {
+                    lockedSub = null;
+                    resetToUnified();
+                } else {
+                    lockedSub = slug;
+                    swapToSub(h);
+                }
+            });
         });
-    };
-
-    hotspots.forEach((h) => {
-        h.addEventListener("pointerenter", () => openPopup(h));
-        h.addEventListener("pointerleave", closePopup);
-        h.addEventListener("focus", () => openPopup(h));
-        h.addEventListener("blur", closePopup);
-        h.addEventListener("click", (e) => e.preventDefault());
     });
-
-    let scrollFrame = null;
-    const reposition = () => {
-        if (!currentSlug) return;
-        const activeH = Array.from(hotspots).find(
-            (h) => h.dataset.subSlug === currentSlug
-        );
-        if (activeH) positionPopup(activeH.getBoundingClientRect());
-    };
-    window.addEventListener("scroll", () => {
-        if (scrollFrame) cancelAnimationFrame(scrollFrame);
-        scrollFrame = requestAnimationFrame(reposition);
-    }, { passive: true });
-    window.addEventListener("resize", reposition);
 }
 
 
+
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initSubProductPopup);
+    document.addEventListener("DOMContentLoaded", initSubProductSwap);
 } else {
-    initSubProductPopup();
+    initSubProductSwap();
 }

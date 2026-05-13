@@ -2722,78 +2722,81 @@ button {
 }
 
 /* =====================================================================
-   PSL POPUP MINI — mini-redondelito del producto (base + pote + texto)
-   que aparece flotante arriba del pote al hover. Mismo lenguaje visual
-   que el card grande del slider, en tamaño chico.
+   PSL SUB-LAYERS — al click en un hotspot, TODO el redondelito del card
+   cambia al packshot individual: base + (wheels) + pote + texto stackeados
+   sobre el unificado. Inicial autoAlpha:0; JS controla swap via GSAP TL.
    ===================================================================== */
-.psl-popup {
-    position: fixed;
-    z-index: 9500;
-    width: 240px;
-    aspect-ratio: 1.6 / 1;
-    pointer-events: none;
-    visibility: hidden;
-    opacity: 0;
-    transform-origin: 50% 100%;
-    --popup-accent: #f5e03a;
-    isolation: isolate;
-    will-change: transform, opacity, left, top;
-    /* drop-shadow soft hace de "halo" del card flotando */
-    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.22))
-            drop-shadow(0 6px 12px rgba(0, 0, 0, 0.14));
-}
-.psl-popup[data-placement="bottom"] { transform-origin: 50% 0%; }
-.psl-popup[data-open="true"] { visibility: visible; }
-
-/* Card mini: el rounded rectangle con base.png cover + pote.png contain
-   + texto.png en la parte de arriba. Mismo z-stack que el card grande:
-   base (z:0) → pote (z:2) → texto (z:3). */
-.psl-popup__card {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 18px;
-    overflow: hidden;
-    isolation: isolate;
-    background: var(--popup-accent);
-}
-.psl-popup__base {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+.psl__layer--sub-base {
+    z-index: 30;
     object-fit: cover;
-    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform;
 }
-.psl-popup__pote {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+.psl__layer--sub-wheels {
+    z-index: 35;
+    object-fit: contain;
+    object-position: center;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform-origin: center;
+    will-change: opacity, transform;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.28));
+}
+.psl__layer--sub-pote {
+    z-index: 40;
     object-fit: contain;
     object-position: center 60%;
-    z-index: 2;
-    transform: scale(1.15);
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.32));
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(var(--psl-hero-scale, 1.22));
+    transform-origin: center 55%;
+    filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.22))
+            drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));
+    will-change: opacity, transform;
 }
-.psl-popup__texto {
-    position: absolute;
-    top: 8%;
-    left: 10%;
-    right: 10%;
-    width: 80%;
-    height: 22%;
+.psl__layer--sub-texto {
+    z-index: 50;
     object-fit: contain;
     object-position: center top;
-    z-index: 3;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    height: 22%;
+    top: 6%;
+    left: 8%;
+    right: 8%;
+    width: 84%;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    will-change: opacity, transform;
 }
 
-@media (max-width: 700px) {
-    .psl-popup { width: 200px; }
+/* Hotspot activo (locked) — sutil indicator visual (sin frame rectangle).
+   Pequeña barra negra centrada bottom indicando que ESE producto está
+   showing individual. */
+.psl__hotspot.is-locked::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 4%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 2px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
 }
+
 @media (prefers-reduced-motion: reduce) {
-    .psl-popup { transition: none !important; }
+    .psl__layer--sub-base,
+    .psl__layer--sub-wheels,
+    .psl__layer--sub-pote,
+    .psl__layer--sub-texto { transition: none !important; }
 }
 
 /* =====================================================================
