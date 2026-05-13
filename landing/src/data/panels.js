@@ -122,9 +122,12 @@ export const panels = [
         nombre: "DAY 0",
         linea: "FINISHER",
         route: "/day-0",
-        bgColor: "#d2d5db",       // gris-lila del base.png Floración (matched)
-        accentColor: "#f2f3f4",   // pastel claro section bg
-        aspect: 2.28,             // matchea base.png Floración
+        // Reusa el mismo base.png del Bio (hot pink Enraizante) por
+        // pedido del cliente — el último redondel queda con la misma
+        // identidad visual que el primero (cohesión arranque/cierre).
+        bgColor: "#f37abf",       // hot pink saturated (mismo que Bio)
+        accentColor: "#fbd9ed",   // pastel pink claro section bg
+        aspect: 2.27,             // mismo aspect del base Enraizante
         heroScale: 1.25,
         label: "DAY 0",
         layers: {
