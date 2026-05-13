@@ -73,6 +73,49 @@ export const panels = [
             hero: "/img/slider-spylt/linea-pro/hero.png",
             silhouette: "/img/slider-spylt/linea-pro/silhouette.png",
         },
+        // Sub-productos: 4 stages del ciclo. Cada uno tiene su packshot
+        // individual + base decorativo. Hotspots posicionados sobre la
+        // hero.png unificada (4 potes horizontales): cada uno ocupa
+        // aprox 25% del ancho, centrado verticalmente sobre el pote.
+        // Orden del packshot real: Enraizante / Vegetativo / Pre-Flora / Floración
+        subProducts: [
+            {
+                slug: "enraizante",
+                nombre: "ENRAIZANTE",
+                tagline: "Para esquejes",
+                base: "/img/slider-spylt/linea-pro/sub/enraizante/base.png",
+                pote: "/img/slider-spylt/linea-pro/sub/enraizante/pote.png",
+                accentColor: "#f3c2de",
+                hotspot: { x: 2, y: 8, w: 23, h: 84 },
+            },
+            {
+                slug: "vegetativo",
+                nombre: "VEGETATIVO",
+                tagline: "Crecimiento vigoroso",
+                base: "/img/slider-spylt/linea-pro/sub/vegetativo/base.png",
+                pote: "/img/slider-spylt/linea-pro/sub/vegetativo/pote.png",
+                accentColor: "#c7f0dd",
+                hotspot: { x: 26, y: 8, w: 23, h: 84 },
+            },
+            {
+                slug: "pre-floracion",
+                nombre: "PRE-FLORACIÓN",
+                tagline: "Transición",
+                base: "/img/slider-spylt/linea-pro/sub/pre-floracion/base.png",
+                pote: "/img/slider-spylt/linea-pro/sub/pre-floracion/pote.png",
+                accentColor: "#f0a7b1",
+                hotspot: { x: 50, y: 8, w: 23, h: 84 },
+            },
+            {
+                slug: "floracion",
+                nombre: "FLORACIÓN",
+                tagline: "Etapa final",
+                base: "/img/slider-spylt/linea-pro/sub/floracion/base.png",
+                pote: "/img/slider-spylt/linea-pro/sub/floracion/pote.png",
+                accentColor: "#f7d6dc",
+                hotspot: { x: 74, y: 8, w: 24, h: 84 },
+            },
+        ],
     },
 
     // ─── 03 · LÍNEA RACE ───────────────────────────────────────────
@@ -93,6 +136,56 @@ export const panels = [
             hero: "/img/slider-spylt/linea-race/hero.png",
             silhouette: "/img/slider-spylt/linea-race/silhouette.png",
         },
+        // Sub-productos: 5 bidones de Race en el packshot unificado.
+        // Orden visual del Race Juntos.png: Verde / Celeste / Violeta-A
+        // / Violeta-B / Rosado. Cada hotspot ~19% del ancho.
+        subProducts: [
+            {
+                slug: "verde",
+                nombre: "RACE VERDE",
+                tagline: "Etapa 1",
+                base: "/img/slider-spylt/linea-race/sub/verde/base.png",
+                pote: "/img/slider-spylt/linea-race/sub/verde/bidon.png",
+                accentColor: "#c7f0dd",
+                hotspot: { x: 2, y: 10, w: 18, h: 80 },
+            },
+            {
+                slug: "celeste",
+                nombre: "RACE CELESTE",
+                tagline: "Etapa 2A",
+                base: "/img/slider-spylt/linea-race/sub/celeste/base.png",
+                pote: "/img/slider-spylt/linea-race/sub/celeste/bidon.png",
+                accentColor: "#c8eaf3",
+                hotspot: { x: 21, y: 10, w: 18, h: 80 },
+            },
+            {
+                slug: "violeta-a",
+                nombre: "RACE VIOLETA · A",
+                tagline: "Etapa 3 · Parte A",
+                base: "/img/slider-spylt/linea-race/sub/violeta-a/base.png",
+                pote: "/img/slider-spylt/linea-race/sub/violeta-a/bidon.png",
+                accentColor: "#e4d5f2",
+                hotspot: { x: 40, y: 10, w: 18, h: 80 },
+            },
+            {
+                slug: "violeta-b",
+                nombre: "RACE VIOLETA · B",
+                tagline: "Etapa 3 · Parte B",
+                base: "/img/slider-spylt/linea-race/sub/violeta-b/base.png",
+                pote: "/img/slider-spylt/linea-race/sub/violeta-b/bidon.png",
+                accentColor: "#b49ae0",
+                hotspot: { x: 59, y: 10, w: 18, h: 80 },
+            },
+            {
+                slug: "rosado",
+                nombre: "RACE ROSADO",
+                tagline: "Etapa 4",
+                base: "/img/slider-spylt/linea-race/sub/rosado/base.png",
+                pote: "/img/slider-spylt/linea-race/sub/rosado/bidon.png",
+                accentColor: "#f7d6dc",
+                hotspot: { x: 78, y: 10, w: 20, h: 80 },
+            },
+        ],
     },
 
     // ─── 04 · LÍNEA ELITE ──────────────────────────────────────────
@@ -113,6 +206,29 @@ export const panels = [
             hero: "/img/slider-spylt/linea-elite/hero.png",
             silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
         },
+        // Sub-productos: 2 partes del set Elite (PART 1 + PART 2).
+        // El packshot unificado muestra ambas en horizontal → cada
+        // hotspot ~50% del ancho.
+        subProducts: [
+            {
+                slug: "parte-1",
+                nombre: "ELITE · PART 1",
+                tagline: "Base mineral",
+                base: "/img/slider-spylt/linea-elite/sub/parte-1/base.png",
+                pote: "/img/slider-spylt/linea-elite/sub/parte-1/pote.png",
+                accentColor: "#d9a86a",
+                hotspot: { x: 8, y: 10, w: 40, h: 80 },
+            },
+            {
+                slug: "parte-2",
+                nombre: "ELITE · PART 2",
+                tagline: "Complejo orgánico",
+                base: "/img/slider-spylt/linea-elite/sub/parte-2/base.png",
+                pote: "/img/slider-spylt/linea-elite/sub/parte-2/pote.png",
+                accentColor: "#d9a86a",
+                hotspot: { x: 52, y: 10, w: 40, h: 80 },
+            },
+        ],
     },
 
     // ─── 05 · DAY 0 ────────────────────────────────────────────────

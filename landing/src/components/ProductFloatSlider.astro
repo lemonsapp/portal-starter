@@ -192,6 +192,34 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                                     {p.label}
                                 </span>
                             )}
+
+                            {/* Hotspots clickeables: si el panel tiene subProducts,
+                                renderea overlays invisibles sobre cada sub-producto del
+                                packshot unificado. Al hover muestran outline + nombre;
+                                al click abren el modal individual. */}
+                            {p.subProducts && p.subProducts.map((sub) => (
+                                <button
+                                    type="button"
+                                    class="psl__hotspot"
+                                    data-psl-hotspot
+                                    data-panel-slug={p.slug}
+                                    data-sub-slug={sub.slug}
+                                    style={`--hs-x: ${sub.hotspot.x}%; --hs-y: ${sub.hotspot.y}%; --hs-w: ${sub.hotspot.w}%; --hs-h: ${sub.hotspot.h}%;`}
+                                    aria-label={`Ver ${sub.nombre}`}
+                                >
+                                    <span class="psl__hotspot-frame" aria-hidden="true"></span>
+                                    <span class="psl__hotspot-label">
+                                        <span class="psl__hotspot-label-name">{sub.nombre}</span>
+                                        <span class="psl__hotspot-label-arrow" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" width="14" height="14">
+                                                <path d="M5 12h14M13 6l6 6-6 6"
+                                                      stroke="currentColor" stroke-width="2.4"
+                                                      fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </span>
+                                    </span>
+                                </button>
+                            ))}
                         </div>
 
                         <footer class="psl__panel-meta">
@@ -241,6 +269,59 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                 <span class="psl__hud-hint-icon">↓</span>
                 <span>SCROLL</span>
             </p>
+        </div>
+    </div>
+
+    {/* ============================================================
+        SUB-PRODUCT MODAL — fullscreen overlay que se abre al click
+        de un hotspot. Muestra el sub-producto individual + permite
+        navegar a otros del mismo panel sin cerrar.
+
+        Estructura:
+          • backdrop (clickeable para cerrar)
+          • cuerpo: nombre + tagline + card (base + packshot) + tabs
+            con thumbnails de TODOS los sub-products del panel actual
+          • close X button
+
+        State manejado por JS (data-modal-open, data-active-sub).
+        ============================================================ */}
+    <div
+        class="psl-modal"
+        data-psl-modal
+        role="dialog"
+        aria-modal="true"
+        aria-hidden="true"
+        aria-label="Producto individual"
+    >
+        <button class="psl-modal__backdrop" data-psl-modal-close aria-label="Cerrar"></button>
+
+        <div class="psl-modal__inner" data-psl-modal-inner>
+            <button
+                class="psl-modal__close"
+                data-psl-modal-close
+                aria-label="Cerrar modal"
+                type="button"
+            >
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6l-12 12"
+                          stroke="currentColor" stroke-width="2.4"
+                          fill="none" stroke-linecap="round"/>
+                </svg>
+            </button>
+
+            <p class="psl-modal__panel-eyebrow" data-psl-modal-panel-eyebrow>—</p>
+            <h3 class="psl-modal__name" data-psl-modal-name>—</h3>
+            <p class="psl-modal__tagline" data-psl-modal-tagline>—</p>
+
+            <div class="psl-modal__card" data-psl-modal-card>
+                <img class="psl-modal__base" src="" alt="" aria-hidden="true" data-psl-modal-base />
+                <img class="psl-modal__pote" src="" alt="" data-psl-modal-pote />
+            </div>
+
+            <div class="psl-modal__tabs" role="tablist" data-psl-modal-tabs aria-label="Sub-productos">
+                {/* Tabs renderizados dinámicamente por JS basados en el
+                    panel activo. Cada tab tiene data-sub-slug + thumbnail. */}
+            </div>
         </div>
     </div>
 </section>
