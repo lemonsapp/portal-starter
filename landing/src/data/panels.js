@@ -142,12 +142,11 @@ export const panels = [
             hero: "/img/slider-spylt/linea-race/hero.png",
             silhouette: "/img/slider-spylt/linea-race/silhouette.png",
         },
-        // Sub-productos: Race son 4 fertilizantes en el packshot unificado.
-        // Violeta es un kit de 2 bidones (Parte A + Parte B) tratados como
-        // un único producto. El bidón.png del violeta es composite de
-        // ambas partes lado a lado, y el hotspot cubre ambas regiones
-        // (~37% del ancho del packshot — los 2 bidones violeta juntos).
-        // Orden visual del Race Juntos.png: Verde / Celeste / Violeta (A+B) / Rosado.
+        // Sub-productos: Race son 4 fertilizantes — Verde / Celeste /
+        // Violeta (solo Parte B) / Rosado. El packshot unificado se
+        // recompuso (hero.png) con sólo estos 4 bidones lado a lado:
+        // sacamos el Race 3 Parte A por pedido del cliente. Hotspots
+        // distribuidos en 4 regiones de ~24% cada una.
         subProducts: [
             {
                 slug: "verde",
@@ -158,7 +157,7 @@ export const panels = [
                 ruedas: "/img/slider-spylt/linea-race/sub/verde/ruedas.png",
                 texto: "/img/slider-spylt/linea-race/sub/verde/texto.png",
                 accentColor: "#c7f0dd",
-                hotspot: { x: 2, y: 10, w: 18, h: 80 },
+                hotspot: { x: 2, y: 10, w: 22, h: 80 },
             },
             {
                 slug: "celeste",
@@ -169,19 +168,18 @@ export const panels = [
                 ruedas: "/img/slider-spylt/linea-race/sub/celeste/ruedas.png",
                 texto: "/img/slider-spylt/linea-race/sub/celeste/texto.png",
                 accentColor: "#c8eaf3",
-                hotspot: { x: 21, y: 10, w: 18, h: 80 },
+                hotspot: { x: 26, y: 10, w: 22, h: 80 },
             },
             {
                 slug: "violeta",
                 nombre: "RACE VIOLETA",
-                tagline: "Etapa 3 · Kit 2 partes",
+                tagline: "Etapa 3",
                 base: "/img/slider-spylt/linea-race/sub/violeta/base.png",
                 pote: "/img/slider-spylt/linea-race/sub/violeta/bidon.png",
                 ruedas: "/img/slider-spylt/linea-race/sub/violeta/ruedas.png",
                 texto: "/img/slider-spylt/linea-race/sub/violeta/texto.png",
                 accentColor: "#b49ae0",
-                // Hotspot extendido cubre los 2 bidones violeta (A + B)
-                hotspot: { x: 40, y: 10, w: 37, h: 80 },
+                hotspot: { x: 50, y: 10, w: 22, h: 80 },
             },
             {
                 slug: "rosado",
@@ -192,7 +190,7 @@ export const panels = [
                 ruedas: "/img/slider-spylt/linea-race/sub/rosado/ruedas.png",
                 texto: "/img/slider-spylt/linea-race/sub/rosado/texto.png",
                 accentColor: "#f7d6dc",
-                hotspot: { x: 78, y: 10, w: 20, h: 80 },
+                hotspot: { x: 74, y: 10, w: 24, h: 80 },
             },
         ],
     },
