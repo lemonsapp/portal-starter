@@ -2334,10 +2334,12 @@ button {
     mix-blend-mode: normal;
     opacity: 0.85;
 }
-/* PRO usa Fondo.png del pack Unificados (gradient pastel multi-color
-   que NO es un motif decorativo sino el fondo completo del panel).
-   opacity 1 → la imagen domina, no se mezcla con el pastel del section. */
-.psl__panel[data-slug="linea-pro"] .psl__panel-silhouette {
+/* PRO, BIO y DAY 0 usan imágenes Fondo.png del cliente como silhouette
+   (fondo completo del panel, no motif decorativo). opacity 1 →
+   la imagen domina sin mezclarse con el pastel del section bg. */
+.psl__panel[data-slug="linea-pro"] .psl__panel-silhouette,
+.psl__panel[data-slug="bioestimulante"] .psl__panel-silhouette,
+.psl__panel[data-slug="day-0"] .psl__panel-silhouette {
     opacity: 1;
 }
 

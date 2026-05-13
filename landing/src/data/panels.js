@@ -40,13 +40,11 @@ export const panels = [
         nombre: "BIOESTIMULANTE",
         linea: "HOLISTIC",
         route: "/bio-estimulante",
-        // Colores derivados del dominante real del base.png Enraizante
-        // (sampled #f37abf hot pink). bgColor = saturated del redondelito,
-        // accentColor = section bg pastel light matched al redondelito.
-        bgColor: "#f37abf",       // hot pink saturated del redondelito
-        accentColor: "#fbd9ed",   // pastel pink claro para section bg
-        aspect: 2.27,             // matchea base.png Enraizante (hot pink leaves)
-        heroScale: 1.30,          // canvas wide del base → packshot necesita scale mayor
+        // Colores del nuevo Banner.png Bio (rosa pastel con palm leaves).
+        bgColor: "#f8b9d5",       // rosa pastel saturado matched al Banner
+        accentColor: "#fdd9e6",   // rosa muy pastel section bg
+        aspect: 1.51,             // matchea Banner.png Bio (1024x677)
+        heroScale: 0.92,          // packshot 2 botellas BIO — scale moderado
         label: "BIO",
         layers: {
             base: "/img/slider-spylt/bioestimulante/base.png",
@@ -251,13 +249,11 @@ export const panels = [
         nombre: "DAY 0",
         linea: "FINISHER",
         route: "/day-0",
-        // Reusa el mismo base.png del Bio (hot pink Enraizante) por
-        // pedido del cliente — el último redondel queda con la misma
-        // identidad visual que el primero (cohesión arranque/cierre).
-        bgColor: "#f37abf",       // hot pink saturated (mismo que Bio)
-        accentColor: "#fbd9ed",   // pastel pink claro section bg
-        aspect: 2.27,             // mismo aspect del base Enraizante
-        heroScale: 1.25,
+        // Nuevo BANNER 2.png amarillo (curvas amarillas wave-like).
+        bgColor: "#e6d54a",       // amarillo saturado del Banner
+        accentColor: "#f5e89c",   // amarillo pastel section bg
+        aspect: 1.51,             // matchea BANNER 2.png (1024x677)
+        heroScale: 0.92,
         label: "DAY 0",
         layers: {
             base: "/img/slider-spylt/day-0/base.png",

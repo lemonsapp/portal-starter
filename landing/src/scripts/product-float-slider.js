@@ -489,6 +489,40 @@ function initProductSlider() {
                             if (editorialMark) editorialMark.style.background = currentBg;
                             if (editorialDot)  editorialDot.style.background  = currentBg;
                         }
+
+                        // ============================================
+                        // SMOOTH PANEL TRANSITION — cross-fade de cada
+                        // panel silhouette + scale del card según
+                        // distancia al center. Suaviza el "border"
+                        // visual entre paneles durante el horizontal
+                        // scroll (skill: gsap-performance).
+                        // ============================================
+                        panels.forEach((p, i) => {
+                            // Distancia del panel i al "active" (continuo, no
+                            // round). distFloat: 0 cuando i es el active continuo,
+                            // 1 cuando está 1 panel apartado, etc.
+                            const continuousIdx = self.progress * segments;
+                            const distFloat = Math.abs(i - continuousIdx);
+                            const distNorm = Math.min(1, distFloat);
+                            // Opacity de la silueta: 1 en center, 0.35 a 1 de
+                            // distancia → el panel adyacente aún se ve sutil
+                            // pero el active es protagónico.
+                            const sil = p.querySelector(".psl__panel-silhouette");
+                            if (sil) {
+                                sil.style.opacity = String(1 - distNorm * 0.5);
+                            }
+                            // Scale + opacity del card mismo: active en
+                            // scale 1, edges 0.92 + leve fade. Da efecto
+                            // de "focus" / depth.
+                            const cardEl = p.querySelector("[data-psl-card]");
+                            if (cardEl) {
+                                const scale = 1 - distNorm * 0.06;
+                                const alpha = 1 - distNorm * 0.18;
+                                cardEl.style.transform =
+                                    `translateY(-50%) scale(${scale.toFixed(3)})`;
+                                cardEl.style.opacity = alpha.toFixed(3);
+                            }
+                        });
                     },
                 },
             });
