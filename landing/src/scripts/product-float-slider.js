@@ -724,6 +724,8 @@ function initSubProductSwap() {
 
         let lockedSub = null;
         let activeTimeline = null;
+        let autoResetTimer = null;
+        const AUTO_RESET_MS = 3000;
 
         const fillSrcs = (h) => {
             baseEl.src  = h.dataset.subBase || "";
@@ -751,15 +753,45 @@ function initSubProductSwap() {
             }
         };
 
+        const clearAutoReset = () => {
+            if (autoResetTimer) {
+                clearTimeout(autoResetTimer);
+                autoResetTimer = null;
+            }
+        };
+
+        const scheduleAutoReset = () => {
+            clearAutoReset();
+            autoResetTimer = setTimeout(() => {
+                lockedSub = null;
+                resetToUnified();
+            }, AUTO_RESET_MS);
+        };
+
         const swapToSub = (h) => {
             if (activeTimeline) activeTimeline.kill();
+            clearAutoReset();
             fillSrcs(h);
 
             // Marca hotspot activo
             hotspots.forEach((x) => x.classList.toggle("is-locked", x === h));
 
+            // Cambiar también el bg color del card al accent del sub
+            // (matchea Ejemplo.png — la BASE entera cambia, incluso el
+            // color de fondo del rounded por debajo).
+            const subAccent = h.dataset.subAccent || "";
+            if (subAccent) {
+                gsapLib.to(card, {
+                    "--psl-bg": subAccent,
+                    duration: 0.4,
+                    ease: "power2.inOut",
+                });
+            }
+
             // Timeline: fade-out unificado → fade-in sub layers staggered
-            activeTimeline = gsapLib.timeline();
+            activeTimeline = gsapLib.timeline({
+                onComplete: scheduleAutoReset,  // Auto-reset 3s después de completar
+            });
 
             // Fase 1: unificado fade-out + scale down
             activeTimeline.to([heroEl, baseUnifEl].filter(Boolean), {
@@ -800,11 +832,24 @@ function initSubProductSwap() {
             }
         };
 
+        // Capturar el bg original del card (--psl-bg) para restaurarlo
+        const originalBg = getComputedStyle(card)
+            .getPropertyValue("--psl-bg").trim() ||
+            getComputedStyle(card).backgroundColor;
+
         const resetToUnified = () => {
             if (activeTimeline) activeTimeline.kill();
+            clearAutoReset();
             hotspots.forEach((x) => x.classList.remove("is-locked"));
 
             activeTimeline = gsapLib.timeline();
+            // Restaurar bg color del card al original
+            if (originalBg) {
+                activeTimeline.to(card, {
+                    "--psl-bg": originalBg,
+                    duration: 0.45, ease: "power2.inOut",
+                }, 0);
+            }
             // Sub layers fade-out + slight shrink
             activeTimeline.to(subLayers, {
                 autoAlpha: 0,
@@ -826,6 +871,7 @@ function initSubProductSwap() {
                 e.preventDefault();
                 const slug = h.dataset.subSlug;
                 if (lockedSub === slug) {
+                    // Click el mismo otra vez → unlock inmediato (no esperar 3s)
                     lockedSub = null;
                     resetToUnified();
                 } else {

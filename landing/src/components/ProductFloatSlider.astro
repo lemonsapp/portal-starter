@@ -246,10 +246,24 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                                             data-sub-texto={sub.texto || ""}
                                             data-sub-nombre={sub.nombre}
                                             data-sub-accent={sub.accentColor || ""}
-                                            style={`--hs-x: ${sub.hotspot.x}%; --hs-y: ${sub.hotspot.y}%; --hs-w: ${sub.hotspot.w}%; --hs-h: ${sub.hotspot.h}%;`}
+                                            style={`--hs-x: ${sub.hotspot.x}%; --hs-y: ${sub.hotspot.y}%; --hs-w: ${sub.hotspot.w}%; --hs-h: ${sub.hotspot.h}%; --hs-accent: ${sub.accentColor || sub.bgColor || '#ffffff'};`}
                                             aria-label={`Ver ${sub.nombre}`}
                                             data-cursor="hover"
-                                        ></button>
+                                        >
+                                            {/* Glow del pote al hover: img del mismo
+                                                pote/bidón superpuesto sobre el unificado,
+                                                con drop-shadow del accent color → halo
+                                                visible solo en la silueta del pote.
+                                                pointer-events none → click pasa al hotspot. */}
+                                            <img
+                                                class="psl__hotspot-glow"
+                                                src={sub.pote}
+                                                alt=""
+                                                aria-hidden="true"
+                                                draggable="false"
+                                                loading="lazy"
+                                            />
+                                        </button>
                                     ))}
                                 </>
                             )}
