@@ -705,7 +705,9 @@ function initSubProductPopup() {
     const hotspots = document.querySelectorAll("[data-psl-hotspot]");
     if (!popup || !hotspots.length) return;
 
-    const gsapLib = window.gsap || null;
+    // gsap viene del import del top del archivo (registerGsap.js).
+    // No usar window.gsap — los imports ESM de Astro no exponen al global.
+    const gsapLib = gsap;
     const baseEl  = popup.querySelector("[data-psl-popup-base]");
     const poteEl  = popup.querySelector("[data-psl-popup-pote]");
     const textoEl = popup.querySelector("[data-psl-popup-texto]");
