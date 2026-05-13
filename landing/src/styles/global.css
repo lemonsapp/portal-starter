@@ -2334,6 +2334,12 @@ button {
     mix-blend-mode: normal;
     opacity: 0.85;
 }
+/* PRO usa Fondo.png del pack Unificados (gradient pastel multi-color
+   que NO es un motif decorativo sino el fondo completo del panel).
+   opacity 1 → la imagen domina, no se mezcla con el pastel del section. */
+.psl__panel[data-slug="linea-pro"] .psl__panel-silhouette {
+    opacity: 1;
+}
 
 /* Para los 5 panels nuevos del catálogo (Bio/Pro/Race/Elite/Day-0):
    el card es el "redondelito" rounded de color saturado bgColor que va
@@ -2722,36 +2728,32 @@ button {
 }
 
 /* =====================================================================
-   PSL HOTSPOT GLOW — img del pote individual posicionada sobre el unificado
-   con drop-shadow del accent color → glow visible SÓLO en la silueta del
-   pote al hover. pointer-events none para que click pase al hotspot.
+   PSL HOTSPOT GLOW — radial gradient del accent color sobre el área del
+   pote, blend-mode screen para iluminar el pote del unificado SIN
+   duplicar la imagen. El glow aparece como un halo colored centrado
+   sobre el pote, fade-in al hover.
    ===================================================================== */
-.psl__hotspot-glow {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center 60%;
-    /* Slight scale para overlapar el pote del unificado exact */
-    transform: scale(1.02);
-    transform-origin: center 60%;
+.psl__hotspot {
+    /* radial centered slightly below center (donde está el cuerpo del pote) */
+    background:
+        radial-gradient(ellipse 65% 75% at 50% 60%,
+            var(--hs-accent, #ffffff) 0%,
+            color-mix(in srgb, var(--hs-accent, #ffffff) 50%, transparent) 28%,
+            color-mix(in srgb, var(--hs-accent, #ffffff) 15%, transparent) 55%,
+            transparent 78%);
+    /* Blend mode "screen" → el color se ADICIONA al pote del unificado,
+       iluminándolo con el accent. No duplica la imagen. */
+    mix-blend-mode: screen;
     opacity: 0;
-    pointer-events: none;
-    /* Drop-shadow doble del accent → glow halo extendido. Color via
-       CSS var --hs-accent del style inline del button hotspot. */
-    filter:
-        drop-shadow(0 0 18px var(--hs-accent, #ffffff))
-        drop-shadow(0 0 8px  var(--hs-accent, #ffffff));
-    transition: opacity 0.3s ease;
+    transition: opacity 0.35s cubic-bezier(.2, .8, .25, 1);
     will-change: opacity;
 }
-.psl__hotspot:hover .psl__hotspot-glow,
-.psl__hotspot:focus-visible .psl__hotspot-glow {
+.psl__hotspot:hover,
+.psl__hotspot:focus-visible {
     opacity: 1;
 }
-/* Cuando el sub está locked (showing individual) → no glow */
-.psl__hotspot.is-locked .psl__hotspot-glow {
+/* Cuando el sub está locked → ya no necesitamos el hover glow */
+.psl__hotspot.is-locked {
     opacity: 0 !important;
 }
 

@@ -63,15 +63,19 @@ export const panels = [
         nombre: "LÍNEA PRO",
         linea: "PRO",
         route: "/linea-pro",
-        bgColor: "#34ad63",       // verde Holistic saturated del base.png Vegetativo
-        accentColor: "#c6e8d3",   // pastel verde claro section bg
-        aspect: 2.28,             // matchea base.png Vegetativo (verde leaves)
-        heroScale: 1.25,          // packshot 4 potes ya es wide
+        // Color derivado del nuevo base "Linea PRO.png" (celeste-azul pastel)
+        bgColor: "#9ad8f5",       // celeste pastel matched al nuevo base
+        accentColor: "#e8f4fb",   // celeste muy claro para section bg
+        aspect: 1.51,             // nuevo aspect del base Linea PRO.png (1024x677)
+        heroScale: 1.10,          // packshot 4 potes — scale ajustado al nuevo aspect
         label: "PRO",
         layers: {
+            // base = Linea PRO.png del pack Unificados (celeste con hojas pastel)
             base: "/img/slider-spylt/linea-pro/base.png",
             hero: "/img/slider-spylt/linea-pro/hero.png",
-            silhouette: "/img/slider-spylt/linea-pro/silhouette.png",
+            // silhouette ahora apunta al Fondo.png Unificados (gradient pastel
+            // multi-color que cubre todo el panel detrás del card)
+            silhouette: "/img/slider-spylt/linea-pro/fondo.png",
         },
         // Sub-productos: 4 stages del ciclo. Cada uno tiene su packshot
         // individual + base decorativo. Hotspots posicionados sobre la
