@@ -42,10 +42,11 @@ export const panels = [
         route: "/bio-estimulante",
         bgColor: "#B8A4D9",       // lila pastel
         accentColor: "#E5DCF0",   // lila más claro para section bg
-        aspect: 1.0,              // hero 1200x1200
-        heroScale: 0.92,          // packshot ya llena el card cuadrado
+        aspect: 2.27,             // matchea base.png Enraizante (hot pink leaves)
+        heroScale: 1.30,          // canvas wide del base → packshot necesita scale mayor
         label: "BIO",
         layers: {
+            base: "/img/slider-spylt/bioestimulante/base.png",
             hero: "/img/slider-spylt/bioestimulante/hero.png",
             silhouette: "/img/slider-spylt/bioestimulante/silhouette.png",
         },
@@ -61,10 +62,11 @@ export const panels = [
         route: "/linea-pro",
         bgColor: "#2E8F6E",       // verde Holistic
         accentColor: "#C7F0DD",
-        aspect: 1.66,             // card más estándar — hero ultra-wide cabe centrado
-        heroScale: 1.20,          // hero wide → scale moderado
+        aspect: 2.28,             // matchea base.png Vegetativo (verde leaves)
+        heroScale: 1.25,          // packshot 4 potes ya es wide
         label: "PRO",
         layers: {
+            base: "/img/slider-spylt/linea-pro/base.png",
             hero: "/img/slider-spylt/linea-pro/hero.png",
             silhouette: "/img/slider-spylt/linea-pro/silhouette.png",
         },
@@ -80,10 +82,11 @@ export const panels = [
         route: "/linea-race",
         bgColor: "#6B3BAF",       // violeta Race (color líder del set)
         accentColor: "#B49AE0",
-        aspect: 1.66,
-        heroScale: 1.18,
+        aspect: 1.59,             // matchea base.png Race Violeta Parte A
+        heroScale: 1.10,
         label: "RACE",
         layers: {
+            base: "/img/slider-spylt/linea-race/base.png",
             hero: "/img/slider-spylt/linea-race/hero.png",
             silhouette: "/img/slider-spylt/linea-race/silhouette.png",
         },
@@ -99,10 +102,11 @@ export const panels = [
         route: "/linea-elite",
         bgColor: "#1F1A14",       // charcoal warm premium
         accentColor: "#D9A86A",   // gold/orange Elite
-        aspect: 1.0,              // hero 1200x1200
-        heroScale: 0.95,
+        aspect: 1.30,             // matchea base.png Race Violeta Parte B (darker)
+        heroScale: 1.05,
         label: "ELITE",
         layers: {
+            base: "/img/slider-spylt/linea-elite/base.png",
             hero: "/img/slider-spylt/linea-elite/hero.png",
             silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
         },
@@ -117,10 +121,11 @@ export const panels = [
         route: "/day-0",
         bgColor: "#F4D03F",       // amarillo Day-0
         accentColor: "#FBE89C",
-        aspect: 1.0,
-        heroScale: 0.92,
+        aspect: 2.28,             // matchea base.png Floración
+        heroScale: 1.25,
         label: "DAY 0",
         layers: {
+            base: "/img/slider-spylt/day-0/base.png",
             hero: "/img/slider-spylt/day-0/hero.png",
             silhouette: "/img/slider-spylt/day-0/silhouette.png",
         },
