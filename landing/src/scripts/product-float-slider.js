@@ -794,18 +794,15 @@ function initSubProductHoverSwap() {
             }
         };
 
-        // Hotspot pointer + click events
+        // Hotspot pointer events (hover preview).
+        // El <a> nativo maneja el click → navega a panel.route#sub-slug,
+        // sin que nosotros interceptemos. Permite Enter (keyboard) +
+        // cmd/ctrl+click (new tab) + click normal (same tab).
         hotspots.forEach((h) => {
             // pointerenter — más reliable que mouseenter (touch + pen support)
             h.addEventListener("pointerenter", () => showSub(h));
             // focus para keyboard nav
             h.addEventListener("focus", () => showSub(h));
-            // click: solo no-op (el hover ya muestra). Prevent default
-            // para que no haga submit/anchor jump.
-            h.addEventListener("click", (e) => {
-                e.preventDefault();
-                showSub(h);
-            });
         });
 
         // Card leave → reset al unificado. pointerleave para cubrir
