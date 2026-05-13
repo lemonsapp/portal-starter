@@ -692,149 +692,163 @@ if (document.readyState === "loading") {
 }
 
 /* ====================================================================
-   SUB-PRODUCT HOVER PREVIEW + CLICK STICKY LOCK
-   Comportamiento:
-     - Hover sobre hotspot → preview del sub (cross-fade in-place).
-     - Click hotspot → LOCK (sticky): el sub queda visible aunque saques
-       el mouse del card. Otro click en el mismo → unlock.
-     - Click otro hotspot (con lock activo) → switch del lock.
-     - Mouse leave del card: si hay lock → muestra LOCK; sino → unificado.
-   Capas: sub-base + sub-hero (packshot) + sub-texto (etiqueta del producto).
-   Todo dentro del card del slider — sin modal ni navegación a otra página.
+   SUB-PRODUCT POPUP MOCKUP — ventanita estilo "chat de juego"
+   - Hover en hotspot → popup fixed-position fade-in + scale + corner draw
+     mostrando base + pote + texto + nombre + tagline del sub.
+   - Mouse leave del hotspot → popup fade-out.
+   - Auto-flip si saldría del viewport (above default, below si no entra).
+   - Color accent dinámico por sub. Idle float yoyo.
    ==================================================================== */
-function initSubProductHoverSwap() {
-    const cards = document.querySelectorAll("[data-psl-card]");
-    if (!cards.length) return;
+function initSubProductPopup() {
+    const popup = document.querySelector("[data-psl-popup]");
+    const hotspots = document.querySelectorAll("[data-psl-hotspot]");
+    if (!popup || !hotspots.length) return;
 
     const gsapLib = window.gsap || null;
 
-    cards.forEach((card) => {
-        const hotspots = card.querySelectorAll("[data-psl-hotspot]");
-        if (!hotspots.length) return;
+    const panelEl  = popup.querySelector("[data-psl-popup-panel]");
+    const baseEl   = popup.querySelector("[data-psl-popup-base]");
+    const poteEl   = popup.querySelector("[data-psl-popup-pote]");
+    const textoEl  = popup.querySelector("[data-psl-popup-texto]");
+    const nameEl   = popup.querySelector("[data-psl-popup-name]");
+    const taglineEl= popup.querySelector("[data-psl-popup-tagline]");
+    const corners  = popup.querySelectorAll(".psl-popup__corner");
 
-        const subBaseEl  = card.querySelector("[data-psl-sub-base]");
-        const subHeroEl  = card.querySelector("[data-psl-sub-hero]");
-        const subTextoEl = card.querySelector("[data-psl-sub-texto]");
-        if (!subBaseEl || !subHeroEl) return;
+    let currentSlug = null;
+    let idleTween = null;
 
-        const layers = [subBaseEl, subHeroEl, subTextoEl].filter(Boolean);
+    const POPUP_W = 280;   // matches CSS
+    const POPUP_H = 360;
+    const GAP = 16;        // distance from hotspot
 
-        // Estado inicial: invisibles
-        if (gsapLib) gsapLib.set(layers, { autoAlpha: 0 });
-        else layers.forEach((l) => { l.style.opacity = "0"; });
+    const positionPopup = (rect) => {
+        // Center horizontally over hotspot center
+        const cx = rect.left + rect.width / 2;
+        // Try above first
+        let x = cx - POPUP_W / 2;
+        let y = rect.top - POPUP_H - GAP;
+        let placement = "top";
 
-        let currentSub = null;    // slug actualmente mostrado (lock o hover)
-        let lockedSub = null;     // slug clickeado (sticky)
-        let pendingTimer = null;
+        // If would go off top → flip to below
+        if (y < 12) {
+            y = rect.bottom + GAP;
+            placement = "bottom";
+        }
+        // Clamp horizontal to viewport
+        const maxX = window.innerWidth - POPUP_W - 12;
+        if (x < 12) x = 12;
+        else if (x > maxX) x = maxX;
 
-        const updateActiveStates = () => {
-            hotspots.forEach((h) => {
-                h.classList.toggle("is-locked", h.dataset.subSlug === lockedSub);
-            });
-        };
+        popup.style.left = `${x}px`;
+        popup.style.top  = `${y}px`;
+        popup.dataset.placement = placement;
+    };
 
-        const swapSrc = (hotspot) => {
-            subBaseEl.src = hotspot.dataset.subBase || "";
-            subHeroEl.src = hotspot.dataset.subPote || "";
-            subHeroEl.alt = hotspot.dataset.subNombre || "";
-            if (subTextoEl) {
-                const t = hotspot.dataset.subTexto || "";
-                if (t) {
-                    subTextoEl.src = t;
-                    subTextoEl.style.display = "";
-                } else {
-                    subTextoEl.removeAttribute("src");
-                    subTextoEl.style.display = "none";
-                }
-            }
-        };
+    const fillContent = (h) => {
+        panelEl.textContent  = h.dataset.panelNombre || "PRODUCTO";
+        nameEl.textContent   = h.dataset.subNombre || "—";
+        taglineEl.textContent = h.dataset.subTagline || "";
+        baseEl.src   = h.dataset.subBase || "";
+        poteEl.src   = h.dataset.subPote || "";
+        poteEl.alt   = h.dataset.subNombre || "";
+        const texto = h.dataset.subTexto || "";
+        if (texto) {
+            textoEl.src = texto;
+            textoEl.style.display = "";
+        } else {
+            textoEl.removeAttribute("src");
+            textoEl.style.display = "none";
+        }
+        const accent = h.dataset.subAccent || "#f5e03a";
+        popup.style.setProperty("--popup-accent", accent);
+    };
 
-        const showSub = (hotspot) => {
-            if (pendingTimer) { clearTimeout(pendingTimer); pendingTimer = null; }
-            const slug = hotspot.dataset.subSlug;
-            if (currentSub === slug) return;
-            currentSub = slug;
+    const openPopup = (h) => {
+        const slug = h.dataset.subSlug;
+        if (currentSlug === slug) {
+            // Solo reposicionar (mismo sub)
+            positionPopup(h.getBoundingClientRect());
+            return;
+        }
+        currentSlug = slug;
+        fillContent(h);
+        positionPopup(h.getBoundingClientRect());
 
-            if (!gsapLib) {
-                swapSrc(hotspot);
-                layers.forEach((l) => { l.style.opacity = "1"; });
-                return;
-            }
-            const wasVisible = parseFloat(getComputedStyle(subHeroEl).opacity) > 0.1;
-            if (wasVisible) {
-                gsapLib.to(layers, {
-                    autoAlpha: 0, duration: 0.15, ease: "power2.in",
-                    onComplete: () => {
-                        swapSrc(hotspot);
-                        gsapLib.to(layers, {
-                            autoAlpha: 1, duration: 0.3,
-                            ease: "power2.out", stagger: 0.04,
-                        });
-                    },
-                });
-            } else {
-                swapSrc(hotspot);
-                gsapLib.to(layers, {
-                    autoAlpha: 1, duration: 0.35,
-                    ease: "power2.out", stagger: 0.05,
-                });
-            }
-        };
+        popup.setAttribute("aria-hidden", "false");
+        popup.dataset.open = "true";
 
-        const hideAll = () => {
-            currentSub = null;
-            if (gsapLib) {
-                gsapLib.to(layers, {
-                    autoAlpha: 0, duration: 0.28, ease: "power2.inOut",
-                });
-            } else {
-                layers.forEach((l) => { l.style.opacity = "0"; });
-            }
-        };
+        if (!gsapLib) return;
 
-        const restoreToLocked = () => {
-            if (!lockedSub) { hideAll(); return; }
-            // Re-show the locked sub (puede ser distinto del que estaba en hover)
-            const lockedH = Array.from(hotspots).find(
-                (h) => h.dataset.subSlug === lockedSub
-            );
-            if (lockedH) showSub(lockedH);
-            else hideAll();
-        };
+        // Reset states
+        gsapLib.killTweensOf([popup, corners]);
+        if (idleTween) idleTween.kill();
 
-        // Hover events
-        hotspots.forEach((h) => {
-            h.addEventListener("pointerenter", () => showSub(h));
-            h.addEventListener("focus", () => showSub(h));
-            // Click → toggle sticky lock
-            h.addEventListener("click", (e) => {
-                e.preventDefault();
-                const slug = h.dataset.subSlug;
-                if (lockedSub === slug) {
-                    // Click sobre el ya lockeado → unlock + hide
-                    lockedSub = null;
-                    updateActiveStates();
-                    hideAll();
-                } else {
-                    lockedSub = slug;
-                    updateActiveStates();
-                    showSub(h);
-                }
-            });
+        // Master enter timeline
+        const tl = gsapLib.timeline();
+        tl.fromTo(popup,
+            { autoAlpha: 0, scale: 0.6, y: 12 },
+            { autoAlpha: 1, scale: 1,   y: 0, duration: 0.5, ease: "back.out(1.7)" }
+        );
+
+        // Corner brackets draw (clip-path animado)
+        gsapLib.fromTo(corners,
+            { scale: 0.3, autoAlpha: 0 },
+            { scale: 1, autoAlpha: 1, duration: 0.5, stagger: 0.05, ease: "back.out(2)" }
+        );
+
+        // Idle float (loop)
+        idleTween = gsapLib.to(popup, {
+            y: -4,
+            duration: 2.2,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+            delay: 0.5,
         });
+    };
 
-        // Card leave: si lock activo → mostrar lockeado, sino → ocultar
-        card.addEventListener("pointerleave", () => {
-            pendingTimer = setTimeout(restoreToLocked, 80);
+    const closePopup = () => {
+        currentSlug = null;
+        popup.setAttribute("aria-hidden", "true");
+        popup.dataset.open = "false";
+
+        if (!gsapLib) return;
+        if (idleTween) { idleTween.kill(); idleTween = null; }
+        gsapLib.killTweensOf([popup, corners]);
+        gsapLib.to(popup, {
+            autoAlpha: 0, scale: 0.85, y: 6,
+            duration: 0.22, ease: "power3.in",
         });
-        card.addEventListener("pointerenter", () => {
-            if (pendingTimer) { clearTimeout(pendingTimer); pendingTimer = null; }
-        });
+    };
+
+    // Hotspot listeners (hover + focus = abre; leave + blur = cierra)
+    hotspots.forEach((h) => {
+        h.addEventListener("pointerenter", () => openPopup(h));
+        h.addEventListener("pointerleave", closePopup);
+        h.addEventListener("focus", () => openPopup(h));
+        h.addEventListener("blur", closePopup);
+        h.addEventListener("click", (e) => e.preventDefault());  // no navigation
     });
+
+    // Si scrollean horizontal del slider mientras popup abierto → reposicionar
+    let scrollFrame = null;
+    const reposition = () => {
+        if (!currentSlug) return;
+        const activeH = Array.from(hotspots).find(
+            (h) => h.dataset.subSlug === currentSlug
+        );
+        if (activeH) positionPopup(activeH.getBoundingClientRect());
+    };
+    window.addEventListener("scroll", () => {
+        if (scrollFrame) cancelAnimationFrame(scrollFrame);
+        scrollFrame = requestAnimationFrame(reposition);
+    }, { passive: true });
+    window.addEventListener("resize", reposition);
 }
 
+
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initSubProductHoverSwap);
+    document.addEventListener("DOMContentLoaded", initSubProductPopup);
 } else {
-    initSubProductHoverSwap();
+    initSubProductPopup();
 }
