@@ -692,183 +692,139 @@ if (document.readyState === "loading") {
 }
 
 /* ====================================================================
-   SUB-PRODUCT MODAL
-   - Hotspots clickeables sobre el packshot unificado abren modal con
-     el sub-producto individual.
-   - Tabs en el modal permiten navegar entre sub-products del mismo
-     panel sin cerrar.
-   - ESC + click backdrop + close X cierran.
-   - GSAP timeline para entry/exit (scale + fade del card + chrome).
+   SUB-PRODUCT HOVER-SWAP
+   En lugar de modal, el packshot del card CAMBIA inline al hover de un
+   hotspot:
+     - mouseenter en hotspot → cross-fade del unificado al individual
+       (sub-base + sub-hero appearen sobre el unificado).
+     - mouseleave del CARD → vuelve al unificado.
+     - Mover entre hotspots dentro del card → cambio directo sin reset.
+     - Click ALSO funciona (keyboard/touch).
    ==================================================================== */
-function initSubProductModal() {
-    const modal = document.querySelector("[data-psl-modal]");
-    if (!modal) return;
+function initSubProductHoverSwap() {
+    const cards = document.querySelectorAll("[data-psl-card]");
+    if (!cards.length) return;
 
-    const inner = modal.querySelector("[data-psl-modal-inner]");
-    const closeBtns = modal.querySelectorAll("[data-psl-modal-close]");
-    const eyebrowEl = modal.querySelector("[data-psl-modal-panel-eyebrow]");
-    const nameEl = modal.querySelector("[data-psl-modal-name]");
-    const taglineEl = modal.querySelector("[data-psl-modal-tagline]");
-    const baseEl = modal.querySelector("[data-psl-modal-base]");
-    const poteEl = modal.querySelector("[data-psl-modal-pote]");
-    const tabsEl = modal.querySelector("[data-psl-modal-tabs]");
-    const cardEl = modal.querySelector("[data-psl-modal-card]");
-    const hotspots = document.querySelectorAll("[data-psl-hotspot]");
+    const gsapLib = window.gsap || null;
 
-    if (!inner || !tabsEl || !hotspots.length) return;
+    cards.forEach((card) => {
+        const hotspots = card.querySelectorAll("[data-psl-hotspot]");
+        if (!hotspots.length) return;
 
-    // Importamos panels via dynamic import (mismo data del slider)
-    let panelsData = null;
-    import("../data/panels.js").then((mod) => {
-        panelsData = mod.panels;
-    });
+        const subBaseEl = card.querySelector("[data-psl-sub-base]");
+        const subHeroEl = card.querySelector("[data-psl-sub-hero]");
+        if (!subBaseEl || !subHeroEl) return;
 
-    let activePanelSlug = null;
-    let activeSubSlug = null;
-
-    const findPanel = (slug) =>
-        panelsData ? panelsData.find((p) => p.slug === slug) : null;
-
-    const renderModal = (panelSlug, subSlug) => {
-        const panel = findPanel(panelSlug);
-        if (!panel || !panel.subProducts) return;
-        const sub = panel.subProducts.find((s) => s.slug === subSlug);
-        if (!sub) return;
-
-        activePanelSlug = panelSlug;
-        activeSubSlug   = subSlug;
-
-        // Header chrome
-        eyebrowEl.textContent = panel.nombre;
-        nameEl.textContent    = sub.nombre;
-        taglineEl.textContent = sub.tagline || "";
-
-        // Card: cross-fade entre packshots si modal ya estaba abierto.
-        const alreadyOpen = modal.getAttribute("data-modal-open") === "true";
-        if (alreadyOpen && window.gsap) {
-            // Soft cross-fade del packshot
-            window.gsap.to([baseEl, poteEl], {
-                autoAlpha: 0, duration: 0.18, ease: "power2.in",
-                onComplete: () => {
-                    baseEl.src = sub.base;
-                    poteEl.src = sub.pote;
-                    poteEl.alt = sub.nombre;
-                    window.gsap.to([baseEl, poteEl], {
-                        autoAlpha: 1, duration: 0.3, ease: "power2.out",
-                        stagger: 0.06,
-                    });
-                },
-            });
-            window.gsap.fromTo([eyebrowEl, nameEl, taglineEl],
-                { autoAlpha: 0, y: 10 },
-                { autoAlpha: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power2.out" }
-            );
+        // Estado inicial: sub-layers invisibles
+        if (gsapLib) {
+            gsapLib.set([subBaseEl, subHeroEl], { autoAlpha: 0 });
         } else {
-            baseEl.src = sub.base;
-            poteEl.src = sub.pote;
-            poteEl.alt = sub.nombre;
+            subBaseEl.style.opacity = "0";
+            subHeroEl.style.opacity = "0";
         }
 
-        // Color accent del card
-        cardEl.style.setProperty("--modal-accent", sub.accentColor || panel.bgColor);
+        let currentSub = null;
+        let pendingTimer = null;
 
-        // Render tabs (todas las sub-products del panel)
-        tabsEl.innerHTML = "";
-        panel.subProducts.forEach((s) => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "psl-modal__tab" + (s.slug === subSlug ? " is-active" : "");
-            btn.setAttribute("role", "tab");
-            btn.setAttribute("aria-selected", s.slug === subSlug ? "true" : "false");
-            btn.setAttribute("aria-label", s.nombre);
-            btn.dataset.subSlug = s.slug;
+        const showSub = (hotspot) => {
+            if (pendingTimer) {
+                clearTimeout(pendingTimer);
+                pendingTimer = null;
+            }
+            const slug = hotspot.dataset.subSlug;
+            if (currentSub === slug) return;
+            currentSub = slug;
 
-            const thumb = document.createElement("img");
-            thumb.className = "psl-modal__tab-thumb";
-            thumb.src = s.pote;
-            thumb.alt = "";
-            thumb.setAttribute("aria-hidden", "true");
-            thumb.draggable = false;
-            btn.appendChild(thumb);
+            const baseSrc = hotspot.dataset.subBase;
+            const poteSrc = hotspot.dataset.subPote;
+            const nombre  = hotspot.dataset.subNombre || "";
 
-            const name = document.createElement("span");
-            name.className = "psl-modal__tab-name";
-            name.textContent = s.nombre;
-            btn.appendChild(name);
-
-            btn.addEventListener("click", () => {
-                if (s.slug !== activeSubSlug) renderModal(panelSlug, s.slug);
-            });
-            tabsEl.appendChild(btn);
-        });
-    };
-
-    const openModal = (panelSlug, subSlug) => {
-        modal.setAttribute("data-modal-open", "true");
-        modal.setAttribute("aria-hidden", "false");
-        document.body.style.overflow = "hidden";
-        renderModal(panelSlug, subSlug);
-
-        // GSAP entry animation
-        if (window.gsap) {
-            window.gsap.fromTo(modal, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: "power2.out" });
-            window.gsap.fromTo(inner,
-                { scale: 0.92, y: 30, autoAlpha: 0 },
-                { scale: 1, y: 0, autoAlpha: 1, duration: 0.55, ease: "back.out(1.4)", delay: 0.05 }
-            );
-        }
-    };
-
-    const closeModal = () => {
-        if (window.gsap) {
-            window.gsap.to(inner, {
-                scale: 0.94, y: 20, autoAlpha: 0,
-                duration: 0.28, ease: "power2.in",
-            });
-            window.gsap.to(modal, {
-                autoAlpha: 0, duration: 0.32, ease: "power2.in",
-                onComplete: () => {
-                    modal.setAttribute("data-modal-open", "false");
-                    modal.setAttribute("aria-hidden", "true");
-                    document.body.style.overflow = "";
-                },
-            });
-        } else {
-            modal.setAttribute("data-modal-open", "false");
-            modal.setAttribute("aria-hidden", "true");
-            document.body.style.overflow = "";
-        }
-        activePanelSlug = null;
-        activeSubSlug = null;
-    };
-
-    // Listeners
-    hotspots.forEach((h) => {
-        h.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const panelSlug = h.dataset.panelSlug;
-            const subSlug = h.dataset.subSlug;
-            // Esperar a que panelsData esté cargado (dynamic import)
-            const tryOpen = () => {
-                if (panelsData) openModal(panelSlug, subSlug);
-                else setTimeout(tryOpen, 50);
+            // Cross-fade: si ya hay un sub visible, fade-out rápido →
+            // swap src → fade-in. Sino, swap src directo + fade-in.
+            const swap = () => {
+                subBaseEl.src = baseSrc;
+                subHeroEl.src = poteSrc;
+                subHeroEl.alt = nombre;
             };
-            tryOpen();
+
+            if (gsapLib) {
+                const wasVisible = parseFloat(getComputedStyle(subHeroEl).opacity) > 0.1;
+                if (wasVisible) {
+                    gsapLib.to([subBaseEl, subHeroEl], {
+                        autoAlpha: 0,
+                        duration: 0.15,
+                        ease: "power2.in",
+                        onComplete: () => {
+                            swap();
+                            gsapLib.to([subBaseEl, subHeroEl], {
+                                autoAlpha: 1,
+                                duration: 0.3,
+                                ease: "power2.out",
+                                stagger: 0.04,
+                            });
+                        },
+                    });
+                } else {
+                    swap();
+                    gsapLib.to([subBaseEl, subHeroEl], {
+                        autoAlpha: 1,
+                        duration: 0.35,
+                        ease: "power2.out",
+                        stagger: 0.05,
+                    });
+                }
+            } else {
+                swap();
+                subBaseEl.style.opacity = "1";
+                subHeroEl.style.opacity = "1";
+            }
+        };
+
+        const hideSub = () => {
+            currentSub = null;
+            if (gsapLib) {
+                gsapLib.to([subBaseEl, subHeroEl], {
+                    autoAlpha: 0,
+                    duration: 0.28,
+                    ease: "power2.inOut",
+                });
+            } else {
+                subBaseEl.style.opacity = "0";
+                subHeroEl.style.opacity = "0";
+            }
+        };
+
+        // Hotspot pointer + click events
+        hotspots.forEach((h) => {
+            // pointerenter — más reliable que mouseenter (touch + pen support)
+            h.addEventListener("pointerenter", () => showSub(h));
+            // focus para keyboard nav
+            h.addEventListener("focus", () => showSub(h));
+            // click: solo no-op (el hover ya muestra). Prevent default
+            // para que no haga submit/anchor jump.
+            h.addEventListener("click", (e) => {
+                e.preventDefault();
+                showSub(h);
+            });
         });
-    });
 
-    closeBtns.forEach((b) => b.addEventListener("click", closeModal));
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && modal.getAttribute("data-modal-open") === "true") {
-            closeModal();
-        }
+        // Card leave → reset al unificado. pointerleave para cubrir
+        // mouse/touch/pen. Pequeño delay para evitar flicker cuando
+        // user mueve entre hotspots adyacentes.
+        card.addEventListener("pointerleave", () => {
+            pendingTimer = setTimeout(hideSub, 80);
+        });
+        card.addEventListener("pointerenter", () => {
+            if (pendingTimer) {
+                clearTimeout(pendingTimer);
+                pendingTimer = null;
+            }
+        });
     });
 }
 
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initSubProductModal);
+    document.addEventListener("DOMContentLoaded", initSubProductHoverSwap);
 } else {
-    initSubProductModal();
+    initSubProductHoverSwap();
 }
