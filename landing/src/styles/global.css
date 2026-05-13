@@ -2336,9 +2336,11 @@ button {
     opacity: calc(var(--sil-base, 0.85) * var(--sil-focus, 1));
     transition: opacity 0.18s ease;
 }
-/* PRO, BIO y DAY 0 usan imágenes Fondo.png del cliente como silhouette
-   (fondo completo, no motif decorativo). base 1 → la imagen domina. */
+/* PRO, BIO, RACE y DAY 0 usan imágenes Fondo.png del cliente como
+   silhouette (fondo completo, no motif decorativo). base 1 → la
+   imagen domina sin mezclarse con el pastel section bg. */
 .psl__panel[data-slug="linea-pro"] .psl__panel-silhouette,
+.psl__panel[data-slug="linea-race"] .psl__panel-silhouette,
 .psl__panel[data-slug="bioestimulante"] .psl__panel-silhouette,
 .psl__panel[data-slug="day-0"] .psl__panel-silhouette {
     --sil-base: 1;
