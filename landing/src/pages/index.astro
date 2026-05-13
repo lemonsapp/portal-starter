@@ -49,16 +49,17 @@ const dividers = [
          para que sea lo primero post-video. -->
     <HumanSupport />
 
-    <!-- HERO TEXT — sección text-only ANTES del slider (SPYLT-pure).
-         "TENEMOS 5 PRODUCTOS OBSESIVAMENTE DISEÑADOS." big centered con
-         char reveal scroll-driven. Justo después viene el slider con el
-         mismo texto acomodado a la izquierda. -->
-    <ProductsHero />
-
     <!-- 5 productos: pin horizontal SPYLT.
          showWelcome={false} oculta el welcome interno del slider:
-         ya tenemos el VideoHero arriba como intro cinemática. -->
+         ya tenemos el VideoHero arriba como intro cinemática.
+         (Va ANTES de ProductsHero — el user pidió slider primero,
+         editorial después como cierre tipográfico.) -->
     <ProductFloatSlider showWelcome={false} />
+
+    <!-- HERO TEXT — sección text-only DESPUÉS del slider (cierre editorial).
+         "TENEMOS 5 PRODUCTOS OBSESIVAMENTE DISEÑADOS." big centered con
+         char reveal scroll-driven. -->
+    <ProductsHero />
 
     <Marquee variant="dark" />
 
