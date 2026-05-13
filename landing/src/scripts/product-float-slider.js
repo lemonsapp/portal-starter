@@ -692,12 +692,13 @@ if (document.readyState === "loading") {
 }
 
 /* ====================================================================
-   SUB-PRODUCT POPUP MOCKUP — ventanita estilo "chat de juego"
-   - Hover en hotspot → popup fixed-position fade-in + scale + corner draw
-     mostrando base + pote + texto + nombre + tagline del sub.
-   - Mouse leave del hotspot → popup fade-out.
-   - Auto-flip si saldría del viewport (above default, below si no entra).
-   - Color accent dinámico por sub. Idle float yoyo.
+   SUB-PRODUCT POPUP MINI — mini-redondelito del producto que aparece
+   flotante ARRIBA del pote al hover. Mismo estilo que el card grande
+   del slider (base + pote + texto stacked) pero en tamaño chico.
+   - Hover en hotspot → popup pop-in con scale + bounce.
+   - Mouse leave → popup pop-out.
+   - Auto-flip arriba/abajo según viewport.
+   - Idle float yoyo sutil.
    ==================================================================== */
 function initSubProductPopup() {
     const popup = document.querySelector("[data-psl-popup]");
@@ -705,52 +706,38 @@ function initSubProductPopup() {
     if (!popup || !hotspots.length) return;
 
     const gsapLib = window.gsap || null;
-
-    const panelEl  = popup.querySelector("[data-psl-popup-panel]");
-    const baseEl   = popup.querySelector("[data-psl-popup-base]");
-    const poteEl   = popup.querySelector("[data-psl-popup-pote]");
-    const textoEl  = popup.querySelector("[data-psl-popup-texto]");
-    const nameEl   = popup.querySelector("[data-psl-popup-name]");
-    const taglineEl= popup.querySelector("[data-psl-popup-tagline]");
-    const corners  = popup.querySelectorAll(".psl-popup__corner");
+    const baseEl  = popup.querySelector("[data-psl-popup-base]");
+    const poteEl  = popup.querySelector("[data-psl-popup-pote]");
+    const textoEl = popup.querySelector("[data-psl-popup-texto]");
 
     let currentSlug = null;
     let idleTween = null;
 
-    const POPUP_W = 280;   // matches CSS
-    const POPUP_H = 360;
-    const GAP = 16;        // distance from hotspot
+    const POPUP_W = 240;
+    const POPUP_H = 200;
+    const GAP = 14;
 
     const positionPopup = (rect) => {
-        // Center horizontally over hotspot center
         const cx = rect.left + rect.width / 2;
-        // Try above first
         let x = cx - POPUP_W / 2;
         let y = rect.top - POPUP_H - GAP;
         let placement = "top";
-
-        // If would go off top → flip to below
         if (y < 12) {
             y = rect.bottom + GAP;
             placement = "bottom";
         }
-        // Clamp horizontal to viewport
         const maxX = window.innerWidth - POPUP_W - 12;
         if (x < 12) x = 12;
         else if (x > maxX) x = maxX;
-
         popup.style.left = `${x}px`;
-        popup.style.top  = `${y}px`;
+        popup.style.top = `${y}px`;
         popup.dataset.placement = placement;
     };
 
     const fillContent = (h) => {
-        panelEl.textContent  = h.dataset.panelNombre || "PRODUCTO";
-        nameEl.textContent   = h.dataset.subNombre || "—";
-        taglineEl.textContent = h.dataset.subTagline || "";
-        baseEl.src   = h.dataset.subBase || "";
-        poteEl.src   = h.dataset.subPote || "";
-        poteEl.alt   = h.dataset.subNombre || "";
+        baseEl.src  = h.dataset.subBase || "";
+        poteEl.src  = h.dataset.subPote || "";
+        poteEl.alt  = h.dataset.subNombre || "";
         const texto = h.dataset.subTexto || "";
         if (texto) {
             textoEl.src = texto;
@@ -759,78 +746,63 @@ function initSubProductPopup() {
             textoEl.removeAttribute("src");
             textoEl.style.display = "none";
         }
-        const accent = h.dataset.subAccent || "#f5e03a";
-        popup.style.setProperty("--popup-accent", accent);
+        const accent = h.dataset.subAccent || "";
+        if (accent) popup.style.setProperty("--popup-accent", accent);
     };
 
     const openPopup = (h) => {
         const slug = h.dataset.subSlug;
         if (currentSlug === slug) {
-            // Solo reposicionar (mismo sub)
             positionPopup(h.getBoundingClientRect());
             return;
         }
         currentSlug = slug;
         fillContent(h);
         positionPopup(h.getBoundingClientRect());
-
         popup.setAttribute("aria-hidden", "false");
         popup.dataset.open = "true";
 
         if (!gsapLib) return;
-
-        // Reset states
-        gsapLib.killTweensOf([popup, corners]);
+        gsapLib.killTweensOf(popup);
         if (idleTween) idleTween.kill();
 
-        // Master enter timeline
-        const tl = gsapLib.timeline();
-        tl.fromTo(popup,
-            { autoAlpha: 0, scale: 0.6, y: 12 },
-            { autoAlpha: 1, scale: 1,   y: 0, duration: 0.5, ease: "back.out(1.7)" }
+        gsapLib.fromTo(popup,
+            { autoAlpha: 0, scale: 0.55, y: 10 },
+            {
+                autoAlpha: 1, scale: 1, y: 0,
+                duration: 0.45, ease: "back.out(1.8)",
+                onComplete: () => {
+                    idleTween = gsapLib.to(popup, {
+                        y: -3, duration: 2.0,
+                        ease: "sine.inOut",
+                        yoyo: true, repeat: -1,
+                    });
+                },
+            }
         );
-
-        // Corner brackets draw (clip-path animado)
-        gsapLib.fromTo(corners,
-            { scale: 0.3, autoAlpha: 0 },
-            { scale: 1, autoAlpha: 1, duration: 0.5, stagger: 0.05, ease: "back.out(2)" }
-        );
-
-        // Idle float (loop)
-        idleTween = gsapLib.to(popup, {
-            y: -4,
-            duration: 2.2,
-            ease: "sine.inOut",
-            yoyo: true,
-            repeat: -1,
-            delay: 0.5,
-        });
     };
 
     const closePopup = () => {
         currentSlug = null;
         popup.setAttribute("aria-hidden", "true");
         popup.dataset.open = "false";
-
         if (!gsapLib) return;
         if (idleTween) { idleTween.kill(); idleTween = null; }
-        gsapLib.killTweensOf([popup, corners]);
+        gsapLib.killTweensOf(popup);
         gsapLib.to(popup, {
-            autoAlpha: 0, scale: 0.85, y: 6,
-            duration: 0.22, ease: "power3.in",
+            autoAlpha: 0, scale: 0.75, y: 6,
+            duration: 0.2, ease: "power3.in",
         });
     };
 
-    // Hotspot listeners (hover + focus = abre; leave + blur = cierra)
     hotspots.forEach((h) => {
         h.addEventListener("pointerenter", () => openPopup(h));
         h.addEventListener("pointerleave", closePopup);
         h.addEventListener("focus", () => openPopup(h));
         h.addEventListener("blur", closePopup);
-        h.addEventListener("click", (e) => e.preventDefault());  // no navigation
+        h.addEventListener("click", (e) => e.preventDefault());
     });
 
-    // Si scrollean horizontal del slider mientras popup abierto → reposicionar
     let scrollFrame = null;
     const reposition = () => {
         if (!currentSlug) return;

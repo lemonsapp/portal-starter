@@ -271,23 +271,12 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
     </div>
 
     {/* ============================================================
-        POPUP MOCKUP — ventanita estilo "chat de juego" que se abre
-        al hover sobre un hotspot. Floats fixed con coords pintadas
-        desde JS basadas en getBoundingClientRect del hotspot.
-
-        Diseño:
-          • Frame con corner brackets animados (estilo sci-fi/terminal)
-          • Backdrop blur + glass (Discord/game UI vibe)
-          • Top: eyebrow tag con panel parent + sub-name
-          • Center: card mini con base.png + pote.png (los assets que
-            ya tenemos por sub-product)
-          • Below: texto.png (etiqueta gráfica) + tagline texto plano
-          • Color accent siguiendo --popup-accent set por JS
-          • Animaciones GSAP: scale 0.6→1 con back.out + corner draw
-            + idle float yoyo
-
-        El popup vive a nivel section (no por panel) — un único
-        elemento DOM reusable. JS swap data + reposition al hover.
+        POPUP MINI — mini-redondelito del producto que aparece flotante
+        sobre el pote al hover. Mismo estilo que el card grande del
+        slider (base.png + pote.png + texto.png) pero en tamaño chico.
+        Floats fixed-position con coords pintadas desde JS basadas en
+        getBoundingClientRect del hotspot.
+        Skills: gsap-core (entry tween), gsap-utils, frontend-design.
         ============================================================ */}
     <div
         class="psl-popup"
@@ -295,44 +284,10 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
         role="tooltip"
         aria-hidden="true"
     >
-        {/* Corner brackets — 4 esquinas con lineas L estilo HUD scifi */}
-        <span class="psl-popup__corner psl-popup__corner--tl" aria-hidden="true"></span>
-        <span class="psl-popup__corner psl-popup__corner--tr" aria-hidden="true"></span>
-        <span class="psl-popup__corner psl-popup__corner--bl" aria-hidden="true"></span>
-        <span class="psl-popup__corner psl-popup__corner--br" aria-hidden="true"></span>
-
-        {/* Glow halo behind popup, mix-blend para que se sienta vivo */}
-        <span class="psl-popup__halo" aria-hidden="true"></span>
-
-        <div class="psl-popup__body">
-            {/* Header bar con panel name + status dot pulsando */}
-            <header class="psl-popup__head">
-                <span class="psl-popup__dot" aria-hidden="true"></span>
-                <span class="psl-popup__eyebrow" data-psl-popup-panel>—</span>
-                <span class="psl-popup__sep" aria-hidden="true">·</span>
-                <span class="psl-popup__scan" aria-hidden="true">SCAN</span>
-            </header>
-
-            {/* Card mini con base + pote del sub-product */}
-            <div class="psl-popup__stage" data-psl-popup-stage>
-                <img class="psl-popup__base" data-psl-popup-base src="" alt="" aria-hidden="true" draggable="false" />
-                <img class="psl-popup__pote" data-psl-popup-pote src="" alt="" draggable="false" />
-                {/* Decorative grid overlay (game-UI feel) */}
-                <span class="psl-popup__grid" aria-hidden="true"></span>
-            </div>
-
-            {/* Texto gráfico (Texto X.png) + name editorial */}
-            <div class="psl-popup__meta">
-                <img class="psl-popup__texto" data-psl-popup-texto src="" alt="" aria-hidden="true" />
-                <h4 class="psl-popup__name" data-psl-popup-name>—</h4>
-                <p class="psl-popup__tagline" data-psl-popup-tagline>—</p>
-            </div>
-
-            {/* Footer "system" line con pulso */}
-            <footer class="psl-popup__foot" aria-hidden="true">
-                <span class="psl-popup__bar"></span>
-                <span class="psl-popup__bar psl-popup__bar--accent"></span>
-            </footer>
+        <div class="psl-popup__card" data-psl-popup-card>
+            <img class="psl-popup__base"  data-psl-popup-base  src="" alt="" aria-hidden="true" draggable="false" />
+            <img class="psl-popup__pote"  data-psl-popup-pote  src="" alt="" draggable="false" />
+            <img class="psl-popup__texto" data-psl-popup-texto src="" alt="" aria-hidden="true" draggable="false" />
         </div>
     </div>
 </section>

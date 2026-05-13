@@ -2722,144 +2722,40 @@ button {
 }
 
 /* =====================================================================
-   PSL POPUP MOCKUP — ventanita estilo "chat de juego" / sci-fi HUD.
-   Float fixed-position, posicionado dinámicamente por JS.
+   PSL POPUP MINI — mini-redondelito del producto (base + pote + texto)
+   que aparece flotante arriba del pote al hover. Mismo lenguaje visual
+   que el card grande del slider, en tamaño chico.
    ===================================================================== */
 .psl-popup {
     position: fixed;
     z-index: 9500;
-    width: 280px;
-    /* height auto — content driven (en JS asumimos ~360 para flip logic) */
-    padding: 14px;
-    pointer-events: none;            /* nunca interfiere con cursor */
+    width: 240px;
+    aspect-ratio: 1.6 / 1;
+    pointer-events: none;
     visibility: hidden;
     opacity: 0;
-    transform-origin: 50% 100%;      /* default arriba del hotspot */
+    transform-origin: 50% 100%;
     --popup-accent: #f5e03a;
     isolation: isolate;
     will-change: transform, opacity, left, top;
+    /* drop-shadow soft hace de "halo" del card flotando */
+    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.22))
+            drop-shadow(0 6px 12px rgba(0, 0, 0, 0.14));
 }
-.psl-popup[data-placement="bottom"] {
-    transform-origin: 50% 0%;
-}
-.psl-popup[data-open="true"] {
-    visibility: visible;
-}
+.psl-popup[data-placement="bottom"] { transform-origin: 50% 0%; }
+.psl-popup[data-open="true"] { visibility: visible; }
 
-/* Inner body con backdrop blur + glass + border */
-.psl-popup__body {
+/* Card mini: el rounded rectangle con base.png cover + pote.png contain
+   + texto.png en la parte de arriba. Mismo z-stack que el card grande:
+   base (z:0) → pote (z:2) → texto (z:3). */
+.psl-popup__card {
     position: relative;
-    z-index: 2;
-    padding: 14px 14px 12px;
-    border-radius: 14px;
-    background: rgba(15, 17, 22, 0.78);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.6) inset,
-        0 24px 40px rgba(0, 0, 0, 0.4),
-        0 0 0 2px color-mix(in srgb, var(--popup-accent) 30%, transparent),
-        0 0 30px color-mix(in srgb, var(--popup-accent) 28%, transparent);
-    backdrop-filter: blur(14px) saturate(1.2);
-    -webkit-backdrop-filter: blur(14px) saturate(1.2);
-    color: #fafaf7;
+    width: 100%;
+    height: 100%;
+    border-radius: 18px;
     overflow: hidden;
-}
-
-/* Glow halo behind popup */
-.psl-popup__halo {
-    position: absolute;
-    inset: -16px;
-    z-index: 0;
-    border-radius: 22px;
-    background: radial-gradient(ellipse at 50% 50%,
-        color-mix(in srgb, var(--popup-accent) 40%, transparent),
-        transparent 70%);
-    filter: blur(18px);
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-/* Corner brackets — 4 esquinas con L-lines de scifi HUD */
-.psl-popup__corner {
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    z-index: 3;
-    pointer-events: none;
-}
-.psl-popup__corner::before,
-.psl-popup__corner::after {
-    content: "";
-    position: absolute;
-    background: var(--popup-accent);
-    box-shadow: 0 0 8px color-mix(in srgb, var(--popup-accent) 80%, transparent);
-}
-.psl-popup__corner--tl { top: 4px; left: 4px; }
-.psl-popup__corner--tr { top: 4px; right: 4px; transform: rotate(90deg); }
-.psl-popup__corner--bl { bottom: 4px; left: 4px; transform: rotate(-90deg); }
-.psl-popup__corner--br { bottom: 4px; right: 4px; transform: rotate(180deg); }
-/* Línea horizontal */
-.psl-popup__corner::before {
-    top: 0; left: 0;
-    width: 14px; height: 2px;
-}
-/* Línea vertical */
-.psl-popup__corner::after {
-    top: 0; left: 0;
-    width: 2px; height: 14px;
-}
-
-/* Header bar */
-.psl-popup__head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding-bottom: 8px;
-    margin-bottom: 10px;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
-    font-family: var(--f-text);
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: rgba(250, 250, 247, 0.7);
-}
-.psl-popup__dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--popup-accent);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--popup-accent) 25%, transparent);
-    animation: psl-popup-pulse 1.6s ease-in-out infinite;
-}
-@keyframes psl-popup-pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50%      { transform: scale(0.7); opacity: 0.5; }
-}
-.psl-popup__eyebrow {
-    color: var(--popup-accent);
-    font-weight: 800;
-}
-.psl-popup__sep {
-    opacity: 0.4;
-}
-.psl-popup__scan {
-    margin-left: auto;
-    color: rgba(250, 250, 247, 0.5);
-    font-size: 0.58rem;
-}
-
-/* Stage card mini (base + pote) */
-.psl-popup__stage {
-    position: relative;
-    aspect-ratio: 1 / 1;
-    border-radius: 10px;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--popup-accent) 40%, #1a1a1a 60%);
     isolation: isolate;
-    margin-bottom: 10px;
-    box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-        0 6px 14px rgba(0, 0, 0, 0.3);
+    background: var(--popup-accent);
 }
 .psl-popup__base {
     position: absolute;
@@ -2868,111 +2764,36 @@ button {
     height: 100%;
     object-fit: cover;
     z-index: 0;
-    border-radius: inherit;
 }
 .psl-popup__pote {
     position: absolute;
-    inset: 4%;
-    width: 92%;
-    height: 92%;
-    object-fit: contain;
-    z-index: 2;
-    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
-    transform: scale(1.05);
-}
-/* Decorative grid overlay (game HUD feel) */
-.psl-popup__grid {
-    position: absolute;
     inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background:
-        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 20px 20px,
-        linear-gradient(0deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 20px 20px;
-    mix-blend-mode: overlay;
-    opacity: 0.5;
-}
-
-/* Meta texto */
-.psl-popup__meta {
-    text-align: center;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center 60%;
+    z-index: 2;
+    transform: scale(1.15);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.32));
 }
 .psl-popup__texto {
-    display: block;
-    max-width: 80%;
-    max-height: 32px;
-    margin: 0 auto 6px;
-    object-fit: contain;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6))
-            brightness(1.15);
-}
-.psl-popup__name {
-    margin: 0 0 4px;
-    font-family: var(--f-title);
-    font-size: 0.92rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #fafaf7;
-    line-height: 1.1;
-}
-.psl-popup__tagline {
-    margin: 0;
-    font-family: var(--f-text);
-    font-size: 0.66rem;
-    font-style: italic;
-    color: rgba(250, 250, 247, 0.6);
-    letter-spacing: 0.04em;
-}
-
-/* Footer bars (system pulse) */
-.psl-popup__foot {
-    display: flex;
-    gap: 4px;
-    margin-top: 10px;
-}
-.psl-popup__bar {
-    flex: 1;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 1px;
-    position: relative;
-    overflow: hidden;
-}
-.psl-popup__bar::after {
-    content: "";
     position: absolute;
-    top: 0; left: 0;
-    width: 30%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.5);
-    animation: psl-popup-bar 1.4s linear infinite;
-}
-.psl-popup__bar--accent {
-    flex: 0.4;
-    background: color-mix(in srgb, var(--popup-accent) 60%, transparent);
-}
-.psl-popup__bar--accent::after {
-    background: var(--popup-accent);
-    width: 40%;
-    animation-duration: 1.1s;
-}
-@keyframes psl-popup-bar {
-    from { transform: translateX(-100%); }
-    to   { transform: translateX(400%); }
+    top: 8%;
+    left: 10%;
+    right: 10%;
+    width: 80%;
+    height: 22%;
+    object-fit: contain;
+    object-position: center top;
+    z-index: 3;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
 }
 
 @media (max-width: 700px) {
-    /* En mobile el popup más chico */
-    .psl-popup { width: 220px; padding: 10px; }
-    .psl-popup__body { padding: 10px 10px 8px; }
-    .psl-popup__name { font-size: 0.82rem; }
+    .psl-popup { width: 200px; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-    .psl-popup,
-    .psl-popup__dot,
-    .psl-popup__bar::after { animation: none !important; }
+    .psl-popup { transition: none !important; }
 }
 
 /* =====================================================================
