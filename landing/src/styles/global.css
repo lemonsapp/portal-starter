@@ -2752,10 +2752,48 @@ button {
             drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));
     will-change: opacity, transform;
 }
+/* Texto del sub-product (etiqueta gráfica del nombre, PNG transparente).
+   Va arriba del card, sobre el pote, alineado al top del card.
+   object-fit contain mantiene proporciones. */
+.psl__layer--sub-texto {
+    z-index: 50;
+    object-fit: contain;
+    object-position: center top;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    /* Limita altura al ~22% del card para que viva en el top y no tape
+       el pote del medio. Para Elite usa Banner.png más grande (33%). */
+    height: 22%;
+    top: 6%;
+    left: 8%;
+    right: 8%;
+    width: 84%;
+    /* Drop-shadow sutil para que el texto se "despegue" del bg */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    will-change: opacity, transform;
+}
+
+/* Estado locked: hotspot tiene un sutil glow circular indicando el
+   producto seleccionado (sin frame rectangular). */
+.psl__hotspot.is-locked::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 4%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 4px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.4);
+    pointer-events: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
     .psl__layer--sub-base,
-    .psl__layer--sub-hero { transition: none !important; }
+    .psl__layer--sub-hero,
+    .psl__layer--sub-texto { transition: none !important; }
 }
 
 /* =====================================================================

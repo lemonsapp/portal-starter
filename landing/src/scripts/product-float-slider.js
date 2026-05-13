@@ -692,14 +692,15 @@ if (document.readyState === "loading") {
 }
 
 /* ====================================================================
-   SUB-PRODUCT HOVER-SWAP
-   En lugar de modal, el packshot del card CAMBIA inline al hover de un
-   hotspot:
-     - mouseenter en hotspot → cross-fade del unificado al individual
-       (sub-base + sub-hero appearen sobre el unificado).
-     - mouseleave del CARD → vuelve al unificado.
-     - Mover entre hotspots dentro del card → cambio directo sin reset.
-     - Click ALSO funciona (keyboard/touch).
+   SUB-PRODUCT HOVER PREVIEW + CLICK STICKY LOCK
+   Comportamiento:
+     - Hover sobre hotspot → preview del sub (cross-fade in-place).
+     - Click hotspot → LOCK (sticky): el sub queda visible aunque saques
+       el mouse del card. Otro click en el mismo → unlock.
+     - Click otro hotspot (con lock activo) → switch del lock.
+     - Mouse leave del card: si hay lock → muestra LOCK; sino → unificado.
+   Capas: sub-base + sub-hero (packshot) + sub-texto (etiqueta del producto).
+   Todo dentro del card del slider — sin modal ni navegación a otra página.
    ==================================================================== */
 function initSubProductHoverSwap() {
     const cards = document.querySelectorAll("[data-psl-card]");
@@ -711,111 +712,123 @@ function initSubProductHoverSwap() {
         const hotspots = card.querySelectorAll("[data-psl-hotspot]");
         if (!hotspots.length) return;
 
-        const subBaseEl = card.querySelector("[data-psl-sub-base]");
-        const subHeroEl = card.querySelector("[data-psl-sub-hero]");
+        const subBaseEl  = card.querySelector("[data-psl-sub-base]");
+        const subHeroEl  = card.querySelector("[data-psl-sub-hero]");
+        const subTextoEl = card.querySelector("[data-psl-sub-texto]");
         if (!subBaseEl || !subHeroEl) return;
 
-        // Estado inicial: sub-layers invisibles
-        if (gsapLib) {
-            gsapLib.set([subBaseEl, subHeroEl], { autoAlpha: 0 });
-        } else {
-            subBaseEl.style.opacity = "0";
-            subHeroEl.style.opacity = "0";
-        }
+        const layers = [subBaseEl, subHeroEl, subTextoEl].filter(Boolean);
 
-        let currentSub = null;
+        // Estado inicial: invisibles
+        if (gsapLib) gsapLib.set(layers, { autoAlpha: 0 });
+        else layers.forEach((l) => { l.style.opacity = "0"; });
+
+        let currentSub = null;    // slug actualmente mostrado (lock o hover)
+        let lockedSub = null;     // slug clickeado (sticky)
         let pendingTimer = null;
 
-        const showSub = (hotspot) => {
-            if (pendingTimer) {
-                clearTimeout(pendingTimer);
-                pendingTimer = null;
+        const updateActiveStates = () => {
+            hotspots.forEach((h) => {
+                h.classList.toggle("is-locked", h.dataset.subSlug === lockedSub);
+            });
+        };
+
+        const swapSrc = (hotspot) => {
+            subBaseEl.src = hotspot.dataset.subBase || "";
+            subHeroEl.src = hotspot.dataset.subPote || "";
+            subHeroEl.alt = hotspot.dataset.subNombre || "";
+            if (subTextoEl) {
+                const t = hotspot.dataset.subTexto || "";
+                if (t) {
+                    subTextoEl.src = t;
+                    subTextoEl.style.display = "";
+                } else {
+                    subTextoEl.removeAttribute("src");
+                    subTextoEl.style.display = "none";
+                }
             }
+        };
+
+        const showSub = (hotspot) => {
+            if (pendingTimer) { clearTimeout(pendingTimer); pendingTimer = null; }
             const slug = hotspot.dataset.subSlug;
             if (currentSub === slug) return;
             currentSub = slug;
 
-            const baseSrc = hotspot.dataset.subBase;
-            const poteSrc = hotspot.dataset.subPote;
-            const nombre  = hotspot.dataset.subNombre || "";
-
-            // Cross-fade: si ya hay un sub visible, fade-out rápido →
-            // swap src → fade-in. Sino, swap src directo + fade-in.
-            const swap = () => {
-                subBaseEl.src = baseSrc;
-                subHeroEl.src = poteSrc;
-                subHeroEl.alt = nombre;
-            };
-
-            if (gsapLib) {
-                const wasVisible = parseFloat(getComputedStyle(subHeroEl).opacity) > 0.1;
-                if (wasVisible) {
-                    gsapLib.to([subBaseEl, subHeroEl], {
-                        autoAlpha: 0,
-                        duration: 0.15,
-                        ease: "power2.in",
-                        onComplete: () => {
-                            swap();
-                            gsapLib.to([subBaseEl, subHeroEl], {
-                                autoAlpha: 1,
-                                duration: 0.3,
-                                ease: "power2.out",
-                                stagger: 0.04,
-                            });
-                        },
-                    });
-                } else {
-                    swap();
-                    gsapLib.to([subBaseEl, subHeroEl], {
-                        autoAlpha: 1,
-                        duration: 0.35,
-                        ease: "power2.out",
-                        stagger: 0.05,
-                    });
-                }
-            } else {
-                swap();
-                subBaseEl.style.opacity = "1";
-                subHeroEl.style.opacity = "1";
+            if (!gsapLib) {
+                swapSrc(hotspot);
+                layers.forEach((l) => { l.style.opacity = "1"; });
+                return;
             }
-        };
-
-        const hideSub = () => {
-            currentSub = null;
-            if (gsapLib) {
-                gsapLib.to([subBaseEl, subHeroEl], {
-                    autoAlpha: 0,
-                    duration: 0.28,
-                    ease: "power2.inOut",
+            const wasVisible = parseFloat(getComputedStyle(subHeroEl).opacity) > 0.1;
+            if (wasVisible) {
+                gsapLib.to(layers, {
+                    autoAlpha: 0, duration: 0.15, ease: "power2.in",
+                    onComplete: () => {
+                        swapSrc(hotspot);
+                        gsapLib.to(layers, {
+                            autoAlpha: 1, duration: 0.3,
+                            ease: "power2.out", stagger: 0.04,
+                        });
+                    },
                 });
             } else {
-                subBaseEl.style.opacity = "0";
-                subHeroEl.style.opacity = "0";
+                swapSrc(hotspot);
+                gsapLib.to(layers, {
+                    autoAlpha: 1, duration: 0.35,
+                    ease: "power2.out", stagger: 0.05,
+                });
             }
         };
 
-        // Hotspot pointer events (hover preview).
-        // El <a> nativo maneja el click → navega a panel.route#sub-slug,
-        // sin que nosotros interceptemos. Permite Enter (keyboard) +
-        // cmd/ctrl+click (new tab) + click normal (same tab).
+        const hideAll = () => {
+            currentSub = null;
+            if (gsapLib) {
+                gsapLib.to(layers, {
+                    autoAlpha: 0, duration: 0.28, ease: "power2.inOut",
+                });
+            } else {
+                layers.forEach((l) => { l.style.opacity = "0"; });
+            }
+        };
+
+        const restoreToLocked = () => {
+            if (!lockedSub) { hideAll(); return; }
+            // Re-show the locked sub (puede ser distinto del que estaba en hover)
+            const lockedH = Array.from(hotspots).find(
+                (h) => h.dataset.subSlug === lockedSub
+            );
+            if (lockedH) showSub(lockedH);
+            else hideAll();
+        };
+
+        // Hover events
         hotspots.forEach((h) => {
-            // pointerenter — más reliable que mouseenter (touch + pen support)
             h.addEventListener("pointerenter", () => showSub(h));
-            // focus para keyboard nav
             h.addEventListener("focus", () => showSub(h));
+            // Click → toggle sticky lock
+            h.addEventListener("click", (e) => {
+                e.preventDefault();
+                const slug = h.dataset.subSlug;
+                if (lockedSub === slug) {
+                    // Click sobre el ya lockeado → unlock + hide
+                    lockedSub = null;
+                    updateActiveStates();
+                    hideAll();
+                } else {
+                    lockedSub = slug;
+                    updateActiveStates();
+                    showSub(h);
+                }
+            });
         });
 
-        // Card leave → reset al unificado. pointerleave para cubrir
-        // mouse/touch/pen. Pequeño delay para evitar flicker cuando
-        // user mueve entre hotspots adyacentes.
+        // Card leave: si lock activo → mostrar lockeado, sino → ocultar
         card.addEventListener("pointerleave", () => {
-            pendingTimer = setTimeout(hideSub, 80);
+            pendingTimer = setTimeout(restoreToLocked, 80);
         });
         card.addEventListener("pointerenter", () => {
-            if (pendingTimer) {
-                clearTimeout(pendingTimer);
-                pendingTimer = null;
-            }
+            if (pendingTimer) { clearTimeout(pendingTimer); pendingTimer = null; }
         });
     });
 }

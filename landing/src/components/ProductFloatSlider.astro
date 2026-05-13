@@ -221,6 +221,14 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                                         draggable="false"
                                         loading="lazy"
                                     />
+                                    <img
+                                        class="psl__layer psl__layer--sub-texto"
+                                        data-psl-sub-texto
+                                        alt=""
+                                        aria-hidden="true"
+                                        draggable="false"
+                                        loading="lazy"
+                                    />
                                     {/* Hotspots = <a> nativos.
                                         - Hover muestra el preview individual (cross-fade
                                           inline, manejado por JS).
@@ -230,19 +238,20 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
                                         Esto los hace accesibles (focusable + Enter +
                                           cmd-click open new tab) y útiles. */}
                                     {p.subProducts.map((sub) => (
-                                        <a
+                                        <button
+                                            type="button"
                                             class="psl__hotspot"
-                                            href={`${p.route}#${sub.slug}`}
                                             data-psl-hotspot
                                             data-panel-slug={p.slug}
                                             data-sub-slug={sub.slug}
                                             data-sub-base={sub.base}
                                             data-sub-pote={sub.pote}
+                                            data-sub-texto={sub.texto || ""}
                                             data-sub-nombre={sub.nombre}
                                             style={`--hs-x: ${sub.hotspot.x}%; --hs-y: ${sub.hotspot.y}%; --hs-w: ${sub.hotspot.w}%; --hs-h: ${sub.hotspot.h}%;`}
-                                            aria-label={`Ver ${sub.nombre}`}
+                                            aria-label={`Seleccionar ${sub.nombre}`}
                                             data-cursor="hover"
-                                        ></a>
+                                        ></button>
                                     ))}
                                 </>
                             )}
