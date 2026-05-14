@@ -132,7 +132,9 @@ export const panels = [
                 tagline: "Base mineral",
                 base: "/img/slider-spylt/linea-elite/sub/parte-1/base.png",
                 pote: "/img/slider-spylt/linea-elite/sub/parte-1/pote.png",
-                texto: "/img/slider-spylt/linea-elite/sub/parte-1/texto.png",
+                // texto: omitido — el texto.png exportado salió como copia
+                // del fondo del card (bug del pipeline 3D), tapaba el pote
+                // al renderearse con z=50. El swap se queda con base+pote.
                 accentColor: "#d9a86a",
                 hotspot: { x: 8, y: 10, w: 40, h: 80 },
             },
@@ -142,7 +144,7 @@ export const panels = [
                 tagline: "Complejo orgánico",
                 base: "/img/slider-spylt/linea-elite/sub/parte-2/base.png",
                 pote: "/img/slider-spylt/linea-elite/sub/parte-2/pote.png",
-                texto: "/img/slider-spylt/linea-elite/sub/parte-2/texto.png",
+                // texto: omitido — mismo bug que parte-1 (ver comentario arriba).
                 accentColor: "#d9a86a",
                 hotspot: { x: 52, y: 10, w: 40, h: 80 },
             },
