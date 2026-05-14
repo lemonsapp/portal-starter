@@ -74,11 +74,22 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
                 <stop offset="100%" stop-color="#2E8F6E" stop-opacity="1"/>
             </radialGradient>
 
-            <!-- Linear gradient para las raíces (más vivo arriba, fade abajo) -->
-            <linearGradient id="oc-root-grad" x1="50%" y1="0%" x2="50%" y2="100%">
-                <stop offset="0%"  stop-color="#2E8F6E" stop-opacity="0.85"/>
-                <stop offset="60%" stop-color="#1f6b50" stop-opacity="1"/>
-                <stop offset="100%" stop-color="#0f3527" stop-opacity="1"/>
+            <!-- Linear gradient para las raíces. Transición CROMÁTICA del
+                 verde "asesoramiento" (top) al celeste pastel del primer
+                 panel del slider (LÍNEA PRO #9ad8f5) en el bottom — la raíz
+                 conecta visualmente el verde orgánico con el color del
+                 primer producto. userSpaceOnUse para que las 5 raíces
+                 transicionen contra la MISMA escala vertical (no cada
+                 una contra su bounding box) → el bottom de cada raíz
+                 llega exactamente al mismo celeste. -->
+            <linearGradient id="oc-root-grad"
+                gradientUnits="userSpaceOnUse"
+                x1="500" y1="0" x2="500" y2="1200">
+                <stop offset="0%"   stop-color="#2E8F6E" stop-opacity="0.9"/>
+                <stop offset="30%"  stop-color="#1f6b50" stop-opacity="1"/>
+                <stop offset="55%"  stop-color="#3f8d99" stop-opacity="1"/>
+                <stop offset="80%"  stop-color="#7ac1e0" stop-opacity="1"/>
+                <stop offset="100%" stop-color="#9ad8f5" stop-opacity="1"/>
             </linearGradient>
         </defs>
 
@@ -215,8 +226,9 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
             linear-gradient(
                 180deg,
                 #f3ead8 0%,    /* fin del HumanSupport bg */
-                #f5e1e6 55%,   /* puente cream-rose */
-                #fdd9e6 100%   /* intro del primer panel del slider (BIO) */
+                #ecede0 45%,   /* puente cream → celeste muy sutil */
+                #dceaf2 80%,   /* celeste pastel intermedio */
+                #e8f4fb 100%   /* intro del primer panel del slider (LÍNEA PRO) */
             );
         overflow: hidden;
         isolation: isolate;
@@ -234,7 +246,7 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
             ),
             radial-gradient(
                 ellipse 35% 25% at 50% 100%,
-                rgba(248, 185, 213, 0.32) 0%,
+                rgba(154, 216, 245, 0.34) 0%,   /* celeste PRO accent — empata con primer panel */
                 transparent 75%
             );
         pointer-events: none;
