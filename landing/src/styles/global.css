@@ -172,11 +172,23 @@ html {
 
 body {
     font-family: var(--f-text);
-    font-size: 15px;
+    /* font-size escalado: 14px en 360px → 15px @ ~480px → 16px @ desktop */
+    font-size: clamp(14px, calc(13px + 0.4vw), 16px);
     line-height: 1.55;
     color: var(--c-black);
     background: var(--c-white);
     overflow-x: hidden;
+    /* Mobile: evita el rebote/scroll horizontal cuando un elemento se
+       pasa accidentalmente del viewport. Reforzado en html arriba. */
+    overscroll-behavior-x: none;
+}
+
+/* Universal — no más highlight azul de iOS al tap, no más double-tap zoom. */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+a, button, [role="button"], [data-cursor] {
+    touch-action: manipulation;   /* mata el delay de 300ms en mobile */
 }
 
 img {
@@ -219,7 +231,8 @@ button {
 .header__inner {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 14px 20px;
+    /* safe-area-top respeta el notch iOS sin restar al padding lateral */
+    padding: max(14px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) 14px max(20px, env(safe-area-inset-left));
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
@@ -3771,7 +3784,11 @@ html.is-loading body {
        data-* attributes sigan funcionando; el namespace nuevo es .hs. */
     position: relative;
     width: 100%;
+    /* 100vh en iOS Safari incluye la dynamic toolbar → scroll innecesario.
+       svh = small viewport height (sin toolbar contado). Fallback 100vh
+       para browsers viejos. */
     min-height: 100vh;
+    min-height: 100svh;
     padding: 0;
     color: #f3ead8;
     overflow: hidden;
@@ -6187,6 +6204,95 @@ html.is-loading body {
     /* Touch-friendly tap target — mínimo 44px botones */
     button, a {
         min-height: 32px;
+    }
+}
+
+/* =====================================================================
+   MOBILE SWEEP — optimizaciones consolidadas (14/05/2026 turno 5)
+   Reduce particle count, disable heavy filters, simplify animations,
+   ensure touch targets en cada section. Evita bajar perf en mobile
+   sin sacrificar el feel cinemático en desktop.
+   ===================================================================== */
+@media (max-width: 700px) {
+    /* ---- VideoHero: reducir partículas + disable video filter pesado ---- */
+    .vh__particle:nth-child(odd) { display: none !important; }
+    .vh__video {
+        /* Filter triple (contrast/saturate/brightness) tank GPU en mobile.
+           Lo simplificamos a un brightness directo. */
+        filter: brightness(0.82) !important;
+    }
+
+    /* ---- HumanSupport: reducir partículas + opacidad + disable parallax ---- */
+    .hs__particle:nth-child(even) { display: none !important; }
+    .hs__particle { opacity: 0.5 !important; }
+    /* bg-grain con SVG fractalNoise inline pesa en repaints — opacidad menor */
+    .hs__bg-grain { opacity: 0.04 !important; }
+    /* Display chars rotateX expensive en mobile — quitamos depth, queda
+       solo el yPercent burst (más liviano y suficiente) */
+    .hs__display .hs-char { transform: translateY(0) !important; }
+    .hs__display .hs-char[style*="rotation"] { transform: none !important; }
+
+    /* ---- OrganicConnector: pollen completamente off + simplify drops ---- */
+    .oc__pollen { display: none !important; }
+    .oc__drops  { opacity: 0.6; }
+    /* Goo filter custom es pesado — el browser ya lo aplica al SVG entero */
+    .oc__svg { filter: none !important; }
+
+    /* ---- EaseOfUse: disable displacement filter (feTurbulence pesado iOS) ---- */
+    .promise-panel__title {
+        filter: none !important;
+    }
+
+    /* ---- VineDivider: spores off, queda solo el stem drawSVG ---- */
+    .vine-divider__spore,
+    .vine-divider__bloom { display: none !important; }
+
+    /* ---- ChapterSection drips off (animación pesada) ---- */
+    .chapter__drip,
+    [data-chapter-drip] { display: none !important; }
+    /* Video sat también ya están off con media existente */
+
+    /* ---- Touch targets: garantizar 44x44 en CTAs y links ---- */
+    .vh-cta__inner,
+    .hs__cta-inner,
+    .psl__panel-cta,
+    .final-cta__btn,
+    .header__nav-link,
+    .footer a {
+        min-height: 44px;
+    }
+    /* Hotspots del slider: garantizar tamaño tappeable mínimo */
+    .psl__hotspot {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* ---- Hover-only states que se "pegan" en touch ---- */
+    /* Wrap-fix: si no hay hover (touch device), el :hover state queda
+       activo después del tap. Reset universal para CTAs principales. */
+}
+
+/* Hover-capable devices ONLY: aplicar transitions de hover */
+@media (hover: none) {
+    .vh-cta:hover,
+    .hs__cta:hover,
+    .psl__panel-cta:hover {
+        transform: none !important;
+    }
+    /* El liquid-fill del CTA del VideoHero solo tiene sentido con cursor.
+       En touch lo dejamos siempre visible al 30% como hint. */
+    .vh-cta__fill { opacity: 0.25; transform: scale(1); }
+}
+
+/* Reduce motion por sistema → pausar TODO loop infinito */
+@media (prefers-reduced-motion: reduce) {
+    .vh__particle,
+    .hs__particle,
+    .oc__pollen-dot,
+    .marquee__track,
+    .hs__band-tick,
+    .hs__band-arrow {
+        animation: none !important;
     }
 }
 

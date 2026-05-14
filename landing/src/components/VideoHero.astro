@@ -133,9 +133,9 @@ const TOTAL_FORMULAS = 5;
             data-magnetic-strength="0.32"
             aria-label="Entrar en Línea Race"
         >
-            <!-- Capas de glow detrás (CSS-driven, no GSAP) -->
-            <span class="vh-cta__halo" aria-hidden="true"></span>
-            <span class="vh-cta__shimmer" aria-hidden="true"></span>
+            <!-- Capas de glow + shimmer rotativo removidas (14/05 turno 5)
+                 por pedido del cliente: "el cosito que gira" molestaba.
+                 Queda el pill limpio, mismo magnetic + liquid fill al hover. -->
 
             <!-- Pill body — el círculo blanco se expande al hover desde el cursor -->
             <span class="vh-cta__inner">
@@ -482,53 +482,9 @@ const TOTAL_FORMULAS = 5;
         border-radius: 999px;
     }
 
-    /* Halo: aura difusa atrás, scale up al hover. */
-    .vh-cta__halo {
-        position: absolute;
-        inset: -18px -32px;
-        z-index: -2;
-        border-radius: 999px;
-        background: radial-gradient(
-            ellipse at center,
-            rgba(167, 245, 200, 0.32) 0%,
-            rgba(46, 143, 110, 0.18) 38%,
-            transparent 72%
-        );
-        filter: blur(18px);
-        opacity: 0;
-        transition: opacity 0.45s ease, transform 0.45s ease;
-    }
-    .vh-cta:hover .vh-cta__halo,
-    .vh-cta:focus-visible .vh-cta__halo {
-        opacity: 1;
-        transform: scale(1.08);
-    }
-
-    /* Shimmer rotativo idle (CSS-driven). Conic gradient gira detrás
-       del pill para que se sienta vivo cuando está estático. */
-    .vh-cta__shimmer {
-        position: absolute;
-        inset: -1px;
-        z-index: -1;
-        border-radius: 999px;
-        background: conic-gradient(
-            from 0deg,
-            transparent 0deg,
-            rgba(167, 245, 200, 0.0) 60deg,
-            rgba(167, 245, 200, 0.85) 90deg,
-            rgba(255, 255, 255, 0.95) 110deg,
-            rgba(167, 245, 200, 0.85) 130deg,
-            transparent 180deg,
-            transparent 360deg
-        );
-        animation: vh-cta-shimmer 4.5s linear infinite;
-        filter: blur(0.5px);
-        opacity: 0.85;
-    }
-    @keyframes vh-cta-shimmer {
-        from { transform: rotate(0deg); }
-        to   { transform: rotate(360deg); }
-    }
+    /* (Halo radial + shimmer conic-gradient rotativo removidos 14/05
+       turno 5 — el "cosito que gira" molestaba al cliente. El pill se
+       sostiene solo gracias al hover liquid-fill + magnetic.) */
 
     /* Pill body */
     .vh-cta__inner {
