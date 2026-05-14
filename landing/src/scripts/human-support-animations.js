@@ -29,6 +29,8 @@ function initHumanSupport() {
     const runnerTrail  = root.querySelector("[data-human-runner-trail]");
     const milestones   = Array.from(root.querySelectorAll("[data-human-milestone]"));
     const cta          = root.querySelector("[data-human-cta]");
+    const tendrilPath  = root.querySelector("[data-human-cta-tendril-path]");
+    const tendrilTip   = root.querySelector("[data-human-cta-tendril-tip]");
 
     mm.add(BREAKPOINTS, (ctx) => {
         const { reduceMotion } = ctx.conditions;
@@ -201,6 +203,50 @@ function initHumanSupport() {
                     trigger: cta, start: "top 85%",
                     toggleActions: "play none none reverse",
                 },
+            });
+        }
+
+        // --------- Tendril CTA → OrganicConnector (drawSVG scroll-linked) ---
+        // El tendril vive en el padding-bottom de la sección, conecta el
+        // botón "Hablar con Holistic" con el inicio del trunk del OC.
+        // Se anima scroll-linked: cuando el CTA entra al viewport, el
+        // path se "dibuja" desde el botón hacia abajo. Cuando llega al
+        // 70% del scroll de la sección (cerca del bottom del HumanSupport),
+        // el tip aparece + pulsa = "germinación" — y la raíz del
+        // OrganicConnector empieza a crecer justo desde ese punto.
+        if (tendrilPath) {
+            const PATH_LEN = 480;  // matchea --tendril dasharray del CSS
+            gsap.set(tendrilPath, { strokeDashoffset: PATH_LEN });
+            gsap.to(tendrilPath, {
+                strokeDashoffset: 0,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: cta || root,
+                    start: "top 75%",
+                    end: "bottom 35%",
+                    scrub: 0.4,
+                },
+            });
+        }
+        if (tendrilTip) {
+            gsap.set(tendrilTip, { autoAlpha: 0, scale: 0 });
+            gsap.to(tendrilTip, {
+                autoAlpha: 1, scale: 1,
+                duration: 0.45, ease: "back.out(2.2)",
+                scrollTrigger: {
+                    trigger: cta || root,
+                    start: "bottom 55%",
+                    toggleActions: "play none none reverse",
+                },
+            });
+            // Pulse idle sutil — late so it doesn't compete with the entrance
+            gsap.to(tendrilTip, {
+                scale: 1.35,
+                duration: 1.1,
+                ease: "sine.inOut",
+                yoyo: true,
+                repeat: -1,
+                delay: 0.6,
             });
         }
 

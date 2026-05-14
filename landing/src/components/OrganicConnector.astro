@@ -39,11 +39,9 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
     <!-- BG gradient — transición de fondo del Asesoramiento al slider -->
     <div class="oc__bg" aria-hidden="true"></div>
 
-    <!-- Eyebrow editorial sutil que orienta la metáfora -->
-    <p class="oc__caption" data-oc-caption aria-hidden="true">
-        <span class="oc__caption-dot"></span>
-        <span class="oc__caption-text">EL SISTEMA NUTRE</span>
-    </p>
+    <!-- Caption "EL SISTEMA NUTRE" removido (14/05): la metáfora ahora
+         la cuenta el tendril del HumanSupport — la raíz "brota" del
+         botón "Hablar con Holistic", no necesita label tipográfico. -->
 
     <!-- SVG canvas — full viewport, vertical -->
     <svg
@@ -92,6 +90,19 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
                 <stop offset="100%" stop-color="#9ad8f5" stop-opacity="1"/>
             </linearGradient>
         </defs>
+
+        <!-- ============ ORIGEN — "germinación" en el top center ============
+             Pequeño dot que matchea EXACTAMENTE el tip del tendril del
+             HumanSupport (mismo color #A7F5C8 + halo verde mint). Visualmente
+             el tendril del botón "Hablar con Holistic" llega hasta acá y
+             desde acá brota la raíz al scrollear. Static — no se anima
+             (queda visible siempre, como punto de anclaje). -->
+        <circle
+            class="oc__seed"
+            data-oc-seed
+            cx="500" cy="4" r="6"
+            fill="#A7F5C8"
+        />
 
         <!-- ============ RAÍCES (root system) ============
              Paths estilo "growing roots" — un main trunk vertical + 4 sub-branches.
@@ -289,6 +300,21 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
         height: 100%;
         max-height: 100vh;
         margin: 0 auto;
+    }
+
+    /* Seed = punto de germinación en el top del trunk. Matchea el tip
+       del tendril del HumanSupport en color y tamaño → visualmente el
+       tendril del botón "se planta" acá y la raíz brota desde este
+       punto al scrollear. Pulse idle suave para mantenerlo "vivo". */
+    .oc__seed {
+        filter: drop-shadow(0 0 12px rgba(167, 245, 200, 0.95));
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: oc-seed-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes oc-seed-pulse {
+        0%, 100% { transform: scale(1);    opacity: 1;   }
+        50%      { transform: scale(1.25); opacity: 0.85;}
     }
 
     /* Roots: estado inicial → path COMPLETAMENTE OCULTO via stroke-dashoffset.

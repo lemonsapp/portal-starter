@@ -92,20 +92,21 @@ const milestones = [
             </ol>
         </div>
 
+        <!-- CTA limpio. Antes tenía 3 capas decorativas (halo radial, conic
+             gradient rotativo, shine sweep) — el "cosito que gira" que
+             el cliente pidió sacar. Queda solo el botón pill negro con
+             ícono WhatsApp verde + texto. La conexión visual con la
+             raíz del OrganicConnector la maneja el tendril SVG (más
+             abajo) que sale desde el centro de este botón. -->
         <a
             href={CONTACTO.whatsapp_url_with_message}
-            class="human-support__cta human-support__cta--radiant"
+            class="human-support__cta human-support__cta--solid"
             data-cursor="hover"
             data-human-cta
-            data-radiant
             target="_blank"
             rel="noopener"
         >
-            <!-- Capas de glow rotativo (CSS-driven, no GSAP — se mueven solo) -->
-            <span class="cta-radiant__halo" aria-hidden="true"></span>
-            <span class="cta-radiant__conic" aria-hidden="true"></span>
-            <span class="cta-radiant__shine" aria-hidden="true"></span>
-            <span class="cta-radiant__inner">
+            <span class="cta-solid__inner">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M21 11.5a8.38 8.38 0 0 1-1 4 8.5 8.5 0 0 1-7.6 4.8A8.38 8.38 0 0 1 8.4 19L3 21l2-5.4A8.5 8.5 0 0 1 16 4.5a8.38 8.38 0 0 1 5 7Z" />
                 </svg>
@@ -113,6 +114,50 @@ const milestones = [
             </span>
         </a>
     </div>
+
+    <!-- TENDRIL — bridge orgánico CTA → OrganicConnector. SVG vertical
+         posicionado al bottom-center del HumanSupport (cubre el
+         padding-bottom de la sección). Dibujado con stroke-dasharray
+         scroll-linked: cuando el botón entra al viewport, el tendril
+         "brota" del bottom del botón y baja hasta el borde inferior
+         de la sección — donde arranca el trunk principal del
+         OrganicConnector (top center del SVG x=500, y=0). El user
+         lee la raíz como si naciera del propio botón.
+         Resultado: el asesoramiento humano (CTA) NUTRE el sistema
+         de raíces, que NUTRE los productos del slider abajo. -->
+    <svg
+        class="human-support__cta-tendril"
+        data-human-cta-tendril
+        viewBox="0 0 80 220"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+    >
+        <defs>
+            <linearGradient id="hs-tendril-grad" x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%"  stop-color="#25d366" stop-opacity="0.95"/>
+                <stop offset="55%" stop-color="#2E8F6E" stop-opacity="1"/>
+                <stop offset="100%" stop-color="#1f6b50" stop-opacity="1"/>
+            </linearGradient>
+        </defs>
+        <!-- Path principal: leve serpenteo orgánico desde botón → trunk OC -->
+        <path
+            class="human-support__cta-tendril-path"
+            data-human-cta-tendril-path
+            d="M 40 0 C 44 40, 36 80, 42 120 C 48 160, 38 190, 40 220"
+            stroke="url(#hs-tendril-grad)"
+            stroke-width="3.2"
+            stroke-linecap="round"
+            fill="none"
+        />
+        <!-- Dot final pulsante = "punto de germinación" donde la raíz
+             del OrganicConnector empieza a crecer. -->
+        <circle
+            class="human-support__cta-tendril-tip"
+            data-human-cta-tendril-tip
+            cx="40" cy="218" r="5"
+            fill="#A7F5C8"
+        />
+    </svg>
 </section>
 
 <script>

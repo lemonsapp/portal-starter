@@ -1,9 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import VideoHero from "../components/VideoHero.astro";
-import ProductsHero from "../components/ProductsHero.astro";
 import Marquee from "../components/Marquee.astro";
-import LiquidPour from "../components/LiquidPour.astro";
 import EaseOfUse from "../components/EaseOfUse.astro";
 import ProductFloatSlider from "../components/ProductFloatSlider.astro";
 import ChapterSection from "../components/ChapterSection.astro";
@@ -57,19 +55,15 @@ const dividers = [
 
     <!-- 5 productos: pin horizontal SPYLT.
          showWelcome={false} oculta el welcome interno del slider:
-         ya tenemos el VideoHero arriba como intro cinemática.
-         (Va ANTES de ProductsHero — el user pidió slider primero,
-         editorial después como cierre tipográfico.) -->
+         ya tenemos el VideoHero arriba como intro cinemática. -->
     <ProductFloatSlider showWelcome={false} />
 
-    <!-- HERO TEXT — sección text-only DESPUÉS del slider (cierre editorial).
-         "TENEMOS 5 PRODUCTOS OBSESIVAMENTE DISEÑADOS." big centered con
-         char reveal scroll-driven. -->
-    <ProductsHero />
-
+    <!-- ProductsHero ("TENEMOS 5 PRODUCTOS OBSESIVAMENTE DISEÑADOS.") +
+         LiquidPour ("NUTRICIÓN SUPERIOR" warp verde) removidos por pedido
+         del cliente: el slider habla por sí solo, el editorial extra
+         post-slider rompía el ritmo. El Marquee dark se queda como
+         transición tipográfica directa hacia EaseOfUse. -->
     <Marquee variant="dark" />
-
-    <LiquidPour />
 
     <EaseOfUse />
 

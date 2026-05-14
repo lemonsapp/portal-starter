@@ -4267,92 +4267,26 @@ html.is-loading body {
 }
 
 /* =====================================================================
-   CTA RADIANT — botón "HABLAR CON HOLISTIC" con glow conic + sweep
-   Capas: halo (pulse) + conic (rotation infinita) + shine (sweep diagonal)
+   CTA SOLID — botón "HABLAR CON HOLISTIC" limpio (post-cleanup 14/05).
+   Removidas las 3 capas decorativas (halo radial, conic gradient
+   rotativo, shine sweep) por pedido del cliente — quedaba demasiado
+   "cosito que gira" detrás. Pill negro con ícono WhatsApp verde.
+   La conexión visual con el OrganicConnector la maneja un tendril
+   SVG separado (data-cta-tendril) que sale debajo del botón.
    ===================================================================== */
-.human-support__cta--radiant {
+.human-support__cta--solid {
     position: relative;
     isolation: isolate;
-    overflow: visible;
-    padding: 2px;
     border-radius: 999px;
-    background: transparent;
-    color: #fff;
     text-decoration: none;
     display: inline-flex;
     cursor: pointer;
     transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
 }
-.human-support__cta--radiant:hover {
-    transform: translateY(-4px) scale(1.03);
+.human-support__cta--solid:hover {
+    transform: translateY(-3px);
 }
-.human-support__cta--radiant:hover .cta-radiant__halo {
-    opacity: 1;
-}
-.cta-radiant__halo {
-    position: absolute;
-    inset: -22px;
-    border-radius: 999px;
-    background: radial-gradient(closest-side,
-        rgba(37, 211, 102, 0.55) 0%,
-        rgba(37, 211, 102, 0.16) 45%,
-        transparent 75%);
-    filter: blur(12px);
-    z-index: -2;
-    opacity: 0.85;
-    animation: cta-halo-pulse 2.2s ease-in-out infinite;
-    pointer-events: none;
-}
-@keyframes cta-halo-pulse {
-    0%, 100% { transform: scale(1); opacity: 0.7; }
-    50%      { transform: scale(1.12); opacity: 1; }
-}
-.cta-radiant__conic {
-    position: absolute;
-    inset: 0;
-    border-radius: 999px;
-    z-index: -1;
-    background: conic-gradient(
-        from 0deg,
-        #25d366, #5cf2a2, #ffd166, #ff80c5,
-        #5fb8ff, #25d366);
-    animation: cta-conic-spin 3s linear infinite;
-    pointer-events: none;
-}
-@keyframes cta-conic-spin {
-    to { transform: rotate(360deg); }
-}
-.cta-radiant__shine {
-    position: absolute;
-    inset: 0;
-    border-radius: 999px;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
-}
-.cta-radiant__shine::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -100%;
-    width: 50%;
-    height: 200%;
-    background: linear-gradient(105deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.45) 45%,
-        rgba(255, 255, 255, 0.85) 50%,
-        rgba(255, 255, 255, 0.45) 55%,
-        transparent 100%);
-    transform: skewX(-15deg);
-    animation: cta-shine-sweep 4s ease-in-out infinite;
-}
-@keyframes cta-shine-sweep {
-    0%, 35% { transform: translateX(0) skewX(-15deg); opacity: 0; }
-    40%     { opacity: 1; }
-    60%     { opacity: 1; }
-    65%, 100% { transform: translateX(700%) skewX(-15deg); opacity: 0; }
-}
-.cta-radiant__inner {
+.cta-solid__inner {
     position: relative;
     z-index: 2;
     display: inline-flex;
@@ -4366,15 +4300,57 @@ html.is-loading body {
     font-size: 0.95rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.18),
+        0 1px 0 rgba(255, 255, 255, 0.06) inset;
+    transition: box-shadow 0.35s ease;
 }
-.cta-radiant__inner svg {
+.human-support__cta--solid:hover .cta-solid__inner {
+    box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.28),
+        0 0 0 1px rgba(37, 211, 102, 0.35),
+        0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+.cta-solid__inner svg {
     color: #25d366;
-    filter: drop-shadow(0 0 8px rgba(37, 211, 102, 0.6));
+    filter: drop-shadow(0 0 6px rgba(37, 211, 102, 0.45));
+}
+
+/* CTA tendril — "germinación" del botón hacia el OrganicConnector.
+   Posicionado absolute al bottom-center, cubre el padding-bottom
+   (16vh) del HumanSupport. La punta llega exactamente al borde
+   inferior, donde naturalmente arranca el trunk del OC abajo. */
+.human-support__cta-tendril {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(48px, 6vw, 80px);
+    height: 16vh;     /* matchea exacto el padding-bottom del .human-support */
+    z-index: 2;
+    pointer-events: none;
+    overflow: visible;
+    will-change: transform;
+}
+.human-support__cta-tendril-path {
+    /* Estado inicial: ocultado via dasharray (~480u, larger than path
+       length 230u — generoso). drawSVG plugin del script lo anima
+       scroll-linked: cuando el CTA entra al viewport, dashoffset → 0
+       y el tendril "brota" del top hacia el bottom. */
+    stroke-dasharray: 480;
+    stroke-dashoffset: 480;
+    filter: drop-shadow(0 1px 6px rgba(46, 143, 110, 0.35));
+}
+.human-support__cta-tendril-tip {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    filter: drop-shadow(0 0 8px rgba(167, 245, 200, 0.85));
+    will-change: opacity, transform;
 }
 @media (prefers-reduced-motion: reduce) {
-    .cta-radiant__halo,
-    .cta-radiant__conic,
-    .cta-radiant__shine::before { animation: none; }
+    .human-support__cta-tendril-path { stroke-dashoffset: 0; }
+    .human-support__cta-tendril-tip  { opacity: 1; }
 }
 
 /* =====================================================================
