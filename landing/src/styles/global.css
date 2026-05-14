@@ -6097,23 +6097,96 @@ html.is-loading body {
         transform: scale(0.97);
         transition: opacity 0.15s ease, transform 0.15s ease;
     }
-    /* En touch screens NO usamos hover-glow — el tap dispara swap directo */
-    @media (hover: none) {
-        .psl__hotspot {
-            background: transparent !important;
-            mix-blend-mode: normal !important;
-            opacity: 0 !important;
-        }
-        .psl__hotspot:active {
-            background: radial-gradient(ellipse 65% 75% at 50% 60%,
-                color-mix(in srgb, var(--hs-accent, #fff) 60%, transparent) 0%,
-                transparent 78%) !important;
-            mix-blend-mode: screen !important;
-            opacity: 0.9 !important;
-        }
-    }
     /* Card más compacto en mobile pequeño */
     .psl__card { max-height: 52vh; width: 94vw; }
+}
+
+/* HOTSPOTS en TOUCH — indicador visible permanente
+   El user en mobile NO sabe que el packshot es tappable si el hotspot
+   es invisible. Mostramos un mini "ring + dot" sutil en el bottom-center
+   de cada hotspot (sobre el pote/bidón) para que se vea claro qué
+   producto es interactuable. Al tap, el ring crece + glow + el swap.
+   ::after = el ring. ::before = un dot central. Solo aparece en touch
+   (hover:none) — desktop sigue usando hover-glow del background. */
+@media (hover: none) {
+    .psl__hotspot {
+        /* Sin background hover, sin mix-blend — solo container vacío
+           para los pseudo-elements. */
+        background: transparent !important;
+        mix-blend-mode: normal !important;
+        opacity: 1 !important;
+        /* touch-action manipulation evita el delay de 300ms */
+        touch-action: manipulation;
+    }
+    /* RING — círculo blanco con borde verde mint, posicionado bajo el pote */
+    .psl__hotspot::before {
+        content: "";
+        position: absolute;
+        bottom: 8%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.92);
+        border: 2px solid rgba(37, 211, 102, 0.85);
+        box-shadow:
+            0 2px 10px rgba(0, 0, 0, 0.22),
+            0 0 0 4px rgba(37, 211, 102, 0.12);
+        pointer-events: none;
+        animation: psl-hotspot-ring-pulse 2.4s ease-in-out infinite;
+    }
+    /* DOT — punto verde dentro del ring */
+    .psl__hotspot::after {
+        content: "";
+        position: absolute;
+        bottom: calc(8% + 7px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #25d366;
+        box-shadow: 0 0 8px rgba(37, 211, 102, 0.85);
+        pointer-events: none;
+    }
+    /* Tap feedback: ring crece + dot se hunde */
+    .psl__hotspot:active::before {
+        transform: translateX(-50%) scale(1.35);
+        background: rgba(167, 245, 200, 1);
+        border-color: #25d366;
+        box-shadow:
+            0 4px 14px rgba(0, 0, 0, 0.3),
+            0 0 0 8px rgba(37, 211, 102, 0.22);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    /* Locked state: ring transforma a checkmark visual (verde llenado) */
+    .psl__hotspot.is-locked::before {
+        background: #25d366;
+        border-color: #fff;
+        box-shadow:
+            0 4px 14px rgba(0, 0, 0, 0.32),
+            0 0 0 5px rgba(37, 211, 102, 0.32);
+        animation: none;
+    }
+    .psl__hotspot.is-locked::after {
+        background: #fff;
+        box-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
+    }
+}
+@keyframes psl-hotspot-ring-pulse {
+    0%, 100% {
+        transform: translateX(-50%) scale(1);
+        box-shadow:
+            0 2px 10px rgba(0, 0, 0, 0.22),
+            0 0 0 4px rgba(37, 211, 102, 0.12);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.12);
+        box-shadow:
+            0 2px 10px rgba(0, 0, 0, 0.28),
+            0 0 0 8px rgba(37, 211, 102, 0.20);
+    }
 }
 
 /* --- PRODUCTS HERO · MOBILE --- */
@@ -6261,11 +6334,9 @@ html.is-loading body {
     .footer a {
         min-height: 44px;
     }
-    /* Hotspots del slider: garantizar tamaño tappeable mínimo */
-    .psl__hotspot {
-        min-width: 44px;
-        min-height: 44px;
-    }
+    /* Hotspots del slider: NO seteamos min-width/height para no romper el
+       layout porcentual (los hotspots ya tienen ~22-25% del card que en
+       mobile pequeño es 70-90px, suficiente para tap). */
 
     /* ---- Hover-only states que se "pegan" en touch ---- */
     /* Wrap-fix: si no hay hover (touch device), el :hover state queda

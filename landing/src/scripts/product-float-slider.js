@@ -888,18 +888,54 @@ function initSubProductSwap() {
             }, 0.15);
         };
 
+        // Activate handler — escucha pointerup + click para asegurar disparo
+        // tanto en mouse (desktop) como en touch (mobile). El ScrollTrigger
+        // pin del slider puede absorber el primer touchstart cuando hay scroll
+        // vertical en curso, por eso pointerup es más confiable que click solo.
+        // Guardamos en el handler la posición inicial del pointer para
+        // detectar swipe vs tap (si el dedo se mueve > 8px, no es tap).
+        const HANDLED_FLAG = "__pslHotspotHandled";
+        const TAP_TOLERANCE = 8;
+        const triggerHotspot = (h) => {
+            const slug = h.dataset.subSlug;
+            if (lockedSub === slug) {
+                lockedSub = null;
+                resetToUnified();
+            } else {
+                lockedSub = slug;
+                swapToSub(h);
+            }
+        };
         hotspots.forEach((h) => {
-            h.addEventListener("click", (e) => {
+            let startX = 0, startY = 0;
+            // Track inicio del touch/pointer para detectar tap-vs-swipe
+            h.addEventListener("pointerdown", (e) => {
+                startX = e.clientX;
+                startY = e.clientY;
+                h[HANDLED_FLAG] = false;
+            }, { passive: true });
+
+            h.addEventListener("pointerup", (e) => {
+                const dx = Math.abs(e.clientX - startX);
+                const dy = Math.abs(e.clientY - startY);
+                if (dx > TAP_TOLERANCE || dy > TAP_TOLERANCE) return; // swipe, ignore
+                if (h[HANDLED_FLAG]) return;
+                h[HANDLED_FLAG] = true;
                 e.preventDefault();
-                const slug = h.dataset.subSlug;
-                if (lockedSub === slug) {
-                    // Click el mismo otra vez → unlock inmediato (no esperar 3s)
-                    lockedSub = null;
-                    resetToUnified();
-                } else {
-                    lockedSub = slug;
-                    swapToSub(h);
-                }
+                triggerHotspot(h);
+                // Reset flag después del próximo tick para que click no re-dispare
+                setTimeout(() => { h[HANDLED_FLAG] = false; }, 350);
+            });
+
+            // Click handler retained as fallback (keyboard Enter/Space + browsers
+            // que no dispatchean pointerup correctamente). El flag previene
+            // double-fire si pointerup ya se manejó.
+            h.addEventListener("click", (e) => {
+                if (h[HANDLED_FLAG]) { e.preventDefault(); return; }
+                h[HANDLED_FLAG] = true;
+                e.preventDefault();
+                triggerHotspot(h);
+                setTimeout(() => { h[HANDLED_FLAG] = false; }, 350);
             });
         });
     });
