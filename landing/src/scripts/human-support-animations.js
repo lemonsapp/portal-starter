@@ -1,17 +1,38 @@
 /* =====================================================================
-   HOLISTIC — human-support-animations.js (v2 — wave + ignite)
-   Animación nueva pedida por el cliente: el rail no es un simple "fill",
-   ahora el runner verde "enciende" cada milestone al pasar por encima
-   con un pulso luminoso. El título hace un "sweep" de color al entrar
-   (line-by-line). El CTA es un botón radiant CSS (no necesita JS).
+   HOLISTIC — human-support-animations.js (v3 CINEMATOGRÁFICO)
+   Rediseño explosivo (14/05/2026 turno 4): traer la dramaturgia del
+   VideoHero al HumanSupport. Master timeline con labels secuenciales,
+   SplitText con stagger explosivo, partículas drifting, runner verde
+   scrub, ignite por milestone, CTA scale-in, tendril drawSVG.
 
-   Skills aplicadas (citadas):
-     • gsap-plugins         → SplitText (title lines), DrawSVG (rail fill curve)
-     • gsap-timeline        → enter timeline + scrub timeline
-     • gsap-scrolltrigger   → scrub para rail + ignite por milestone
-     • gsap-utils           → toArray, mapRange para igniteThresholds
-     • gsap-core matchMedia → reduced-motion + responsive
+   Beat sheet (master timeline, scroll-trigger toggleActions):
+     0      → frame      : top band L/R aparecen + bottom HUD
+     0.25   → kicker     : kicker numérico + línea horizontal
+     0.5    → display    : "ASESORAMIENTO" chars desde abajo (rotateX)
+     0.95   → em         : "SIN CARGO" chars + reglas L/R abren
+     1.4    → claim      : 3 líneas del claim stagger
+     1.85   → cta        : botón scale-in con back.out
+     idle   → particles drifting CSS-less (controlado JS)
+     scroll → rail fill + runner + ignite milestones (sub-trigger)
+     scroll → tendril drawSVG (sub-trigger en el CTA)
+
+   Skills aplicadas:
+     • gsap-timeline                → master tl + labels + position param
+     • gsap-plugins SplitText       → display chars con mask
+     • gsap-plugins CustomEase      → 'hs-explode' overshoot
+     • gsap-scrolltrigger           → enter triggers + scrub del runner
+     • gsap-utils.toArray, random   → partículas + naturalismo
+     • gsap-core matchMedia         → reduce-motion + breakpoints
+     • gsap-performance             → transforms only, will-change scoped
+
+   Recovery: si SplitText falla, animamos los words como bloques. Si
+   CustomEase falla, fallback a back.out(2.6). Si JS no corre, el CSS
+   muestra el estado final (sin animación pero todo visible).
    ===================================================================== */
+
+// registerGsap.js ya registra ScrollTrigger + SplitText + CustomEase y
+// define el ease "explode" (overshoot 3-act). Lo reusamos para los chars
+// del display — feel "burst" sincronizado con el resto del site.
 import {
     gsap, mm, BREAKPOINTS, ScrollTrigger, SplitText,
 } from "./lib/registerGsap.js";
@@ -20,113 +41,203 @@ function initHumanSupport() {
     const root = document.querySelector("[data-human-support]");
     if (!root) return;
 
-    const eyebrow      = root.querySelector("[data-human-eyebrow]");
-    const titleEl      = root.querySelector("[data-human-title]");
-    const lede         = root.querySelector("[data-human-lede]");
-    const pulses       = Array.from(root.querySelectorAll("[data-human-pulse]"));
-    const railFill     = root.querySelector("[data-human-rail-fill]");
-    const runner       = root.querySelector("[data-human-runner]");
-    const runnerTrail  = root.querySelector("[data-human-runner-trail]");
-    const milestones   = Array.from(root.querySelectorAll("[data-human-milestone]"));
-    const cta          = root.querySelector("[data-human-cta]");
-    const tendrilPath  = root.querySelector("[data-human-cta-tendril-path]");
-    const tendrilTip   = root.querySelector("[data-human-cta-tendril-tip]");
+    // ========== Refs ==========
+    const bandL       = root.querySelector("[data-hs-band-l]");
+    const bandR       = root.querySelector("[data-hs-band-r]");
+    const bandBL      = root.querySelector("[data-hs-band-bl]");
+    const bandBR      = root.querySelector("[data-hs-band-br]");
+    const kicker      = root.querySelector("[data-hs-kicker]");
+    const display     = root.querySelector("[data-hs-display]");
+    const words       = Array.from(root.querySelectorAll("[data-hs-word]"));
+    const rules       = Array.from(root.querySelectorAll("[data-hs-rule]"));
+    const claimLines  = Array.from(root.querySelectorAll(".hs__claim-line"));
+    const cta         = root.querySelector("[data-hs-cta]");
+    const milestones  = Array.from(root.querySelectorAll("[data-hs-milestone]"));
+    const railFill    = root.querySelector("[data-hs-rail-fill]");
+    const runner      = root.querySelector("[data-hs-runner]");
+    const runnerTrail = root.querySelector("[data-hs-runner-trail]");
+    const particles   = gsap.utils.toArray("[data-hs-particle]");
+    const tendrilPath = root.querySelector("[data-human-cta-tendril-path]");
+    const tendrilTip  = root.querySelector("[data-human-cta-tendril-tip]");
 
     mm.add(BREAKPOINTS, (ctx) => {
         const { reduceMotion } = ctx.conditions;
 
-        // --------- SplitText: chars del title (mask por línea) ---------
-        let splitTitle = null;
-        let lines = [];
-        let chars = [];
-        if (titleEl) {
-            splitTitle = SplitText.create(titleEl, {
-                type: "lines, chars",
-                mask: "lines",
-                linesClass: "title-line",
-                charsClass: "title-char",
-                aria: "auto",
-            });
-            lines = splitTitle.lines;
-            chars = splitTitle.chars;
-        }
+        // ========== SplitText: chars de cada word del display ==========
+        const splits = [];
+        const allChars = [];
+        words.forEach((w) => {
+            try {
+                const sp = SplitText.create(w, {
+                    type: "chars",
+                    charsClass: "hs-char",
+                    aria: "auto",
+                });
+                splits.push(sp);
+                allChars.push(...sp.chars);
+            } catch (_) {
+                // SplitText falló — animamos el word entero como char-único
+                allChars.push(w);
+            }
+        });
 
-        // --------- Estados iniciales ---------
-        gsap.set(eyebrow, { autoAlpha: 0, y: 24 });
-        gsap.set(chars,   { yPercent: 110, rotationX: -45, autoAlpha: 0, transformOrigin: "50% 100%" });
-        gsap.set(lede,    { autoAlpha: 0, y: 30 });
-        gsap.set(pulses,  { autoAlpha: 0, y: 20, scale: 0 });
-        gsap.set(railFill,{ scaleX: 0, transformOrigin: "0% 50%" });
+        // ========== Estados iniciales ==========
+        gsap.set(bandL,   { autoAlpha: 0, x: -28 });
+        gsap.set(bandR,   { autoAlpha: 0, x:  28 });
+        gsap.set(bandBL,  { autoAlpha: 0, y:  16 });
+        gsap.set(bandBR,  { autoAlpha: 0, y:  16 });
+        gsap.set(kicker,  { autoAlpha: 0, y:  18 });
+        gsap.set(allChars,{ yPercent: 130, rotationX: -55, autoAlpha: 0, transformOrigin: "50% 100%" });
+        gsap.set(rules,   { scaleX: 0, autoAlpha: 0, transformOrigin: "50% 50%" });
+        gsap.set(claimLines, { autoAlpha: 0, y: 26 });
+        gsap.set(cta,     { autoAlpha: 0, scale: 0.5, y: 30 });
         gsap.set(milestones, { autoAlpha: 0, y: 24 });
-        // Cada milestone tiene un node-inner que es la "luz" — apaga
         milestones.forEach((m) => {
-            const inner = m.querySelector(".milestone__node-inner");
+            const inner = m.querySelector(".hs-milestone__node-inner");
             if (inner) gsap.set(inner, { scale: 0, autoAlpha: 0 });
         });
-        if (cta) gsap.set(cta, { autoAlpha: 0, scale: 0.6, y: 30 });
+        gsap.set(railFill,    { scaleX: 0, transformOrigin: "0% 50%" });
+        gsap.set(particles,   { autoAlpha: 0, scale: 0.4, x: 0, y: 0 });
 
         if (reduceMotion) {
-            gsap.set([eyebrow, lede, ...pulses, ...milestones], { autoAlpha: 1, y: 0, scale: 1 });
-            gsap.set(chars, { yPercent: 0, rotationX: 0, autoAlpha: 1 });
+            gsap.set([bandL, bandR, bandBL, bandBR, kicker, ...claimLines, cta, ...milestones],
+                { autoAlpha: 1, x: 0, y: 0, scale: 1 });
+            gsap.set(allChars, { yPercent: 0, rotationX: 0, autoAlpha: 1 });
+            gsap.set(rules, { scaleX: 1, autoAlpha: 1 });
             gsap.set(railFill, { scaleX: 1 });
+            gsap.set(particles, { autoAlpha: 0.7, scale: 1 });
             milestones.forEach((m) => {
-                const inner = m.querySelector(".milestone__node-inner");
+                const inner = m.querySelector(".hs-milestone__node-inner");
                 if (inner) gsap.set(inner, { scale: 1, autoAlpha: 1 });
             });
-            if (cta) gsap.set(cta, { autoAlpha: 1, scale: 1, y: 0 });
-            return () => splitTitle && splitTitle.revert();
+            return () => splits.forEach((s) => s.revert());
         }
 
-        // --------- Eyebrow ---------
-        if (eyebrow) {
-            gsap.to(eyebrow, {
-                autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out",
-                scrollTrigger: {
-                    trigger: root, start: "top 80%",
-                    toggleActions: "play none none reverse",
-                },
-            });
-        }
-
-        // --------- Header reveal ---------
-        // Title chars stagger + lede + pulses (burst from "center")
-        const headerTl = gsap.timeline({
-            defaults: { ease: "expo.out" },
+        // ========== MASTER TIMELINE — entrance ==========
+        const master = gsap.timeline({
+            defaults: { ease: "power3.out" },
             scrollTrigger: {
-                id: "human-support-header",
+                id: "hs-master",
                 trigger: root,
-                start: "top 65%",
+                start: "top 78%",
                 toggleActions: "play none none reverse",
             },
         });
-        headerTl
-            .to(chars, {
+
+        master
+            // 0 — frame: bands aparecen
+            .addLabel("frame", 0)
+            .to([bandL, bandR], { autoAlpha: 1, x: 0, duration: 0.7 }, "frame")
+            .to([bandBL, bandBR], { autoAlpha: 1, y: 0, duration: 0.7 }, "frame+=0.1")
+
+            // 0.25 — kicker
+            .addLabel("kicker", 0.25)
+            .to(kicker, { autoAlpha: 1, y: 0, duration: 0.65 }, "kicker")
+
+            // 0.5 — display: chars del primer word ("ASESORAMIENTO") burst
+            .addLabel("display", 0.5)
+            .to(splits[0]?.chars || [words[0]], {
+                yPercent: 0, rotationX: 0, autoAlpha: 1,
+                duration: 1.05,
+                stagger: { amount: 0.55, from: "start" },
+                ease: "explode",
+            }, "display")
+
+            // 0.95 — em: reglas L/R abren + chars del segundo word
+            .addLabel("em", 0.95)
+            .to(rules, {
+                scaleX: 1, autoAlpha: 1,
+                duration: 0.75, ease: "expo.out",
+                stagger: 0.06,
+            }, "em")
+            .to(splits[1]?.chars || [words[1]], {
                 yPercent: 0, rotationX: 0, autoAlpha: 1,
                 duration: 0.95,
-                stagger: { amount: 0.65, from: "start" },
-                ease: "back.out(1.4)",
-            }, 0)
-            .to(lede, { autoAlpha: 1, y: 0, duration: 0.8, ease: "back.out(1.3)" }, "-=0.4")
-            .to(pulses, {
-                autoAlpha: 1, y: 0, scale: 1,
-                duration: 0.7,
-                ease: "back.out(2)",
-                stagger: { amount: 0.35, from: "center" },
-            }, "-=0.35");
+                stagger: { amount: 0.45, from: "center" },
+                ease: "explode",
+            }, "em+=0.1")
 
-        // --------- Rail scrub: fill + runner + ignite milestones ---------
-        // El runner "enciende" cada milestone al pasar por encima.
-        // Calculamos el threshold de ignición de cada milestone como
-        // (idx + 0.5) / total — el runner cruza ese punto cuando el
-        // scrub progress equivale a esa fracción.
+            // 1.4 — claim 3 líneas
+            .addLabel("claim", 1.4)
+            .to(claimLines, {
+                autoAlpha: 1, y: 0,
+                duration: 0.75,
+                stagger: 0.12,
+                ease: "back.out(1.4)",
+            }, "claim")
+
+            // 1.85 — CTA scale-in con back.out fuerte
+            .addLabel("cta", 1.85)
+            .to(cta, {
+                autoAlpha: 1, scale: 1, y: 0,
+                duration: 0.95, ease: "back.out(2.4)",
+            }, "cta");
+
+        // ========== PARTICLES drifting — independientes del scroll ==========
+        // Cada partícula tiene posición inicial random, se hace fade-in
+        // escalonada, y empieza un loop de drift vertical + sway
+        // horizontal con duración random. CSS-less control = más
+        // performance que keyframes (GSAP tween, transforms only).
+        const W = root.clientWidth;
+        const H = root.clientHeight;
+        particles.forEach((p, i) => {
+            const startX = gsap.utils.random(0, W);
+            const startY = gsap.utils.random(H * 0.2, H * 1.05);
+            gsap.set(p, {
+                x: startX, y: startY,
+                scale: gsap.utils.random(0.55, 1.2),
+            });
+            gsap.to(p, {
+                autoAlpha: gsap.utils.random(0.45, 0.85),
+                duration: 1.4,
+                delay: 1.0 + i * 0.025,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: root,
+                    start: "top 90%",
+                    toggleActions: "play none none reverse",
+                },
+            });
+            // Drift vertical loop infinito
+            const driftDur = gsap.utils.random(11, 18);
+            const swayAmp  = gsap.utils.random(28, 70);
+            gsap.to(p, {
+                y: -H * 0.15,           // sube suavemente
+                x: `+=${gsap.utils.random(-swayAmp, swayAmp)}`,
+                duration: driftDur,
+                ease: "none",
+                repeat: -1,
+                delay: i * 0.08,
+                modifiers: {
+                    // wrap-around: cuando la partícula sale por arriba,
+                    // re-entra por abajo en x random
+                    y: gsap.utils.unitize((y) => {
+                        const n = parseFloat(y);
+                        return n < -50 ? H + 30 : n;
+                    }),
+                },
+            });
+            // Pulse de opacidad + scale (pseudo-flicker orgánico)
+            gsap.to(p, {
+                scale: `+=${gsap.utils.random(-0.2, 0.3)}`,
+                duration: gsap.utils.random(2.4, 4.2),
+                yoyo: true,
+                repeat: -1,
+                ease: "sine.inOut",
+                delay: i * 0.05,
+            });
+        });
+
+        // ========== RAIL scrub: fill + runner + ignite milestones ==========
+        // El runner verde "enciende" cada milestone al pasar por encima.
         const total = milestones.length || 1;
         const igniteThresholds = milestones.map((_, i) => (i + 0.5) / total);
         const ignited = milestones.map(() => false);
 
         const railTl = gsap.timeline({
             scrollTrigger: {
-                id: "human-support-rail",
-                trigger: root.querySelector(".human-support__timeline"),
+                id: "hs-rail",
+                trigger: root.querySelector("[data-hs-timeline]"),
                 start: "top 75%",
                 end: "bottom 60%",
                 scrub: 0.6,
@@ -138,9 +249,8 @@ function initHumanSupport() {
                             igniteMilestone(milestones[i]);
                         }
                         if (ignited[i] && p < t - 0.05) {
-                            // Reverse: si retrocede, podés re-ignitar después
                             ignited[i] = false;
-                            const inner = milestones[i].querySelector(".milestone__node-inner");
+                            const inner = milestones[i].querySelector(".hs-milestone__node-inner");
                             if (inner) gsap.to(inner, { scale: 0, autoAlpha: 0, duration: 0.2 });
                         }
                     });
@@ -163,12 +273,8 @@ function initHumanSupport() {
             );
         }
 
-        // --------- Función de ignición de milestone ---------
-        // Cuando el runner pasa por encima, el milestone hace pop:
-        //   1) entra desde abajo con back.out
-        //   2) el node-inner se enciende con un flash de luz
         function igniteMilestone(m) {
-            const inner = m.querySelector(".milestone__node-inner");
+            const inner = m.querySelector(".hs-milestone__node-inner");
             const tl = gsap.timeline();
             tl.to(m, {
                 autoAlpha: 1, y: 0,
@@ -178,44 +284,24 @@ function initHumanSupport() {
             if (inner) {
                 tl.fromTo(inner,
                     { scale: 0, autoAlpha: 0 },
-                    {
-                        scale: 1, autoAlpha: 1,
-                        duration: 0.4, ease: "back.out(2.4)",
-                    }, 0.1
+                    { scale: 1, autoAlpha: 1, duration: 0.4, ease: "back.out(2.4)" },
+                    0.1
                 );
-                // Flash de luz blanca pulsa una vez al ignitar
                 tl.fromTo(inner,
-                    { boxShadow: "0 0 0 0 rgba(255,255,255,0.8), 0 0 20px 0 #25d366" },
+                    { boxShadow: "0 0 0 0 rgba(255,255,255,0.85), 0 0 22px 0 #25d366" },
                     {
-                        boxShadow: "0 0 0 16px rgba(255,255,255,0), 0 0 28px 6px #25d366",
+                        boxShadow: "0 0 0 16px rgba(255,255,255,0), 0 0 32px 8px #25d366",
                         duration: 0.6, ease: "power2.out",
                     }, 0.1
                 );
             }
         }
 
-        // --------- CTA pop ---------
-        if (cta) {
-            gsap.to(cta, {
-                autoAlpha: 1, scale: 1, y: 0,
-                duration: 1, ease: "back.out(2.2)",
-                scrollTrigger: {
-                    trigger: cta, start: "top 85%",
-                    toggleActions: "play none none reverse",
-                },
-            });
-        }
-
-        // --------- Tendril CTA → OrganicConnector (drawSVG scroll-linked) ---
-        // El tendril vive en el padding-bottom de la sección, conecta el
-        // botón "Hablar con Holistic" con el inicio del trunk del OC.
-        // Se anima scroll-linked: cuando el CTA entra al viewport, el
-        // path se "dibuja" desde el botón hacia abajo. Cuando llega al
-        // 70% del scroll de la sección (cerca del bottom del HumanSupport),
-        // el tip aparece + pulsa = "germinación" — y la raíz del
-        // OrganicConnector empieza a crecer justo desde ese punto.
+        // ========== TENDRIL CTA → OrganicConnector ==========
+        // Path crece scroll-linked desde el CTA hacia el bottom de la
+        // sección, donde se planta en el seed del OC.
         if (tendrilPath) {
-            const PATH_LEN = 480;  // matchea --tendril dasharray del CSS
+            const PATH_LEN = 480;
             gsap.set(tendrilPath, { strokeDashoffset: PATH_LEN });
             gsap.to(tendrilPath, {
                 strokeDashoffset: 0,
@@ -223,7 +309,7 @@ function initHumanSupport() {
                 scrollTrigger: {
                     trigger: cta || root,
                     start: "top 75%",
-                    end: "bottom 35%",
+                    end: "bottom 30%",
                     scrub: 0.4,
                 },
             });
@@ -239,18 +325,30 @@ function initHumanSupport() {
                     toggleActions: "play none none reverse",
                 },
             });
-            // Pulse idle sutil — late so it doesn't compete with the entrance
             gsap.to(tendrilTip, {
-                scale: 1.35,
-                duration: 1.1,
-                ease: "sine.inOut",
-                yoyo: true,
-                repeat: -1,
+                scale: 1.4, duration: 1.1,
+                ease: "sine.inOut", yoyo: true, repeat: -1,
                 delay: 0.6,
             });
         }
 
-        return () => splitTitle && splitTitle.revert();
+        // ========== Parallax sutil del display al scroll ==========
+        if (display) {
+            gsap.to(display, {
+                yPercent: -8,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: root,
+                    start: "top top",
+                    end:   "bottom top",
+                    scrub: 0.8,
+                },
+            });
+        }
+
+        return () => {
+            splits.forEach((s) => s.revert());
+        };
     });
 }
 
