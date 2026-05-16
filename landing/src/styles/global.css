@@ -168,6 +168,12 @@
 html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    /* Anchors (#specs, #formats, etc.) no quedan tapados por el header
+       sticky de 60-72px. Suma safe-area-top para iOS notch. */
+    scroll-padding-top: calc(72px + env(safe-area-inset-top));
+    /* Hint al UA: la base es dark (theme-color #080808), aunque hay
+       secciones cream. Mejora scrollbar/form rendering nativos. */
+    color-scheme: dark light;
 }
 
 body {
@@ -189,6 +195,29 @@ body {
 }
 a, button, [role="button"], [data-cursor] {
     touch-action: manipulation;   /* mata el delay de 300ms en mobile */
+}
+
+/* =========================================================
+   A11Y — focus-visible baseline para keyboard nav.
+   Reglas previas explícitas (.psl__hotspot, .header__socios-cta)
+   sobreescriben este default vía cascada/especificidad.
+   Mouse focus se oculta con :focus:not(:focus-visible) — sólo
+   teclado dispara el ring. Verde mint WhatsApp brand.
+   ========================================================= */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+    outline: 2px solid #25D366;
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+:focus:not(:focus-visible) {
+    outline: none;
 }
 
 img {
