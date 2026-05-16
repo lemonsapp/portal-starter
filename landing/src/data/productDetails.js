@@ -26,6 +26,7 @@ export const productDetails = {
             colorSoft: "#F7F3EA",
             heroVideo: {
                 src: "/video/internas/linea-elite/hero.mp4",
+                poster: "/video/internas/linea-elite/poster.jpg",
             },
             heroBackground: true,
         },
@@ -120,6 +121,7 @@ export const productDetails = {
             colorSoft: "#FFE3DE",
             heroVideo: {
                 src: "/video/internas/linea-pro/hero.mp4",
+                poster: "/video/internas/linea-pro/poster.jpg",
             },
             heroBackground: true,
         },
@@ -350,6 +352,7 @@ export const productDetails = {
             colorSoft: "#F7D6DC",
             heroVideo: {
                 src: "/video/internas/bio-estimulante/hero.mp4",
+                poster: "/video/internas/bio-estimulante/poster.jpg",
             },
             heroBackground: true,
         },
@@ -523,6 +526,7 @@ export const productDetails = {
             colorSoft: "#F9E79B",
             heroVideo: {
                 src: "/video/internas/day-0/hero.mp4",
+                poster: "/video/internas/day-0/poster.jpg",
             },
             heroBackground: true,
         },
