@@ -24,6 +24,10 @@ export const productDetails = {
             ctaSecondary: { label: "VER ESPECIFICACIONES", href: "#specs" },
             color: "#C9A34E",
             colorSoft: "#F7F3EA",
+            heroVideo: {
+                src: "/video/internas/linea-elite/hero.mp4",
+            },
+            heroBackground: true,
         },
         // Highlights cinematográficos para Elite — paleta dorada/crema.
         // Cada uno tiene su imagen del catálogo Elite (Part 1, Part 2,
@@ -114,6 +118,10 @@ export const productDetails = {
             ctaSecondary: { label: "VER ESPECIFICACIONES", href: "#specs" },
             color: "#F5948A",
             colorSoft: "#FFE3DE",
+            heroVideo: {
+                src: "/video/internas/linea-pro/hero.mp4",
+            },
+            heroBackground: true,
         },
         // Highlights de Pro: paleta coral/salmón. Primer highlight usa
         // el video MP4 oficial del cliente como media (mediaType:video).
@@ -340,6 +348,10 @@ export const productDetails = {
             ctaSecondary: { label: "VER ESPECIFICACIONES", href: "#specs" },
             color: "#E8A5B1",
             colorSoft: "#F7D6DC",
+            heroVideo: {
+                src: "/video/internas/bio-estimulante/hero.mp4",
+            },
+            heroBackground: true,
         },
         // Highlights de Bio Estimulante: paleta rosa/coral. Botella
         // grande en distintas perspectivas + raíz dramática (5533) que
@@ -509,6 +521,10 @@ export const productDetails = {
             ctaSecondary: { label: "VER ESPECIFICACIONES",   href: "#specs" },
             color: "#C9A34E",
             colorSoft: "#F9E79B",
+            heroVideo: {
+                src: "/video/internas/day-0/hero.mp4",
+            },
+            heroBackground: true,
         },
         // Highlights de Day-0: paleta amarilla/dorada — el "cierre"
         // del ciclo. Botella en distintas perspectivas comunican el
