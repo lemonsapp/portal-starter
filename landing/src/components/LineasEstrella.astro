@@ -96,13 +96,15 @@ const lineas = [
         href: "/linea-pro",
         ctaLabel: "VER LÍNEA PRO",
         silhouette: "/img/slider-spylt/linea-pro/fondo.png",
-        // PRO muestra LOS 4 POTES (Enraizante/Vegetativo/Pre-flora/Flora)
-        // juntos via la hero.png unificada (1800x511 — los 4 alineados).
-        // Match perfecto al base.png unified celeste (1024x677 1.51).
-        aspect: 1.51,
+        // PRO ahora muestra UN solo pote (Vegetativo) con su base
+        // sub-product + texto label, igual estética que RACE
+        // (single product spotlight). El user pidió cambiar de los
+        // 4 potes unified a 1 solo acorde al tamaño.
+        aspect: 1.30,            // matchea base.png sub-vegetativo (más cuadrado)
         layers: {
-            base: "/img/slider-spylt/linea-pro/base.png",
-            pote: "/img/slider-spylt/linea-pro/hero.png",  // 4 potes alineados
+            base:  "/img/slider-spylt/linea-pro/sub/vegetativo/base.png",
+            pote:  "/img/slider-spylt/linea-pro/sub/vegetativo/pote.png",
+            texto: "/img/slider-spylt/linea-pro/sub/vegetativo/texto.png",
         },
         bgColor: "#9ad8f5",
         haloColor: "#e8f4fb",
@@ -641,11 +643,12 @@ const lineas = [
         transform: scale(1.05);
         object-position: center 50%;
     }
-    /* PRO override — unified hero 4 potes 1800×511. base unified 1.51.
-       Scale + ajuste vertical para que los 4 potes queden centrados. */
+    /* PRO override — sub-product vegetativo (single pote 800×649).
+       Mismo patrón "superpuesto" que RACE: scale 1.15, protrude
+       sobre el frame rounded gracias al stage overflow:visible. */
     .le__panel[data-le-slug="linea-pro"] .le__layer--pote {
-        transform: scale(1.08);
-        object-position: center 60%;
+        transform: scale(1.15);
+        object-position: center 55%;
     }
     /* RACE override — bidón violeta sub-product 670×1081 (portrait).
        Ahora con stage overflow:visible, el bidón puede extenderse
