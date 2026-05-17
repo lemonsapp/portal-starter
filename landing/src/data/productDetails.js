@@ -211,7 +211,7 @@ export const productDetails = {
         hero: {
             kicker: "LÍNEA RACE",
             headline: "Sistema completo de fertilizantes\npara cultivo indoor de ciclo corto.",
-            claim: "Línea Race es el sistema de fertilizantes líquidos concentrados de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor: Race 1 Vegetativo, Race 2 Floración (Part A + B), Race 3 Bloom Booster y Race 4 Finalizador. Ideal para autoflorecientes, ciclos cortos y cultivadores que no quieren perder ni una semana.",
+            claim: "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor: Race 1 Vegetativo, Race 2 Floración (Part A + B), Race 3 Bloom Booster y Race 4 Finalizador. Ideal para autoflorecientes, ciclos cortos y cultivadores que no quieren perder ni una semana.",
             // CTAs intencionalmente omitidos para Race — el hero queda
             // como statement editorial puro sobre el video. ProductDeepDive
             // renderiza los CTAs condicionalmente: si no están definidos,
