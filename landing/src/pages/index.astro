@@ -4,6 +4,7 @@ import VideoHero from "../components/VideoHero.astro";
 import Marquee from "../components/Marquee.astro";
 import EaseOfUse from "../components/EaseOfUse.astro";
 import ProductFloatSlider from "../components/ProductFloatSlider.astro";
+import ComplementosIdeales from "../components/ComplementosIdeales.astro";
 import ChapterSection from "../components/ChapterSection.astro";
 import VineDivider from "../components/VineDivider.astro";
 import HumanSupport from "../components/HumanSupport.astro";
@@ -57,6 +58,13 @@ const dividers = [
          showWelcome={false} oculta el welcome interno del slider:
          ya tenemos el VideoHero arriba como intro cinemática. -->
     <ProductFloatSlider showWelcome={false} />
+
+    <!-- COMPLEMENTOS IDEALES — sección dedicada inmediatamente
+         debajo del slider. Bio + Day-0 como complementos cinematográficos
+         del catálogo. Diseño distinto al header del slider: dark
+         editorial spread con word-rise mask + DrawSVG divider + chips
+         elastic. Skills gsap-plugins SplitText/DrawSVG + gsap-timeline. -->
+    <ComplementosIdeales />
 
     <!-- ProductsHero ("TENEMOS 5 PRODUCTOS OBSESIVAMENTE DISEÑADOS.") +
          LiquidPour ("NUTRICIÓN SUPERIOR" warp verde) removidos por pedido

@@ -1,20 +1,18 @@
-// panels.js — 5 panels SPYLT-style del slider home (post VideoHero) +
-// 1 panel "interlude" editorial entre las líneas estrella y los
-// complementos.
+// panels.js — 5 panels SPYLT-style del slider home (post VideoHero).
 //
 // Orden canónico (re-ordenado 2026-05-17 por pedido del cliente):
 //   01 LÍNEA ELITE         (PART-1 + PART-2 juntos)
 //   02 LÍNEA RACE          (4 bidones juntos como hero)
 //   03 LÍNEA PRO           (4 potes 100gr unificados como hero)
-//   ── INTERLUDE EDITORIAL ── "COMPLEMENTOS IDEALES / BIO + DAY-0"
 //   04 BIOESTIMULANTE
 //   05 DAY 0               (finalizador de cosecha)
 //
-// Tipos de panel:
-//   • Producto (default): renderiza card con base+hero+wheels+hotspots.
-//   • Interlude (`type: "interlude"`): renderiza texto cinematográfico
-//     full-bleed con char-assemble GSAP. Sin card, sin HUD step, no
-//     cuenta para el contador 01/05.
+// La sección "COMPLEMENTOS IDEALES / BIO + DAY-0" antes vivía aquí
+// como interlude panel dentro del slider; ahora se renderiza DEBAJO
+// del slider como sección dedicada `<ComplementosIdeales />` con
+// diseño y animaciones GSAP propias. El soporte de `type:"interlude"`
+// queda como infra dormante en el componente/JS (sin afectar nada
+// porque no hay entries con este type).
 //
 // Estructura por panel producto:
 //   slug         → folder en /img/slider-spylt/
@@ -227,32 +225,6 @@ export const panels = [
                 hotspot: { x: 74, y: 8, w: 24, h: 84 },
             },
         ],
-    },
-
-    // ─── ▽▽▽ INTERLUDE EDITORIAL ▽▽▽ ───────────────────────────────
-    // Panel transición entre las 3 líneas estrella y los 2 complementos.
-    // Render distinto al panel producto: texto cinematográfico centrado
-    // con char-assemble GSAP (replica reducida del header). bg dark
-    // editorial que también sirve como "respiro" cromático entre el
-    // celeste de Pro y el rosa de Bio.
-    // El JS detecta `type === "interlude"` para:
-    //   • Saltarse idle animations de layers (no hay).
-    //   • Disparar SplitText scatter→assemble cuando entra a viewport.
-    //   • Omitir del HUD step bar (no es step del catálogo).
-    {
-        type: "interlude",
-        slug: "complementos",
-        // Colors usados por el cross-fade del bg de la sección.
-        // accent = bg final del panel (dark editorial).
-        // bgColor = mismo accent para que no haya transición intra-panel.
-        bgColor: "#0c0c0c",
-        accentColor: "#0c0c0c",
-        // Contenido del texto cinematográfico. Las líneas se splitean
-        // a chars y se animan scroll-driven.
-        eyebrow: "MÁS HOLISTIC",
-        lines: ["COMPLEMENTOS", "IDEALES"],
-        mark: "BIO + DAY-0",
-        sub: "Los 2 complementos que cierran cualquier sistema de cultivo. Activación radicular + finalización pulida.",
     },
 
     // ─── 04 · BIOESTIMULANTE ───────────────────────────────────────

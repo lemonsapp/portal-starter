@@ -1,0 +1,340 @@
+---
+// ComplementosIdeales — sección editorial DEBAJO del slider del home.
+//
+// Antes vivía como "interlude panel" dentro del slider; el cliente
+// pidió que se mostrara como sección dedicada con un DISEÑO NUEVO
+// (distinto al patrón cursor-paint del header del slider y distinto
+// al scatter→assemble del interlude). Acá la dirección visual es
+// "editorial spread" magazine-style: dark cinematic bg, headline
+// con word-rise + mask, divider con DrawSVG glow, 2 chips de producto.
+//
+// Composición:
+//   1) eyebrow "MÁS HOLISTIC · COMPLEMENTOS"
+//   2) headline "COMPLEMENTOS / IDEALES" — per-word slide-up bajo
+//      mask (overflow:hidden por línea)
+//   3) decorative line SVG con DrawSVGPlugin + glow dot central
+//   4) 2 chips de producto (Bio + Day-0) con elastic scale-in
+//   5) sub explicativo
+//
+// Skills aplicadas (citadas inline en el script):
+//   • gsap-plugins SplitText (words, NO chars)
+//   • gsap-plugins DrawSVGPlugin (linea decorativa)
+//   • gsap-plugins CustomEase (eases ya registrados: 'explode')
+//   • gsap-scrolltrigger toggleActions (enter discreto, no scrub)
+//   • gsap-timeline (secuencia coreografiada)
+//   • gsap-utils.toArray (selectors batch)
+//   • gsap-core matchMedia (reduced-motion + responsive)
+//   • gsap-performance (transforms + opacity + will-change)
+//
+// Diferencias deliberadas con el interlude original:
+//   ✗ NO scrub scroll-linked → SÍ toggleActions enter (timeline simple)
+//   ✗ NO chars scatter        → SÍ words rise-from-mask
+//   ✗ NO cursor-paint reveal → SÍ DrawSVG underline + glow
+//   ✗ NO mark con tilt        → SÍ chips de producto con elastic + hover
+---
+<section class="cmp" data-complementos-ideales aria-label="Complementos ideales del catálogo">
+    <div class="cmp__inner" data-cmp-inner>
+
+        <!-- Eyebrow -->
+        <p class="cmp__eyebrow" data-cmp-eyebrow>
+            <span class="cmp__dot" aria-hidden="true"></span>
+            <span>MÁS HOLISTIC · COMPLEMENTOS</span>
+        </p>
+
+        <!-- Headline 2 líneas con word-rise mask -->
+        <h2 class="cmp__h" data-cmp-h>
+            <span class="cmp__line" data-cmp-line>
+                <span class="cmp__line-inner">COMPLEMENTOS</span>
+            </span>
+            <span class="cmp__line" data-cmp-line>
+                <span class="cmp__line-inner">IDEALES</span>
+            </span>
+        </h2>
+
+        <!-- Decorative line: DrawSVGPlugin anima el path de 0% a 100%
+             en el scroll-enter, con un círculo glow central que pulsa
+             post-draw. Mint mint para mantener brand. -->
+        <div class="cmp__divider" aria-hidden="true">
+            <svg class="cmp__divider-svg" viewBox="0 0 400 16" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="cmpLine" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0"   stop-color="#A7F5C8" stop-opacity="0" />
+                        <stop offset="0.5" stop-color="#A7F5C8" stop-opacity="0.95" />
+                        <stop offset="1"   stop-color="#A7F5C8" stop-opacity="0" />
+                    </linearGradient>
+                    <radialGradient id="cmpGlow">
+                        <stop offset="0"   stop-color="#A7F5C8" stop-opacity="1" />
+                        <stop offset="0.5" stop-color="#A7F5C8" stop-opacity="0.45" />
+                        <stop offset="1"   stop-color="#A7F5C8" stop-opacity="0" />
+                    </radialGradient>
+                </defs>
+                <line
+                    class="cmp__divider-line"
+                    data-cmp-divider-line
+                    x1="0" y1="8" x2="400" y2="8"
+                    stroke="url(#cmpLine)"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                />
+                <circle
+                    class="cmp__divider-glow"
+                    data-cmp-divider-glow
+                    cx="200" cy="8" r="14"
+                    fill="url(#cmpGlow)"
+                />
+            </svg>
+        </div>
+
+        <!-- 2 chips de producto -->
+        <div class="cmp__chips" data-cmp-chips>
+            <a class="cmp__chip" data-cmp-chip href="/bio-estimulante" data-cursor="hover">
+                <span class="cmp__chip-kicker">BIO</span>
+                <span class="cmp__chip-name">BIO-ESTIMULANTE</span>
+                <svg class="cmp__chip-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                </svg>
+            </a>
+            <span class="cmp__chips-sep" aria-hidden="true">·</span>
+            <a class="cmp__chip" data-cmp-chip href="/day-0" data-cursor="hover">
+                <span class="cmp__chip-kicker">FINISHER</span>
+                <span class="cmp__chip-name">DAY-0</span>
+                <svg class="cmp__chip-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                </svg>
+            </a>
+        </div>
+
+        <!-- Sub explicativo -->
+        <p class="cmp__sub" data-cmp-sub>
+            Activación radicular con bio-estimulante orgánico
+            + finalización pulida con day-0. Los 2 complementos
+            que cierran cualquier sistema de cultivo.
+        </p>
+
+    </div>
+</section>
+
+<style>
+    /* ===== Layout base ===== */
+    .cmp {
+        position: relative;
+        padding: clamp(72px, 14vh, 144px) clamp(20px, 5vw, 80px);
+        background:
+            radial-gradient(120% 80% at 50% 0%, rgba(167, 245, 200, 0.06), transparent 55%),
+            radial-gradient(140% 90% at 50% 100%, rgba(46, 143, 110, 0.05), transparent 50%),
+            #0a0a0a;
+        color: #fff;
+        text-align: center;
+        overflow: hidden;
+        isolation: isolate;
+    }
+    /* Líneas decorativas top/bottom muy sutiles — refuerzan el "respiro"
+       cinematográfico de la sección. */
+    .cmp::before,
+    .cmp::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: clamp(60px, 10vw, 140px);
+        height: 1px;
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(167, 245, 200, 0.45) 50%,
+            transparent 100%
+        );
+        pointer-events: none;
+    }
+    .cmp::before { top: clamp(28px, 6vh, 56px); }
+    .cmp::after  { bottom: clamp(28px, 6vh, 56px); }
+
+    .cmp__inner {
+        max-width: min(900px, 90vw);
+        margin: 0 auto;
+    }
+
+    /* ===== Eyebrow ===== */
+    .cmp__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6em;
+        margin: 0 0 clamp(24px, 4vh, 44px);
+        font-family: var(--f-text);
+        font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+        font-weight: 700;
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.65);
+    }
+    .cmp__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #A7F5C8;
+        box-shadow: 0 0 14px rgba(167, 245, 200, 0.8);
+        display: inline-block;
+    }
+
+    /* ===== Headline (word-rise from below + mask) ===== */
+    .cmp__h {
+        font-family: var(--f-display, 'Gotham', serif);
+        font-weight: 900;
+        font-size: clamp(2.8rem, 9vw, 7rem);
+        line-height: 0.92;
+        letter-spacing: -0.018em;
+        text-transform: uppercase;
+        margin: 0 0 clamp(28px, 5vh, 56px);
+        color: #fff;
+        text-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+    }
+    .cmp__line {
+        display: block;
+        overflow: hidden;        /* mask para SplitText words rising */
+        padding: 0.04em 0;
+    }
+    .cmp__line-inner {
+        display: inline-block;
+        will-change: transform;
+    }
+    .cmp__line:last-child .cmp__line-inner {
+        /* segunda línea sutilmente "más editorial" con un mint subtle */
+        background: linear-gradient(180deg, #fff 0%, #A7F5C8 220%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+    }
+
+    /* ===== Divider SVG (DrawSVG) ===== */
+    .cmp__divider {
+        width: clamp(220px, 36vw, 380px);
+        margin: 0 auto clamp(28px, 5vh, 48px);
+        opacity: 0.92;
+    }
+    .cmp__divider-svg {
+        width: 100%;
+        height: 16px;
+        display: block;
+        overflow: visible;
+    }
+    .cmp__divider-glow {
+        filter: blur(0.5px);
+        will-change: transform, opacity;
+    }
+
+    /* ===== Chips de producto ===== */
+    .cmp__chips {
+        display: inline-flex;
+        align-items: center;
+        gap: clamp(14px, 2vw, 28px);
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 0 0 clamp(28px, 5vh, 48px);
+    }
+    .cmp__chips-sep {
+        font-family: var(--f-display, 'Gotham', serif);
+        font-size: clamp(1.4rem, 2vw, 2rem);
+        color: rgba(167, 245, 200, 0.7);
+        font-weight: 900;
+        padding: 0 4px;
+        will-change: transform;
+    }
+    .cmp__chip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px clamp(20px, 2vw, 28px);
+        border-radius: 999px;
+        border: 1px solid rgba(167, 245, 200, 0.35);
+        background:
+            linear-gradient(135deg, rgba(167, 245, 200, 0.05), rgba(255, 255, 255, 0.02));
+        color: #fff;
+        text-decoration: none;
+        font-family: var(--f-display, 'Gotham', serif);
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        line-height: 1;
+        white-space: nowrap;
+        transition:
+            border-color 0.28s ease,
+            background 0.28s ease,
+            transform 0.28s cubic-bezier(.2,.8,.2,1),
+            box-shadow 0.28s ease;
+        will-change: transform;
+        min-height: 44px;       /* WCAG SC 2.5.5 — touch target */
+    }
+    .cmp__chip:hover {
+        border-color: rgba(167, 245, 200, 0.75);
+        background:
+            linear-gradient(135deg, rgba(167, 245, 200, 0.12), rgba(167, 245, 200, 0.04));
+        transform: translateY(-2px);
+        box-shadow:
+            0 14px 36px rgba(46, 143, 110, 0.28),
+            0 0 0 1px rgba(167, 245, 200, 0.18) inset;
+    }
+    .cmp__chip-kicker {
+        font-size: clamp(0.62rem, 0.75vw, 0.72rem);
+        letter-spacing: 0.22em;
+        color: #A7F5C8;
+        padding: 0.25em 0.55em;
+        border-radius: 999px;
+        background: rgba(167, 245, 200, 0.12);
+    }
+    .cmp__chip-name {
+        font-size: clamp(0.92rem, 1.1vw, 1.1rem);
+    }
+    .cmp__chip-arrow {
+        transition: transform 0.28s cubic-bezier(.2,.8,.2,1);
+        color: #A7F5C8;
+    }
+    .cmp__chip:hover .cmp__chip-arrow {
+        transform: translateX(3px);
+    }
+
+    /* ===== Sub ===== */
+    .cmp__sub {
+        margin: 0 auto;
+        max-width: 58ch;
+        font-family: var(--f-text);
+        font-size: clamp(0.98rem, 1.3vw, 1.18rem);
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.76);
+    }
+
+    /* ===== Mobile responsive ===== */
+    @media (max-width: 700px) {
+        .cmp {
+            padding: clamp(56px, 12vh, 96px) 18px;
+        }
+        .cmp__chips {
+            flex-direction: column;
+            gap: 16px;
+        }
+        .cmp__chips-sep {
+            display: none;
+        }
+        .cmp__chip {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+
+    /* ===== Reduced motion ===== */
+    @media (prefers-reduced-motion: reduce) {
+        .cmp * {
+            transform: none !important;
+            opacity: 1 !important;
+            filter: none !important;
+        }
+        .cmp__divider-line {
+            stroke-dashoffset: 0 !important;
+        }
+    }
+</style>
+
+<script>
+    import "../scripts/complementos-ideales-animations.js";
+</script>
