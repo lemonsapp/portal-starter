@@ -104,81 +104,125 @@ function initComplementosIdeales() {
         }
 
         // ============================================================
-        // SCATTER inicial — cada char con offset random
-        // Skill: gsap-utils.random
+        // SCATTER inicial — cada char con offset random + tilt 3D.
+        // Skill: gsap-utils.random, gsap-performance (transforms).
+        //
+        // Mejora vs versión anterior: agrego rotationX/rotationY +
+        // perspective per char → al assemble la rotación "cae" en
+        // sus ejes 3D, dando profundidad cinematográfica.
         // ============================================================
         allChars.forEach((ch) => {
             gsap.set(ch, {
-                x: gsap.utils.random(-260, 260),
-                y: gsap.utils.random(-180, 180),
-                rotation: gsap.utils.random(-75, 75),
-                scale: gsap.utils.random(0.3, 0.9),
+                x: gsap.utils.random(-280, 280),
+                y: gsap.utils.random(-200, 200),
+                z: gsap.utils.random(-300, 300),
+                rotation: gsap.utils.random(-90, 90),
+                rotationX: gsap.utils.random(-75, 75),
+                rotationY: gsap.utils.random(-90, 90),
+                scale: gsap.utils.random(0.25, 0.85),
                 autoAlpha: 0,
-                filter: "blur(10px)",
+                filter: "blur(12px)",
                 transformOrigin: "50% 50%",
+                transformPerspective: 600,
                 willChange: "transform, opacity, filter",
             });
         });
+        // Perspective parent para que el rotate3D rinda con profundidad
+        lineInners.forEach((inner) => {
+            gsap.set(inner, { perspective: 800 });
+        });
 
         // ============================================================
-        // HEADER ASSEMBLE TIMELINE — scroll-linked scrub
+        // HEADER ASSEMBLE TIMELINE — scroll-linked scrub.
+        // Range más generoso (top 95% → top 25%) para que el assemble
+        // dure ~70% del viewport scroll → suaviza la curva.
         // ============================================================
-        // Skill: gsap-scrolltrigger scrub. Cubre desde que el header
-        // empieza a entrar (top 90%) hasta que está bien posicionado
-        // (top 30%). El scrub lerpa con 0.6 → smooth chase.
         const assembleTl = gsap.timeline({
             scrollTrigger: {
                 trigger: header,
-                start: "top 90%",
-                end:   "top 30%",
-                scrub: 0.6,
+                start: "top 95%",
+                end:   "top 25%",
+                scrub: 0.7,
                 invalidateOnRefresh: true,
             },
         });
 
-        // Acto 1: eyebrow rises in (0..0.20)
+        // Acto 1: eyebrow rises in (0..0.18) — ease refinada
         assembleTl.to(eyebrow, {
             autoAlpha: 1, y: 0,
-            duration: 0.20, ease: "power2.out",
+            duration: 0.18, ease: "expo.out",
         }, 0);
 
-        // Acto 2: chars ENSAMBLAN — cada uno desde scatter a final.
-        // stagger from:random → orden caótico (no izq→der lineal).
-        // ease back.out → "snap" satisfactorio al landing.
+        // Acto 2: chars ENSAMBLAN — desde scatter a final.
+        // Mejora: stagger from:"center" → caos controlado, orden
+        // visual orquestado (centro → bordes) en lugar de "random"
+        // que se veía menos intencional.
+        // Ease: power4.out → curva más smooth que back.out (no overshoot
+        // grande, más editorial sutil).
         assembleTl.to(allChars, {
-            x: 0, y: 0, rotation: 0, scale: 1,
-            autoAlpha: 1, filter: "blur(0px)",
+            x: 0, y: 0, z: 0,
+            rotation: 0, rotationX: 0, rotationY: 0,
+            scale: 1,
+            autoAlpha: 1,
+            filter: "blur(0px)",
             duration: 0.75,
-            stagger: { each: 0.018, from: "random" },
-            ease: "back.out(1.5)",
+            stagger: { each: 0.014, from: "center" },
+            ease: "power4.out",
         }, 0.10);
 
-        // Acto 3: divider draws (0.55..0.80)
+        // Acto 3: micro-pulse del último char antes del divider — efecto
+        // "landing punch" que cierra el assemble. Skill: gsap-timeline.
+        if (allChars.length) {
+            assembleTl.to(allChars, {
+                scale: 1.04,
+                duration: 0.08,
+                ease: "sine.out",
+                stagger: { each: 0.005, from: "center" },
+            }, 0.78).to(allChars, {
+                scale: 1,
+                duration: 0.10,
+                ease: "sine.in",
+                stagger: { each: 0.005, from: "center" },
+            }, 0.86);
+        }
+
+        // Acto 4: divider draws (0.55..0.78)
         if (dividerLn) {
             assembleTl.to(dividerLn, {
                 drawSVG: "0% 100%",
-                duration: 0.25, ease: "power2.inOut",
+                duration: 0.23, ease: "power2.inOut",
             }, 0.55);
         }
         if (dividerGlow) {
             assembleTl.to(dividerGlow, {
                 autoAlpha: 1, scale: 1,
-                duration: 0.20, ease: "back.out(2)",
-            }, 0.70);
+                duration: 0.22, ease: "back.out(2.4)",
+            }, 0.68);
         }
 
-        // Acto 4: sub fade (0.80..1.00)
+        // Acto 5: sub fade (0.85..1.00)
         assembleTl.to(sub, {
             autoAlpha: 1, y: 0,
-            duration: 0.20, ease: "power2.out",
-        }, 0.80);
+            duration: 0.18, ease: "expo.out",
+        }, 0.85);
 
-        // Idle: glow circle pulsa post-assemble
+        // ============================================================
+        // POST-ASSEMBLE IDLES — pequeños loops "vivos"
+        // ============================================================
+        // Glow circle pulsa
         if (dividerGlow) {
             gsap.to(dividerGlow, {
-                scale: 1.18,
+                scale: 1.22,
                 duration: 2.6, ease: "sine.inOut",
-                yoyo: true, repeat: -1, delay: 1.6,
+                yoyo: true, repeat: -1, delay: 1.8,
+            });
+        }
+        // Divider line opacity respira (sutil)
+        if (dividerLn) {
+            gsap.to(dividerLn, {
+                opacity: 0.7,
+                duration: 3.4, ease: "sine.inOut",
+                yoyo: true, repeat: -1, delay: 2.2,
             });
         }
 

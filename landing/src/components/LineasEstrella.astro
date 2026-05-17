@@ -1,0 +1,630 @@
+---
+// LineasEstrella — "slider vertical scroll-down" del home con los 3
+// productos top (ELITE / RACE / PRO). Reemplaza al ProductFloatSlider
+// horizontal por pedido del cliente.
+//
+// Arquitectura igual a <ComplementosIdeales /> para mantener
+// consistencia visual del scroll vertical:
+//   HEADER editorial (chars scatter→assemble GSAP) → THREAD vertical
+//   DrawSVG → 3 PANELS con visual + body (alternating layout) +
+//   markers numéricos en el thread.
+//
+// Cada panel = una "línea estrella" (Elite/Race/Pro). Imagen, color,
+// data canónica copiada de panels.js (que ahora alimenta solo a
+// ProductFloatSlider orphan, ya no usado en index.astro).
+//
+// Skills (citadas inline en el script):
+//   • gsap-plugins SplitText (chars header + words name por panel)
+//   • gsap-plugins DrawSVGPlugin (divider + thread vertical)
+//   • gsap-plugins CustomEase ('explode' registrado en lib)
+//   • gsap-scrolltrigger scrub (chars + thread + parallax)
+//   • gsap-scrolltrigger toggleActions (panel entrance reversible)
+//   • gsap-timeline (4 actos header + 9 pasos por panel)
+//   • gsap-utils.random (scatter + idle float per-panel)
+//   • gsap-utils.toArray (selectors batch)
+//   • gsap-core matchMedia (reduced-motion + breakpoints)
+//   • gsap-performance (transforms + opacity + will-change)
+
+// Las 3 líneas estrella en orden cliente: ELITE → RACE → PRO.
+// Misma identidad cromática que tenía cada panel del slider antiguo.
+const lineas = [
+    {
+        slug: "linea-elite",
+        num: "01",
+        kicker: "PREMIUM · FULL-CYCLE",
+        nombre: "LÍNEA ELITE",
+        tagline: "Dos botellas, un sistema completo.",
+        body: "Part 1 aporta calcio, magnesio y micro. Part 2 entrega el NPK base. Aplicadas juntas en cada riego dan al cultivo todo lo que necesita en su justa proporción — sin antagonismos químicos.",
+        href: "/linea-elite",
+        ctaLabel: "VER LÍNEA ELITE",
+        image: "/img/slider-spylt/linea-elite/hero.png",
+        silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
+        bgColor: "#bd6ee6",      // violeta saturado del base
+        haloColor: "#ecd6f8",    // pastel lila
+        accentText: "#E4C6FA",
+    },
+    {
+        slug: "linea-race",
+        num: "02",
+        kicker: "HIGH-PERFORMANCE · 4 ETAPAS",
+        nombre: "LÍNEA RACE",
+        tagline: "4 fertilizantes, 4 etapas.",
+        body: "Verde / Celeste / Violeta / Rosado. Cada bidón optimizado para la etapa específica del ciclo. Sistema de alta performance que define cada momento del cultivo.",
+        href: "/linea-race",
+        ctaLabel: "VER LÍNEA RACE",
+        image: "/img/slider-spylt/linea-race/hero.png",
+        silhouette: "/img/slider-spylt/linea-race/silhouette.png",
+        bgColor: "#c078e5",
+        haloColor: "#edd9f7",
+        accentText: "#E3C8F5",
+    },
+    {
+        slug: "linea-pro",
+        num: "03",
+        kicker: "SÓLIDO · CONCENTRADO",
+        nombre: "LÍNEA PRO",
+        tagline: "4 etapas en formato sólido.",
+        body: "Enraizante, Vegetativo, Pre-Floración, Floración. 100% materia activa sin agua ni conservantes. 36 meses de vida útil garantizados, dosis exacta al gramo.",
+        href: "/linea-pro",
+        ctaLabel: "VER LÍNEA PRO",
+        image: "/img/slider-spylt/linea-pro/hero.png",
+        silhouette: "/img/slider-spylt/linea-pro/fondo.png",
+        bgColor: "#9ad8f5",
+        haloColor: "#e8f4fb",
+        accentText: "#C9E9F7",
+    },
+];
+---
+<section class="le" data-lineas-estrella aria-label="Las 3 líneas estrella del catálogo Holistic">
+
+    <!-- ===== THREAD SVG vertical (DrawSVG scroll-linked) ===== -->
+    <svg class="le__thread" data-le-thread-svg preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+            <linearGradient id="leThreadGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0"    stop-color="#A7F5C8" stop-opacity="0"/>
+                <stop offset="0.08" stop-color="#A7F5C8" stop-opacity="0.85"/>
+                <stop offset="0.92" stop-color="#A7F5C8" stop-opacity="0.85"/>
+                <stop offset="1"    stop-color="#A7F5C8" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
+        <line class="le__thread-line" data-le-thread
+              x1="50%" y1="0%" x2="50%" y2="100%"
+              stroke="url(#leThreadGrad)" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+
+    <!-- ===== HEADER editorial (chars-assemble) ===== -->
+    <header class="le__header" data-le-header>
+        <p class="le__eyebrow" data-le-eyebrow>
+            <span class="le__dot" aria-hidden="true"></span>
+            <span>EL CATÁLOGO · 3 LÍNEAS ESTRELLA</span>
+        </p>
+
+        <h2 class="le__h" data-le-h>
+            <span class="le__line" data-le-line><span class="le__line-inner">ESTAS SON</span></span>
+            <span class="le__line" data-le-line><span class="le__line-inner">NUESTRAS 3</span></span>
+            <span class="le__line" data-le-line><span class="le__line-inner">LÍNEAS</span></span>
+            <span class="le__line le__line--mark" data-le-line>
+                <span class="le__line-inner">
+                    <mark class="le__mark" data-le-mark>ESTRELLA</mark>
+                </span>
+            </span>
+        </h2>
+
+        <div class="le__divider" aria-hidden="true">
+            <svg class="le__divider-svg" viewBox="0 0 400 16" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="leLine" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0"   stop-color="#A7F5C8" stop-opacity="0"/>
+                        <stop offset="0.5" stop-color="#A7F5C8" stop-opacity="0.95"/>
+                        <stop offset="1"   stop-color="#A7F5C8" stop-opacity="0"/>
+                    </linearGradient>
+                    <radialGradient id="leGlow">
+                        <stop offset="0"   stop-color="#A7F5C8" stop-opacity="1"/>
+                        <stop offset="0.5" stop-color="#A7F5C8" stop-opacity="0.45"/>
+                        <stop offset="1"   stop-color="#A7F5C8" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+                <line class="le__divider-line" data-le-divider-line
+                      x1="0" y1="8" x2="400" y2="8"
+                      stroke="url(#leLine)" stroke-width="1.6" stroke-linecap="round"/>
+                <circle class="le__divider-glow" data-le-divider-glow
+                        cx="200" cy="8" r="14" fill="url(#leGlow)"/>
+            </svg>
+        </div>
+
+        <p class="le__sub" data-le-sub>
+            3 líneas estrella para el ciclo completo de cultivo.
+            Premium, alta performance y formato sólido — cada una
+            con su propia narrativa.
+        </p>
+    </header>
+
+    <!-- ===== 3 PANELS alternating layout ===== -->
+    {lineas.map((l, i) => (
+        <article
+            class={`le__panel le__panel--${i % 2 === 0 ? "visual-left" : "visual-right"}`}
+            data-le-panel
+            data-le-index={i}
+            data-le-slug={l.slug}
+            style={`--le-panel-accent: ${l.bgColor}; --le-panel-halo: ${l.haloColor}; --le-panel-text-accent: ${l.accentText};`}
+        >
+            <span class="le__panel-marker" aria-hidden="true">
+                <span class="le__panel-marker-ring"></span>
+                <span class="le__panel-marker-dot"></span>
+            </span>
+
+            <div class="le__panel-visual" data-le-visual>
+                {l.silhouette && (
+                    <img class="le__panel-silhouette" src={l.silhouette}
+                         alt="" aria-hidden="true" loading="lazy" draggable="false"/>
+                )}
+                <span class="le__panel-blob" aria-hidden="true"></span>
+                <span class="le__panel-halo" data-le-halo aria-hidden="true"></span>
+                <img class="le__panel-img" data-le-img
+                     src={l.image}
+                     alt={`${l.nombre} — ${l.kicker}`}
+                     loading="lazy" draggable="false"/>
+            </div>
+
+            <div class="le__panel-body">
+                <span class="le__panel-num" data-le-num aria-hidden="true">{l.num}</span>
+                <p class="le__panel-kicker" data-le-kicker>
+                    <span class="le__panel-kicker-dot" aria-hidden="true"></span>
+                    {l.kicker}
+                </p>
+                <h3 class="le__panel-name" data-le-name>{l.nombre}</h3>
+                <p class="le__panel-tagline" data-le-tagline>{l.tagline}</p>
+                <p class="le__panel-text" data-le-text>{l.body}</p>
+                <a
+                    class="le__panel-cta"
+                    data-le-cta
+                    data-cursor="hover"
+                    data-magnetic
+                    data-magnetic-strength="0.18"
+                    href={l.href}
+                    aria-label={`Ver ficha de ${l.nombre}`}
+                >
+                    <span>{l.ctaLabel}</span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6"/>
+                    </svg>
+                </a>
+            </div>
+        </article>
+    ))}
+
+</section>
+
+<style>
+    /* =====================================================================
+       SECTION CONTAINER — bg cream editorial (NO dark como complementos
+       para mantener jerarquía: las líneas estrella son cream + light, los
+       complementos son dark cinematic).
+       ===================================================================== */
+    .le {
+        position: relative;
+        padding: clamp(80px, 14vh, 160px) clamp(20px, 5vw, 80px) clamp(80px, 12vh, 144px);
+        background:
+            radial-gradient(120% 80% at 50% 0%, rgba(46, 143, 110, 0.04), transparent 50%),
+            radial-gradient(140% 90% at 50% 100%, rgba(46, 143, 110, 0.03), transparent 50%),
+            #faf5ed;
+        color: #1a1a1a;
+        overflow: hidden;
+        isolation: isolate;
+    }
+    .le::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: clamp(28px, 6vh, 56px);
+        width: clamp(60px, 10vw, 140px);
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(46, 143, 110, 0.45), transparent);
+        pointer-events: none;
+    }
+
+    /* =====================================================================
+       THREAD VERTICAL
+       ===================================================================== */
+    .le__thread {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 2px;
+        height: 100%;
+        transform: translateX(-50%);
+        z-index: 1;
+        pointer-events: none;
+        opacity: 0.75;
+    }
+    .le__thread-line {
+        stroke: #2E8F6E !important;
+    }
+
+    /* =====================================================================
+       HEADER
+       ===================================================================== */
+    .le__header {
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        max-width: min(900px, 90vw);
+        margin: 0 auto clamp(80px, 14vh, 144px);
+    }
+    .le__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6em;
+        margin: 0 0 clamp(24px, 4vh, 44px);
+        font-family: var(--f-text);
+        font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+        font-weight: 700;
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+        color: rgba(26, 26, 26, 0.62);
+    }
+    .le__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #2E8F6E;
+        box-shadow: 0 0 12px rgba(46, 143, 110, 0.6);
+        display: inline-block;
+    }
+    .le__h {
+        font-family: var(--f-display, 'Gotham', serif);
+        font-weight: 900;
+        font-size: clamp(2.8rem, 9vw, 7rem);
+        line-height: 0.92;
+        letter-spacing: -0.018em;
+        text-transform: uppercase;
+        margin: 0 0 clamp(28px, 5vh, 56px);
+        color: #1a1a1a;
+        position: relative;
+        overflow: hidden; /* contiene shimmer sweep */
+    }
+    .le__line {
+        display: block;
+        padding: 0.06em 0;
+        position: relative;
+    }
+    .le__line-inner {
+        display: inline-block;
+        will-change: transform;
+    }
+    .le__line--mark {
+        padding-top: 0.02em;
+    }
+    /* ESTRELLA mark — pill cream con tilt editorial */
+    .le__mark {
+        display: inline-block;
+        background: #2b2018;
+        color: #fff8e7;
+        padding: 0.06em 0.32em 0.04em;
+        border-radius: 8px;
+        transform: rotate(-1.6deg);
+        transform-origin: 0 50%;
+        font-size: 0.7em;
+        letter-spacing: 0.04em;
+        will-change: transform;
+        box-shadow: 0 12px 28px rgba(43, 32, 24, 0.28);
+    }
+    /* Shimmer sweep diagonal */
+    .le__h::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -120%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(
+            105deg,
+            transparent 0%,
+            rgba(46, 143, 110, 0.06) 35%,
+            rgba(46, 143, 110, 0.18) 50%,
+            rgba(46, 143, 110, 0.06) 65%,
+            transparent 100%
+        );
+        pointer-events: none;
+        animation: le-shimmer 9s cubic-bezier(.55, .1, .35, .9) infinite;
+        animation-delay: 3.4s;
+        mix-blend-mode: multiply;
+        z-index: 4;
+    }
+    @keyframes le-shimmer {
+        0%, 70%, 100% { transform: translateX(0); opacity: 0; }
+        72%           { opacity: 1; }
+        90%           { transform: translateX(340%); opacity: 1; }
+        95%           { opacity: 0; }
+    }
+
+    .le__divider {
+        width: clamp(220px, 36vw, 380px);
+        margin: 0 auto clamp(28px, 5vh, 48px);
+        opacity: 0.92;
+    }
+    .le__divider-svg {
+        width: 100%;
+        height: 16px;
+        display: block;
+        overflow: visible;
+    }
+    .le__divider-line {
+        stroke: #2E8F6E !important;
+    }
+    .le__divider-glow {
+        filter: blur(0.5px);
+        will-change: transform, opacity;
+    }
+    .le__sub {
+        margin: 0 auto;
+        max-width: 60ch;
+        font-family: var(--f-text);
+        font-size: clamp(0.98rem, 1.3vw, 1.18rem);
+        line-height: 1.55;
+        color: rgba(26, 26, 26, 0.7);
+    }
+
+    /* =====================================================================
+       PANELS
+       ===================================================================== */
+    .le__panel {
+        position: relative;
+        z-index: 2;
+        max-width: min(1180px, 92vw);
+        margin: 0 auto clamp(80px, 14vh, 160px);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: clamp(36px, 6vw, 72px);
+        padding: clamp(40px, 6vh, 80px) 0;
+    }
+    .le__panel:last-of-type {
+        margin-bottom: 0;
+    }
+    .le__panel--visual-right .le__panel-visual { order: 2; }
+    .le__panel--visual-right .le__panel-body   { order: 1; }
+
+    /* ----- Marker ----- */
+    .le__panel-marker {
+        position: absolute;
+        top: clamp(40px, 6vh, 80px);
+        left: 50%;
+        transform: translate(-50%, 0);
+        width: 24px; height: 24px;
+        pointer-events: none;
+        z-index: 4;
+    }
+    .le__panel-marker-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 1.5px solid rgba(46, 143, 110, 0.55);
+        background: #faf5ed;
+        animation: le-marker-pulse 2.6s ease-in-out infinite;
+    }
+    .le__panel-marker-dot {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: #2E8F6E;
+        box-shadow: 0 0 12px rgba(46, 143, 110, 0.85);
+    }
+    @keyframes le-marker-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(46, 143, 110, 0.45); }
+        50%      { box-shadow: 0 0 0 10px rgba(46, 143, 110, 0); }
+    }
+
+    /* ----- Visual (product image + halo + silhouette + blob) ----- */
+    .le__panel-visual {
+        position: relative;
+        min-height: clamp(280px, 56vh, 520px);
+        display: grid;
+        place-items: center;
+        padding: 0 clamp(16px, 2vw, 32px);
+    }
+    .le__panel-silhouette {
+        position: absolute;
+        inset: 0;
+        width: 100%; height: 100%;
+        object-fit: contain;
+        opacity: 0.18;
+        z-index: 0;
+        pointer-events: none;
+        filter: blur(2px);
+        will-change: transform;
+    }
+    .le__panel-blob {
+        position: absolute;
+        inset: 12% 10%;
+        background: var(--le-panel-accent, #bd6ee6);
+        filter: blur(70px) saturate(1.15);
+        opacity: 0.28;
+        border-radius: 50%;
+        z-index: 0;
+        will-change: transform;
+    }
+    .le__panel-halo {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+            radial-gradient(
+                circle at 50% 50%,
+                color-mix(in srgb, var(--le-panel-halo, #ecd6f8) 55%, transparent) 0%,
+                transparent 65%
+            );
+        filter: blur(30px);
+        z-index: 1;
+        will-change: transform, opacity;
+    }
+    .le__panel-img {
+        position: relative;
+        z-index: 2;
+        max-width: 100%;
+        max-height: clamp(280px, 60vh, 540px);
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 30px 56px rgba(0, 0, 0, 0.22));
+        will-change: transform;
+        user-select: none;
+    }
+
+    /* ----- Body ----- */
+    .le__panel-body {
+        position: relative;
+        z-index: 2;
+    }
+    .le__panel-num {
+        display: block;
+        font-family: var(--f-display, 'Gotham', serif);
+        font-weight: 900;
+        font-size: clamp(4rem, 11vw, 8rem);
+        line-height: 0.9;
+        letter-spacing: -0.04em;
+        color: transparent;
+        -webkit-text-stroke: 1.5px rgba(46, 143, 110, 0.4);
+        margin: 0 0 clamp(12px, 2vh, 24px);
+        will-change: transform, opacity;
+    }
+    .le__panel-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6em;
+        margin: 0 0 clamp(12px, 2vh, 18px);
+        font-family: var(--f-text);
+        font-size: clamp(0.7rem, 0.85vw, 0.82rem);
+        font-weight: 700;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: #2E8F6E;
+    }
+    .le__panel-kicker-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 12px currentColor;
+        opacity: 0.85;
+    }
+    .le__panel-name {
+        font-family: var(--f-display, 'Gotham', serif);
+        font-weight: 900;
+        font-size: clamp(2rem, 4.5vw, 3.8rem);
+        line-height: 0.96;
+        letter-spacing: -0.018em;
+        text-transform: uppercase;
+        margin: 0 0 clamp(10px, 1.6vh, 18px);
+        color: #1a1a1a;
+    }
+    .le__panel-tagline {
+        margin: 0 0 clamp(12px, 2vh, 20px);
+        font-family: var(--f-display, 'Gotham', serif);
+        font-style: italic;
+        font-weight: 500;
+        font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+        line-height: 1.25;
+        color: var(--le-panel-text-accent, #bd6ee6);
+    }
+    .le__panel-text {
+        margin: 0 0 clamp(24px, 4vh, 36px);
+        max-width: 52ch;
+        font-family: var(--f-text);
+        font-size: clamp(0.95rem, 1.15vw, 1.08rem);
+        line-height: 1.55;
+        color: rgba(26, 26, 26, 0.7);
+    }
+    .le__panel-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px clamp(24px, 2.4vw, 32px);
+        border-radius: 999px;
+        border: 1px solid rgba(46, 143, 110, 0.45);
+        background: linear-gradient(135deg, rgba(46, 143, 110, 0.06), rgba(255, 255, 255, 0.7));
+        color: #1a1a1a;
+        text-decoration: none;
+        font-family: var(--f-display, 'Gotham', serif);
+        font-weight: 800;
+        font-size: clamp(0.85rem, 1vw, 1rem);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        line-height: 1;
+        white-space: nowrap;
+        transition:
+            border-color 0.28s ease,
+            background 0.28s ease,
+            transform 0.28s cubic-bezier(.2,.8,.2,1),
+            box-shadow 0.28s ease;
+        will-change: transform;
+        min-height: 44px;
+    }
+    .le__panel-cta:hover {
+        border-color: rgba(46, 143, 110, 0.85);
+        background: linear-gradient(135deg, rgba(46, 143, 110, 0.14), rgba(46, 143, 110, 0.04));
+        transform: translateY(-2px);
+        box-shadow: 0 16px 36px rgba(46, 143, 110, 0.22);
+    }
+    .le__panel-cta svg {
+        transition: transform 0.28s cubic-bezier(.2,.8,.2,1);
+        color: #2E8F6E;
+    }
+    .le__panel-cta:hover svg {
+        transform: translateX(4px);
+    }
+
+    /* =====================================================================
+       MOBILE STACK
+       ===================================================================== */
+    @media (max-width: 900px) {
+        .le__panel {
+            grid-template-columns: 1fr;
+            gap: clamp(24px, 4vh, 40px);
+            text-align: center;
+            padding: clamp(28px, 4vh, 48px) 0;
+        }
+        .le__panel--visual-right .le__panel-visual,
+        .le__panel--visual-right .le__panel-body {
+            order: unset;
+        }
+        .le__panel-visual {
+            min-height: 240px;
+        }
+        .le__panel-kicker,
+        .le__panel-cta {
+            justify-content: center;
+        }
+        .le__panel-kicker { display: flex; }
+        .le__panel-cta { display: inline-flex; }
+        .le__thread,
+        .le__panel-marker {
+            display: none;
+        }
+    }
+
+    /* =====================================================================
+       Reduce motion
+       ===================================================================== */
+    @media (prefers-reduced-motion: reduce) {
+        .le * {
+            transform: none !important;
+            opacity: 1 !important;
+            filter: none !important;
+            animation: none !important;
+        }
+        .le__divider-line,
+        .le__thread-line {
+            stroke-dashoffset: 0 !important;
+        }
+    }
+</style>
+
+<script>
+    import "../scripts/lineas-estrella-animations.js";
+</script>

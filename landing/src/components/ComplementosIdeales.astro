@@ -297,19 +297,68 @@ const complementos = [
     }
     .cmp__line {
         display: block;
-        overflow: hidden;
-        padding: 0.04em 0;
+        /* overflow:hidden recortaba descenders/ascenders en mobile.
+           Lo removemos: el SplitText scatter ya controla la opacidad
+           y posición de cada char con autoAlpha, no necesita clip. */
+        padding: 0.06em 0;
+        /* Layer para shimmer sweep post-assemble */
+        position: relative;
     }
     .cmp__line-inner {
         display: inline-block;
         will-change: transform;
     }
+    /* "IDEALES" — acento mint sólido (NO gradient-text porque después
+       de SplitText los chars son <div>, el background-clip:text del
+       parent pierde su texto-target y queda invisible). Solid color
+       + glow text-shadow para el pop editorial. */
     .cmp__line:last-child .cmp__line-inner {
-        background: linear-gradient(180deg, #fff 0%, #A7F5C8 220%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        color: transparent;
+        color: #A7F5C8;
+        text-shadow:
+            0 0 18px rgba(167, 245, 200, 0.5),
+            0 0 60px rgba(46, 143, 110, 0.25),
+            0 4px 32px rgba(0, 0, 0, 0.5);
+    }
+    /* SplitText genera .word inside line-inner — propaga color por si
+       acaso el char wrapping pierde inheritance. */
+    .cmp__line:last-child .cmp__line-inner .word,
+    .cmp__line:last-child .cmp__line-inner .char {
+        color: inherit;
+    }
+
+    /* ===== Shimmer sweep post-assemble =====
+       Una franja de luz cruza horizontal sobre los chars del header
+       cada ~9s, dando un toque "premium" cinematográfico. */
+    .cmp__h::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -120%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(
+            105deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.04) 35%,
+            rgba(255, 255, 255, 0.14) 50%,
+            rgba(255, 255, 255, 0.04) 65%,
+            transparent 100%
+        );
+        pointer-events: none;
+        animation: cmp-shimmer 9s cubic-bezier(.55, .1, .35, .9) infinite;
+        animation-delay: 3s;
+        mix-blend-mode: screen;
+        z-index: 4;
+    }
+    .cmp__h {
+        position: relative;
+        overflow: hidden; /* contiene el shimmer */
+    }
+    @keyframes cmp-shimmer {
+        0%, 70%, 100% { transform: translateX(0); opacity: 0; }
+        72%           { opacity: 1; }
+        90%           { transform: translateX(340%); opacity: 1; }
+        95%           { opacity: 0; }
     }
     .cmp__divider {
         width: clamp(220px, 36vw, 380px);

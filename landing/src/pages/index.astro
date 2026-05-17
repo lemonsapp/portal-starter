@@ -4,6 +4,7 @@ import VideoHero from "../components/VideoHero.astro";
 import Marquee from "../components/Marquee.astro";
 import EaseOfUse from "../components/EaseOfUse.astro";
 import ProductFloatSlider from "../components/ProductFloatSlider.astro";
+import LineasEstrella from "../components/LineasEstrella.astro";
 import ComplementosIdeales from "../components/ComplementosIdeales.astro";
 import ChapterSection from "../components/ChapterSection.astro";
 import VineDivider from "../components/VineDivider.astro";
@@ -54,10 +55,14 @@ const dividers = [
          raíces nutren la planta". GSAP + DrawSVG + MotionPath. -->
     <OrganicConnector />
 
-    <!-- 5 productos: pin horizontal SPYLT.
-         showWelcome={false} oculta el welcome interno del slider:
-         ya tenemos el VideoHero arriba como intro cinemática. -->
-    <ProductFloatSlider showWelcome={false} />
+    <!-- Las 3 líneas estrella en formato vertical scroll-down. El
+         <ProductFloatSlider /> horizontal queda como código orphan
+         (no importado) por si se quisiera volver. <LineasEstrella />
+         tiene la misma editorial pero con narrativa scroll vertical:
+         header chars-assemble + thread DrawSVG + 3 panels alternating
+         con visual + body + parallax. Skills gsap-plugins SplitText/
+         DrawSVG + matchMedia + scrolltrigger. -->
+    <LineasEstrella />
 
     <!-- COMPLEMENTOS IDEALES — sección dedicada inmediatamente
          debajo del slider. Bio + Day-0 como complementos cinematográficos
