@@ -50,16 +50,15 @@ const lineas = [
         href: "/linea-elite",
         ctaLabel: "VER LÍNEA ELITE",
         silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
-        // Layered packshot del sub-product PART-1
-        aspect: 1.30,            // matchea base.png Elite (más cuadrado)
+        // ELITE muestra LOS DOS POTES (PART-1 + PART-2) juntos via la
+        // hero.png unificada que ya tiene ambas botellas side-by-side.
+        aspect: 1.30,            // matchea base.png unified Elite
         layers: {
-            base: "/img/slider-spylt/linea-elite/sub/parte-1/base.png",
-            pote: "/img/slider-spylt/linea-elite/sub/parte-1/pote.png",
-            // texto omitido — bug pipeline 3D (texto.png salió como
-            // copia del fondo, tapaba el pote al stackearse z=50).
+            base: "/img/slider-spylt/linea-elite/base.png",
+            pote: "/img/slider-spylt/linea-elite/hero.png",  // 2 botellas juntas
         },
-        bgColor: "#bd6ee6",      // violeta saturado del base
-        haloColor: "#ecd6f8",    // pastel lila
+        bgColor: "#bd6ee6",
+        haloColor: "#ecd6f8",
         accentText: "#E4C6FA",
     },
     {
@@ -94,12 +93,13 @@ const lineas = [
         href: "/linea-pro",
         ctaLabel: "VER LÍNEA PRO",
         silhouette: "/img/slider-spylt/linea-pro/fondo.png",
-        // Layered packshot del sub-product VEGETATIVO
+        // PRO muestra LOS 4 POTES (Enraizante/Vegetativo/Pre-flora/Flora)
+        // juntos via la hero.png unificada (1800x511 — los 4 alineados).
+        // Match perfecto al base.png unified celeste (1024x677 1.51).
         aspect: 1.51,
         layers: {
-            base:  "/img/slider-spylt/linea-pro/sub/vegetativo/base.png",
-            pote:  "/img/slider-spylt/linea-pro/sub/vegetativo/pote.png",
-            texto: "/img/slider-spylt/linea-pro/sub/vegetativo/texto.png",
+            base: "/img/slider-spylt/linea-pro/base.png",
+            pote: "/img/slider-spylt/linea-pro/hero.png",  // 4 potes alineados
         },
         bgColor: "#9ad8f5",
         haloColor: "#e8f4fb",
@@ -588,14 +588,13 @@ const lineas = [
         will-change: opacity, transform;
     }
     /* pote — packshot principal del producto, contain con scale.
-       Scale 1.22 default matchea el --psl-hero-scale del slider
-       original (que era el "tamaño visible" del bidón/pote sobre
-       la base.png). Per-product overrides abajo si necesita ajuste. */
+       Scale 1.10 default (matchea --psl-hero-scale del slider para
+       unified heroes). Per-product overrides abajo. */
     .le__layer--pote {
         z-index: 40;
         object-fit: contain;
-        object-position: center 60%;
-        transform: scale(1.22);
+        object-position: center 55%;
+        transform: scale(1.10);
         transform-origin: center 55%;
         filter:
             drop-shadow(0 14px 28px rgba(0, 0, 0, 0.22))
@@ -615,19 +614,28 @@ const lineas = [
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
         will-change: opacity, transform;
     }
-    /* ELITE override — base.png 1024×788 (aspect 1.30) ya matchea
-       el aspect del stage. Eliminamos el scale:1.18 que generaba
-       crop visible "le faltaba un poco de alto al fondo". Pote sí
-       requiere bump suplementario para sentirse acorde a la base. */
+    /* ELITE override — usa unified hero (2 botellas juntas 1200×1200).
+       Match perfecto al base unified 1400×1078 1.30. Scale leve. */
     .le__panel[data-le-slug="linea-elite"] .le__layer--pote {
-        transform: scale(1.32);
+        transform: scale(1.05);
+        object-position: center 50%;
     }
-    /* PRO override — pote 800×649 (aspect 1.23, más rectangular) +
-       base 1200×527 (aspect 2.28 wide) → el pote default se sentía
-       chico sobre el wide base. Bump scale + ajuste vertical. */
+    /* PRO override — unified hero 4 potes 1800×511. base unified 1.51.
+       Scale + ajuste vertical para que los 4 potes queden centrados. */
     .le__panel[data-le-slug="linea-pro"] .le__layer--pote {
-        transform: scale(1.40);
-        object-position: center 65%;
+        transform: scale(1.08);
+        object-position: center 60%;
+    }
+    /* RACE override — bidón violeta sub-product 670×1081 (portrait).
+       Bump scale para que el bidón se sienta protagonista sobre el
+       base wide 1.59. */
+    .le__panel[data-le-slug="linea-race"] .le__layer--pote {
+        transform: scale(1.32);
+        object-position: center 55%;
+    }
+    /* RACE ruedas — más prominentes para que el spinning idle se vea */
+    .le__panel[data-le-slug="linea-race"] .le__layer--ruedas {
+        transform: scale(1.05);
     }
 
     /* ----- Body ----- */

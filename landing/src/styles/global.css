@@ -5167,38 +5167,118 @@ html.is-loading body {
     justify-content: center;
 }
 .pdd__cta {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 16px 30px;
+    gap: 12px;
+    padding: 18px 34px;
     border-radius: 999px;
     font-family: var(--f-title);
-    font-size: 0.92rem;
+    font-size: 0.94rem;
+    font-weight: 800;
     letter-spacing: 0.22em;
     text-transform: uppercase;
     text-decoration: none;
-    transition: transform 0.35s, background 0.35s, box-shadow 0.35s;
+    transition:
+        transform 0.35s cubic-bezier(.2,.8,.2,1),
+        background 0.35s ease,
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
     border: 0;
     cursor: pointer;
+    overflow: hidden;
+    isolation: isolate;
+    min-height: 48px;
 }
+/* Primary — gradient verde mint Holistic + glow + sheen overlay.
+   Más llamativo que el negro plano anterior. Mint+green degradado
+   matchea brand WhatsApp #25D366 + el verde profundo #2E8F6E. */
 .pdd__cta--primary {
-    background: #1a1a1a;
-    color: #fff;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    background: linear-gradient(135deg, #2E8F6E 0%, #25D366 60%, #A7F5C8 100%);
+    color: #ffffff;
+    box-shadow:
+        0 10px 28px rgba(46, 143, 110, 0.38),
+        0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+        0 1px 0 rgba(255, 255, 255, 0.25) inset;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
+/* Sheen overlay — franja diagonal que recorre el btn al hover */
+.pdd__cta--primary::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        110deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0) 35%,
+        rgba(255, 255, 255, 0.32) 50%,
+        rgba(255, 255, 255, 0) 65%,
+        transparent 100%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.65s cubic-bezier(.2,.8,.2,1);
+    pointer-events: none;
+    z-index: 1;
+}
+.pdd__cta--primary > * { position: relative; z-index: 2; }
 .pdd__cta--primary:hover {
-    background: var(--pdd-color, #c9a34e);
-    transform: translateY(-3px);
-    box-shadow: 0 18px 40px color-mix(in srgb, var(--pdd-color, #c9a34e) 50%, transparent);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+        0 22px 46px rgba(46, 143, 110, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+        0 1px 0 rgba(255, 255, 255, 0.3) inset;
 }
+.pdd__cta--primary:hover::before {
+    transform: translateX(100%);
+}
+/* Pulse sutil — anillo expandiendo cada 3.5s para llamar atención */
+.pdd__cta--primary::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 999px;
+    border: 2px solid rgba(167, 245, 200, 0.7);
+    animation: pdd-cta-pulse 3.5s cubic-bezier(.4, 0, .2, 1) infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+@keyframes pdd-cta-pulse {
+    0%, 100% { transform: scale(1); opacity: 0; }
+    20%      { opacity: 0.7; }
+    60%      { transform: scale(1.16); opacity: 0; }
+}
+
+/* Ghost — "VER GUÍA DE USO". Mint outline + soft tint bg, hover fills.
+   Más visible que el border gris anterior. */
 .pdd__cta--ghost {
-    background: transparent;
+    background: rgba(46, 143, 110, 0.08);
     color: #1a1a1a;
-    border: 1.5px solid rgba(26, 26, 26, 0.2);
+    border: 1.5px solid #2E8F6E;
+    backdrop-filter: blur(8px);
 }
 .pdd__cta--ghost:hover {
-    background: rgba(26, 26, 26, 0.04);
-    border-color: rgba(26, 26, 26, 0.5);
+    background: linear-gradient(135deg, #2E8F6E 0%, #25D366 100%);
+    color: #fff;
+    border-color: transparent;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 16px 36px rgba(46, 143, 110, 0.35);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+/* Cuando el hero es full-bleed video (heroBackground=true), el ghost
+   queda sobre el video oscuro — ajustamos colores para legibilidad. */
+.pdd__hero--bg .pdd__cta--ghost {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border: 1.5px solid rgba(167, 245, 200, 0.6);
+}
+.pdd__hero--bg .pdd__cta--ghost:hover {
+    background: linear-gradient(135deg, #A7F5C8 0%, #25D366 100%);
+    color: #0c0c0c;
+    border-color: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+    .pdd__cta--primary::after { animation: none; opacity: 0; }
+    .pdd__cta--primary::before { display: none; }
 }
 .pdd__hero-stage {
     position: relative;

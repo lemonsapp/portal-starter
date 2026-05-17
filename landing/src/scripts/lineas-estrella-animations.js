@@ -397,13 +397,25 @@ function initLineasEstrella() {
                 });
             }
             if (lPote) {
-                const poteBaseScale = parseFloat(lPote.dataset.poteScale) || 1.08;
                 gsap.to(lPote, {
                     rotation: gsap.utils.random(-1.5, 1.5, 0.1),
                     duration: gsap.utils.random(3.0, 4.2),
                     ease: "sine.inOut",
                     yoyo: true, repeat: -1,
                     delay: 1.0 + panelIdx * 0.18,
+                });
+            }
+            // RUEDAS (solo RACE) — rotación continua infinita post-entrada.
+            // Pedido del cliente: las ruedas tienen que girar. Velocidad
+            // moderada (12s por vuelta) — visible pero no distractor.
+            // Skill: gsap-performance (transforms only, will-change rotation).
+            if (lRuedas) {
+                gsap.to(lRuedas, {
+                    rotation: "+=360",
+                    duration: 12,
+                    ease: "none",
+                    repeat: -1,
+                    delay: 1.3 + panelIdx * 0.18, // espera fin del entry
                 });
             }
         });

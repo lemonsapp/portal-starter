@@ -21,7 +21,7 @@ export const productDetails = {
             headline: "Fertilizante premium\npara hidroponía y sustrato inerte.",
             claim: "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de hidroponía, NFT, DWC, coco y sustratos 100% inertes. Concentración máxima de NPK en cada riego, pH auto-buffer entre 5.8 y 6.2, resultados consistentes cosecha tras cosecha.",
             ctaPrimary:   { label: "COMPRAR ELITE",        href: "/shop?categoria=elite" },
-            ctaSecondary: { label: "VER ESPECIFICACIONES", href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#C9A34E",
             colorSoft: "#F7F3EA",
             heroVideo: {
@@ -117,7 +117,7 @@ export const productDetails = {
             headline: "Fertilizante hidrosoluble\npara sustratos compuestos.",
             claim: "Cuatro fertilizantes etapa-específicos en formato sólido hidrosoluble para sustratos compuestos. Enraizante, Vegetativo, Preflora y Flora: cada uno con el ratio NPK exacto para esa fase. Pesás, disolvés, regás. EC programable, pH estable, mismo resultado en cada lote. Compatible con autoflorecientes y fotoperiódicas.",
             ctaPrimary:   { label: "COMPRAR PRO",            href: "/shop?categoria=pro" },
-            ctaSecondary: { label: "VER ESPECIFICACIONES", href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#F5948A",
             colorSoft: "#FFE3DE",
             heroVideo: {
@@ -348,7 +348,7 @@ export const productDetails = {
             headline: "Bioestimulante orgánico\npara cultivo indoor.",
             claim: "Bioestimulante 100% orgánico para cultivo indoor, fabricado en biorreactor industrial con cepas seleccionadas de Azospirillum y Azotobacter. Hasta 70% más efectivo que micorrizas tradicionales. Estimula el desarrollo radicular, potencia la absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo: Línea Pro, Línea Elite y Línea Race.",
             ctaPrimary:   { label: "COMPRAR BIO",           href: "/shop?categoria=bio" },
-            ctaSecondary: { label: "VER ESPECIFICACIONES", href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#E8A5B1",
             colorSoft: "#F7D6DC",
             heroVideo: {
@@ -436,7 +436,7 @@ export const productDetails = {
             headline: "Gel enraizante para esquejes.\nEl primer paso del ciclo.",
             claim: "Cloner es el gel enraizante de alta adherencia de Holistic para esquejes y plantines. Fórmula de contacto rápido que acelera el prendimiento radicular con mínima manipulación. El comienzo del ciclo que define la calidad del resultado final. Compatible con todo el catálogo Holistic.",
             ctaPrimary:   { label: "COMPRAR CLONER",         href: "/shop?categoria=cloner" },
-            ctaSecondary: { label: "VER ESPECIFICACIONES",   href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO",   href: "#specs" },
             color: "#6B3BAF",
             colorSoft: "#E4D5F2",
         },
@@ -523,7 +523,7 @@ export const productDetails = {
             headline: "Finalizador de cosecha.\nLa última decisión que define todo.",
             claim: "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Limpieza profunda del sistema radicular, pulido del sabor, aroma y textura del resultado final. Lo que diferencia una cosecha buena de una perfecta. Se usa junto a Race 4 o como cierre exclusivo de cualquier sistema Holistic.",
             ctaPrimary:   { label: "COMPRAR DAY-0",          href: "/shop?categoria=day0" },
-            ctaSecondary: { label: "VER ESPECIFICACIONES",   href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO",   href: "#specs" },
             color: "#C9A34E",
             colorSoft: "#F9E79B",
             heroVideo: {
