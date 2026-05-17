@@ -50,11 +50,14 @@ const lineas = [
         href: "/linea-elite",
         ctaLabel: "VER LÍNEA ELITE",
         silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
-        // ELITE muestra LOS DOS POTES (PART-1 + PART-2) juntos via la
-        // hero.png unificada que ya tiene ambas botellas side-by-side.
-        aspect: 1.30,            // matchea base.png unified Elite
+        // ELITE muestra LOS DOS POTES (PART-1 + PART-2) via la hero.png
+        // unificada side-by-side, pero MANTIENE el base.png del sub
+        // PART-1 (el fondo cream/dorado editorial que era el correcto).
+        // El user reportó que el fondo unified base.png no era el que
+        // iba — volvemos al sub-product base, conservando el pote dual.
+        aspect: 1.30,            // matchea base.png sub PART-1 Elite
         layers: {
-            base: "/img/slider-spylt/linea-elite/base.png",
+            base: "/img/slider-spylt/linea-elite/sub/parte-1/base.png",
             pote: "/img/slider-spylt/linea-elite/hero.png",  // 2 botellas juntas
         },
         bgColor: "#bd6ee6",
@@ -193,11 +196,17 @@ const lineas = [
                 <span class="le__panel-blob" aria-hidden="true"></span>
                 <span class="le__panel-halo" data-le-halo aria-hidden="true"></span>
 
-                <!-- Stage layered (replica del swap del slider Race
-                     base + ruedas + pote + texto stackeados con z-index
-                     escalonado). Aspect del card matchea base.png del
-                     sub-product. Inline style usa --le-aspect para que
-                     CSS calcule height proporcional. -->
+                <!-- Stage layered: replica del swap del slider Race.
+                     Arquitectura split:
+                       • .le__panel-stage     → overflow:visible (pote/
+                                                 ruedas/texto pueden
+                                                 protruir = "superpuesto")
+                       • .le__panel-frame     → overflow:hidden + border-
+                                                 radius (clipea solo el
+                                                 base.png al rounded card)
+                     Esto permite que el bidón/pote sea más grande que el
+                     marco sin cortarse, mientras la base queda dentro del
+                     card redondeado. -->
                 <div
                     class="le__panel-stage"
                     data-le-stage
@@ -205,13 +214,18 @@ const lineas = [
                     role="img"
                     aria-label={`${l.nombre} — ${l.kicker}`}
                 >
-                    <img
-                        class="le__layer le__layer--base"
-                        data-le-layer-base
-                        src={l.layers.base}
-                        alt="" aria-hidden="true"
-                        loading="lazy" draggable="false"
-                    />
+                    <!-- Frame con el base clipeado por border-radius -->
+                    <div class="le__panel-frame" aria-hidden="true">
+                        <img
+                            class="le__layer le__layer--base"
+                            data-le-layer-base
+                            src={l.layers.base}
+                            alt="" aria-hidden="true"
+                            loading="lazy" draggable="false"
+                        />
+                    </div>
+                    <!-- Pote / ruedas / texto SOBRE el frame (no clipeados
+                         por border-radius del stage). Pueden protruir. -->
                     {l.layers.ruedas && (
                         <img
                             class="le__layer le__layer--ruedas"
@@ -544,6 +558,9 @@ const lineas = [
        layers stackeados (base + ruedas + pote + texto). Aspect-ratio
        viene del CSS variable --le-aspect (declarado inline per panel,
        proviene del aspect del base.png sub-product). */
+    /* Stage: el contenedor principal — overflow:VISIBLE para que pote/
+       ruedas/texto puedan protruir (superpuestos al marco rounded).
+       Drop-shadow movido al frame interno (que sí está rounded). */
     .le__panel-stage {
         position: relative;
         z-index: 3;
@@ -551,14 +568,19 @@ const lineas = [
         max-width: 540px;
         aspect-ratio: var(--le-aspect, 1.4) / 1;
         max-height: clamp(300px, 60vh, 540px);
+        overflow: visible;
+        will-change: transform, opacity;
+    }
+    /* Frame interno: SOLO contiene el base.png clipeado por rounded
+       corners + drop-shadow. Pote/ruedas/texto viven afuera del frame
+       y pueden extenderse por encima/debajo sin recortarse. */
+    .le__panel-frame {
+        position: absolute;
+        inset: 0;
         border-radius: clamp(20px, 2.6vw, 38px);
-        /* overflow:hidden → la base.png queda perfectamente clipeada
-           por los rounded corners (sin que ningún edge bleede fuera).
-           El drop-shadow se aplica al stage como bloque, da el frame
-           floating effect sin necesidad de protrusión. */
         overflow: hidden;
         filter: drop-shadow(0 32px 48px rgba(0, 0, 0, 0.18));
-        will-change: transform, opacity;
+        z-index: 1;
     }
     .le__layer {
         position: absolute;
@@ -568,11 +590,10 @@ const lineas = [
         pointer-events: none;
         user-select: none;
     }
-    /* base.png — fondo decorativo del producto, cover dentro del card.
-       Único layer con border-radius:inherit + overflow:hidden para que
-       no se escape de los bordes redondos. */
+    /* base.png — fondo decorativo. Dentro del frame, hereda
+       border-radius. object-fit:cover llena el frame redondeado. */
     .le__layer--base {
-        z-index: 30;
+        z-index: 1;        /* dentro del frame solo, no compite con pote */
         object-fit: cover;
         object-position: center;
         border-radius: inherit;
@@ -627,15 +648,19 @@ const lineas = [
         object-position: center 60%;
     }
     /* RACE override — bidón violeta sub-product 670×1081 (portrait).
-       Bump scale para que el bidón se sienta protagonista sobre el
-       base wide 1.59. */
+       Ahora con stage overflow:visible, el bidón puede extenderse
+       SOBRE los bordes del frame rounded (superpuesto), no se corta.
+       Scale 1.15 → tamaño protagonista pero proporcional (no exagerado).
+       object-position center 55% mantiene el centro óptico sobre el
+       base wide. */
     .le__panel[data-le-slug="linea-race"] .le__layer--pote {
-        transform: scale(1.32);
+        transform: scale(1.15);
         object-position: center 55%;
     }
-    /* RACE ruedas — más prominentes para que el spinning idle se vea */
+    /* RACE ruedas — escala leve. Las ruedas también pueden protruir
+       del frame rounded gracias al overflow:visible. */
     .le__panel[data-le-slug="linea-race"] .le__layer--ruedas {
-        transform: scale(1.05);
+        transform: scale(1.0);
     }
 
     /* ----- Body ----- */
