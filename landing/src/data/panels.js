@@ -1,15 +1,22 @@
-// panels.js — 5 panels SPYLT-style del slider home (post VideoHero).
+// panels.js — 5 panels SPYLT-style del slider home (post VideoHero) +
+// 1 panel "interlude" editorial entre las líneas estrella y los
+// complementos.
 //
-// Reducido de 9 (sub-SKUs Pro+Race separados) a 5 LÍNEAS principales
-// del catálogo, en este orden canónico definido por el cliente
-// (re-ordenado 2026-05-14 — PRO abre, BIO baja a 4to, DAY-0 cierra):
-//   01 LÍNEA PRO        (4 potes 100gr unificados como hero)
-//   02 LÍNEA ELITE      (PART-1 + PART-2 juntos)
-//   03 LÍNEA RACE       (4 bidones juntos como hero)
+// Orden canónico (re-ordenado 2026-05-17 por pedido del cliente):
+//   01 LÍNEA ELITE         (PART-1 + PART-2 juntos)
+//   02 LÍNEA RACE          (4 bidones juntos como hero)
+//   03 LÍNEA PRO           (4 potes 100gr unificados como hero)
+//   ── INTERLUDE EDITORIAL ── "COMPLEMENTOS IDEALES / BIO + DAY-0"
 //   04 BIOESTIMULANTE
-//   05 DAY 0            (finalizador de cosecha)
+//   05 DAY 0               (finalizador de cosecha)
 //
-// Estructura por panel:
+// Tipos de panel:
+//   • Producto (default): renderiza card con base+hero+wheels+hotspots.
+//   • Interlude (`type: "interlude"`): renderiza texto cinematográfico
+//     full-bleed con char-assemble GSAP. Sin card, sin HUD step, no
+//     cuenta para el contador 01/05.
+//
+// Estructura por panel producto:
 //   slug         → folder en /img/slider-spylt/
 //   nombre       → caption visible (debajo del card)
 //   linea        → tag pequeño arriba del card
@@ -33,7 +40,125 @@
 //                  producto via Pillow.
 //     wheels     → array opcional de ruedas (solo Race original tenía).
 export const panels = [
-    // ─── 01 · LÍNEA PRO ────────────────────────────────────────────
+    // ─── 01 · LÍNEA ELITE ──────────────────────────────────────────
+    // 2 bidones premium (PART-1 + PART-2). Tonos blanco-orange editorial.
+    // bg charcoal premium contrasta con el packshot claro.
+    {
+        slug: "linea-elite",
+        nombre: "LÍNEA ELITE",
+        linea: "ELITE",
+        route: "/linea-elite",
+        bgColor: "#bd6ee6",       // violeta del base.png Race Violeta Parte B
+        accentColor: "#ecd6f8",   // pastel lila claro section bg
+        aspect: 1.30,             // matchea base.png Race Violeta Parte B (darker)
+        heroScale: 1.05,
+        label: "ELITE",
+        layers: {
+            base: "/img/slider-spylt/linea-elite/base.png",
+            hero: "/img/slider-spylt/linea-elite/hero.png",
+            silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
+        },
+        // Sub-productos: 2 partes del set Elite (PART 1 + PART 2).
+        // El packshot unificado muestra ambas en horizontal → cada
+        // hotspot ~50% del ancho.
+        subProducts: [
+            {
+                slug: "parte-1",
+                nombre: "ELITE · PART 1",
+                tagline: "Base mineral",
+                base: "/img/slider-spylt/linea-elite/sub/parte-1/base.png",
+                pote: "/img/slider-spylt/linea-elite/sub/parte-1/pote.png",
+                // texto: omitido — el texto.png exportado salió como copia
+                // del fondo del card (bug del pipeline 3D), tapaba el pote
+                // al renderearse con z=50. El swap se queda con base+pote.
+                accentColor: "#d9a86a",
+                hotspot: { x: 8, y: 10, w: 40, h: 80 },
+            },
+            {
+                slug: "parte-2",
+                nombre: "ELITE · PART 2",
+                tagline: "Complejo orgánico",
+                base: "/img/slider-spylt/linea-elite/sub/parte-2/base.png",
+                pote: "/img/slider-spylt/linea-elite/sub/parte-2/pote.png",
+                // texto: omitido — mismo bug que parte-1 (ver comentario arriba).
+                accentColor: "#d9a86a",
+                hotspot: { x: 52, y: 10, w: 40, h: 80 },
+            },
+        ],
+    },
+
+    // ─── 02 · LÍNEA RACE ───────────────────────────────────────────
+    // 5 bidones Race juntos (1 verde / 2 celeste / 3 violetaA /
+    // 3 violetaB / 4 rosa). Hero asp 1.89.
+    {
+        slug: "linea-race",
+        nombre: "LÍNEA RACE",
+        linea: "RACE",
+        route: "/linea-race",
+        bgColor: "#c078e5",       // violeta del base.png Race Violeta Parte A
+        accentColor: "#edd9f7",   // pastel lila claro section bg
+        aspect: 1.59,             // matchea base.png Race Violeta Parte A
+        heroScale: 1.10,
+        label: "RACE",
+        layers: {
+            base: "/img/slider-spylt/linea-race/base.png",
+            hero: "/img/slider-spylt/linea-race/hero.png",
+            silhouette: "/img/slider-spylt/linea-race/silhouette.png",
+        },
+        // Sub-productos: Race son 4 fertilizantes — Verde / Celeste /
+        // Violeta (solo Parte B) / Rosado. El packshot unificado se
+        // recompuso (hero.png) con sólo estos 4 bidones lado a lado:
+        // sacamos el Race 3 Parte A por pedido del cliente. Hotspots
+        // distribuidos en 4 regiones de ~24% cada una.
+        subProducts: [
+            {
+                slug: "verde",
+                nombre: "RACE VERDE",
+                tagline: "Etapa 1",
+                base: "/img/slider-spylt/linea-race/sub/verde/base.png",
+                pote: "/img/slider-spylt/linea-race/sub/verde/bidon.png",
+                ruedas: "/img/slider-spylt/linea-race/sub/verde/ruedas.png",
+                texto: "/img/slider-spylt/linea-race/sub/verde/texto.png",
+                accentColor: "#c7f0dd",
+                hotspot: { x: 2, y: 10, w: 22, h: 80 },
+            },
+            {
+                slug: "celeste",
+                nombre: "RACE CELESTE",
+                tagline: "Etapa 2",
+                base: "/img/slider-spylt/linea-race/sub/celeste/base.png",
+                pote: "/img/slider-spylt/linea-race/sub/celeste/bidon.png",
+                ruedas: "/img/slider-spylt/linea-race/sub/celeste/ruedas.png",
+                texto: "/img/slider-spylt/linea-race/sub/celeste/texto.png",
+                accentColor: "#c8eaf3",
+                hotspot: { x: 26, y: 10, w: 22, h: 80 },
+            },
+            {
+                slug: "violeta",
+                nombre: "RACE VIOLETA",
+                tagline: "Etapa 3",
+                base: "/img/slider-spylt/linea-race/sub/violeta/base.png",
+                pote: "/img/slider-spylt/linea-race/sub/violeta/bidon.png",
+                ruedas: "/img/slider-spylt/linea-race/sub/violeta/ruedas.png",
+                texto: "/img/slider-spylt/linea-race/sub/violeta/texto.png",
+                accentColor: "#b49ae0",
+                hotspot: { x: 50, y: 10, w: 22, h: 80 },
+            },
+            {
+                slug: "rosado",
+                nombre: "RACE ROSADO",
+                tagline: "Etapa 4",
+                base: "/img/slider-spylt/linea-race/sub/rosado/base.png",
+                pote: "/img/slider-spylt/linea-race/sub/rosado/bidon.png",
+                ruedas: "/img/slider-spylt/linea-race/sub/rosado/ruedas.png",
+                texto: "/img/slider-spylt/linea-race/sub/rosado/texto.png",
+                accentColor: "#f7d6dc",
+                hotspot: { x: 74, y: 10, w: 24, h: 80 },
+            },
+        ],
+    },
+
+    // ─── 03 · LÍNEA PRO ────────────────────────────────────────────
     // 4 potes Holistic Pro alineados (Vegetativo / Pre-Floración /
     // Floración / Enraizante). Hero canvas WIDE (3.52:1).
     {
@@ -104,122 +229,30 @@ export const panels = [
         ],
     },
 
-    // ─── 02 · LÍNEA ELITE ──────────────────────────────────────────
-    // 2 bidones premium (PART-1 + PART-2). Tonos blanco-orange editorial.
-    // bg charcoal premium contrasta con el packshot claro.
+    // ─── ▽▽▽ INTERLUDE EDITORIAL ▽▽▽ ───────────────────────────────
+    // Panel transición entre las 3 líneas estrella y los 2 complementos.
+    // Render distinto al panel producto: texto cinematográfico centrado
+    // con char-assemble GSAP (replica reducida del header). bg dark
+    // editorial que también sirve como "respiro" cromático entre el
+    // celeste de Pro y el rosa de Bio.
+    // El JS detecta `type === "interlude"` para:
+    //   • Saltarse idle animations de layers (no hay).
+    //   • Disparar SplitText scatter→assemble cuando entra a viewport.
+    //   • Omitir del HUD step bar (no es step del catálogo).
     {
-        slug: "linea-elite",
-        nombre: "LÍNEA ELITE",
-        linea: "ELITE",
-        route: "/linea-elite",
-        bgColor: "#bd6ee6",       // violeta del base.png Race Violeta Parte B
-        accentColor: "#ecd6f8",   // pastel lila claro section bg
-        aspect: 1.30,             // matchea base.png Race Violeta Parte B (darker)
-        heroScale: 1.05,
-        label: "ELITE",
-        layers: {
-            base: "/img/slider-spylt/linea-elite/base.png",
-            hero: "/img/slider-spylt/linea-elite/hero.png",
-            silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
-        },
-        // Sub-productos: 2 partes del set Elite (PART 1 + PART 2).
-        // El packshot unificado muestra ambas en horizontal → cada
-        // hotspot ~50% del ancho.
-        subProducts: [
-            {
-                slug: "parte-1",
-                nombre: "ELITE · PART 1",
-                tagline: "Base mineral",
-                base: "/img/slider-spylt/linea-elite/sub/parte-1/base.png",
-                pote: "/img/slider-spylt/linea-elite/sub/parte-1/pote.png",
-                // texto: omitido — el texto.png exportado salió como copia
-                // del fondo del card (bug del pipeline 3D), tapaba el pote
-                // al renderearse con z=50. El swap se queda con base+pote.
-                accentColor: "#d9a86a",
-                hotspot: { x: 8, y: 10, w: 40, h: 80 },
-            },
-            {
-                slug: "parte-2",
-                nombre: "ELITE · PART 2",
-                tagline: "Complejo orgánico",
-                base: "/img/slider-spylt/linea-elite/sub/parte-2/base.png",
-                pote: "/img/slider-spylt/linea-elite/sub/parte-2/pote.png",
-                // texto: omitido — mismo bug que parte-1 (ver comentario arriba).
-                accentColor: "#d9a86a",
-                hotspot: { x: 52, y: 10, w: 40, h: 80 },
-            },
-        ],
-    },
-
-    // ─── 03 · LÍNEA RACE ───────────────────────────────────────────
-    // 5 bidones Race juntos (1 verde / 2 celeste / 3 violetaA /
-    // 3 violetaB / 4 rosa). Hero asp 1.89.
-    {
-        slug: "linea-race",
-        nombre: "LÍNEA RACE",
-        linea: "RACE",
-        route: "/linea-race",
-        bgColor: "#c078e5",       // violeta del base.png Race Violeta Parte A
-        accentColor: "#edd9f7",   // pastel lila claro section bg
-        aspect: 1.59,             // matchea base.png Race Violeta Parte A
-        heroScale: 1.10,
-        label: "RACE",
-        layers: {
-            base: "/img/slider-spylt/linea-race/base.png",
-            hero: "/img/slider-spylt/linea-race/hero.png",
-            silhouette: "/img/slider-spylt/linea-race/silhouette.png",
-        },
-        // Sub-productos: Race son 4 fertilizantes — Verde / Celeste /
-        // Violeta (solo Parte B) / Rosado. El packshot unificado se
-        // recompuso (hero.png) con sólo estos 4 bidones lado a lado:
-        // sacamos el Race 3 Parte A por pedido del cliente. Hotspots
-        // distribuidos en 4 regiones de ~24% cada una.
-        subProducts: [
-            {
-                slug: "verde",
-                nombre: "RACE VERDE",
-                tagline: "Etapa 1",
-                base: "/img/slider-spylt/linea-race/sub/verde/base.png",
-                pote: "/img/slider-spylt/linea-race/sub/verde/bidon.png",
-                ruedas: "/img/slider-spylt/linea-race/sub/verde/ruedas.png",
-                texto: "/img/slider-spylt/linea-race/sub/verde/texto.png",
-                accentColor: "#c7f0dd",
-                hotspot: { x: 2, y: 10, w: 22, h: 80 },
-            },
-            {
-                slug: "celeste",
-                nombre: "RACE CELESTE",
-                tagline: "Etapa 2",
-                base: "/img/slider-spylt/linea-race/sub/celeste/base.png",
-                pote: "/img/slider-spylt/linea-race/sub/celeste/bidon.png",
-                ruedas: "/img/slider-spylt/linea-race/sub/celeste/ruedas.png",
-                texto: "/img/slider-spylt/linea-race/sub/celeste/texto.png",
-                accentColor: "#c8eaf3",
-                hotspot: { x: 26, y: 10, w: 22, h: 80 },
-            },
-            {
-                slug: "violeta",
-                nombre: "RACE VIOLETA",
-                tagline: "Etapa 3",
-                base: "/img/slider-spylt/linea-race/sub/violeta/base.png",
-                pote: "/img/slider-spylt/linea-race/sub/violeta/bidon.png",
-                ruedas: "/img/slider-spylt/linea-race/sub/violeta/ruedas.png",
-                texto: "/img/slider-spylt/linea-race/sub/violeta/texto.png",
-                accentColor: "#b49ae0",
-                hotspot: { x: 50, y: 10, w: 22, h: 80 },
-            },
-            {
-                slug: "rosado",
-                nombre: "RACE ROSADO",
-                tagline: "Etapa 4",
-                base: "/img/slider-spylt/linea-race/sub/rosado/base.png",
-                pote: "/img/slider-spylt/linea-race/sub/rosado/bidon.png",
-                ruedas: "/img/slider-spylt/linea-race/sub/rosado/ruedas.png",
-                texto: "/img/slider-spylt/linea-race/sub/rosado/texto.png",
-                accentColor: "#f7d6dc",
-                hotspot: { x: 74, y: 10, w: 24, h: 80 },
-            },
-        ],
+        type: "interlude",
+        slug: "complementos",
+        // Colors usados por el cross-fade del bg de la sección.
+        // accent = bg final del panel (dark editorial).
+        // bgColor = mismo accent para que no haya transición intra-panel.
+        bgColor: "#0c0c0c",
+        accentColor: "#0c0c0c",
+        // Contenido del texto cinematográfico. Las líneas se splitean
+        // a chars y se animan scroll-driven.
+        eyebrow: "MÁS HOLISTIC",
+        lines: ["COMPLEMENTOS", "IDEALES"],
+        mark: "BIO + DAY-0",
+        sub: "Los 2 complementos que cierran cualquier sistema de cultivo. Activación radicular + finalización pulida.",
     },
 
     // ─── 04 · BIOESTIMULANTE ───────────────────────────────────────

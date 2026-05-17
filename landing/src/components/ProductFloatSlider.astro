@@ -19,6 +19,14 @@ import { panels } from "../data/panels.js";
 
 // Prop legacy (welcome eliminado). Se ignora.
 const { showWelcome: _legacyShowWelcome = false } = Astro.props;
+
+// HUD steps + counter sólo cuentan panels-producto (excluyen interlude).
+// Map index del panel completo → index display (1-based) para el counter
+// y para el aria-label del step. data-step-index global se usa para
+// navegación (el JS hace scrollTo de índice completo); data-display-step
+// es lo que muestra el HUD (NN/N total).
+const productPanels = panels.filter((p) => p.type !== "interlude");
+const totalSteps = productPanels.length;
 ---
 <section
     class="psl"
@@ -44,13 +52,13 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
 
             <h2 class="psl__editorial-h" data-psl-editorial-h>
                 <span class="psl__editorial-line" data-psl-editorial-line>
-                    <span class="psl__editorial-line-inner">ESTOS SON</span>
+                    <span class="psl__editorial-line-inner">ESTAS SON</span>
                 </span>
                 <span class="psl__editorial-line" data-psl-editorial-line>
-                    <span class="psl__editorial-line-inner">NUESTROS 5</span>
+                    <span class="psl__editorial-line-inner">NUESTRAS 3</span>
                 </span>
                 <span class="psl__editorial-line" data-psl-editorial-line>
-                    <span class="psl__editorial-line-inner">PRODUCTOS</span>
+                    <span class="psl__editorial-line-inner">LÍNEAS</span>
                 </span>
                 <span class="psl__editorial-line psl__editorial-line--mark-row" data-psl-editorial-line>
                     <span class="psl__editorial-line-inner">
@@ -60,8 +68,8 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
             </h2>
 
             <p class="psl__editorial-sub" data-psl-editorial-sub>
-                Cada fertilizante para su etapa.
-                Línea Pro · Elite · Race · Bio · Cloner · Day-0.
+                3 líneas estrella + 2 complementos ideales.
+                Línea Elite · Race · Pro · Bio-Estimulante · Day-0.
             </p>
 
             <!-- Mask cover ON TOP del texto (z:5). rect del color del bg
@@ -118,6 +126,52 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
         <!-- Track con panels -->
         <div class="psl__track" data-psl-track>
             {panels.map((p, i) => {
+                // ▽ INTERLUDE PANEL — texto cinematográfico (sin card/hotspots)
+                if (p.type === "interlude") {
+                    return (
+                        <article
+                            class="psl__panel psl__panel--interlude"
+                            data-psl-panel
+                            data-psl-interlude
+                            data-index={i}
+                            data-slug={p.slug}
+                            data-nombre={p.eyebrow}
+                            data-accent={p.accentColor}
+                            data-bg={p.bgColor}
+                            style={`--psl-bg: ${p.bgColor}; --psl-accent: ${p.accentColor};`}
+                            role="group"
+                            aria-roledescription="slide"
+                            aria-label={`Transición: ${p.lines.join(" ")} — ${p.mark}`}
+                        >
+                            <div class="psl__interlude" data-psl-interlude-inner>
+                                {p.eyebrow && (
+                                    <p class="psl__interlude-eyebrow" data-psl-interlude-eyebrow>
+                                        <span class="psl__interlude-dot" aria-hidden="true"></span>
+                                        <span>{p.eyebrow}</span>
+                                    </p>
+                                )}
+                                <h3 class="psl__interlude-h" data-psl-interlude-h>
+                                    {p.lines.map((line) => (
+                                        <span class="psl__interlude-line" data-psl-interlude-line>
+                                            <span class="psl__interlude-line-inner">{line}</span>
+                                        </span>
+                                    ))}
+                                    {p.mark && (
+                                        <span class="psl__interlude-line psl__interlude-line--mark-row" data-psl-interlude-line>
+                                            <span class="psl__interlude-line-inner">
+                                                <mark class="psl__interlude-mark" data-psl-interlude-mark>{p.mark}</mark>
+                                            </span>
+                                        </span>
+                                    )}
+                                </h3>
+                                {p.sub && (
+                                    <p class="psl__interlude-sub" data-psl-interlude-sub>{p.sub}</p>
+                                )}
+                            </div>
+                        </article>
+                    );
+                }
+                // ▼ PRODUCT PANEL (default)
                 const num = String(i + 1).padStart(2, "0");
                 const wheels = p.layers.wheels ?? [];
                 return (
@@ -277,26 +331,32 @@ const { showWelcome: _legacyShowWelcome = false } = Astro.props;
             })}
         </div>
 
-        <!-- HUD bottom -->
+        <!-- HUD bottom — sólo cuenta panels-producto (interlude omitido) -->
         <div class="psl__hud">
             <div class="psl__hud-counter" aria-hidden="true">
                 <span class="psl__hud-num" data-psl-hud-num>01</span>
                 <span class="psl__hud-sep">/</span>
-                <span class="psl__hud-total">{String(panels.length).padStart(2, "0")}</span>
+                <span class="psl__hud-total">{String(totalSteps).padStart(2, "0")}</span>
             </div>
             <div class="psl__hud-steps" role="tablist" aria-label="Productos">
-                {panels.map((p, i) => (
-                    <button
-                        class={`psl__hud-step${i === 0 ? " is-active" : ""}`}
-                        data-psl-step
-                        data-index={i}
-                        role="tab"
-                        aria-label={`Ir a ${p.nombre}`}
-                        aria-selected={i === 0 ? "true" : "false"}
-                        type="button"
-                        data-cursor="hover"
-                    ></button>
-                ))}
+                {panels.map((p, i) => {
+                    if (p.type === "interlude") return null;
+                    // displayStep = 1-based index entre product panels
+                    const displayStep = productPanels.findIndex((pp) => pp.slug === p.slug) + 1;
+                    return (
+                        <button
+                            class={`psl__hud-step${i === 0 ? " is-active" : ""}`}
+                            data-psl-step
+                            data-index={i}
+                            data-display-step={displayStep}
+                            role="tab"
+                            aria-label={`Ir a ${p.nombre}`}
+                            aria-selected={i === 0 ? "true" : "false"}
+                            type="button"
+                            data-cursor="hover"
+                        ></button>
+                    );
+                })}
             </div>
             <p class="psl__hud-hint" aria-hidden="true">
                 <span class="psl__hud-hint-icon">↓</span>

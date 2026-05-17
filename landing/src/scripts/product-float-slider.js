@@ -44,6 +44,26 @@ function initProductSlider() {
     const total = panels.length;
     if (!total || !track || !pinWrap) return;
 
+    // ---------- Interlude bookkeeping ----------
+    // Panels marcados con data-psl-interlude no son productos: el HUD step
+    // bar no los muestra y el contador 01/N no los cuenta. Pero SÍ existen
+    // en el track (ocupan un panel full-width) y SÍ disparan animaciones
+    // propias (char-assemble del texto cinematográfico).
+    //
+    // displaySteps[i] = número de step que el HUD muestra cuando idx===i.
+    // Para interlude, hereda el step del producto anterior (UX: el counter
+    // no "salta" cuando pasás por encima del interlude).
+    //
+    // panelIsInterlude[i] = bool para skips puntuales (idle, hotspots, etc.)
+    const panelIsInterlude = panels.map((p) => p.hasAttribute("data-psl-interlude"));
+    let __runningStep = 0;
+    const displaySteps = panels.map((p, i) => {
+        if (panelIsInterlude[i]) return Math.max(1, __runningStep);
+        __runningStep += 1;
+        return __runningStep;
+    });
+    const totalDisplaySteps = __runningStep;
+
     // Pre-cache colors per panel para interpolación scroll-driven:
     // bgColor   → color saturado (badge/dot/CTA hover)
     // accent    → color pastel para el bg de la sección entera (legibilidad
@@ -458,10 +478,14 @@ function initProductSlider() {
                         // idx del panel "activo" (ronda al más cercano):
                         const idx = Math.min(total - 1, Math.round(self.progress * segments));
 
-                        if (hudNum) hudNum.textContent = String(idx + 1).padStart(2, "0");
+                        // HUD usa displaySteps (interlude inherita previo).
+                        if (hudNum) hudNum.textContent = String(displaySteps[idx]).padStart(2, "0");
 
-                        steps.forEach((s, i) => {
-                            const isActive = i === idx;
+                        // Match steps por data-display-step (resilient a interlude)
+                        const activeDisplayStep = displaySteps[idx];
+                        steps.forEach((s) => {
+                            const sStep = parseInt(s.dataset.displayStep, 10) || 0;
+                            const isActive = sStep === activeDisplayStep && !panelIsInterlude[idx];
                             s.classList.toggle("is-active", isActive);
                             s.setAttribute("aria-selected", isActive ? "true" : "false");
                         });
@@ -517,6 +541,114 @@ function initProductSlider() {
 
             // Per-panel parallax con containerAnimation
             panels.forEach((panel) => {
+                // ─── INTERLUDE PANEL — char-assemble scroll-linked ───
+                // Réplica reducida del editorial header. Skills:
+                //   • gsap-plugins SplitText (chars, words)
+                //   • gsap-scrolltrigger scrub + containerAnimation
+                //   • gsap-utils.random (scatter inicial per-char)
+                //   • gsap-plugins CustomEase 'explode' (mark pop)
+                //   • gsap-performance (transforms + opacity + blur filter)
+                if (panel.hasAttribute("data-psl-interlude")) {
+                    const iH       = panel.querySelector("[data-psl-interlude-h]");
+                    const iEyebrow = panel.querySelector("[data-psl-interlude-eyebrow]");
+                    const iMark    = panel.querySelector("[data-psl-interlude-mark]");
+                    const iSub     = panel.querySelector("[data-psl-interlude-sub]");
+                    const iLines   = gsap.utils.toArray("[data-psl-interlude-line]", panel);
+                    const iInners  = iLines
+                        .map((l) => l.querySelector(".psl__interlude-line-inner"))
+                        .filter(Boolean);
+
+                    // SplitText por línea — skip la del mark (no se splittea)
+                    const iSplits = [];
+                    iInners.forEach((inner) => {
+                        if (inner.querySelector("mark")) return;
+                        const s = SplitText.create(inner, {
+                            type: "chars,words",
+                            aria: "auto",
+                        });
+                        iSplits.push(s);
+                        splitInstances.push(s); // tracking para revert global
+                    });
+                    const iChars = iSplits.flatMap((s) => s.chars);
+
+                    // Estado inicial DISPERSO — cada char con offset random
+                    // (x/y/rotation/scale/blur), opacity 0. El scroll progress
+                    // dentro del panel ensambla cada char a su pos final.
+                    iChars.forEach((ch) => {
+                        gsap.set(ch, {
+                            x: gsap.utils.random(-220, 220),
+                            y: gsap.utils.random(-160, 160),
+                            rotation: gsap.utils.random(-65, 65),
+                            scale: gsap.utils.random(0.35, 0.9),
+                            autoAlpha: 0,
+                            filter: "blur(8px)",
+                            transformOrigin: "50% 50%",
+                            willChange: "transform, opacity, filter",
+                        });
+                    });
+                    if (iEyebrow) gsap.set(iEyebrow, { autoAlpha: 0, yPercent: 40 });
+                    if (iSub)     gsap.set(iSub,     { autoAlpha: 0, yPercent: 30 });
+                    if (iMark) {
+                        gsap.set(iMark, {
+                            scaleX: 0.92, scaleY: 0.96, rotation: -1.8,
+                            autoAlpha: 0, transformOrigin: "0 50%",
+                        });
+                    }
+
+                    // Scrub timeline linked al horizontal scrollTween. start
+                    // "left right" → panel justo entra desde la derecha;
+                    // end "right right" → panel completo en viewport.
+                    const iTl = gsap.timeline({
+                        scrollTrigger: {
+                            containerAnimation: scrollTween,
+                            trigger: panel,
+                            start: "left right",
+                            end:   "right right",
+                            scrub: 0.6,
+                            invalidateOnRefresh: true,
+                        },
+                    });
+                    if (iEyebrow) {
+                        iTl.to(iEyebrow, {
+                            autoAlpha: 1, yPercent: 0,
+                            ease: "power2.out", duration: 0.20,
+                        }, 0);
+                    }
+                    if (iChars.length) {
+                        iTl.to(iChars, {
+                            x: 0, y: 0, rotation: 0, scale: 1,
+                            autoAlpha: 1, filter: "blur(0px)",
+                            duration: 0.75,
+                            stagger: { each: 0.02, from: "random" },
+                            ease: "back.out(1.6)",
+                        }, 0.10);
+                    }
+                    if (iMark) {
+                        iTl.to(iMark, {
+                            scaleX: 1, scaleY: 1, rotation: -1.8,
+                            autoAlpha: 1,
+                            duration: 0.25,
+                            ease: "explode",
+                        }, 0.65);
+                    }
+                    if (iSub) {
+                        iTl.to(iSub, {
+                            autoAlpha: 1, yPercent: 0,
+                            duration: 0.20, ease: "power2.out",
+                        }, 0.80);
+                    }
+
+                    // Idle breath del mark post-assemble
+                    if (iMark) {
+                        gsap.to(iMark, {
+                            scale: 1.018,
+                            duration: 2.8, ease: "sine.inOut",
+                            yoyo: true, repeat: -1,
+                        });
+                    }
+                    return; // sin card/hero/wheels, salimos del forEach
+                }
+
                 const card   = panel.querySelector("[data-psl-card]");
                 const hero   = panel.querySelector("[data-psl-hero]");
                 const label  = panel.querySelector("[data-psl-label]");
@@ -610,12 +742,15 @@ function initProductSlider() {
                 });
             });
 
-            // Click en step → scroll-to ese panel
-            steps.forEach((s, i) => {
+            // Click en step → scroll-to ese panel. Usa data-index del DOM
+            // (que es el panel-index FULL del track, incl interlude) en
+            // vez del índice del array de steps (que excluye interlude).
+            steps.forEach((s) => {
                 const fn = () => {
                     const st = scrollTween.scrollTrigger;
                     if (!st) return;
-                    const target = st.start + (st.end - st.start) * (i / (total - 1));
+                    const panelIdx = parseInt(s.dataset.index, 10) || 0;
+                    const target = st.start + (st.end - st.start) * (panelIdx / (total - 1));
                     if (window.__lenis && typeof window.__lenis.scrollTo === "function") {
                         window.__lenis.scrollTo(target, {
                             duration: 1.0,
@@ -659,10 +794,13 @@ function initProductSlider() {
                     end: "bottom center",
                     onToggle: (self) => {
                         if (self.isActive) {
-                            if (hudNum) hudNum.textContent = String(i + 1).padStart(2, "0");
-                            steps.forEach((s, k) => {
-                                s.classList.toggle("is-active", k === i);
-                                s.setAttribute("aria-selected", k === i ? "true" : "false");
+                            if (hudNum) hudNum.textContent = String(displaySteps[i]).padStart(2, "0");
+                            const activeDisplay = displaySteps[i];
+                            steps.forEach((s) => {
+                                const sStep = parseInt(s.dataset.displayStep, 10) || 0;
+                                const isActive = sStep === activeDisplay && !panelIsInterlude[i];
+                                s.classList.toggle("is-active", isActive);
+                                s.setAttribute("aria-selected", isActive ? "true" : "false");
                             });
                             // Mobile: cut-cambio del section bg al accent del panel
                             // activo (no hay scrub continuo en stacked).

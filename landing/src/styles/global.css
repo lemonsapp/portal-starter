@@ -2682,6 +2682,157 @@ button {
     50%      { transform: translateY(3px); opacity: 1; }
 }
 
+/* =====================================================================
+   INTERLUDE PANEL — texto cinematográfico entre líneas estrella y
+   complementos. Render distinto al panel producto: bg dark editorial,
+   texto centrado, mark con tilt (replica reducida del editorial header).
+   Skills: gsap-plugins SplitText (chars), gsap-scrolltrigger scrub,
+   gsap-utils.random (scatter), gsap-plugins CustomEase 'explode'.
+   ===================================================================== */
+.psl__panel--interlude {
+    /* bg ya viene en --psl-bg via inline style. Refuerzo dark editorial
+       con gradient radial sutil para darle profundidad sin pelearle al
+       cross-fade de section bg que hace el JS. */
+    background:
+        radial-gradient(120% 80% at 50% 50%, rgba(255, 255, 255, 0.04), transparent 60%),
+        var(--psl-bg, #0c0c0c);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    /* permite que SplitText con masks crezca sin clipping en los lines */
+    overflow: hidden;
+}
+.psl__panel--interlude::before,
+.psl__panel--interlude::after {
+    /* Líneas decorativas top/bottom — refuerzan el "respiro" entre
+       grupos de producto. mint glow sutil. */
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(60px, 12vw, 180px);
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(167, 245, 200, 0.55) 50%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+.psl__panel--interlude::before {
+    top: clamp(12vh, 18vh, 22vh);
+}
+.psl__panel--interlude::after {
+    bottom: clamp(12vh, 18vh, 22vh);
+}
+
+.psl__interlude {
+    position: relative;
+    max-width: min(900px, 80vw);
+    text-align: center;
+    padding: 0 clamp(16px, 4vw, 32px);
+    z-index: 2;
+}
+.psl__interlude-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    font-family: var(--f-text);
+    font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 clamp(20px, 3.5vh, 36px);
+}
+.psl__interlude-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #A7F5C8;
+    box-shadow: 0 0 12px rgba(167, 245, 200, 0.7);
+    display: inline-block;
+}
+
+.psl__interlude-h {
+    font-family: var(--f-display, 'Gotham', serif);
+    font-weight: 900;
+    /* Tighter que el header del slider para que entren 3-4 líneas sin
+       quebrar el layout 100vh. */
+    font-size: clamp(2.6rem, 8.5vw, 6.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.012em;
+    margin: 0;
+    color: #fff;
+    text-transform: uppercase;
+    text-shadow: 0 4px 28px rgba(0, 0, 0, 0.4);
+}
+.psl__interlude-line {
+    display: block;
+    overflow: hidden;
+    /* mask para que SplitText chars salgan desde abajo sin clipping
+       en el ascender. line-height 0.92 puede recortar — ajuste fino. */
+    padding: 0.04em 0;
+}
+.psl__interlude-line--mark-row {
+    overflow: visible;
+    padding-bottom: 0.04em;
+}
+.psl__interlude-line-inner {
+    display: inline-block;
+}
+
+.psl__interlude-mark {
+    display: inline-block;
+    background: linear-gradient(110deg, #A7F5C8 0%, #25D366 100%);
+    color: #0c0c0c;
+    /* tilt editorial sutil al estilo del editorial-mark del header */
+    transform: rotate(-1.8deg);
+    padding: 0.04em 0.32em 0.06em;
+    /* tamaño menor a las lines principales para crear jerarquía:
+       las líneas son el statement, el mark es el detalle pop. */
+    font-size: clamp(1.2rem, 3vw, 2.2rem);
+    line-height: 1;
+    letter-spacing: 0.06em;
+    border-radius: 4px;
+    box-shadow:
+        0 12px 28px rgba(46, 143, 110, 0.35),
+        0 0 0 1px rgba(167, 245, 200, 0.25) inset;
+    margin-top: clamp(14px, 2vh, 24px);
+    text-shadow: none;
+}
+
+.psl__interlude-sub {
+    margin: clamp(20px, 3.5vh, 36px) auto 0;
+    max-width: 56ch;
+    font-family: var(--f-text);
+    font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+/* Mobile stacked — el interlude se acomoda como sección normal */
+@media (max-width: 900px) {
+    .psl__panel--interlude {
+        min-height: 70vh;
+        padding: clamp(48px, 10vh, 96px) 16px;
+        place-items: center;
+    }
+    .psl__panel--interlude::before,
+    .psl__panel--interlude::after {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .psl__interlude * {
+        transform: none !important;
+        opacity: 1 !important;
+        filter: none !important;
+    }
+}
+
 /* ---------- Responsive: STACKED en mobile ---------- */
 @media (max-width: 900px) {
     .psl__pin-wrap {
