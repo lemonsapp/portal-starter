@@ -198,6 +198,23 @@ a, button, [role="button"], [data-cursor] {
 }
 
 /* =========================================================
+   TYPOGRAPHY — defensive overflow-wrap + hyphens baseline.
+   Aplicado a headings y párrafos comunes para evitar que palabras
+   largas (URLs, productos compuestos como "BIO-ESTIMULANTE",
+   "PRE-FLORACIÓN") rompan el layout en viewports angostos.
+   No cambia tamaños ni alturas — solo protege overflow.
+   ========================================================= */
+h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+p, li, dd, blockquote, figcaption {
+    overflow-wrap: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+}
+
+/* =========================================================
    A11Y — focus-visible baseline para keyboard nav.
    Reglas previas explícitas (.psl__hotspot, .header__socios-cta)
    sobreescriben este default vía cascada/especificidad.
@@ -2287,12 +2304,13 @@ button {
     margin: 0;
     font-family: var(--f-title);
     font-weight: 900;
-    line-height: 0.88;
+    line-height: 0.92;
     letter-spacing: -0.045em;
-    /* 4 líneas (ESTOS SON / NUESTROS 5 / PRODUCTOS / ESTRELLA) —
-       font-size bumpeado para llenar más visualmente el costado izq.
-       clamp (3.6 - 8.2vw - 8.4rem) → ~12% más grande que la versión
-       anterior de 3 líneas. */
+    /* 4 líneas (ESTAS SON / NUESTRAS 3 / LÍNEAS / ESTRELLA) —
+       font-size calibrado para llenar el costado izq del slider.
+       clamp (3.6 - 8.2vw - 8.4rem). line-height 0.92 (era 0.88) para
+       respiro vertical entre líneas en viewports intermedios sin
+       perder el "block" editorial. */
     font-size: clamp(3.6rem, 8.2vw, 8.4rem);
     text-transform: uppercase;
     color: #1a1a1a;
