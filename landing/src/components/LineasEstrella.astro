@@ -645,10 +645,12 @@ const lineas = [
     }
     /* PRO override — pote ENCUADRADO dentro de la base (no superpuesto
        como RACE). Pote más chico para que la base decorativa quede
-       claramente visible por detrás. Centrado vertical y horizontal. */
+       claramente visible por detrás. Centrado horizontal, shifted
+       verticalmente hacia abajo (object-position 68%) para que se
+       acomode mejor sobre el centro óptico del base decorativo. */
     .le__panel[data-le-slug="linea-pro"] .le__layer--pote {
         transform: scale(0.78);
-        object-position: center center;
+        object-position: center 68%;
     }
     /* RACE override — bidón violeta sub-product 670×1081 (portrait).
        Ahora con stage overflow:visible, el bidón puede extenderse
