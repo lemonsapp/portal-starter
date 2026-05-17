@@ -74,6 +74,20 @@ function initProductDetail() {
     const specRows      = Array.from(root.querySelectorAll("[data-pdd-spec-row]"));
 
     /* -----------------------------------------------------------------
+       A11y: pausa hero video full-bleed bajo prefers-reduced-motion.
+       Antes esto sólo se aplicaba en /linea-race vía RaceCinematic
+       script. Las internas Elite/Pro/Bio/Day-0 que ahora también tienen
+       heroVideo lo necesitan acá. Verificación one-shot (no reactivo)
+       para evitar arrancar/parar al toggle del media query —
+       refrescar la página vuelve a evaluar.
+       ----------------------------------------------------------------- */
+    const heroVideoEl = root.querySelector("[data-pdd-hero-video]");
+    if (heroVideoEl && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        heroVideoEl.removeAttribute("autoplay");
+        try { heroVideoEl.pause(); } catch (_) {}
+    }
+
+    /* -----------------------------------------------------------------
        MatchMedia: reduced-motion + breakpoints
        ----------------------------------------------------------------- */
     const splits = []; // tracking para revert
