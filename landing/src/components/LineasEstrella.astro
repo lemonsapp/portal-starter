@@ -644,11 +644,15 @@ const lineas = [
     }
     /* PRO override — pote vegetativo (800×649) ENCUADRADO dentro de
        la base unified celeste (1024×677, aspect 1.51 con decoración).
-       Scale 0.55 para que la base decorativa quede claramente
-       protagonista atrás. Pote centrado, object-position 65% (un
-       poco abajo del centro óptico). */
+       Scale 0.85 — pote completo visible sin cortes, suficientemente
+       prominente sobre el fondo decorativo. Posición vertical
+       conservada (65%) para que se "siente" sobre la base.
+       transform-origin center 50% para que el scale converja al
+       centro vertical del pote (la base de la botella), no se "vuele"
+       hacia arriba o abajo al escalar. */
     .le__panel[data-le-slug="linea-pro"] .le__layer--pote {
-        transform: scale(0.55);
+        transform: scale(0.85);
+        transform-origin: center 50%;
         object-position: center 65%;
     }
     /* RACE override — bidón violeta sub-product 670×1081 (portrait).
