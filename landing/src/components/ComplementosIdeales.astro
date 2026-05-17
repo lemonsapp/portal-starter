@@ -1,47 +1,113 @@
 ---
 // ComplementosIdeales — sección editorial DEBAJO del slider del home.
-//
-// Antes vivía como "interlude panel" dentro del slider; el cliente
-// pidió que se mostrara como sección dedicada con un DISEÑO NUEVO
-// (distinto al patrón cursor-paint del header del slider y distinto
-// al scatter→assemble del interlude). Acá la dirección visual es
-// "editorial spread" magazine-style: dark cinematic bg, headline
-// con word-rise + mask, divider con DrawSVG glow, 2 chips de producto.
+// Contiene la narrativa cinematográfica de los 2 complementos del
+// catálogo (BIO-ESTIMULANTE + DAY-0) que antes vivían como panels 4/5
+// del slider. El cliente los sacó del slider y pidió:
+//   1) Header "COMPLEMENTOS IDEALES" con animación "armándose"
+//      (chars-assemble desde scattered → posición final).
+//   2) BIO y DAY-0 como panels scroll-driven debajo, conectados al
+//      header con un "thread" visual.
 //
 // Composición:
-//   1) eyebrow "MÁS HOLISTIC · COMPLEMENTOS"
-//   2) headline "COMPLEMENTOS / IDEALES" — per-word slide-up bajo
-//      mask (overflow:hidden por línea)
-//   3) decorative line SVG con DrawSVGPlugin + glow dot central
-//   4) 2 chips de producto (Bio + Day-0) con elastic scale-in
-//   5) sub explicativo
+//   HEADER (chars-assemble)
+//   ├─ eyebrow "MÁS HOLISTIC · COMPLEMENTOS"
+//   ├─ headline "COMPLEMENTOS / IDEALES" (chars scatter→assemble scrub)
+//   ├─ DrawSVG divider con glow
+//   └─ sub explicativo
 //
-// Skills aplicadas (citadas inline en el script):
-//   • gsap-plugins SplitText (words, NO chars)
-//   • gsap-plugins DrawSVGPlugin (linea decorativa)
-//   • gsap-plugins CustomEase (eases ya registrados: 'explode')
-//   • gsap-scrolltrigger toggleActions (enter discreto, no scrub)
-//   • gsap-timeline (secuencia coreografiada)
+//   THREAD SVG (DrawSVGPlugin scroll-linked)
+//   └─ línea vertical mint que une header → 01 BIO → 02 DAY-0
+//
+//   PANEL BIO (scroll-driven enter)
+//   ├─ Visual: bottle PNG + halo radial + decorative blob
+//   ├─ Body:  num "01" stroke text + kicker + name + body + CTA
+//   └─ Layout: alternating 2-col (text right en desktop)
+//
+//   PANEL DAY-0 (scroll-driven enter, layout reverse)
+//   ├─ Visual: bottle PNG + halo + decorative blob
+//   ├─ Body:  num "02" + kicker + name + body + CTA
+//   └─ Layout: alternating 2-col (text left en desktop)
+//
+// Skills:
+//   • gsap-plugins SplitText (chars per headline line)
+//   • gsap-plugins DrawSVGPlugin (divider + thread vertical)
+//   • gsap-plugins CustomEase (eases pre-registradas)
+//   • gsap-scrolltrigger scrub (headline scatter→assemble + thread)
+//   • gsap-scrolltrigger toggleActions (panels enter)
+//   • gsap-timeline (panel sequences)
+//   • gsap-utils.random (per-char scatter único)
 //   • gsap-utils.toArray (selectors batch)
-//   • gsap-core matchMedia (reduced-motion + responsive)
+//   • gsap-core matchMedia (reduced-motion + breakpoints)
 //   • gsap-performance (transforms + opacity + will-change)
-//
-// Diferencias deliberadas con el interlude original:
-//   ✗ NO scrub scroll-linked → SÍ toggleActions enter (timeline simple)
-//   ✗ NO chars scatter        → SÍ words rise-from-mask
-//   ✗ NO cursor-paint reveal → SÍ DrawSVG underline + glow
-//   ✗ NO mark con tilt        → SÍ chips de producto con elastic + hover
+
+// Datos canónicos de los 2 complementos. Misma fuente de verdad que
+// la usada por panels.js cuando vivían en el slider — colores y
+// routes copiados textual para mantener la identidad cromática.
+const complementos = [
+    {
+        slug: "bioestimulante",
+        num: "01",
+        kicker: "ACTIVADOR ORGÁNICO",
+        nombre: "BIO-ESTIMULANTE",
+        tagline: "Activación radicular real.",
+        body: "Bioestimulante orgánico producido en biorreactor industrial. Azospirillum + Azotobacter ≥10⁹ UFC/ml. Riego, foliar, esquejes — multiplica eficiencia de absorción radicular.",
+        href: "/bio-estimulante",
+        ctaLabel: "VER BIO-ESTIMULANTE",
+        // Producto PNG transparente (perspectiva grande)
+        image: "/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png",
+        // Identidad cromática del producto
+        bgColor: "#f8b9d5",      // rosa pastel saturado
+        haloColor: "#f8b9d5",    // halo del producto
+        accentText: "#FFC4DC",   // num + acento de texto en dark
+    },
+    {
+        slug: "day-0",
+        num: "02",
+        kicker: "FINISHER · COSECHA",
+        nombre: "DAY 0",
+        tagline: "Cierra con calidad.",
+        body: "Aplicado en los últimos riegos antes del corte, vacía reservorios internos de la planta y mejora el bouquet final. Diferencia entre cosecha técnica y excelente.",
+        href: "/day-0",
+        ctaLabel: "VER DAY-0",
+        image: "/img/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png",
+        bgColor: "#e6d54a",
+        haloColor: "#f5e89c",
+        accentText: "#F5E89C",
+    },
+];
 ---
 <section class="cmp" data-complementos-ideales aria-label="Complementos ideales del catálogo">
-    <div class="cmp__inner" data-cmp-inner>
 
-        <!-- Eyebrow -->
+    <!-- ===== THREAD SVG: línea vertical mint que une header→01→02 =====
+         Vive como decorativo absolute fullheight. DrawSVGPlugin lo
+         dibuja scroll-linked (scrub) — crece como el progreso de
+         lectura. NO afecta layout, solo decora. -->
+    <svg class="cmp__thread" data-cmp-thread-svg preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+            <linearGradient id="cmpThreadGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0"   stop-color="#A7F5C8" stop-opacity="0"/>
+                <stop offset="0.08" stop-color="#A7F5C8" stop-opacity="0.85"/>
+                <stop offset="0.92" stop-color="#A7F5C8" stop-opacity="0.85"/>
+                <stop offset="1"   stop-color="#A7F5C8" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
+        <line
+            class="cmp__thread-line"
+            data-cmp-thread
+            x1="50%" y1="0%" x2="50%" y2="100%"
+            stroke="url(#cmpThreadGrad)"
+            stroke-width="1.4"
+            stroke-linecap="round"
+        />
+    </svg>
+
+    <!-- ===== HEADER (chars-assemble) ===== -->
+    <header class="cmp__header" data-cmp-header>
         <p class="cmp__eyebrow" data-cmp-eyebrow>
             <span class="cmp__dot" aria-hidden="true"></span>
             <span>MÁS HOLISTIC · COMPLEMENTOS</span>
         </p>
 
-        <!-- Headline 2 líneas con word-rise mask -->
         <h2 class="cmp__h" data-cmp-h>
             <span class="cmp__line" data-cmp-line>
                 <span class="cmp__line-inner">COMPLEMENTOS</span>
@@ -51,110 +117,153 @@
             </span>
         </h2>
 
-        <!-- Decorative line: DrawSVGPlugin anima el path de 0% a 100%
-             en el scroll-enter, con un círculo glow central que pulsa
-             post-draw. Mint mint para mantener brand. -->
         <div class="cmp__divider" aria-hidden="true">
             <svg class="cmp__divider-svg" viewBox="0 0 400 16" preserveAspectRatio="none">
                 <defs>
                     <linearGradient id="cmpLine" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0"   stop-color="#A7F5C8" stop-opacity="0" />
-                        <stop offset="0.5" stop-color="#A7F5C8" stop-opacity="0.95" />
-                        <stop offset="1"   stop-color="#A7F5C8" stop-opacity="0" />
+                        <stop offset="0"   stop-color="#A7F5C8" stop-opacity="0"/>
+                        <stop offset="0.5" stop-color="#A7F5C8" stop-opacity="0.95"/>
+                        <stop offset="1"   stop-color="#A7F5C8" stop-opacity="0"/>
                     </linearGradient>
                     <radialGradient id="cmpGlow">
-                        <stop offset="0"   stop-color="#A7F5C8" stop-opacity="1" />
-                        <stop offset="0.5" stop-color="#A7F5C8" stop-opacity="0.45" />
-                        <stop offset="1"   stop-color="#A7F5C8" stop-opacity="0" />
+                        <stop offset="0"   stop-color="#A7F5C8" stop-opacity="1"/>
+                        <stop offset="0.5" stop-color="#A7F5C8" stop-opacity="0.45"/>
+                        <stop offset="1"   stop-color="#A7F5C8" stop-opacity="0"/>
                     </radialGradient>
                 </defs>
-                <line
-                    class="cmp__divider-line"
-                    data-cmp-divider-line
-                    x1="0" y1="8" x2="400" y2="8"
-                    stroke="url(#cmpLine)"
-                    stroke-width="1.6"
-                    stroke-linecap="round"
-                />
-                <circle
-                    class="cmp__divider-glow"
-                    data-cmp-divider-glow
-                    cx="200" cy="8" r="14"
-                    fill="url(#cmpGlow)"
-                />
+                <line class="cmp__divider-line" data-cmp-divider-line
+                      x1="0" y1="8" x2="400" y2="8"
+                      stroke="url(#cmpLine)" stroke-width="1.6" stroke-linecap="round"/>
+                <circle class="cmp__divider-glow" data-cmp-divider-glow
+                        cx="200" cy="8" r="14" fill="url(#cmpGlow)"/>
             </svg>
         </div>
 
-        <!-- 2 chips de producto -->
-        <div class="cmp__chips" data-cmp-chips>
-            <a class="cmp__chip" data-cmp-chip href="/bio-estimulante" data-cursor="hover">
-                <span class="cmp__chip-kicker">BIO</span>
-                <span class="cmp__chip-name">BIO-ESTIMULANTE</span>
-                <svg class="cmp__chip-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6"/>
-                </svg>
-            </a>
-            <span class="cmp__chips-sep" aria-hidden="true">·</span>
-            <a class="cmp__chip" data-cmp-chip href="/day-0" data-cursor="hover">
-                <span class="cmp__chip-kicker">FINISHER</span>
-                <span class="cmp__chip-name">DAY-0</span>
-                <svg class="cmp__chip-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6"/>
-                </svg>
-            </a>
-        </div>
-
-        <!-- Sub explicativo -->
         <p class="cmp__sub" data-cmp-sub>
-            Activación radicular con bio-estimulante orgánico
-            + finalización pulida con day-0. Los 2 complementos
-            que cierran cualquier sistema de cultivo.
+            Activación radicular orgánica + finalización pulida.
+            Los 2 complementos que cierran cualquier sistema de cultivo.
         </p>
+    </header>
 
-    </div>
+    <!-- ===== PANELS (BIO + DAY-0) =====
+         Layout alternado: BIO con visual izq, DAY-0 con visual der.
+         CSS hace nth-of-type swap. Cada panel scroll-driven entrance
+         + parallax sutil en el visual del producto. -->
+    {complementos.map((c, i) => (
+        <article
+            class={`cmp__panel cmp__panel--${i % 2 === 0 ? "visual-left" : "visual-right"}`}
+            data-cmp-panel
+            data-cmp-index={i}
+            data-cmp-slug={c.slug}
+            style={`--cmp-panel-accent: ${c.bgColor}; --cmp-panel-halo: ${c.haloColor}; --cmp-panel-text-accent: ${c.accentText};`}
+        >
+            <!-- Marker en el thread vertical: dot mint pulsante a la
+                 altura del num grande. Se conecta visualmente con la
+                 línea SVG vertical (que pasa por el center axis). -->
+            <span class="cmp__panel-marker" aria-hidden="true">
+                <span class="cmp__panel-marker-ring"></span>
+                <span class="cmp__panel-marker-dot"></span>
+            </span>
+
+            <!-- VISUAL: bottle PNG + halo + decorative bg blob -->
+            <div class="cmp__panel-visual" data-cmp-visual>
+                <span class="cmp__panel-blob" aria-hidden="true"></span>
+                <span class="cmp__panel-halo" data-cmp-halo aria-hidden="true"></span>
+                <img
+                    class="cmp__panel-img"
+                    data-cmp-img
+                    src={c.image}
+                    alt={`${c.nombre} — ${c.kicker}`}
+                    loading="lazy"
+                    draggable="false"
+                />
+            </div>
+
+            <!-- BODY: num + kicker + name + body + cta -->
+            <div class="cmp__panel-body">
+                <span class="cmp__panel-num" data-cmp-num aria-hidden="true">{c.num}</span>
+                <p class="cmp__panel-kicker" data-cmp-kicker>
+                    <span class="cmp__panel-kicker-dot" aria-hidden="true"></span>
+                    {c.kicker}
+                </p>
+                <h3 class="cmp__panel-name" data-cmp-name>{c.nombre}</h3>
+                <p class="cmp__panel-tagline" data-cmp-tagline>{c.tagline}</p>
+                <p class="cmp__panel-text" data-cmp-text>{c.body}</p>
+                <a
+                    class="cmp__panel-cta"
+                    data-cmp-cta
+                    data-cursor="hover"
+                    data-magnetic
+                    data-magnetic-strength="0.18"
+                    href={c.href}
+                    aria-label={`Ver ficha de ${c.nombre}`}
+                >
+                    <span>{c.ctaLabel}</span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6"/>
+                    </svg>
+                </a>
+            </div>
+        </article>
+    ))}
+
 </section>
 
 <style>
-    /* ===== Layout base ===== */
+    /* =====================================================================
+       SECTION CONTAINER
+       ===================================================================== */
     .cmp {
         position: relative;
-        padding: clamp(72px, 14vh, 144px) clamp(20px, 5vw, 80px);
+        padding: clamp(72px, 14vh, 144px) clamp(20px, 5vw, 80px) clamp(96px, 18vh, 192px);
         background:
             radial-gradient(120% 80% at 50% 0%, rgba(167, 245, 200, 0.06), transparent 55%),
             radial-gradient(140% 90% at 50% 100%, rgba(46, 143, 110, 0.05), transparent 50%),
             #0a0a0a;
         color: #fff;
-        text-align: center;
         overflow: hidden;
         isolation: isolate;
     }
-    /* Líneas decorativas top/bottom muy sutiles — refuerzan el "respiro"
-       cinematográfico de la sección. */
-    .cmp::before,
-    .cmp::after {
+    .cmp::before {
+        /* línea decorativa top — separa visualmente del slider */
         content: "";
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
+        top: clamp(28px, 6vh, 56px);
         width: clamp(60px, 10vw, 140px);
         height: 1px;
-        background: linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(167, 245, 200, 0.45) 50%,
-            transparent 100%
-        );
+        background: linear-gradient(90deg, transparent, rgba(167, 245, 200, 0.45), transparent);
         pointer-events: none;
     }
-    .cmp::before { top: clamp(28px, 6vh, 56px); }
-    .cmp::after  { bottom: clamp(28px, 6vh, 56px); }
 
-    .cmp__inner {
-        max-width: min(900px, 90vw);
-        margin: 0 auto;
+    /* =====================================================================
+       THREAD VERTICAL SVG — conecta header → 01 → 02
+       Position absolute, center axis, fullheight de la sección.
+       DrawSVG anima stroke-dashoffset con scrub.
+       ===================================================================== */
+    .cmp__thread {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 2px;
+        height: 100%;
+        transform: translateX(-50%);
+        z-index: 1;
+        pointer-events: none;
+        opacity: 0.85;
     }
 
-    /* ===== Eyebrow ===== */
+    /* =====================================================================
+       HEADER
+       ===================================================================== */
+    .cmp__header {
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        max-width: min(900px, 90vw);
+        margin: 0 auto clamp(72px, 12vh, 128px);
+    }
     .cmp__eyebrow {
         display: inline-flex;
         align-items: center;
@@ -175,8 +284,6 @@
         box-shadow: 0 0 14px rgba(167, 245, 200, 0.8);
         display: inline-block;
     }
-
-    /* ===== Headline (word-rise from below + mask) ===== */
     .cmp__h {
         font-family: var(--f-display, 'Gotham', serif);
         font-weight: 900;
@@ -190,7 +297,7 @@
     }
     .cmp__line {
         display: block;
-        overflow: hidden;        /* mask para SplitText words rising */
+        overflow: hidden;
         padding: 0.04em 0;
     }
     .cmp__line-inner {
@@ -198,15 +305,12 @@
         will-change: transform;
     }
     .cmp__line:last-child .cmp__line-inner {
-        /* segunda línea sutilmente "más editorial" con un mint subtle */
         background: linear-gradient(180deg, #fff 0%, #A7F5C8 220%);
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
         color: transparent;
     }
-
-    /* ===== Divider SVG (DrawSVG) ===== */
     .cmp__divider {
         width: clamp(220px, 36vw, 380px);
         margin: 0 auto clamp(28px, 5vh, 48px);
@@ -222,39 +326,205 @@
         filter: blur(0.5px);
         will-change: transform, opacity;
     }
-
-    /* ===== Chips de producto ===== */
-    .cmp__chips {
-        display: inline-flex;
-        align-items: center;
-        gap: clamp(14px, 2vw, 28px);
-        flex-wrap: wrap;
-        justify-content: center;
-        margin: 0 0 clamp(28px, 5vh, 48px);
+    .cmp__sub {
+        margin: 0 auto;
+        max-width: 56ch;
+        font-family: var(--f-text);
+        font-size: clamp(0.98rem, 1.3vw, 1.18rem);
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.76);
     }
-    .cmp__chips-sep {
-        font-family: var(--f-display, 'Gotham', serif);
-        font-size: clamp(1.4rem, 2vw, 2rem);
-        color: rgba(167, 245, 200, 0.7);
-        font-weight: 900;
-        padding: 0 4px;
+
+    /* =====================================================================
+       PANELS (BIO + DAY-0) — alternating 2-col layout
+       ===================================================================== */
+    .cmp__panel {
+        position: relative;
+        z-index: 2;
+        max-width: min(1180px, 92vw);
+        margin: 0 auto clamp(80px, 14vh, 160px);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: clamp(36px, 6vw, 72px);
+        /* Decorative bg accent: muy sutil, color del producto al borde */
+        padding: clamp(40px, 6vh, 80px) 0;
+    }
+    .cmp__panel:last-of-type {
+        margin-bottom: 0;
+    }
+
+    /* Alternating layout: visual-left (BIO) / visual-right (DAY-0) */
+    .cmp__panel--visual-right .cmp__panel-visual {
+        order: 2;
+    }
+    .cmp__panel--visual-right .cmp__panel-body {
+        order: 1;
+    }
+
+    /* ----- Panel Marker (dot pulsante sobre la línea thread) ----- */
+    .cmp__panel-marker {
+        position: absolute;
+        top: clamp(40px, 6vh, 80px);
+        left: 50%;
+        transform: translate(-50%, 0);
+        width: 24px;
+        height: 24px;
+        pointer-events: none;
+        z-index: 4;
+    }
+    .cmp__panel-marker-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 1.5px solid rgba(167, 245, 200, 0.65);
+        background: #0a0a0a;          /* "tapa" la línea atrás del dot */
+        animation: cmp-marker-pulse 2.6s ease-in-out infinite;
+    }
+    .cmp__panel-marker-dot {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #A7F5C8;
+        box-shadow: 0 0 12px rgba(167, 245, 200, 0.85);
+    }
+    @keyframes cmp-marker-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(167, 245, 200, 0.55); }
+        50%      { box-shadow: 0 0 0 10px rgba(167, 245, 200, 0); }
+    }
+
+    /* ----- Panel Visual (bottle PNG + halo + blob) ----- */
+    .cmp__panel-visual {
+        position: relative;
+        min-height: clamp(280px, 50vh, 480px);
+        display: grid;
+        place-items: center;
+        padding: 0 clamp(16px, 2vw, 32px);
+    }
+    .cmp__panel-blob {
+        /* decorative coloured blur del color del producto */
+        position: absolute;
+        inset: 10% 8%;
+        background: var(--cmp-panel-accent, #f8b9d5);
+        filter: blur(60px) saturate(1.1);
+        opacity: 0.32;
+        border-radius: 50%;
+        z-index: 0;
         will-change: transform;
     }
-    .cmp__chip {
+    .cmp__panel-halo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+            radial-gradient(
+                circle at 50% 50%,
+                color-mix(in srgb, var(--cmp-panel-halo, #f8b9d5) 35%, transparent) 0%,
+                transparent 65%
+            );
+        filter: blur(28px);
+        z-index: 1;
+        will-change: transform, opacity;
+    }
+    .cmp__panel-img {
         position: relative;
+        z-index: 2;
+        max-width: 100%;
+        max-height: clamp(280px, 52vh, 520px);
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.45));
+        will-change: transform;
+        user-select: none;
+    }
+
+    /* ----- Panel Body (text column) ----- */
+    .cmp__panel-body {
+        position: relative;
+        z-index: 2;
+    }
+    .cmp__panel-num {
+        display: block;
+        font-family: var(--f-display, 'Gotham', serif);
+        font-weight: 900;
+        font-size: clamp(4rem, 11vw, 8rem);
+        line-height: 0.9;
+        letter-spacing: -0.04em;
+        color: transparent;
+        -webkit-text-stroke: 1.4px rgba(167, 245, 200, 0.45);
+        margin: 0 0 clamp(12px, 2vh, 24px);
+        will-change: transform, opacity;
+    }
+    .cmp__panel-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6em;
+        margin: 0 0 clamp(12px, 2vh, 18px);
+        font-family: var(--f-text);
+        font-size: clamp(0.7rem, 0.85vw, 0.82rem);
+        font-weight: 700;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--cmp-panel-text-accent, #A7F5C8);
+    }
+    .cmp__panel-kicker-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 12px currentColor;
+        opacity: 0.85;
+    }
+    .cmp__panel-name {
+        font-family: var(--f-display, 'Gotham', serif);
+        font-weight: 900;
+        font-size: clamp(2rem, 4.5vw, 3.8rem);
+        line-height: 0.96;
+        letter-spacing: -0.018em;
+        text-transform: uppercase;
+        margin: 0 0 clamp(10px, 1.6vh, 18px);
+        color: #fff;
+    }
+    .cmp__panel-tagline {
+        margin: 0 0 clamp(12px, 2vh, 20px);
+        font-family: var(--f-display, 'Gotham', serif);
+        font-style: italic;
+        font-weight: 500;
+        font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+        line-height: 1.25;
+        color: var(--cmp-panel-text-accent, #A7F5C8);
+        opacity: 0.92;
+    }
+    .cmp__panel-text {
+        margin: 0 0 clamp(24px, 4vh, 36px);
+        max-width: 52ch;
+        font-family: var(--f-text);
+        font-size: clamp(0.95rem, 1.15vw, 1.08rem);
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.76);
+    }
+    .cmp__panel-cta {
         display: inline-flex;
         align-items: center;
         gap: 12px;
-        padding: 14px clamp(20px, 2vw, 28px);
+        padding: 14px clamp(24px, 2.4vw, 32px);
         border-radius: 999px;
-        border: 1px solid rgba(167, 245, 200, 0.35);
-        background:
-            linear-gradient(135deg, rgba(167, 245, 200, 0.05), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(167, 245, 200, 0.45);
+        background: linear-gradient(135deg, rgba(167, 245, 200, 0.06), rgba(255, 255, 255, 0.02));
         color: #fff;
         text-decoration: none;
         font-family: var(--f-display, 'Gotham', serif);
         font-weight: 800;
-        letter-spacing: 0.04em;
+        font-size: clamp(0.85rem, 1vw, 1rem);
+        letter-spacing: 0.06em;
         text-transform: uppercase;
         line-height: 1;
         white-space: nowrap;
@@ -264,72 +534,70 @@
             transform 0.28s cubic-bezier(.2,.8,.2,1),
             box-shadow 0.28s ease;
         will-change: transform;
-        min-height: 44px;       /* WCAG SC 2.5.5 — touch target */
+        min-height: 44px;
     }
-    .cmp__chip:hover {
-        border-color: rgba(167, 245, 200, 0.75);
-        background:
-            linear-gradient(135deg, rgba(167, 245, 200, 0.12), rgba(167, 245, 200, 0.04));
+    .cmp__panel-cta:hover {
+        border-color: rgba(167, 245, 200, 0.85);
+        background: linear-gradient(135deg, rgba(167, 245, 200, 0.14), rgba(167, 245, 200, 0.04));
         transform: translateY(-2px);
-        box-shadow:
-            0 14px 36px rgba(46, 143, 110, 0.28),
-            0 0 0 1px rgba(167, 245, 200, 0.18) inset;
+        box-shadow: 0 16px 36px rgba(46, 143, 110, 0.3);
     }
-    .cmp__chip-kicker {
-        font-size: clamp(0.62rem, 0.75vw, 0.72rem);
-        letter-spacing: 0.22em;
-        color: #A7F5C8;
-        padding: 0.25em 0.55em;
-        border-radius: 999px;
-        background: rgba(167, 245, 200, 0.12);
-    }
-    .cmp__chip-name {
-        font-size: clamp(0.92rem, 1.1vw, 1.1rem);
-    }
-    .cmp__chip-arrow {
+    .cmp__panel-cta svg {
         transition: transform 0.28s cubic-bezier(.2,.8,.2,1);
         color: #A7F5C8;
     }
-    .cmp__chip:hover .cmp__chip-arrow {
-        transform: translateX(3px);
+    .cmp__panel-cta:hover svg {
+        transform: translateX(4px);
     }
 
-    /* ===== Sub ===== */
-    .cmp__sub {
-        margin: 0 auto;
-        max-width: 58ch;
-        font-family: var(--f-text);
-        font-size: clamp(0.98rem, 1.3vw, 1.18rem);
-        line-height: 1.55;
-        color: rgba(255, 255, 255, 0.76);
-    }
-
-    /* ===== Mobile responsive ===== */
-    @media (max-width: 700px) {
-        .cmp {
-            padding: clamp(56px, 12vh, 96px) 18px;
+    /* =====================================================================
+       MOBILE STACK
+       ===================================================================== */
+    @media (max-width: 900px) {
+        .cmp__panel {
+            grid-template-columns: 1fr;
+            gap: clamp(24px, 4vh, 40px);
+            text-align: center;
+            padding: clamp(28px, 4vh, 48px) 0;
         }
-        .cmp__chips {
-            flex-direction: column;
-            gap: 16px;
+        .cmp__panel--visual-right .cmp__panel-visual,
+        .cmp__panel--visual-right .cmp__panel-body {
+            order: unset;
         }
-        .cmp__chips-sep {
+        .cmp__panel-visual {
+            min-height: 240px;
+        }
+        .cmp__panel-kicker,
+        .cmp__panel-cta {
+            justify-content: center;
+        }
+        .cmp__panel-kicker {
+            display: flex;
+        }
+        .cmp__panel-cta {
+            display: inline-flex;
+        }
+        /* Thread + markers se ocultan en mobile — el layout stacked
+           ya genera ritmo vertical, no necesita decorativo extra que
+           se vea fuera de center. */
+        .cmp__thread,
+        .cmp__panel-marker {
             display: none;
         }
-        .cmp__chip {
-            width: 100%;
-            justify-content: space-between;
-        }
     }
 
-    /* ===== Reduced motion ===== */
+    /* =====================================================================
+       Reduced motion
+       ===================================================================== */
     @media (prefers-reduced-motion: reduce) {
         .cmp * {
             transform: none !important;
             opacity: 1 !important;
             filter: none !important;
+            animation: none !important;
         }
-        .cmp__divider-line {
+        .cmp__divider-line,
+        .cmp__thread-line {
             stroke-dashoffset: 0 !important;
         }
     }

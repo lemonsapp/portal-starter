@@ -1,18 +1,14 @@
-// panels.js — 5 panels SPYLT-style del slider home (post VideoHero).
+// panels.js — 3 panels SPYLT-style del slider home (post VideoHero).
 //
-// Orden canónico (re-ordenado 2026-05-17 por pedido del cliente):
+// Orden canónico (re-ordenado 2026-05-17 por pedido del cliente —
+// sólo las 3 líneas estrella; los 2 complementos BIO y DAY-0 viven
+// ahora en su propia sección <ComplementosIdeales /> abajo del slider):
 //   01 LÍNEA ELITE         (PART-1 + PART-2 juntos)
 //   02 LÍNEA RACE          (4 bidones juntos como hero)
 //   03 LÍNEA PRO           (4 potes 100gr unificados como hero)
-//   04 BIOESTIMULANTE
-//   05 DAY 0               (finalizador de cosecha)
 //
-// La sección "COMPLEMENTOS IDEALES / BIO + DAY-0" antes vivía aquí
-// como interlude panel dentro del slider; ahora se renderiza DEBAJO
-// del slider como sección dedicada `<ComplementosIdeales />` con
-// diseño y animaciones GSAP propias. El soporte de `type:"interlude"`
-// queda como infra dormante en el componente/JS (sin afectar nada
-// porque no hay entries con este type).
+// El soporte de `type:"interlude"` queda como infra dormante en el
+// componente/JS (sin afectar nada porque no hay entries con este type).
 //
 // Estructura por panel producto:
 //   slug         → folder en /img/slider-spylt/
@@ -227,44 +223,6 @@ export const panels = [
         ],
     },
 
-    // ─── 04 · BIOESTIMULANTE ───────────────────────────────────────
-    // 2 botellas pastel (teal + rosa) con sticker BIO-ESTIMULANTE.
-    // Color del panel: lila pastel matching el sticker color.
-    {
-        slug: "bioestimulante",
-        nombre: "BIOESTIMULANTE",
-        linea: "HOLISTIC",
-        route: "/bio-estimulante",
-        // Colores del nuevo Banner.png Bio (rosa pastel con palm leaves).
-        bgColor: "#f8b9d5",       // rosa pastel saturado matched al Banner
-        accentColor: "#fdd9e6",   // rosa muy pastel section bg
-        aspect: 1.51,             // matchea Banner.png Bio (1024x677)
-        heroScale: 0.92,          // packshot 2 botellas BIO — scale moderado
-        label: "BIO",
-        layers: {
-            base: "/img/slider-spylt/bioestimulante/base.png",
-            hero: "/img/slider-spylt/bioestimulante/hero.png",
-            silhouette: "/img/slider-spylt/bioestimulante/silhouette.png",
-        },
-    },
-
-    // ─── 05 · DAY 0 ────────────────────────────────────────────────
-    // 2 botellitas amarillas — finalizador de cosecha.
-    {
-        slug: "day-0",
-        nombre: "DAY 0",
-        linea: "FINISHER",
-        route: "/day-0",
-        // Nuevo BANNER 2.png amarillo (curvas amarillas wave-like).
-        bgColor: "#e6d54a",       // amarillo saturado del Banner
-        accentColor: "#f5e89c",   // amarillo pastel section bg
-        aspect: 1.51,             // matchea BANNER 2.png (1024x677)
-        heroScale: 0.92,
-        label: "DAY 0",
-        layers: {
-            base: "/img/slider-spylt/day-0/base.png",
-            hero: "/img/slider-spylt/day-0/hero.png",
-            silhouette: "/img/slider-spylt/day-0/silhouette.png",
-        },
-    },
+    // BIO + DAY-0 movidos a <ComplementosIdeales /> (sección dedicada
+    // debajo del slider con narrativa scroll-driven propia).
 ];
