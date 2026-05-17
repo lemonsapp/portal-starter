@@ -27,6 +27,18 @@
 
 // Las 3 líneas estrella en orden cliente: ELITE → RACE → PRO.
 // Misma identidad cromática que tenía cada panel del slider antiguo.
+//
+// VISUAL: cada panel renderea el packshot LAYERED (base + pote +
+// ruedas + texto) tomado del primer sub-product de cada línea
+// — replica el look "single product spotlight" que el slider
+// mostraba cuando hacías click en un hotspot. Animación de entrada
+// staggered por layer (base → ruedas → pote → texto) igual al
+// swap del slider.
+//
+// Sub-products elegidos para representar cada línea:
+//   ELITE → PART-1 (base + pote — texto omitido por bug pipeline)
+//   RACE  → VIOLETA (base + bidon + ruedas + texto — más iconic)
+//   PRO   → VEGETATIVO (base + pote + texto — green = growth)
 const lineas = [
     {
         slug: "linea-elite",
@@ -37,8 +49,15 @@ const lineas = [
         body: "Part 1 aporta calcio, magnesio y micro. Part 2 entrega el NPK base. Aplicadas juntas en cada riego dan al cultivo todo lo que necesita en su justa proporción — sin antagonismos químicos.",
         href: "/linea-elite",
         ctaLabel: "VER LÍNEA ELITE",
-        image: "/img/slider-spylt/linea-elite/hero.png",
         silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
+        // Layered packshot del sub-product PART-1
+        aspect: 1.30,            // matchea base.png Elite (más cuadrado)
+        layers: {
+            base: "/img/slider-spylt/linea-elite/sub/parte-1/base.png",
+            pote: "/img/slider-spylt/linea-elite/sub/parte-1/pote.png",
+            // texto omitido — bug pipeline 3D (texto.png salió como
+            // copia del fondo, tapaba el pote al stackearse z=50).
+        },
         bgColor: "#bd6ee6",      // violeta saturado del base
         haloColor: "#ecd6f8",    // pastel lila
         accentText: "#E4C6FA",
@@ -52,8 +71,15 @@ const lineas = [
         body: "Verde / Celeste / Violeta / Rosado. Cada bidón optimizado para la etapa específica del ciclo. Sistema de alta performance que define cada momento del cultivo.",
         href: "/linea-race",
         ctaLabel: "VER LÍNEA RACE",
-        image: "/img/slider-spylt/linea-race/hero.png",
         silhouette: "/img/slider-spylt/linea-race/silhouette.png",
+        // Layered packshot del sub-product VIOLETA — visualmente iconic
+        aspect: 1.59,
+        layers: {
+            base:   "/img/slider-spylt/linea-race/sub/violeta/base.png",
+            pote:   "/img/slider-spylt/linea-race/sub/violeta/bidon.png",
+            ruedas: "/img/slider-spylt/linea-race/sub/violeta/ruedas.png",
+            texto:  "/img/slider-spylt/linea-race/sub/violeta/texto.png",
+        },
         bgColor: "#c078e5",
         haloColor: "#edd9f7",
         accentText: "#E3C8F5",
@@ -67,8 +93,14 @@ const lineas = [
         body: "Enraizante, Vegetativo, Pre-Floración, Floración. 100% materia activa sin agua ni conservantes. 36 meses de vida útil garantizados, dosis exacta al gramo.",
         href: "/linea-pro",
         ctaLabel: "VER LÍNEA PRO",
-        image: "/img/slider-spylt/linea-pro/hero.png",
         silhouette: "/img/slider-spylt/linea-pro/fondo.png",
+        // Layered packshot del sub-product VEGETATIVO
+        aspect: 1.51,
+        layers: {
+            base:  "/img/slider-spylt/linea-pro/sub/vegetativo/base.png",
+            pote:  "/img/slider-spylt/linea-pro/sub/vegetativo/pote.png",
+            texto: "/img/slider-spylt/linea-pro/sub/vegetativo/texto.png",
+        },
         bgColor: "#9ad8f5",
         haloColor: "#e8f4fb",
         accentText: "#C9E9F7",
@@ -160,10 +192,52 @@ const lineas = [
                 )}
                 <span class="le__panel-blob" aria-hidden="true"></span>
                 <span class="le__panel-halo" data-le-halo aria-hidden="true"></span>
-                <img class="le__panel-img" data-le-img
-                     src={l.image}
-                     alt={`${l.nombre} — ${l.kicker}`}
-                     loading="lazy" draggable="false"/>
+
+                <!-- Stage layered (replica del swap del slider Race
+                     base + ruedas + pote + texto stackeados con z-index
+                     escalonado). Aspect del card matchea base.png del
+                     sub-product. Inline style usa --le-aspect para que
+                     CSS calcule height proporcional. -->
+                <div
+                    class="le__panel-stage"
+                    data-le-stage
+                    style={`--le-aspect: ${l.aspect};`}
+                    role="img"
+                    aria-label={`${l.nombre} — ${l.kicker}`}
+                >
+                    <img
+                        class="le__layer le__layer--base"
+                        data-le-layer-base
+                        src={l.layers.base}
+                        alt="" aria-hidden="true"
+                        loading="lazy" draggable="false"
+                    />
+                    {l.layers.ruedas && (
+                        <img
+                            class="le__layer le__layer--ruedas"
+                            data-le-layer-ruedas
+                            src={l.layers.ruedas}
+                            alt="" aria-hidden="true"
+                            loading="lazy" draggable="false"
+                        />
+                    )}
+                    <img
+                        class="le__layer le__layer--pote"
+                        data-le-layer-pote
+                        src={l.layers.pote}
+                        alt={`${l.nombre} packshot`}
+                        loading="lazy" draggable="false"
+                    />
+                    {l.layers.texto && (
+                        <img
+                            class="le__layer le__layer--texto"
+                            data-le-layer-texto
+                            src={l.layers.texto}
+                            alt="" aria-hidden="true"
+                            loading="lazy" draggable="false"
+                        />
+                    )}
+                </div>
             </div>
 
             <div class="le__panel-body">
@@ -464,17 +538,84 @@ const lineas = [
         z-index: 1;
         will-change: transform, opacity;
     }
-    .le__panel-img {
+    /* ===== Stage layered (card rounded del slider Race) =====
+       Reemplaza al .le__panel-img unificado. El stage es un card
+       rounded con border-radius + overflow:hidden que contiene los
+       layers stackeados (base + ruedas + pote + texto). Aspect-ratio
+       viene del CSS variable --le-aspect (declarado inline per panel,
+       proviene del aspect del base.png sub-product). */
+    .le__panel-stage {
         position: relative;
-        z-index: 2;
-        max-width: 100%;
-        max-height: clamp(280px, 60vh, 540px);
-        width: auto;
-        height: auto;
-        object-fit: contain;
-        filter: drop-shadow(0 30px 56px rgba(0, 0, 0, 0.22));
-        will-change: transform;
+        z-index: 3;
+        width: 100%;
+        max-width: 540px;
+        aspect-ratio: var(--le-aspect, 1.4) / 1;
+        max-height: clamp(300px, 60vh, 540px);
+        border-radius: clamp(20px, 2.6vw, 38px);
+        overflow: visible;  /* permite que pote/texto protruyan del frame */
+        filter: drop-shadow(0 32px 48px rgba(0, 0, 0, 0.18));
+        will-change: transform, opacity;
+    }
+    .le__layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
         user-select: none;
+    }
+    /* base.png — fondo decorativo del producto, cover dentro del card.
+       Único layer con border-radius:inherit + overflow:hidden para que
+       no se escape de los bordes redondos. */
+    .le__layer--base {
+        z-index: 30;
+        object-fit: cover;
+        object-position: center;
+        border-radius: inherit;
+        will-change: opacity, transform;
+    }
+    /* ruedas (Race) — decorativo en posición center, contain */
+    .le__layer--ruedas {
+        z-index: 35;
+        object-fit: contain;
+        object-position: center;
+        transform-origin: center;
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.28));
+        will-change: opacity, transform;
+    }
+    /* pote — packshot principal del producto, contain con scale */
+    .le__layer--pote {
+        z-index: 40;
+        object-fit: contain;
+        object-position: center 60%;
+        transform: scale(1.08);
+        transform-origin: center 55%;
+        filter:
+            drop-shadow(0 14px 28px rgba(0, 0, 0, 0.22))
+            drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));
+        will-change: opacity, transform;
+    }
+    /* texto — label flotante encima de todo, top del card */
+    .le__layer--texto {
+        z-index: 50;
+        object-fit: contain;
+        object-position: center top;
+        height: 22%;
+        top: 6%;
+        left: 8%;
+        right: 8%;
+        width: 84%;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+        will-change: opacity, transform;
+    }
+    /* ELITE override — base.png más cuadrado, escala un pelín para
+       que cubra bien el card (mismo override que el slider tenía). */
+    .le__panel[data-le-slug="linea-elite"] .le__layer--base {
+        transform: scale(1.18);
+        transform-origin: center;
+    }
+    .le__panel[data-le-slug="linea-elite"] .le__layer--pote {
+        transform: scale(1.20);  /* pote un toque más grande para ELITE */
     }
 
     /* ----- Body ----- */
