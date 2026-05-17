@@ -96,15 +96,14 @@ const lineas = [
         href: "/linea-pro",
         ctaLabel: "VER LÍNEA PRO",
         silhouette: "/img/slider-spylt/linea-pro/fondo.png",
-        // PRO ahora muestra UN solo pote (Vegetativo) con su base
-        // sub-product + texto label, igual estética que RACE
-        // (single product spotlight). El user pidió cambiar de los
-        // 4 potes unified a 1 solo acorde al tamaño.
-        aspect: 1.30,            // matchea base.png sub-vegetativo (más cuadrado)
+        // PRO muestra UN solo pote (Vegetativo) encuadrado dentro de
+        // su base decorativa. NO usa texto.png — el bidón ya tiene
+        // "HOLISTIC PRO VEGETATIVO" impreso, agregar texto.png arriba
+        // duplica info y satura visualmente el card (feedback cliente).
+        aspect: 1.30,
         layers: {
-            base:  "/img/slider-spylt/linea-pro/sub/vegetativo/base.png",
-            pote:  "/img/slider-spylt/linea-pro/sub/vegetativo/pote.png",
-            texto: "/img/slider-spylt/linea-pro/sub/vegetativo/texto.png",
+            base: "/img/slider-spylt/linea-pro/sub/vegetativo/base.png",
+            pote: "/img/slider-spylt/linea-pro/sub/vegetativo/pote.png",
         },
         bgColor: "#9ad8f5",
         haloColor: "#e8f4fb",

@@ -40,9 +40,10 @@
 //   • gsap-core matchMedia (reduced-motion + breakpoints)
 //   • gsap-performance (transforms + opacity + will-change)
 
-// Datos canónicos de los 2 complementos. Misma fuente de verdad que
-// la usada por panels.js cuando vivían en el slider — colores y
-// routes copiados textual para mantener la identidad cromática.
+// Datos canónicos de los 3 complementos (BIO + CLONER + DAY-0).
+// Cloner se sumó por pedido del cliente como complemento del catálogo
+// — gel enraizante para esquejes, primer paso del ciclo. Va entre
+// BIO y DAY-0 manteniendo el orden cronológico del cultivo.
 const complementos = [
     {
         slug: "bioestimulante",
@@ -61,8 +62,22 @@ const complementos = [
         accentText: "#FFC4DC",   // num + acento de texto en dark
     },
     {
-        slug: "day-0",
+        slug: "cloner",
         num: "02",
+        kicker: "GEL ENRAIZANTE · ESQUEJES",
+        nombre: "CLONER",
+        tagline: "El primer paso del ciclo.",
+        body: "Gel enraizante de alta adherencia para esquejes y plantines. Fórmula de contacto rápido que acelera el prendimiento radicular con mínima manipulación. Compatible con todo el catálogo Holistic.",
+        href: "/cloner",
+        ctaLabel: "VER CLONER",
+        image: "/assets/productos/cloner2.png",
+        bgColor: "#a78bfa",      // violeta pastel (intermedio entre rosa y amarillo)
+        haloColor: "#c4b5fd",
+        accentText: "#D6CAFB",
+    },
+    {
+        slug: "day-0",
+        num: "03",
         kicker: "FINISHER · COSECHA",
         nombre: "DAY 0",
         tagline: "Cierra con calidad.",
