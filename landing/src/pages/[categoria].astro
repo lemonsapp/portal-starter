@@ -38,15 +38,16 @@ const pageDescription = cap.seoDescription || cap.descripcion;
 const canonical = `/${cap.slug}`;
 ---
 <BaseLayout title={pageTitle} description={pageDescription} canonical={canonical}>
-    <!-- /linea-race: el marquee + motion videos grid van PRIMERO,
-         antes del hero del ProductDeepDive. Esto pone los videos de
-         impacto/motor en el top de la interna como statement de apertura. -->
-    {showRaceCinematic && <RaceCinematic />}
-
     <!-- Landing interna del producto al estilo apple.com/macbook-pro:
          hero + sticky highlights + big stat + bento + formats + system
-         + pullquote + tech specs. -->
+         + pullquote + tech specs. El hero es el "primer video principal"
+         de la interna. -->
     <ProductDeepDive cap={cap} />
+
+    <!-- /linea-race: marquee + motion videos grid van DESPUÉS del hero
+         del ProductDeepDive. Pedido del cliente: que se vea PRIMERO el
+         hero video (main) y después la grilla de videos motion. -->
+    {showRaceCinematic && <RaceCinematic />}
 
     <VineDivider variant={dv.variant} from={cap.bgColor} to="#FFFFFF" />
 

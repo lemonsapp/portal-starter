@@ -96,13 +96,13 @@ const lineas = [
         href: "/linea-pro",
         ctaLabel: "VER LÍNEA PRO",
         silhouette: "/img/slider-spylt/linea-pro/fondo.png",
-        // PRO muestra UN solo pote (Vegetativo) encuadrado dentro de
-        // su base decorativa. NO usa texto.png — el bidón ya tiene
-        // "HOLISTIC PRO VEGETATIVO" impreso, agregar texto.png arriba
-        // duplica info y satura visualmente el card (feedback cliente).
-        aspect: 1.30,
+        // PRO usa la base UNIFIED celeste (1024×677 aspect 1.51 con
+        // hojas decorativas) — match natural al aspect del card del
+        // slider original. Un solo pote vegetativo encuadrado encima,
+        // chico y centrado para que la base decorativa sea protagonista.
+        aspect: 1.51,
         layers: {
-            base: "/img/slider-spylt/linea-pro/sub/vegetativo/base.png",
+            base: "/img/slider-spylt/linea-pro/base.png",
             pote: "/img/slider-spylt/linea-pro/sub/vegetativo/pote.png",
         },
         bgColor: "#9ad8f5",
@@ -642,14 +642,14 @@ const lineas = [
         transform: scale(1.05);
         object-position: center 50%;
     }
-    /* PRO override — pote ENCUADRADO dentro de la base (no superpuesto
-       como RACE). Pote más chico para que la base decorativa quede
-       claramente visible por detrás. Centrado horizontal, shifted
-       verticalmente hacia abajo (object-position 68%) para que se
-       acomode mejor sobre el centro óptico del base decorativo. */
+    /* PRO override — pote vegetativo (800×649) ENCUADRADO dentro de
+       la base unified celeste (1024×677, aspect 1.51 con decoración).
+       Scale 0.55 para que la base decorativa quede claramente
+       protagonista atrás. Pote centrado, object-position 65% (un
+       poco abajo del centro óptico). */
     .le__panel[data-le-slug="linea-pro"] .le__layer--pote {
-        transform: scale(0.78);
-        object-position: center 68%;
+        transform: scale(0.55);
+        object-position: center 65%;
     }
     /* RACE override — bidón violeta sub-product 670×1081 (portrait).
        Ahora con stage overflow:visible, el bidón puede extenderse
