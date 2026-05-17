@@ -552,7 +552,11 @@ const lineas = [
         aspect-ratio: var(--le-aspect, 1.4) / 1;
         max-height: clamp(300px, 60vh, 540px);
         border-radius: clamp(20px, 2.6vw, 38px);
-        overflow: visible;  /* permite que pote/texto protruyan del frame */
+        /* overflow:hidden → la base.png queda perfectamente clipeada
+           por los rounded corners (sin que ningún edge bleede fuera).
+           El drop-shadow se aplica al stage como bloque, da el frame
+           floating effect sin necesidad de protrusión. */
+        overflow: hidden;
         filter: drop-shadow(0 32px 48px rgba(0, 0, 0, 0.18));
         will-change: transform, opacity;
     }
@@ -583,12 +587,15 @@ const lineas = [
         filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.28));
         will-change: opacity, transform;
     }
-    /* pote — packshot principal del producto, contain con scale */
+    /* pote — packshot principal del producto, contain con scale.
+       Scale 1.22 default matchea el --psl-hero-scale del slider
+       original (que era el "tamaño visible" del bidón/pote sobre
+       la base.png). Per-product overrides abajo si necesita ajuste. */
     .le__layer--pote {
         z-index: 40;
         object-fit: contain;
         object-position: center 60%;
-        transform: scale(1.08);
+        transform: scale(1.22);
         transform-origin: center 55%;
         filter:
             drop-shadow(0 14px 28px rgba(0, 0, 0, 0.22))
@@ -608,14 +615,19 @@ const lineas = [
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
         will-change: opacity, transform;
     }
-    /* ELITE override — base.png más cuadrado, escala un pelín para
-       que cubra bien el card (mismo override que el slider tenía). */
-    .le__panel[data-le-slug="linea-elite"] .le__layer--base {
-        transform: scale(1.18);
-        transform-origin: center;
-    }
+    /* ELITE override — base.png 1024×788 (aspect 1.30) ya matchea
+       el aspect del stage. Eliminamos el scale:1.18 que generaba
+       crop visible "le faltaba un poco de alto al fondo". Pote sí
+       requiere bump suplementario para sentirse acorde a la base. */
     .le__panel[data-le-slug="linea-elite"] .le__layer--pote {
-        transform: scale(1.20);  /* pote un toque más grande para ELITE */
+        transform: scale(1.32);
+    }
+    /* PRO override — pote 800×649 (aspect 1.23, más rectangular) +
+       base 1200×527 (aspect 2.28 wide) → el pote default se sentía
+       chico sobre el wide base. Bump scale + ajuste vertical. */
+    .le__panel[data-le-slug="linea-pro"] .le__layer--pote {
+        transform: scale(1.40);
+        object-position: center 65%;
     }
 
     /* ----- Body ----- */

@@ -358,19 +358,24 @@ function initProductDetail() {
         //    Click en tab → mover la card target al frente, Flip anima.
         // ============================================================
         if (formatStage && formatCards.length > 1) {
+            // Patrón "solo el activo visible, escalado grande" por pedido
+            // del cliente. Los demás cards se hacen autoAlpha 0 (no se
+            // ven), el activo escala 1.22 + zIndex top. Cross-fade smooth
+            // entre selecciones via Flip.
             const arrange = (activeIdx) => {
                 const cards = Array.from(formatStage.children);
                 cards.forEach((c, i) => {
-                    const order = (i - activeIdx + cards.length) % cards.length;
+                    const isActive = i === activeIdx;
                     gsap.set(c, {
-                        zIndex: cards.length - order,
-                        rotation: order === 0 ? 0 : (order % 2 === 1 ? -10 : 10) * Math.min(order, 3),
-                        x: order === 0 ? 0 : (order % 2 === 1 ? -1 : 1) * 30 * Math.min(order, 3),
-                        y: order * 14,
-                        scale: order === 0 ? 1 : 1 - 0.05 * Math.min(order, 3),
-                        autoAlpha: order < 4 ? 1 - 0.18 * order : 0,
+                        zIndex: isActive ? 10 : 1,
+                        rotation: 0,
+                        x: 0,
+                        y: 0,
+                        scale: isActive ? 1.22 : 0.88,
+                        autoAlpha: isActive ? 1 : 0,
+                        transformOrigin: "center center",
                     });
-                    c.classList.toggle("is-active", order === 0);
+                    c.classList.toggle("is-active", isActive);
                 });
             };
             arrange(0);
@@ -379,15 +384,39 @@ function initProductDetail() {
                 if (reduceMotion) {
                     arrange(idx);
                 } else {
-                    const state = Flip.getState(formatCards, {
-                        props: "rotation,zIndex,opacity,visibility",
-                    });
-                    arrange(idx);
-                    Flip.from(state, {
-                        duration: 0.7,
-                        ease: "power3.inOut",
-                        absolute: false,
-                    });
+                    // Timeline: fade-out de los actuales no-activos →
+                    // fade-in del nuevo activo con scale-up. Más simple
+                    // que Flip y matchea mejor el "los otros desaparecen
+                    // y el seleccionado crece" que el cliente pidió.
+                    const cards = Array.from(formatStage.children);
+                    const currentActive = cards.find((c) => c.classList.contains("is-active"));
+                    const nextActive = cards[idx];
+                    const others = cards.filter((c) => c !== nextActive);
+
+                    const tl = gsap.timeline();
+
+                    // 1) Si hay un activo previo distinto al nuevo, lo
+                    //    desvanecemos + scale-down primero.
+                    if (currentActive && currentActive !== nextActive) {
+                        tl.to(currentActive, {
+                            autoAlpha: 0, scale: 0.88,
+                            duration: 0.32, ease: "power2.in",
+                        }, 0);
+                    }
+                    // 2) Otros cards quedan invisibles
+                    tl.set(others, { autoAlpha: 0, scale: 0.88, zIndex: 1 }, 0);
+                    // 3) El nuevo activo entra escalado grande
+                    tl.set(nextActive, { zIndex: 10 }, 0.20);
+                    tl.fromTo(nextActive,
+                        { autoAlpha: 0, scale: 0.88 },
+                        {
+                            autoAlpha: 1, scale: 1.22,
+                            duration: 0.55, ease: "back.out(1.4)",
+                        }, 0.20);
+                    // 4) Sync clases
+                    tl.call(() => {
+                        cards.forEach((c, i) => c.classList.toggle("is-active", i === idx));
+                    }, [], 0.20);
                 }
 
                 formatTabs.forEach((t, i) => {

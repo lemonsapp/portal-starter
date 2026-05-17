@@ -2,7 +2,6 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ProductDeepDive from "../components/ProductDeepDive.astro";
 import RaceCinematic from "../components/RaceCinematic.astro";
-import RaceAddScrub from "../components/RaceAddScrub.astro";
 import VineDivider from "../components/VineDivider.astro";
 import FinalCTA from "../components/FinalCTA.astro";
 import { capitulos } from "../data/capitulos.js";
@@ -16,8 +15,9 @@ export function getStaticPaths() {
 
 const { cap } = Astro.props;
 // RaceCinematic monta marquee de iconos + grid de motion videos para
-// /linea-race. El header inicial del componente fue retirado por pedido
-// del cliente; ahora la sección abre directo con el marquee.
+// /linea-race. AHORA va ARRIBA al inicio de la interna (antes del
+// ProductDeepDive) por pedido del cliente — los videos de impacto/motor
+// son lo primero que el visitor ve. RaceAddScrub completamente removido.
 const showRaceCinematic = cap.slug === "linea-race";
 
 // Divider hacia FinalCTA — ornamento alusivo al producto.
@@ -38,17 +38,15 @@ const pageDescription = cap.seoDescription || cap.descripcion;
 const canonical = `/${cap.slug}`;
 ---
 <BaseLayout title={pageTitle} description={pageDescription} canonical={canonical}>
+    <!-- /linea-race: el marquee + motion videos grid van PRIMERO,
+         antes del hero del ProductDeepDive. Esto pone los videos de
+         impacto/motor en el top de la interna como statement de apertura. -->
+    {showRaceCinematic && <RaceCinematic />}
+
     <!-- Landing interna del producto al estilo apple.com/macbook-pro:
          hero + sticky highlights + big stat + bento + formats + system
          + pullquote + tech specs. -->
     <ProductDeepDive cap={cap} />
-
-    {showRaceCinematic && <RaceCinematic />}
-
-    <!-- /linea-race exclusivo: video MP4 que se "arma y desarma" con
-         scroll. Pinned section, video.currentTime mappeado al scroll
-         progress por GSAP scrollTrigger scrub. -->
-    {cap.slug === "linea-race" && <RaceAddScrub />}
 
     <VineDivider variant={dv.variant} from={cap.bgColor} to="#FFFFFF" />
 

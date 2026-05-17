@@ -287,22 +287,29 @@ const complementos = [
     .cmp__h {
         font-family: var(--f-display, 'Gotham', serif);
         font-weight: 900;
-        font-size: clamp(2.8rem, 9vw, 7rem);
-        line-height: 0.92;
-        letter-spacing: -0.018em;
+        /* Achicado vs versión anterior (era 2.8-9vw-7rem). Más legible
+           y centrado entre las dos líneas — COMPLEMENTOS no se siente
+           dominante respecto a IDEALES. */
+        font-size: clamp(2.2rem, 7vw, 5.4rem);
+        line-height: 0.94;
+        letter-spacing: -0.014em;
         text-transform: uppercase;
         margin: 0 0 clamp(28px, 5vh, 56px);
         color: #fff;
         text-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+        /* Center alignment per text-align:center del parent .cmp__header.
+           Ambas líneas (COMPLEMENTOS + IDEALES) quedan centradas con
+           el mismo eje vertical. */
+        text-align: center;
     }
     .cmp__line {
         display: block;
-        /* overflow:hidden recortaba descenders/ascenders en mobile.
-           Lo removemos: el SplitText scatter ya controla la opacidad
-           y posición de cada char con autoAlpha, no necesita clip. */
         padding: 0.06em 0;
-        /* Layer para shimmer sweep post-assemble */
         position: relative;
+        /* Centra el inline-block del line-inner respecto al ancho del
+           bloque. Dos líneas de chars diferentes anchos quedan centradas
+           sobre el mismo eje. */
+        text-align: center;
     }
     .cmp__line-inner {
         display: inline-block;
@@ -326,40 +333,10 @@ const complementos = [
         color: inherit;
     }
 
-    /* ===== Shimmer sweep post-assemble =====
-       Una franja de luz cruza horizontal sobre los chars del header
-       cada ~9s, dando un toque "premium" cinematográfico. */
-    .cmp__h::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -120%;
-        width: 60%;
-        height: 100%;
-        background: linear-gradient(
-            105deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.04) 35%,
-            rgba(255, 255, 255, 0.14) 50%,
-            rgba(255, 255, 255, 0.04) 65%,
-            transparent 100%
-        );
-        pointer-events: none;
-        animation: cmp-shimmer 9s cubic-bezier(.55, .1, .35, .9) infinite;
-        animation-delay: 3s;
-        mix-blend-mode: screen;
-        z-index: 4;
-    }
-    .cmp__h {
-        position: relative;
-        overflow: hidden; /* contiene el shimmer */
-    }
-    @keyframes cmp-shimmer {
-        0%, 70%, 100% { transform: translateX(0); opacity: 0; }
-        72%           { opacity: 1; }
-        90%           { transform: translateX(340%); opacity: 1; }
-        95%           { opacity: 0; }
-    }
+    /* Shimmer sweep removido por pedido del cliente — el flash horizontal
+       generaba un "rectángulo transparente" visible sobre el bg dark
+       que quedaba feo. Las animaciones GSAP del header son suficientes
+       para el efecto cinematográfico. */
     .cmp__divider {
         width: clamp(220px, 36vw, 380px);
         margin: 0 auto clamp(28px, 5vh, 48px);

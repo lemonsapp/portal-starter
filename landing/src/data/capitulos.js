@@ -81,19 +81,19 @@ export const capitulos = [
         nombreCorto: "LÍNEA",
         nombreDestacado: "RACE",
 
-        // SEO meta — v3 §4
-        seoTitle: "Fertilizante Líquido Concentrado para Cultivo Indoor | Línea Race — Holistic",
+        // SEO meta — v3 §4 (actualizado: removido "líquido concentrado")
+        seoTitle: "Línea Race — Sistema Completo de Fertilizantes para Indoor | Holistic",
         seoDescription:
-            "Línea Race Holistic: 4 fertilizantes líquidos concentrados para el ciclo completo. Race 1 Vegetativo, Race 2 Floración, Race 3 Bloom Booster y Race 4 Finalizador. Diseñado para autoflorecientes e indoor de ciclo corto. Envío gratis.",
-        keywords: ["fertilizante líquido concentrado", "cultivo indoor", "bloom booster", "fertilizante vegetativo", "fertilizante de floración", "autoflorecientes", "ciclos cortos"],
+            "Línea Race Holistic: 4 fertilizantes para el ciclo completo de cultivo indoor. Race 1 Vegetativo, Race 2 Floración, Race 3 Bloom Booster y Race 4 Finalizador. Diseñado para autoflorecientes e indoor de ciclo corto. Envío gratis.",
+        keywords: ["sistema de fertilizantes", "cultivo indoor", "bloom booster", "fertilizante vegetativo", "fertilizante de floración", "autoflorecientes", "ciclos cortos"],
 
         // Copy visible — v3 §4
-        h1: "Fertilizantes líquidos concentrados para cultivo indoor de ciclo corto.",
+        h1: "Sistema completo de fertilizantes para cultivo indoor de ciclo corto.",
         tagline: "Velocidad pura para cultivos exigentes.",
         parrafoIntro:
-            "Línea Race es el sistema de fertilizantes líquidos concentrados de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor: Race 1 Vegetativo, Race 2 Floración (Part A + B), Race 3 Bloom Booster y Race 4 Finalizador. Ideal para autoflorecientes, ciclos cortos y cultivadores que no quieren perder ni una semana.",
+            "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor: Race 1 Vegetativo, Race 2 Floración (Part A + B), Race 3 Bloom Booster y Race 4 Finalizador. Ideal para autoflorecientes, ciclos cortos y cultivadores que no quieren perder ni una semana.",
         descripcion:
-            "Línea premium en 4 fórmulas líquidas concentradas: Race 1 Vegetativo, Race 2 (Part A + B) Floración, Race 3 Bloom Booster y Race 4 Finalizador. Diseñada para extraer el máximo rendimiento en cada ciclo indoor.",
+            "Línea premium en 4 fórmulas: Race 1 Vegetativo, Race 2 (Part A + B) Floración, Race 3 Bloom Booster y Race 4 Finalizador. Diseñada para extraer el máximo rendimiento en cada ciclo indoor.",
         quote: "La velocidad sin control es ruido. Race es el fertilizante indoor que te da las dos cosas: velocidad y precisión.",
 
         producto: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",

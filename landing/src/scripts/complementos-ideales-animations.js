@@ -104,125 +104,137 @@ function initComplementosIdeales() {
         }
 
         // ============================================================
-        // SCATTER inicial — cada char con offset random + tilt 3D.
-        // Skill: gsap-utils.random, gsap-performance (transforms).
+        // SCATTER inicial REFINED — más editorial, menos caótico.
         //
-        // Mejora vs versión anterior: agrego rotationX/rotationY +
-        // perspective per char → al assemble la rotación "cae" en
-        // sus ejes 3D, dando profundidad cinematográfica.
+        // Mejora vs versión anterior (que tenía rango muy amplio
+        // ±280px x/y, rotaciones ±90°): ahora scatter más sutil con
+        // énfasis vertical (caen desde arriba/abajo) + slight rotation
+        // sobre eje Y + blur fuerte. Estética "focus pull" cinematográfica
+        // en lugar de "explosión de chars".
+        // Skill: gsap-utils.random, gsap-performance.
         // ============================================================
         allChars.forEach((ch) => {
             gsap.set(ch, {
-                x: gsap.utils.random(-280, 280),
-                y: gsap.utils.random(-200, 200),
-                z: gsap.utils.random(-300, 300),
-                rotation: gsap.utils.random(-90, 90),
-                rotationX: gsap.utils.random(-75, 75),
-                rotationY: gsap.utils.random(-90, 90),
-                scale: gsap.utils.random(0.25, 0.85),
+                // Énfasis vertical (drift desde arriba/abajo), poco x
+                x: gsap.utils.random(-30, 30),
+                y: gsap.utils.random(-80, 80),
+                z: gsap.utils.random(-200, 200),
+                // Rotación sutil sobre Y (página flip feel) sin volteretas
+                rotation: 0,
+                rotationY: gsap.utils.random(-45, 45),
+                rotationX: gsap.utils.random(-20, 20),
+                scale: gsap.utils.random(0.7, 0.95),
                 autoAlpha: 0,
-                filter: "blur(12px)",
+                filter: "blur(14px)",
                 transformOrigin: "50% 50%",
-                transformPerspective: 600,
+                transformPerspective: 800,
                 willChange: "transform, opacity, filter",
             });
         });
-        // Perspective parent para que el rotate3D rinda con profundidad
         lineInners.forEach((inner) => {
-            gsap.set(inner, { perspective: 800 });
+            gsap.set(inner, { perspective: 1000 });
         });
 
         // ============================================================
-        // HEADER ASSEMBLE TIMELINE — scroll-linked scrub.
-        // Range más generoso (top 95% → top 25%) para que el assemble
-        // dure ~70% del viewport scroll → suaviza la curva.
+        // HEADER ASSEMBLE TIMELINE — scrub más amplio + ease cinematográfico
         // ============================================================
         const assembleTl = gsap.timeline({
             scrollTrigger: {
                 trigger: header,
                 start: "top 95%",
-                end:   "top 25%",
-                scrub: 0.7,
+                end:   "top 20%",
+                scrub: 0.8,           // chase más smooth
                 invalidateOnRefresh: true,
             },
         });
 
-        // Acto 1: eyebrow rises in (0..0.18) — ease refinada
+        // Acto 1: eyebrow rises in
         assembleTl.to(eyebrow, {
             autoAlpha: 1, y: 0,
             duration: 0.18, ease: "expo.out",
         }, 0);
 
-        // Acto 2: chars ENSAMBLAN — desde scatter a final.
-        // Mejora: stagger from:"center" → caos controlado, orden
-        // visual orquestado (centro → bordes) en lugar de "random"
-        // que se veía menos intencional.
-        // Ease: power4.out → curva más smooth que back.out (no overshoot
-        // grande, más editorial sutil).
+        // Acto 2: chars ENSAMBLAN — focus pull pattern.
+        // ease cubic-bezier custom (0.16, 1, 0.3, 1) = "smooth quint-out"
+        // — curva más editorial, similar al easing de Apple/Linear.
+        // Stagger from:"center" + each 0.012 → orchestrated reveal.
         assembleTl.to(allChars, {
             x: 0, y: 0, z: 0,
             rotation: 0, rotationX: 0, rotationY: 0,
             scale: 1,
             autoAlpha: 1,
             filter: "blur(0px)",
-            duration: 0.75,
-            stagger: { each: 0.014, from: "center" },
-            ease: "power4.out",
+            duration: 0.85,
+            stagger: { each: 0.012, from: "center" },
+            ease: "expo.out",
         }, 0.10);
 
-        // Acto 3: micro-pulse del último char antes del divider — efecto
-        // "landing punch" que cierra el assemble. Skill: gsap-timeline.
+        // Acto 3: micro-glow burst — los chars ganan brillo sutil al
+        // landing (efecto "premium punch"). Se aplica vía text-shadow
+        // intensification via filter brightness pulse.
         if (allChars.length) {
             assembleTl.to(allChars, {
-                scale: 1.04,
-                duration: 0.08,
-                ease: "sine.out",
-                stagger: { each: 0.005, from: "center" },
-            }, 0.78).to(allChars, {
-                scale: 1,
-                duration: 0.10,
-                ease: "sine.in",
-                stagger: { each: 0.005, from: "center" },
-            }, 0.86);
+                filter: "blur(0px) brightness(1.15)",
+                duration: 0.10, ease: "sine.out",
+                stagger: { each: 0.004, from: "center" },
+            }, 0.82).to(allChars, {
+                filter: "blur(0px) brightness(1)",
+                duration: 0.14, ease: "sine.in",
+                stagger: { each: 0.004, from: "center" },
+            }, 0.92);
         }
 
-        // Acto 4: divider draws (0.55..0.78)
+        // Acto 4: divider draws (0.55..0.80) + glow circle
         if (dividerLn) {
             assembleTl.to(dividerLn, {
                 drawSVG: "0% 100%",
-                duration: 0.23, ease: "power2.inOut",
+                duration: 0.25, ease: "power3.inOut",
             }, 0.55);
         }
         if (dividerGlow) {
             assembleTl.to(dividerGlow, {
                 autoAlpha: 1, scale: 1,
                 duration: 0.22, ease: "back.out(2.4)",
-            }, 0.68);
+            }, 0.70);
         }
 
-        // Acto 5: sub fade (0.85..1.00)
+        // Acto 5: sub fade (0.88..1.00)
         assembleTl.to(sub, {
             autoAlpha: 1, y: 0,
             duration: 0.18, ease: "expo.out",
-        }, 0.85);
+        }, 0.88);
 
         // ============================================================
-        // POST-ASSEMBLE IDLES — pequeños loops "vivos"
+        // POST-ASSEMBLE IDLES — loops sutiles que dan "vida"
         // ============================================================
-        // Glow circle pulsa
         if (dividerGlow) {
+            // Glow pulse — yoyo scale + opacity, ritmo más rápido
             gsap.to(dividerGlow, {
-                scale: 1.22,
-                duration: 2.6, ease: "sine.inOut",
+                scale: 1.28,
+                duration: 2.4, ease: "sine.inOut",
                 yoyo: true, repeat: -1, delay: 1.8,
             });
+            gsap.to(dividerGlow, {
+                opacity: 0.7,
+                duration: 1.8, ease: "sine.inOut",
+                yoyo: true, repeat: -1, delay: 2.0,
+            });
         }
-        // Divider line opacity respira (sutil)
         if (dividerLn) {
             gsap.to(dividerLn, {
-                opacity: 0.7,
-                duration: 3.4, ease: "sine.inOut",
-                yoyo: true, repeat: -1, delay: 2.2,
+                opacity: 0.65,
+                duration: 3.2, ease: "sine.inOut",
+                yoyo: true, repeat: -1, delay: 2.4,
+            });
+        }
+        // Eyebrow dot pulse — drama extra que conecta con divider glow
+        const eyebrowDot = root.querySelector(".cmp__dot");
+        if (eyebrowDot) {
+            gsap.to(eyebrowDot, {
+                scale: 1.35,
+                duration: 1.4, ease: "sine.inOut",
+                yoyo: true, repeat: -1, delay: 1.6,
+                transformOrigin: "50% 50%",
             });
         }
 

@@ -6,23 +6,13 @@ import EaseOfUse from "../components/EaseOfUse.astro";
 import ProductFloatSlider from "../components/ProductFloatSlider.astro";
 import LineasEstrella from "../components/LineasEstrella.astro";
 import ComplementosIdeales from "../components/ComplementosIdeales.astro";
-import ChapterSection from "../components/ChapterSection.astro";
-import VineDivider from "../components/VineDivider.astro";
 import HumanSupport from "../components/HumanSupport.astro";
 import OrganicConnector from "../components/OrganicConnector.astro";
 import FinalCTA from "../components/FinalCTA.astro";
-import { capitulos } from "../data/capitulos.js";
-
-// Transiciones orgánicas entre cada par de chapters. El orden de
-// chapters es: bio → cloner → race → elite → pro → day-0.
-// Cada divider lleva una decoración alusiva al producto que viene.
-const dividers = [
-    { variant: "leaves",   from: "#F7D6DC", to: "#E4D5F2" }, // bio    → cloner
-    { variant: "roots",    from: "#E4D5F2", to: "#C7F0DD" }, // cloner → race
-    { variant: "drops",    from: "#C7F0DD", to: "#F7F3EA" }, // race   → elite
-    { variant: "crystals", from: "#F7F3EA", to: "#AEDAD4" }, // elite  → pro
-    { variant: "harvest",  from: "#AEDAD4", to: "#F9E79B" }, // pro    → day-0
-];
+// ChapterSection + VineDivider + capitulos importes removidos:
+// los chapters bio/cloner/race/elite/pro/day-0 ya no se renderean
+// en el home (pedido del cliente). Los internas siguen vivas en
+// /linea-elite, /linea-race, etc.
 ---
 <BaseLayout
     title="Fertilizantes para Cultivo Indoor | Línea Pro, Elite y Race — Holistic Growshop"
@@ -80,14 +70,10 @@ const dividers = [
 
     <EaseOfUse />
 
-    {capitulos.map((c, i) => (
-        <>
-            <ChapterSection chapter={c} priority={i < 2} />
-            {i < capitulos.length - 1 && (
-                <VineDivider {...dividers[i]} />
-            )}
-        </>
-    ))}
+    <!-- ChapterSections + VineDividers (bio/cloner/race/elite/pro/day-0)
+         removidos por pedido del cliente: el flujo del home termina en
+         EaseOfUse → FinalCTA. Cada producto tiene su interna dedicada
+         (linkadas desde LineasEstrella + ComplementosIdeales). -->
 
     <FinalCTA />
 
