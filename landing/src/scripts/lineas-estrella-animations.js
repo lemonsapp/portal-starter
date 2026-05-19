@@ -95,8 +95,8 @@ function initLineasEstrella() {
             if (dividerGlow) gsap.set(dividerGlow, { autoAlpha: 1, scale: 1 });
             if (threadLine)  gsap.set(threadLine,  { drawSVG: "0% 100%" });
             panels.forEach((panel) => {
-                const els = panel.querySelectorAll("[data-le-num], [data-le-kicker], [data-le-name], [data-le-tagline], [data-le-text], [data-le-cta], [data-le-visual], [data-le-img]");
-                els.forEach((el) => gsap.set(el, { autoAlpha: 1, y: 0, x: 0, scale: 1 }));
+                const els = panel.querySelectorAll("[data-le-num], [data-le-kicker], [data-le-name], [data-le-tagline], [data-le-text], [data-le-cta], [data-le-visual], [data-le-img], [data-le-stage], [data-le-layer-base], [data-le-layer-ruedas], [data-le-layer-pote], [data-le-layer-texto]");
+                els.forEach((el) => gsap.set(el, { autoAlpha: 1, y: 0, x: 0, scale: 1, rotation: 0 }));
             });
             return;
         }
@@ -241,13 +241,24 @@ function initLineasEstrella() {
         }
 
         // ============================================================
-        // PANELS entrance timeline + parallax (calcado de cmp panels)
+        // PANELS entrance timeline + parallax
+        //
+        // Modo dual:
+        //   • Panel con `data-le-stage` (RACE + PRO) → layered stage
+        //     (base + ruedas + pote + texto) con entry secuencial.
+        //   • Panel con `data-le-img` (ELITE) → bottle PNG simple
+        //     calcado de cmp panels (slide-up + parallax + idle float).
         // ============================================================
         panels.forEach((panel, panelIdx) => {
             const marker  = panel.querySelector(".le__panel-marker");
             const blob    = panel.querySelector(".le__panel-blob");
             const halo    = panel.querySelector("[data-le-halo]");
-            const img     = panel.querySelector("[data-le-img]");
+            const img     = panel.querySelector("[data-le-img]");        // simple
+            const stage   = panel.querySelector("[data-le-stage]");      // layered
+            const lBase   = panel.querySelector("[data-le-layer-base]");
+            const lRuedas = panel.querySelector("[data-le-layer-ruedas]");
+            const lPote   = panel.querySelector("[data-le-layer-pote]");
+            const lTexto  = panel.querySelector("[data-le-layer-texto]");
             const num     = panel.querySelector("[data-le-num]");
             const kicker  = panel.querySelector("[data-le-kicker]");
             const name    = panel.querySelector("[data-le-name]");
@@ -272,7 +283,18 @@ function initLineasEstrella() {
             if (marker)  gsap.set(marker,  { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%" });
             if (blob)    gsap.set(blob,    { autoAlpha: 0, scale: 0.6 });
             if (halo)    gsap.set(halo,    { autoAlpha: 0, scale: 0.4 });
+            // Modo simple (ELITE)
             if (img)     gsap.set(img,     { autoAlpha: 0, y: 60, scale: 0.92 });
+            // Modo layered (RACE + PRO) — preserva scale CSS-base del pote
+            if (stage)   gsap.set(stage,   { autoAlpha: 0, y: 40 });
+            if (lBase)   gsap.set(lBase,   { autoAlpha: 0, scale: 1.05 });
+            if (lRuedas) gsap.set(lRuedas, { autoAlpha: 0, rotation: -45, scale: 0.7 });
+            if (lPote) {
+                const poteBaseScale = parseFloat(getComputedStyle(lPote).transform.match(/matrix.*\(([^)]+)\)/)?.[1]?.split(",")[0]) || 1.10;
+                gsap.set(lPote, { autoAlpha: 0, scale: poteBaseScale * 0.75, y: 20 });
+                lPote.dataset.poteScale = poteBaseScale;
+            }
+            if (lTexto)  gsap.set(lTexto,  { autoAlpha: 0, y: -16, scale: 0.92 });
             if (num)     gsap.set(num,     { autoAlpha: 0, y: 30 });
             if (kicker)  gsap.set(kicker,  { autoAlpha: 0, y: 18 });
             if (nameWords.length) gsap.set(nameWords, { autoAlpha: 0, yPercent: 105 });
@@ -294,7 +316,20 @@ function initLineasEstrella() {
             if (marker) panelTl.to(marker, { autoAlpha: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)" }, 0);
             if (blob)   panelTl.to(blob,   { autoAlpha: 0.4, scale: 1, duration: 1.0, ease: "power2.out" }, 0.05);
             if (halo)   panelTl.to(halo,   { autoAlpha: 1, scale: 1, duration: 0.9, ease: "power2.out" }, 0.10);
-            if (img)    panelTl.to(img,    { autoAlpha: 1, y: 0, scale: 1, duration: 1.1, ease: "expo.out" }, 0.15);
+
+            // Simple img path (ELITE)
+            if (img) panelTl.to(img, { autoAlpha: 1, y: 0, scale: 1, duration: 1.1, ease: "expo.out" }, 0.15);
+
+            // Layered stage path (RACE + PRO) — secuencia base → ruedas → pote → texto
+            if (stage) panelTl.to(stage, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.15);
+            if (lBase) panelTl.to(lBase, { autoAlpha: 1, scale: 1, duration: 0.40, ease: "power3.out" }, 0.20);
+            if (lRuedas) panelTl.to(lRuedas, { autoAlpha: 1, rotation: 0, scale: 1, duration: 0.70, ease: "back.out(1.6)" }, 0.32);
+            if (lPote) {
+                const poteBaseScale = parseFloat(lPote.dataset.poteScale) || 1.10;
+                panelTl.to(lPote, { autoAlpha: 1, scale: poteBaseScale, y: 0, duration: 0.55, ease: "back.out(1.8)" }, 0.36);
+            }
+            if (lTexto) panelTl.to(lTexto, { autoAlpha: 1, y: 0, scale: 1, duration: 0.42, ease: "power3.out" }, 0.46);
+
             if (num)    panelTl.to(num,    { autoAlpha: 1, y: 0, duration: 0.7, ease: "back.out(1.5)" }, 0.20);
             if (kicker) panelTl.to(kicker, { autoAlpha: 1, y: 0, duration: 0.5 }, 0.30);
             if (nameWords.length) panelTl.to(nameWords, {
@@ -310,9 +345,10 @@ function initLineasEstrella() {
                 duration: 0.8, ease: "elastic.out(1, 0.62)",
             }, 0.72);
 
-            // PARALLAX continuo — img + halo
-            if (img) {
-                gsap.fromTo(img,
+            // PARALLAX continuo — img simple OR stage layered (lo que haya)
+            const parallaxTarget = img || stage;
+            if (parallaxTarget) {
+                gsap.fromTo(parallaxTarget,
                     { yPercent: -6 },
                     {
                         yPercent: 6, ease: "none",
@@ -340,7 +376,7 @@ function initLineasEstrella() {
                 );
             }
 
-            // Idle: img float suave + micro-rotation
+            // Idle: img float suave + micro-rotation (modo simple)
             if (img) {
                 gsap.to(img, {
                     y: gsap.utils.random(-8, -16, 1),
@@ -349,6 +385,35 @@ function initLineasEstrella() {
                     ease: "sine.inOut",
                     yoyo: true, repeat: -1,
                     delay: 0.6 + panelIdx * 0.18,
+                });
+            }
+            // Idle: stage float + pote micro-rotation (modo layered)
+            if (stage) {
+                gsap.to(stage, {
+                    y: gsap.utils.random(-8, -14, 1),
+                    duration: gsap.utils.random(2.8, 3.6),
+                    ease: "sine.inOut",
+                    yoyo: true, repeat: -1,
+                    delay: 0.8 + panelIdx * 0.18,
+                });
+            }
+            if (lPote) {
+                gsap.to(lPote, {
+                    rotation: gsap.utils.random(-1.5, 1.5, 0.1),
+                    duration: gsap.utils.random(3.0, 4.2),
+                    ease: "sine.inOut",
+                    yoyo: true, repeat: -1,
+                    delay: 1.0 + panelIdx * 0.18,
+                });
+            }
+            // RUEDAS (RACE) — rotación continua infinita post-entrada
+            if (lRuedas) {
+                gsap.to(lRuedas, {
+                    rotation: "+=360",
+                    duration: 12,
+                    ease: "none",
+                    repeat: -1,
+                    delay: 1.3 + panelIdx * 0.18,
                 });
             }
         });

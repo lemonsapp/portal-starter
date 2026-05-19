@@ -53,7 +53,14 @@ const lineas = [
         body: "Verde / Celeste / Violeta / Rosado. Cada bidón optimizado para la etapa específica del ciclo. Sistema de alta performance que define cada momento del cultivo.",
         href: "/linea-race",
         ctaLabel: "VER LÍNEA RACE",
-        image: "/img/slider-spylt/linea-race/hero.png",
+        // Layered stage: base + bidon (violeta) + ruedas (giran) + texto
+        aspect: 1.59,
+        layers: {
+            base:   "/img/slider-spylt/linea-race/sub/violeta/base.png",
+            pote:   "/img/slider-spylt/linea-race/sub/violeta/bidon.png",
+            ruedas: "/img/slider-spylt/linea-race/sub/violeta/ruedas.png",
+            texto:  "/img/slider-spylt/linea-race/sub/violeta/texto.png",
+        },
         bgColor: "#c078e5",
         haloColor: "#edd9f7",
         accentText: "#E3C8F5",
@@ -67,7 +74,12 @@ const lineas = [
         body: "Enraizante, Vegetativo, Pre-Floración, Floración. 100% materia activa sin agua ni conservantes. 36 meses de vida útil garantizados, dosis exacta al gramo.",
         href: "/linea-pro",
         ctaLabel: "VER LÍNEA PRO",
-        image: "/img/slider-spylt/linea-pro/hero.png",
+        // Layered stage: base unified celeste + pote vegetativo encuadrado
+        aspect: 1.51,
+        layers: {
+            base: "/img/slider-spylt/linea-pro/base.png",
+            pote: "/img/slider-spylt/linea-pro/sub/vegetativo/pote.png",
+        },
         bgColor: "#9ad8f5",
         haloColor: "#e8f4fb",
         accentText: "#C9E9F7",
@@ -162,14 +174,62 @@ const lineas = [
             <div class="le__panel-visual" data-le-visual>
                 <span class="le__panel-blob" aria-hidden="true"></span>
                 <span class="le__panel-halo" data-le-halo aria-hidden="true"></span>
-                <img
-                    class="le__panel-img"
-                    data-le-img
-                    src={l.image}
-                    alt={`${l.nombre} — ${l.kicker}`}
-                    loading="lazy"
-                    draggable="false"
-                />
+                {l.layers ? (
+                    <!-- Stage layered (RACE + PRO): base clipeado en frame
+                         rounded + ruedas/pote/texto que pueden protruir.
+                         Mismo patrón que el swap del slider Race original. -->
+                    <div
+                        class="le__panel-stage"
+                        data-le-stage
+                        style={`--le-aspect: ${l.aspect};`}
+                        role="img"
+                        aria-label={`${l.nombre} — ${l.kicker}`}
+                    >
+                        <div class="le__panel-frame" aria-hidden="true">
+                            <img
+                                class="le__layer le__layer--base"
+                                data-le-layer-base
+                                src={l.layers.base}
+                                alt="" aria-hidden="true"
+                                loading="lazy" draggable="false"
+                            />
+                        </div>
+                        {l.layers.ruedas && (
+                            <img
+                                class="le__layer le__layer--ruedas"
+                                data-le-layer-ruedas
+                                src={l.layers.ruedas}
+                                alt="" aria-hidden="true"
+                                loading="lazy" draggable="false"
+                            />
+                        )}
+                        <img
+                            class="le__layer le__layer--pote"
+                            data-le-layer-pote
+                            src={l.layers.pote}
+                            alt={`${l.nombre} packshot`}
+                            loading="lazy" draggable="false"
+                        />
+                        {l.layers.texto && (
+                            <img
+                                class="le__layer le__layer--texto"
+                                data-le-layer-texto
+                                src={l.layers.texto}
+                                alt="" aria-hidden="true"
+                                loading="lazy" draggable="false"
+                            />
+                        )}
+                    </div>
+                ) : (
+                    <img
+                        class="le__panel-img"
+                        data-le-img
+                        src={l.image}
+                        alt={`${l.nombre} — ${l.kicker}`}
+                        loading="lazy"
+                        draggable="false"
+                    />
+                )}
             </div>
 
             <div class="le__panel-body">
@@ -203,19 +263,19 @@ const lineas = [
 
 <style>
     /* =====================================================================
-       SECTION CONTAINER — bg dark cinematic (mismo treatment que .cmp).
-       Cliente pidió: los 3 panels copian exacto el formato de los de
-       ComplementosIdeales — y eso implica bg dark para que el visual
-       funcione (bottle PNG transparente sobre fondo oscuro + halo glow).
+       SECTION CONTAINER — bg blanco (pedido cliente 2026-05-19).
+       Mismo treatment que .cmp pero invertido a light: texto dark con
+       acentos mint, blobs y halos del color del producto se mantienen
+       sobre el bg blanco con la opacidad/blur original.
        ===================================================================== */
     .le {
         position: relative;
         padding: clamp(72px, 14vh, 144px) clamp(20px, 5vw, 80px) clamp(96px, 18vh, 192px);
         background:
-            radial-gradient(120% 80% at 50% 0%, rgba(167, 245, 200, 0.06), transparent 55%),
-            radial-gradient(140% 90% at 50% 100%, rgba(46, 143, 110, 0.05), transparent 50%),
-            #0a0a0a;
-        color: #fff;
+            radial-gradient(120% 80% at 50% 0%, rgba(167, 245, 200, 0.10), transparent 55%),
+            radial-gradient(140% 90% at 50% 100%, rgba(46, 143, 110, 0.08), transparent 50%),
+            #ffffff;
+        color: #1a1a1a;
         overflow: hidden;
         isolation: isolate;
     }
@@ -227,7 +287,7 @@ const lineas = [
         top: clamp(28px, 6vh, 56px);
         width: clamp(60px, 10vw, 140px);
         height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(167, 245, 200, 0.45), transparent);
+        background: linear-gradient(90deg, transparent, rgba(46, 143, 110, 0.55), transparent);
         pointer-events: none;
     }
 
@@ -266,14 +326,14 @@ const lineas = [
         font-weight: 700;
         letter-spacing: 0.34em;
         text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.65);
+        color: rgba(26, 26, 26, 0.62);
     }
     .le__dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: #A7F5C8;
-        box-shadow: 0 0 14px rgba(167, 245, 200, 0.8);
+        background: #2E8F6E;
+        box-shadow: 0 0 12px rgba(46, 143, 110, 0.6);
         display: inline-block;
     }
     .le__h {
@@ -284,8 +344,8 @@ const lineas = [
         letter-spacing: -0.014em;
         text-transform: uppercase;
         margin: 0 0 clamp(28px, 5vh, 56px);
-        color: #fff;
-        text-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+        color: #1a1a1a;
+        text-shadow: none;
         position: relative;
         overflow: hidden;
         text-align: center;
@@ -304,12 +364,12 @@ const lineas = [
         padding-top: 0.02em;
     }
     /* ESTRELLA mark — pill dark con tilt editorial.
-       Sobre bg dark queda como un "shield" con texto cream — funciona
-       como anchor visual sin perder identidad. */
+       Sobre bg blanco queda como anchor visual con contraste fuerte
+       (bg dark cream + texto cream). */
     .le__mark {
         display: inline-block;
-        background: #fff8e7;
-        color: #1a1a1a;
+        background: #2b2018;
+        color: #fff8e7;
         padding: 0.06em 0.32em 0.04em;
         border-radius: 8px;
         transform: rotate(-1.6deg);
@@ -317,7 +377,7 @@ const lineas = [
         font-size: 0.7em;
         letter-spacing: 0.04em;
         will-change: transform;
-        box-shadow: 0 12px 28px rgba(167, 245, 200, 0.2);
+        box-shadow: 0 12px 28px rgba(43, 32, 24, 0.28);
     }
 
     .le__divider {
@@ -341,7 +401,7 @@ const lineas = [
         font-family: var(--f-text);
         font-size: clamp(0.98rem, 1.3vw, 1.18rem);
         line-height: 1.55;
-        color: rgba(255, 255, 255, 0.76);
+        color: rgba(26, 26, 26, 0.7);
     }
 
     /* =====================================================================
@@ -378,8 +438,8 @@ const lineas = [
         position: absolute;
         inset: 0;
         border-radius: 50%;
-        border: 1.5px solid rgba(167, 245, 200, 0.65);
-        background: #0a0a0a;
+        border: 1.5px solid rgba(46, 143, 110, 0.55);
+        background: #ffffff;
         animation: le-marker-pulse 2.6s ease-in-out infinite;
     }
     .le__panel-marker-dot {
@@ -388,12 +448,12 @@ const lineas = [
         transform: translate(-50%, -50%);
         width: 10px; height: 10px;
         border-radius: 50%;
-        background: #A7F5C8;
-        box-shadow: 0 0 12px rgba(167, 245, 200, 0.85);
+        background: #2E8F6E;
+        box-shadow: 0 0 12px rgba(46, 143, 110, 0.85);
     }
     @keyframes le-marker-pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(167, 245, 200, 0.55); }
-        50%      { box-shadow: 0 0 0 10px rgba(167, 245, 200, 0); }
+        0%, 100% { box-shadow: 0 0 0 0 rgba(46, 143, 110, 0.45); }
+        50%      { box-shadow: 0 0 0 10px rgba(46, 143, 110, 0); }
     }
 
     /* ----- Visual (bottle PNG + halo + blob) ----- */
@@ -439,9 +499,95 @@ const lineas = [
         width: auto;
         height: auto;
         object-fit: contain;
-        filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.45));
+        filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.18));
         will-change: transform;
         user-select: none;
+    }
+
+    /* ===== Stage layered (RACE + PRO) =====
+       Card rounded con frame + base.png clipeado, pote/ruedas/texto
+       overflow:visible (pueden protruir del marco). Mismo patrón del
+       slider Race original. Aspect-ratio viene del CSS variable
+       --le-aspect declarado inline per panel. */
+    .le__panel-stage {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        max-width: 540px;
+        aspect-ratio: var(--le-aspect, 1.4) / 1;
+        max-height: clamp(300px, 60vh, 540px);
+        overflow: visible;
+        will-change: transform, opacity;
+    }
+    .le__panel-frame {
+        position: absolute;
+        inset: 0;
+        border-radius: clamp(20px, 2.6vw, 38px);
+        overflow: hidden;
+        filter: drop-shadow(0 32px 48px rgba(0, 0, 0, 0.18));
+        z-index: 1;
+    }
+    .le__layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        user-select: none;
+    }
+    .le__layer--base {
+        z-index: 1;
+        object-fit: cover;
+        object-position: center;
+        border-radius: inherit;
+        will-change: opacity, transform;
+    }
+    .le__layer--ruedas {
+        z-index: 35;
+        object-fit: contain;
+        object-position: center;
+        transform-origin: center;
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.28));
+        will-change: opacity, transform;
+    }
+    .le__layer--pote {
+        z-index: 40;
+        object-fit: contain;
+        object-position: center 55%;
+        transform: scale(1.10);
+        transform-origin: center 55%;
+        filter:
+            drop-shadow(0 14px 28px rgba(0, 0, 0, 0.22))
+            drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));
+        will-change: opacity, transform;
+    }
+    .le__layer--texto {
+        z-index: 50;
+        object-fit: contain;
+        object-position: center top;
+        height: 22%;
+        top: 6%;
+        left: 8%;
+        right: 8%;
+        width: 84%;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+        will-change: opacity, transform;
+    }
+    /* RACE override — bidón violeta sub-product (portrait), protrude
+       del frame rounded gracias al overflow:visible. */
+    .le__panel[data-le-slug="linea-race"] .le__layer--pote {
+        transform: scale(1.15);
+        object-position: center 55%;
+    }
+    .le__panel[data-le-slug="linea-race"] .le__layer--ruedas {
+        transform: scale(1.0);
+    }
+    /* PRO override — pote vegetativo encuadrado dentro del base unified
+       celeste. Scale 0.85 + posición vertical 65%. */
+    .le__panel[data-le-slug="linea-pro"] .le__layer--pote {
+        transform: scale(0.85);
+        transform-origin: center 50%;
+        object-position: center 65%;
     }
 
     /* ----- Body ----- */
@@ -457,7 +603,7 @@ const lineas = [
         line-height: 0.9;
         letter-spacing: -0.04em;
         color: transparent;
-        -webkit-text-stroke: 1.4px rgba(167, 245, 200, 0.45);
+        -webkit-text-stroke: 1.5px rgba(46, 143, 110, 0.4);
         margin: 0 0 clamp(12px, 2vh, 24px);
         will-change: transform, opacity;
     }
@@ -471,7 +617,7 @@ const lineas = [
         font-weight: 700;
         letter-spacing: 0.28em;
         text-transform: uppercase;
-        color: var(--le-panel-text-accent, #A7F5C8);
+        color: #2E8F6E;
     }
     .le__panel-kicker-dot {
         width: 8px; height: 8px;
@@ -488,7 +634,7 @@ const lineas = [
         letter-spacing: -0.018em;
         text-transform: uppercase;
         margin: 0 0 clamp(10px, 1.6vh, 18px);
-        color: #fff;
+        color: #1a1a1a;
     }
     .le__panel-tagline {
         margin: 0 0 clamp(12px, 2vh, 20px);
@@ -497,8 +643,8 @@ const lineas = [
         font-weight: 500;
         font-size: clamp(1.05rem, 1.6vw, 1.4rem);
         line-height: 1.25;
-        color: var(--le-panel-text-accent, #A7F5C8);
-        opacity: 0.92;
+        color: var(--le-panel-text-accent, #2E8F6E);
+        opacity: 0.95;
     }
     .le__panel-text {
         margin: 0 0 clamp(24px, 4vh, 36px);
@@ -506,7 +652,7 @@ const lineas = [
         font-family: var(--f-text);
         font-size: clamp(0.95rem, 1.15vw, 1.08rem);
         line-height: 1.55;
-        color: rgba(255, 255, 255, 0.76);
+        color: rgba(26, 26, 26, 0.7);
     }
     .le__panel-cta {
         display: inline-flex;
@@ -514,9 +660,9 @@ const lineas = [
         gap: 12px;
         padding: 14px clamp(24px, 2.4vw, 32px);
         border-radius: 999px;
-        border: 1px solid rgba(167, 245, 200, 0.45);
-        background: linear-gradient(135deg, rgba(167, 245, 200, 0.06), rgba(255, 255, 255, 0.02));
-        color: #fff;
+        border: 1px solid rgba(46, 143, 110, 0.45);
+        background: linear-gradient(135deg, rgba(46, 143, 110, 0.06), rgba(255, 255, 255, 0.7));
+        color: #1a1a1a;
         text-decoration: none;
         font-family: var(--f-display, 'Gotham', serif);
         font-weight: 800;
@@ -534,14 +680,14 @@ const lineas = [
         min-height: 44px;
     }
     .le__panel-cta:hover {
-        border-color: rgba(167, 245, 200, 0.85);
-        background: linear-gradient(135deg, rgba(167, 245, 200, 0.14), rgba(167, 245, 200, 0.04));
+        border-color: rgba(46, 143, 110, 0.85);
+        background: linear-gradient(135deg, rgba(46, 143, 110, 0.14), rgba(46, 143, 110, 0.04));
         transform: translateY(-2px);
-        box-shadow: 0 16px 36px rgba(46, 143, 110, 0.3);
+        box-shadow: 0 16px 36px rgba(46, 143, 110, 0.22);
     }
     .le__panel-cta svg {
         transition: transform 0.28s cubic-bezier(.2,.8,.2,1);
-        color: #A7F5C8;
+        color: #2E8F6E;
     }
     .le__panel-cta:hover svg {
         transform: translateX(4px);

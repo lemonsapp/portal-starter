@@ -226,16 +226,19 @@ const complementos = [
 
 <style>
     /* =====================================================================
-       SECTION CONTAINER
+       SECTION CONTAINER — bg blanco (pedido cliente 2026-05-19).
+       Pasamos de dark cinematic a light para consistencia con
+       LineasEstrella que también va blanco. Texto dark + acentos mint
+       sobre los blobs y halos del color del producto.
        ===================================================================== */
     .cmp {
         position: relative;
         padding: clamp(72px, 14vh, 144px) clamp(20px, 5vw, 80px) clamp(96px, 18vh, 192px);
         background:
-            radial-gradient(120% 80% at 50% 0%, rgba(167, 245, 200, 0.06), transparent 55%),
-            radial-gradient(140% 90% at 50% 100%, rgba(46, 143, 110, 0.05), transparent 50%),
-            #0a0a0a;
-        color: #fff;
+            radial-gradient(120% 80% at 50% 0%, rgba(167, 245, 200, 0.10), transparent 55%),
+            radial-gradient(140% 90% at 50% 100%, rgba(46, 143, 110, 0.08), transparent 50%),
+            #ffffff;
+        color: #1a1a1a;
         overflow: hidden;
         isolation: isolate;
     }
@@ -248,7 +251,7 @@ const complementos = [
         top: clamp(28px, 6vh, 56px);
         width: clamp(60px, 10vw, 140px);
         height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(167, 245, 200, 0.45), transparent);
+        background: linear-gradient(90deg, transparent, rgba(46, 143, 110, 0.55), transparent);
         pointer-events: none;
     }
 
@@ -289,14 +292,14 @@ const complementos = [
         font-weight: 700;
         letter-spacing: 0.34em;
         text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.65);
+        color: rgba(26, 26, 26, 0.62);
     }
     .cmp__dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: #A7F5C8;
-        box-shadow: 0 0 14px rgba(167, 245, 200, 0.8);
+        background: #2E8F6E;
+        box-shadow: 0 0 12px rgba(46, 143, 110, 0.6);
         display: inline-block;
     }
     .cmp__h {
@@ -310,8 +313,8 @@ const complementos = [
         letter-spacing: -0.014em;
         text-transform: uppercase;
         margin: 0 0 clamp(28px, 5vh, 56px);
-        color: #fff;
-        text-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+        color: #1a1a1a;
+        text-shadow: none;
         /* Center alignment per text-align:center del parent .cmp__header.
            Ambas líneas (COMPLEMENTOS + IDEALES) quedan centradas con
            el mismo eje vertical. */
@@ -332,14 +335,12 @@ const complementos = [
     }
     /* "IDEALES" — acento mint sólido (NO gradient-text porque después
        de SplitText los chars son <div>, el background-clip:text del
-       parent pierde su texto-target y queda invisible). Solid color
-       + glow text-shadow para el pop editorial. */
+       parent pierde su texto-target y queda invisible). Sobre bg
+       blanco usamos un mint más oscuro (#2E8F6E) para contraste fuerte,
+       sin glow (no funciona sobre fondo claro). */
     .cmp__line:last-child .cmp__line-inner {
-        color: #A7F5C8;
-        text-shadow:
-            0 0 18px rgba(167, 245, 200, 0.5),
-            0 0 60px rgba(46, 143, 110, 0.25),
-            0 4px 32px rgba(0, 0, 0, 0.5);
+        color: #2E8F6E;
+        text-shadow: none;
     }
     /* SplitText genera .word inside line-inner — propaga color por si
        acaso el char wrapping pierde inheritance. */
@@ -373,7 +374,7 @@ const complementos = [
         font-family: var(--f-text);
         font-size: clamp(0.98rem, 1.3vw, 1.18rem);
         line-height: 1.55;
-        color: rgba(255, 255, 255, 0.76);
+        color: rgba(26, 26, 26, 0.7);
     }
 
     /* =====================================================================
@@ -418,8 +419,8 @@ const complementos = [
         position: absolute;
         inset: 0;
         border-radius: 50%;
-        border: 1.5px solid rgba(167, 245, 200, 0.65);
-        background: #0a0a0a;          /* "tapa" la línea atrás del dot */
+        border: 1.5px solid rgba(46, 143, 110, 0.55);
+        background: #ffffff;          /* "tapa" la línea atrás del dot */
         animation: cmp-marker-pulse 2.6s ease-in-out infinite;
     }
     .cmp__panel-marker-dot {
@@ -430,12 +431,12 @@ const complementos = [
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #A7F5C8;
-        box-shadow: 0 0 12px rgba(167, 245, 200, 0.85);
+        background: #2E8F6E;
+        box-shadow: 0 0 12px rgba(46, 143, 110, 0.85);
     }
     @keyframes cmp-marker-pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(167, 245, 200, 0.55); }
-        50%      { box-shadow: 0 0 0 10px rgba(167, 245, 200, 0); }
+        0%, 100% { box-shadow: 0 0 0 0 rgba(46, 143, 110, 0.45); }
+        50%      { box-shadow: 0 0 0 10px rgba(46, 143, 110, 0); }
     }
 
     /* ----- Panel Visual (bottle PNG + halo + blob) ----- */
@@ -483,7 +484,7 @@ const complementos = [
         width: auto;
         height: auto;
         object-fit: contain;
-        filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.45));
+        filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.18));
         will-change: transform;
         user-select: none;
     }
@@ -501,7 +502,7 @@ const complementos = [
         line-height: 0.9;
         letter-spacing: -0.04em;
         color: transparent;
-        -webkit-text-stroke: 1.4px rgba(167, 245, 200, 0.45);
+        -webkit-text-stroke: 1.5px rgba(46, 143, 110, 0.4);
         margin: 0 0 clamp(12px, 2vh, 24px);
         will-change: transform, opacity;
     }
@@ -515,7 +516,7 @@ const complementos = [
         font-weight: 700;
         letter-spacing: 0.28em;
         text-transform: uppercase;
-        color: var(--cmp-panel-text-accent, #A7F5C8);
+        color: #2E8F6E;
     }
     .cmp__panel-kicker-dot {
         width: 8px; height: 8px;
@@ -532,7 +533,7 @@ const complementos = [
         letter-spacing: -0.018em;
         text-transform: uppercase;
         margin: 0 0 clamp(10px, 1.6vh, 18px);
-        color: #fff;
+        color: #1a1a1a;
     }
     .cmp__panel-tagline {
         margin: 0 0 clamp(12px, 2vh, 20px);
@@ -541,8 +542,8 @@ const complementos = [
         font-weight: 500;
         font-size: clamp(1.05rem, 1.6vw, 1.4rem);
         line-height: 1.25;
-        color: var(--cmp-panel-text-accent, #A7F5C8);
-        opacity: 0.92;
+        color: var(--cmp-panel-text-accent, #2E8F6E);
+        opacity: 0.95;
     }
     .cmp__panel-text {
         margin: 0 0 clamp(24px, 4vh, 36px);
@@ -550,7 +551,7 @@ const complementos = [
         font-family: var(--f-text);
         font-size: clamp(0.95rem, 1.15vw, 1.08rem);
         line-height: 1.55;
-        color: rgba(255, 255, 255, 0.76);
+        color: rgba(26, 26, 26, 0.7);
     }
     .cmp__panel-cta {
         display: inline-flex;
@@ -558,9 +559,9 @@ const complementos = [
         gap: 12px;
         padding: 14px clamp(24px, 2.4vw, 32px);
         border-radius: 999px;
-        border: 1px solid rgba(167, 245, 200, 0.45);
-        background: linear-gradient(135deg, rgba(167, 245, 200, 0.06), rgba(255, 255, 255, 0.02));
-        color: #fff;
+        border: 1px solid rgba(46, 143, 110, 0.45);
+        background: linear-gradient(135deg, rgba(46, 143, 110, 0.06), rgba(255, 255, 255, 0.7));
+        color: #1a1a1a;
         text-decoration: none;
         font-family: var(--f-display, 'Gotham', serif);
         font-weight: 800;
@@ -578,14 +579,14 @@ const complementos = [
         min-height: 44px;
     }
     .cmp__panel-cta:hover {
-        border-color: rgba(167, 245, 200, 0.85);
-        background: linear-gradient(135deg, rgba(167, 245, 200, 0.14), rgba(167, 245, 200, 0.04));
+        border-color: rgba(46, 143, 110, 0.85);
+        background: linear-gradient(135deg, rgba(46, 143, 110, 0.14), rgba(46, 143, 110, 0.04));
         transform: translateY(-2px);
-        box-shadow: 0 16px 36px rgba(46, 143, 110, 0.3);
+        box-shadow: 0 16px 36px rgba(46, 143, 110, 0.22);
     }
     .cmp__panel-cta svg {
         transition: transform 0.28s cubic-bezier(.2,.8,.2,1);
-        color: #A7F5C8;
+        color: #2E8F6E;
     }
     .cmp__panel-cta:hover svg {
         transform: translateX(4px);
