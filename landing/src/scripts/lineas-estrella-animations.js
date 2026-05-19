@@ -5,12 +5,19 @@
    <ProductFloatSlider /> horizontal por un slider vertical
    scroll-down separado por las 3 líneas estrella (ELITE/RACE/PRO).
 
+   Refactor 2026-05-19: cliente pidió que los 3 panels copien EXACTO
+   el formato de los 3 panels de <ComplementosIdeales />. Antes el
+   visual era layered stage (base+pote+ruedas+texto con frame rounded),
+   ahora es bottle PNG simple igual que cmp panels. Las animaciones
+   del visual se simplificaron en consecuencia (no más layered
+   sequence: solo slide-up + parallax + idle float).
+
    Estructura del componente:
      • HEADER editorial (chars scatter→assemble scroll-linked +
-       divider DrawSVG + shimmer CSS sweep)
+       divider DrawSVG)
      • THREAD vertical SVG (DrawSVGPlugin scrub fullsection)
-     • 3 PANELS con visual + body alternating layout + markers
-       pulsantes en el thread.
+     • 3 PANELS con visual (bottle PNG + halo + blob) + body
+       alternating layout + markers pulsantes en el thread.
 
    Skills:
      • gsap-plugins SplitText (chars header + words name)
@@ -18,7 +25,7 @@
      • gsap-plugins CustomEase (eases lib registrados)
      • gsap-scrolltrigger scrub (header assemble + thread + parallax)
      • gsap-scrolltrigger toggleActions (panels entrance reversible)
-     • gsap-timeline (4-act header + 9-step panel)
+     • gsap-timeline (header acts + per-panel sequence)
      • gsap-utils.random (per-char scatter + idle float)
      • gsap-utils.toArray (selectors batch)
      • gsap-core matchMedia (reduced-motion + breakpoints)
@@ -88,32 +95,32 @@ function initLineasEstrella() {
             if (dividerGlow) gsap.set(dividerGlow, { autoAlpha: 1, scale: 1 });
             if (threadLine)  gsap.set(threadLine,  { drawSVG: "0% 100%" });
             panels.forEach((panel) => {
-                const els = panel.querySelectorAll("[data-le-num], [data-le-kicker], [data-le-name], [data-le-tagline], [data-le-text], [data-le-cta], [data-le-visual]");
+                const els = panel.querySelectorAll("[data-le-num], [data-le-kicker], [data-le-name], [data-le-tagline], [data-le-text], [data-le-cta], [data-le-visual], [data-le-img]");
                 els.forEach((el) => gsap.set(el, { autoAlpha: 1, y: 0, x: 0, scale: 1 }));
             });
             return;
         }
 
         // ============================================================
-        // SCATTER inicial con tilt 3D — chars en perspective
+        // SCATTER inicial — chars en perspective (mismo patrón que cmp)
         // ============================================================
         allChars.forEach((ch) => {
             gsap.set(ch, {
-                x: gsap.utils.random(-280, 280),
-                y: gsap.utils.random(-200, 200),
-                z: gsap.utils.random(-300, 300),
-                rotation: gsap.utils.random(-90, 90),
-                rotationX: gsap.utils.random(-75, 75),
-                rotationY: gsap.utils.random(-90, 90),
-                scale: gsap.utils.random(0.25, 0.85),
+                x: gsap.utils.random(-30, 30),
+                y: gsap.utils.random(-80, 80),
+                z: gsap.utils.random(-200, 200),
+                rotation: 0,
+                rotationY: gsap.utils.random(-45, 45),
+                rotationX: gsap.utils.random(-20, 20),
+                scale: gsap.utils.random(0.7, 0.95),
                 autoAlpha: 0,
-                filter: "blur(12px)",
+                filter: "blur(14px)",
                 transformOrigin: "50% 50%",
-                transformPerspective: 600,
+                transformPerspective: 800,
                 willChange: "transform, opacity, filter",
             });
         });
-        lineInners.forEach((inner) => gsap.set(inner, { perspective: 800 }));
+        lineInners.forEach((inner) => gsap.set(inner, { perspective: 1000 }));
 
         // ============================================================
         // HEADER ASSEMBLE — scroll-linked scrub
@@ -122,8 +129,8 @@ function initLineasEstrella() {
             scrollTrigger: {
                 trigger: header,
                 start: "top 95%",
-                end:   "top 25%",
-                scrub: 0.7,
+                end:   "top 20%",
+                scrub: 0.8,
                 invalidateOnRefresh: true,
             },
         });
@@ -139,22 +146,22 @@ function initLineasEstrella() {
             scale: 1,
             autoAlpha: 1,
             filter: "blur(0px)",
-            duration: 0.72,
-            stagger: { each: 0.014, from: "center" },
-            ease: "power4.out",
+            duration: 0.85,
+            stagger: { each: 0.012, from: "center" },
+            ease: "expo.out",
         }, 0.10);
 
-        // Micro-pulse landing post-assemble
+        // Micro-glow burst post-assemble
         if (allChars.length) {
             assembleTl.to(allChars, {
-                scale: 1.04,
-                duration: 0.08, ease: "sine.out",
-                stagger: { each: 0.005, from: "center" },
-            }, 0.74).to(allChars, {
-                scale: 1,
-                duration: 0.10, ease: "sine.in",
-                stagger: { each: 0.005, from: "center" },
-            }, 0.82);
+                filter: "blur(0px) brightness(1.15)",
+                duration: 0.10, ease: "sine.out",
+                stagger: { each: 0.004, from: "center" },
+            }, 0.82).to(allChars, {
+                filter: "blur(0px) brightness(1)",
+                duration: 0.14, ease: "sine.in",
+                stagger: { each: 0.004, from: "center" },
+            }, 0.92);
         }
 
         // Mark "ESTRELLA" — explode in
@@ -169,7 +176,7 @@ function initLineasEstrella() {
         if (dividerLn) {
             assembleTl.to(dividerLn, {
                 drawSVG: "0% 100%",
-                duration: 0.22, ease: "power2.inOut",
+                duration: 0.25, ease: "power3.inOut",
             }, 0.55);
         }
         if (dividerGlow) {
@@ -182,14 +189,19 @@ function initLineasEstrella() {
         assembleTl.to(sub, {
             autoAlpha: 1, y: 0,
             duration: 0.18, ease: "expo.out",
-        }, 0.85);
+        }, 0.88);
 
         // POST-ASSEMBLE IDLE
         if (dividerGlow) {
             gsap.to(dividerGlow, {
-                scale: 1.22,
-                duration: 2.6, ease: "sine.inOut",
+                scale: 1.28,
+                duration: 2.4, ease: "sine.inOut",
                 yoyo: true, repeat: -1, delay: 1.8,
+            });
+            gsap.to(dividerGlow, {
+                opacity: 0.7,
+                duration: 1.8, ease: "sine.inOut",
+                yoyo: true, repeat: -1, delay: 2.0,
             });
         }
         if (mark) {
@@ -197,6 +209,16 @@ function initLineasEstrella() {
                 scale: 1.02,
                 duration: 2.8, ease: "sine.inOut",
                 yoyo: true, repeat: -1, delay: 1.5,
+            });
+        }
+        // Eyebrow dot pulse
+        const eyebrowDot = root.querySelector(".le__dot");
+        if (eyebrowDot) {
+            gsap.to(eyebrowDot, {
+                scale: 1.35,
+                duration: 1.4, ease: "sine.inOut",
+                yoyo: true, repeat: -1, delay: 1.6,
+                transformOrigin: "50% 50%",
             });
         }
 
@@ -219,18 +241,13 @@ function initLineasEstrella() {
         }
 
         // ============================================================
-        // PANELS entrance timeline + parallax
+        // PANELS entrance timeline + parallax (calcado de cmp panels)
         // ============================================================
         panels.forEach((panel, panelIdx) => {
             const marker  = panel.querySelector(".le__panel-marker");
-            const sil     = panel.querySelector(".le__panel-silhouette");
             const blob    = panel.querySelector(".le__panel-blob");
             const halo    = panel.querySelector("[data-le-halo]");
-            const stage   = panel.querySelector("[data-le-stage]");
-            const lBase   = panel.querySelector("[data-le-layer-base]");
-            const lRuedas = panel.querySelector("[data-le-layer-ruedas]");
-            const lPote   = panel.querySelector("[data-le-layer-pote]");
-            const lTexto  = panel.querySelector("[data-le-layer-texto]");
+            const img     = panel.querySelector("[data-le-img]");
             const num     = panel.querySelector("[data-le-num]");
             const kicker  = panel.querySelector("[data-le-kicker]");
             const name    = panel.querySelector("[data-le-name]");
@@ -253,24 +270,9 @@ function initLineasEstrella() {
 
             // Estados iniciales
             if (marker)  gsap.set(marker,  { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%" });
-            if (sil)     gsap.set(sil,     { autoAlpha: 0, scale: 1.04 });
             if (blob)    gsap.set(blob,    { autoAlpha: 0, scale: 0.6 });
             if (halo)    gsap.set(halo,    { autoAlpha: 0, scale: 0.4 });
-            // STAGE LAYERS — mismo patrón que el swap del slider Race:
-            // base entra primero, ruedas rotate-in, pote scale-bounce,
-            // texto slide-down. Cada layer con su transform inicial.
-            if (stage)   gsap.set(stage,   { autoAlpha: 0, y: 40 });
-            if (lBase)   gsap.set(lBase,   { autoAlpha: 0, scale: 1.05 });
-            if (lRuedas) gsap.set(lRuedas, { autoAlpha: 0, rotation: -45, scale: 0.7 });
-            if (lPote) {
-                // Preserva el scale CSS-base (1.08 default, 1.20 para ELITE)
-                // para no clobberearlo. GSAP arranca desde 0.75x ese base
-                // y converge al base via animation.
-                const poteBaseScale = parseFloat(getComputedStyle(lPote).transform.match(/matrix.*\(([^)]+)\)/)?.[1]?.split(",")[0]) || 1.08;
-                gsap.set(lPote, { autoAlpha: 0, scale: poteBaseScale * 0.75, y: 20 });
-                lPote.dataset.poteScale = poteBaseScale;
-            }
-            if (lTexto)  gsap.set(lTexto,  { autoAlpha: 0, y: -16, scale: 0.92 });
+            if (img)     gsap.set(img,     { autoAlpha: 0, y: 60, scale: 0.92 });
             if (num)     gsap.set(num,     { autoAlpha: 0, y: 30 });
             if (kicker)  gsap.set(kicker,  { autoAlpha: 0, y: 18 });
             if (nameWords.length) gsap.set(nameWords, { autoAlpha: 0, yPercent: 105 });
@@ -290,40 +292,9 @@ function initLineasEstrella() {
             });
 
             if (marker) panelTl.to(marker, { autoAlpha: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)" }, 0);
-            if (sil)    panelTl.to(sil,    { autoAlpha: 0.18, scale: 1, duration: 1.2, ease: "power2.out" }, 0);
-            if (blob)   panelTl.to(blob,   { autoAlpha: 0.28, scale: 1, duration: 1.0, ease: "power2.out" }, 0.05);
+            if (blob)   panelTl.to(blob,   { autoAlpha: 0.4, scale: 1, duration: 1.0, ease: "power2.out" }, 0.05);
             if (halo)   panelTl.to(halo,   { autoAlpha: 1, scale: 1, duration: 0.9, ease: "power2.out" }, 0.10);
-
-            // ===== STAGE LAYERED ENTRY — mismo patrón que el swap del
-            // slider Race cuando hacían click en un hotspot. Base
-            // primero (la "tela" del producto), wheels rotan en,
-            // pote scale-bounce, texto slide-down.
-            // Tiempos calcados del slider (lib/product-float-slider.js
-            // función swapToSub).
-            if (stage) panelTl.to(stage, {
-                autoAlpha: 1, y: 0,
-                duration: 0.5, ease: "power2.out",
-            }, 0.15);
-            if (lBase) panelTl.to(lBase, {
-                autoAlpha: 1, scale: 1,
-                duration: 0.40, ease: "power3.out",
-            }, 0.20);
-            if (lRuedas) panelTl.to(lRuedas, {
-                autoAlpha: 1, rotation: 0, scale: 1,
-                duration: 0.70, ease: "back.out(1.6)",
-            }, 0.32);
-            if (lPote) {
-                const poteBaseScale = parseFloat(lPote.dataset.poteScale) || 1.08;
-                panelTl.to(lPote, {
-                    autoAlpha: 1, scale: poteBaseScale, y: 0,
-                    duration: 0.55, ease: "back.out(1.8)",
-                }, 0.36);
-            }
-            if (lTexto) panelTl.to(lTexto, {
-                autoAlpha: 1, y: 0, scale: 1,
-                duration: 0.42, ease: "power3.out",
-            }, 0.46);
-
+            if (img)    panelTl.to(img,    { autoAlpha: 1, y: 0, scale: 1, duration: 1.1, ease: "expo.out" }, 0.15);
             if (num)    panelTl.to(num,    { autoAlpha: 1, y: 0, duration: 0.7, ease: "back.out(1.5)" }, 0.20);
             if (kicker) panelTl.to(kicker, { autoAlpha: 1, y: 0, duration: 0.5 }, 0.30);
             if (nameWords.length) panelTl.to(nameWords, {
@@ -339,11 +310,9 @@ function initLineasEstrella() {
                 duration: 0.8, ease: "elastic.out(1, 0.62)",
             }, 0.72);
 
-            // PARALLAX continuo del stage (card layered) + halo + silhouette.
-            // El stage como bloque (no per-layer) → el card flota como
-            // unidad mientras el usuario scrollea.
-            if (stage) {
-                gsap.fromTo(stage,
+            // PARALLAX continuo — img + halo
+            if (img) {
+                gsap.fromTo(img,
                     { yPercent: -6 },
                     {
                         yPercent: 6, ease: "none",
@@ -370,52 +339,16 @@ function initLineasEstrella() {
                     }
                 );
             }
-            if (sil) {
-                gsap.fromTo(sil,
-                    { yPercent: -4 },
-                    {
-                        yPercent: 4, ease: "none",
-                        scrollTrigger: {
-                            trigger: panel,
-                            start: "top bottom",
-                            end:   "bottom top",
-                            scrub: true,
-                        },
-                    }
-                );
-            }
 
-            // Idle float del stage (toda la card flota suave) +
-            // micro-rotation del pote (sutil "respiración" del bidón).
-            if (stage) {
-                gsap.to(stage, {
-                    y: gsap.utils.random(-8, -14, 1),
-                    duration: gsap.utils.random(2.8, 3.6),
+            // Idle: img float suave + micro-rotation
+            if (img) {
+                gsap.to(img, {
+                    y: gsap.utils.random(-8, -16, 1),
+                    rotation: gsap.utils.random(-1.2, 1.2, 0.1),
+                    duration: gsap.utils.random(2.6, 3.6),
                     ease: "sine.inOut",
                     yoyo: true, repeat: -1,
-                    delay: 0.8 + panelIdx * 0.18,
-                });
-            }
-            if (lPote) {
-                gsap.to(lPote, {
-                    rotation: gsap.utils.random(-1.5, 1.5, 0.1),
-                    duration: gsap.utils.random(3.0, 4.2),
-                    ease: "sine.inOut",
-                    yoyo: true, repeat: -1,
-                    delay: 1.0 + panelIdx * 0.18,
-                });
-            }
-            // RUEDAS (solo RACE) — rotación continua infinita post-entrada.
-            // Pedido del cliente: las ruedas tienen que girar. Velocidad
-            // moderada (12s por vuelta) — visible pero no distractor.
-            // Skill: gsap-performance (transforms only, will-change rotation).
-            if (lRuedas) {
-                gsap.to(lRuedas, {
-                    rotation: "+=360",
-                    duration: 12,
-                    ease: "none",
-                    repeat: -1,
-                    delay: 1.3 + panelIdx * 0.18, // espera fin del entry
+                    delay: 0.6 + panelIdx * 0.18,
                 });
             }
         });
