@@ -1,66 +1,41 @@
 ---
-// LiquidBridge — nueva sección de transición entre <LineasEstrella />
-// (bg blanco, productos estrella) y <ComplementosIdeales /> (bg dark
-// cinematic). Pedido cliente 2026-05-20: animación distinta a la del
-// OrganicConnector (que es cascada de drops), más realista y no básica.
+// LiquidBridge — REWRITE 2026-05-20 (v2): el blob CRUZA secciones.
 //
-// CONCEPTO: "Ink Pour Morphing" — un blob orgánico líquido que se
-// vierte desde el bottom de LineasEstrella, deformándose con SVG path
-// morphing manual (sin MorphSVG plugin), distortion turbulence,
-// partículas interiores que fluyen siguiendo MotionPath, y termina
-// disolviéndose en la oscuridad de ComplementosIdeales.
+// Iteración anterior dejaba el blob contenido en su propia section,
+// generando un corte visual entre LineasEstrella y ComplementosIdeales.
+// Cliente: "tiene que chorrear por encima, no se debe cortar entre
+// pestañas".
 //
-// Diferencia vs OrganicConnector:
-//   • OC = cascada de drops discretas con Physics2D splash
-//   • LB = blob continuo morphing + particle stream interior +
-//          fade-to-black dissolution
-//   • OC = bottom white→white, LB = bottom white→black gradient
-//          (bridge cromático hacia ComplementosIdeales)
-//   • OC = goo filter para mercurio, LB = turbulence MUY fuerte para
-//          tinta/líquido orgánico
+// Solución técnica:
+//   • Section minimal (height: 1px collapsada) — no ocupa espacio en
+//     el flujo del layout.
+//   • position: relative + overflow: visible + z-index alto.
+//   • SVG con position: absolute extendido vertical (top: -40vh;
+//     bottom: -40vh) → el blob VIVE PARTIENDO el border entre
+//     LineasEstrella y ComplementosIdeales, sin section visible que
+//     genere espacio vacío.
+//   • pointer-events: none → no interfiere con interacción.
 //
-// Skills aplicadas (skill-finder):
-//   • gsap-plugins MotionPathPlugin   → particles fluyen por el blob
-//   • gsap-plugins CustomEase          → ease "liquid" para morphing
-//   • gsap-plugins SplitText           → label "FLUYE EL CICLO"
-//                                        chars-stream (opcional micro
-//                                        label)
-//   • gsap-scrolltrigger scrub         → master timeline scroll-linked
-//   • gsap-timeline                    → 4 phases secuenciales
-//   • gsap-utils.random + toArray      → naturalismo
-//   • gsap-core matchMedia             → reduced-motion + mobile
-//   • gsap-performance                 → transforms + attr only
-//
-// Path morphing manual: sin MorphSVG, animamos el atributo `d` del
-// path con gsap `attr` tween entre keyframes definidos a mano. Cada
-// keyframe es un blob con el mismo número de puntos de control para
-// que la interpolación lineal funcione (técnica "tweenable d-string").
+// El "chorreo" parte desde el bottom de LineasEstrella, atraviesa el
+// border (invisible), termina dissolviendo en el top dark de
+// ComplementosIdeales.
 ---
-<section
+<div
     class="lb"
     data-liquid-bridge
-    aria-label="Transición líquida hacia complementos"
+    aria-hidden="true"
 >
-    <!-- BG gradient: blanco arriba (continuidad con LineasEstrella)
-         → dark abajo (entrada a ComplementosIdeales). Bridge cromático. -->
-    <div class="lb__bg" aria-hidden="true"></div>
-
     <svg
         class="lb__svg"
-        viewBox="0 0 1000 900"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
+        viewBox="0 0 1000 1000"
+        preserveAspectRatio="xMidYMid meet"
         data-lb-svg
     >
         <defs>
-            <!-- Turbulence FUERTE para feel de tinta líquida orgánica.
-                 baseFrequency alta + numOctaves 3 = ruido fractal denso.
-                 displacement scale 28 = distortion visible. Animamos
-                 baseFrequency con GSAP para shimmer continuo. -->
             <filter id="lb-ink" x="-20%" y="-20%" width="140%" height="140%">
                 <feTurbulence
                     type="fractalNoise"
-                    baseFrequency="0.015 0.028"
+                    baseFrequency="0.018 0.030"
                     numOctaves="3"
                     seed="7"
                     result="turb"
@@ -69,172 +44,134 @@
                 <feDisplacementMap
                     in="SourceGraphic"
                     in2="turb"
-                    scale="28"
+                    scale="22"
                     xChannelSelector="R"
                     yChannelSelector="G"
                 />
             </filter>
 
-            <!-- Gradient del blob: emerald top (continuidad con
-                 LineasEstrella mint) → dark mid → deep negro abajo.
-                 Vertical para que el blob "drena" hacia oscuridad. -->
+            <!-- Gradient vertical: mint top → emerald mid → black bottom.
+                 Sigue siendo el bridge cromático, ahora aplicado a un
+                 blob alargado que cruza secciones. -->
             <linearGradient id="lb-blob-grad"
                 gradientUnits="userSpaceOnUse"
-                x1="500" y1="0" x2="500" y2="900">
-                <stop offset="0%"   stop-color="#A7F5C8" stop-opacity="0.85"/>
-                <stop offset="30%"  stop-color="#2E8F6E" stop-opacity="0.92"/>
-                <stop offset="65%"  stop-color="#0f3527" stop-opacity="0.98"/>
+                x1="500" y1="0" x2="500" y2="1000">
+                <stop offset="0%"   stop-color="#A7F5C8" stop-opacity="0.9"/>
+                <stop offset="25%"  stop-color="#3DA86E" stop-opacity="0.95"/>
+                <stop offset="55%"  stop-color="#1f6b50" stop-opacity="0.97"/>
+                <stop offset="85%"  stop-color="#0f3527" stop-opacity="1"/>
                 <stop offset="100%" stop-color="#0a0a0a" stop-opacity="1"/>
             </linearGradient>
 
-            <!-- Particle gradient: cabeza brillante, halo mint -->
             <radialGradient id="lb-particle-grad" cx="50%" cy="50%" r="50%">
                 <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="1"/>
                 <stop offset="60%"  stop-color="#A7F5C8" stop-opacity="0.8"/>
                 <stop offset="100%" stop-color="#2E8F6E" stop-opacity="0"/>
             </radialGradient>
-
-            <!-- Dissolution mask: el blob fade-to-black en el bottom -->
-            <linearGradient id="lb-dissolve-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stop-color="#fff" stop-opacity="1"/>
-                <stop offset="75%"  stop-color="#fff" stop-opacity="1"/>
-                <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
-            </linearGradient>
-            <mask id="lb-mask">
-                <rect x="0" y="0" width="1000" height="900" fill="url(#lb-dissolve-grad)"/>
-            </mask>
         </defs>
 
-        <!-- ===== BLOB: el "ink pour" principal =====
-             Path con morphing manual entre 4 keyframes. Cada keyframe
-             tiene exactamente la misma cantidad de comandos (M, C, C, C
-             ...) y la misma estructura para que `attr: { d: ... }`
-             interpole linealmente. Estado inicial = blob comprimido
-             en el top (KF1), va expandiéndose y drenando hacia abajo. -->
+        <!-- ===== BLOB chorreando vertical =====
+             Path morphing manual entre 4 keyframes. El blob es muy
+             alargado verticalmente (1000 unidades de alto) y cruza
+             la transición invisible entre las secciones. -->
         <path
             class="lb__blob"
             data-lb-blob
             filter="url(#lb-ink)"
             fill="url(#lb-blob-grad)"
-            d="M 500 -40 C 480 -20, 460 0, 460 30 C 460 60, 480 80, 500 90 C 520 80, 540 60, 540 30 C 540 0, 520 -20, 500 -40 Z"
-            mask="url(#lb-mask)"
+            d="M 500 0 C 470 100, 460 220, 480 360 C 500 500, 490 640, 510 780 C 520 880, 500 950, 500 1000 C 500 950, 480 880, 490 780 C 510 640, 500 500, 520 360 C 540 220, 530 100, 500 0 Z"
         />
 
-        <!-- ===== STREAM PARTICLES =====
-             20 partículas que fluyen siguiendo paths internos del blob
-             en su trayectoria descendente. MotionPath con paths
-             definidos por keyframe (los mismos del blob). Cada particle
-             tiene un timing único + opacity sine yoyo para shimmer. -->
+        <!-- ===== PARTICLES interiores =====
+             20 partículas fluyendo por flow-path vertical sinuoso. -->
         <g class="lb__particles" data-lb-particles>
-            {Array.from({ length: 22 }).map((_, i) => (
+            {Array.from({ length: 24 }).map((_, i) => (
                 <circle
                     class="lb__particle"
                     data-lb-particle
                     data-i={i}
                     cx="500" cy="0"
-                    r={(1.5 + (i % 3) * 0.8).toFixed(1)}
+                    r={(1.5 + (i % 3) * 0.9).toFixed(1)}
                     fill="url(#lb-particle-grad)"
                 />
             ))}
         </g>
 
-        <!-- Path invisible para las particles — define el flow interior
-             del blob (curva sinuosa descendente). MotionPath usa este
-             path como guía. -->
         <path
             class="lb__flow-path"
             data-lb-flow-path
-            d="M 500 0 C 480 150, 520 280, 500 420 C 480 560, 520 700, 500 880"
+            d="M 500 0 C 470 200, 530 380, 500 580 C 470 760, 530 880, 500 1000"
             fill="none"
             stroke="none"
         />
     </svg>
-
-    <!-- Eyebrow label decorativo (chars stream entry) -->
-    <p class="lb__label" data-lb-label aria-hidden="true">
-        <span class="lb__label-inner" data-lb-label-inner>FLUYE EL CICLO COMPLETO</span>
-    </p>
-</section>
+</div>
 
 <script>
     import "../scripts/liquid-bridge.js";
 </script>
 
 <style>
+    /* SECTION COLLAPSED: el div no ocupa espacio del flujo del layout
+       — height 1px + overflow visible. El SVG se extiende fuera del
+       div via position absolute con top/bottom negativos.
+
+       Resultado: el "section" no genera espacio vacío entre Líneas
+       Estrella y Complementos Ideales — el blob simplemente flota
+       atravesando el border de ambas secciones. */
     .lb {
         position: relative;
         width: 100%;
-        min-height: 70vh;
-        overflow: hidden;
-        isolation: isolate;
-        background: linear-gradient(180deg, #ffffff 0%, #ffffff 35%, #0a0a0a 100%);
-    }
-    .lb__bg {
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        background:
-            radial-gradient(
-                ellipse 40% 30% at 50% 30%,
-                rgba(167, 245, 200, 0.15) 0%,
-                transparent 70%
-            ),
-            radial-gradient(
-                ellipse 60% 35% at 50% 95%,
-                rgba(46, 143, 110, 0.18) 0%,
-                transparent 75%
-            );
+        height: 1px;        /* collapsada */
+        overflow: visible;  /* permite SVG extenderse */
+        z-index: 20;
         pointer-events: none;
     }
     .lb__svg {
         position: absolute;
-        inset: 0;
-        z-index: 2;
+        /* Extendido vertical: el blob arranca 45vh arriba (dentro de
+           LineasEstrella) y se proyecta 45vh abajo (dentro de
+           Complementos Ideales). Total 90vh atravesando el border
+           invisible entre las dos secciones. */
+        top: -45vh;
+        left: 50%;
+        transform: translateX(-50%);
+        width: clamp(280px, 38vw, 540px);
+        height: 90vh;
         display: block;
-        width: 100%;
-        height: 100%;
         pointer-events: none;
+        overflow: visible;
     }
     .lb__blob {
+        opacity: 0.96;
         will-change: transform;
-        opacity: 0.92;
+        /* Sin mix-blend-mode: el blob conserva sus colores propios.
+           El gradient interno (mint top → dark bottom) ya hace la
+           transición cromática natural sobre los bg de cada section
+           (blanco arriba, dark abajo) — la zona dark del blob se
+           "funde" con el bg dark de ComplementosIdeales sin necesidad
+           de blend mode. */
     }
     .lb__particle {
         opacity: 0;
         will-change: transform, opacity;
-        filter: drop-shadow(0 0 4px rgba(167, 245, 200, 0.85));
+        filter: drop-shadow(0 0 5px rgba(167, 245, 200, 0.85));
     }
     .lb__flow-path {
         visibility: hidden;
     }
 
-    .lb__label {
-        position: absolute;
-        top: clamp(28px, 5vh, 60px);
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 3;
-        margin: 0;
-        font-family: var(--f-text, sans-serif);
-        font-size: clamp(0.62rem, 0.78vw, 0.78rem);
-        font-weight: 700;
-        letter-spacing: 0.36em;
-        text-transform: uppercase;
-        color: rgba(15, 53, 39, 0.62);
-        opacity: 0;
-        will-change: opacity, transform;
-    }
-    .lb__label-inner {
-        display: inline-block;
-    }
-
     @media (prefers-reduced-motion: reduce) {
-        .lb__blob { opacity: 0.7 !important; }
+        .lb__blob { opacity: 0.6 !important; }
         .lb__particle { opacity: 0 !important; }
-        .lb__label { opacity: 0.65 !important; }
     }
 
     @media (max-width: 700px) {
-        .lb { min-height: 50vh; }
+        .lb__svg {
+            width: clamp(160px, 50vw, 280px);
+            height: 70vh;
+            top: -30vh;
+            bottom: -40vh;
+        }
     }
 </style>

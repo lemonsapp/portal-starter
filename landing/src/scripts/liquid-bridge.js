@@ -1,34 +1,22 @@
 /* =====================================================================
-   LiquidBridge — Ink Pour Morphing (nuevo 2026-05-20).
+   LiquidBridge — v2 (2026-05-20): blob chorreando cruzando secciones.
 
-   Transición líquida entre <LineasEstrella /> y <ComplementosIdeales />.
-   Diferente al OrganicConnector (que es cascada de drops): este es un
-   blob orgánico continuo que morpha entre 4 keyframes mientras drena
-   hacia abajo, con partículas interiores que fluyen por un path
-   sinuoso (MotionPath) y feTurbulence FUERTE animada para distortion
-   acuosa.
-
-   Path morphing manual: animamos el `d` del path con `attr` tween
-   entre keyframes con la MISMA estructura de comandos (M, C×4, Z)
-   para que la interpolación lineal funcione sin MorphSVG plugin.
+   Cambios vs v1:
+     • Blob alargado vertical (1000 unidades de alto, sin section
+       container que lo recorte). Keyframes nuevos matcheando el SVG
+       actualizado.
+     • Loops continuos (no scroll-bound) — el chorreo es siempre
+       visible, no solo en transición de scroll.
+     • feTurbulence baseFrequency yoyo loop (idle).
+     • Particles flow loop continuo siguiendo flowPath sinuoso.
 
    Skills aplicadas:
      • gsap-plugins MotionPathPlugin       → particles flow interior
-     • gsap-plugins CustomEase ("liquid")  → ease orgánico
-     • gsap-scrolltrigger scrub            → master timeline scroll-linked
-     • gsap-timeline                       → 4 phases: emerge → morph
-                                              → flow → dissolve
+     • gsap-plugins CustomEase ("liquid")  → blob morph ease orgánico
+     • gsap-timeline (per-particle loop)   → flow continuo
      • gsap-utils.random + toArray         → naturalismo particles
      • gsap-core matchMedia                → reduced-motion + mobile
      • gsap-performance                    → attr + transforms only
-
-   Phases (timeline labels):
-     0.00 .. 0.25 → blob emerge (KF1 → KF2)
-     0.20 .. 0.55 → blob expand & morph (KF2 → KF3)
-     0.30 .. 0.85 → particles flow inside (MotionPath stagger)
-     0.50 .. 0.90 → blob drain + morph (KF3 → KF4)
-     0.10 .. 0.35 → label fade-in
-   Plus: turbulence baseFrequency yoyo loop idle.
    ===================================================================== */
 
 import {
@@ -37,21 +25,15 @@ import {
 } from "./lib/registerGsap.js";
 
 // ============ KEYFRAMES del blob ============
-// Cada keyframe tiene la MISMA estructura: M + 4 cubic curves + Z.
-// 8 puntos de control por curva (cada C tiene 6 numbers).
-// Para que el interpolation de `d` funcione cleanly: misma cantidad
-// de comandos en mismo orden, solo cambian los valores numéricos.
-//
-// Conceptualmente:
-//   KF1 = blob comprimido pequeño top center (entry)
-//   KF2 = blob expanded middle, leve elongación
-//   KF3 = blob full body, formación ovalada drenando
-//   KF4 = blob disolviendo bottom, alargado vertical
+// 4 keyframes con MISMA estructura (M + 5 C + Z) para interpolation
+// lineal del `d`. Cada KF describe un blob alargado vertical 0-1000
+// con leve waviness orgánica. La transición entre KFs hace que el
+// blob "respire" continuamente mientras drena.
 const BLOB_KEYFRAMES = {
-    KF1: "M 500 -40 C 480 -20, 460 0, 460 30 C 460 60, 480 80, 500 90 C 520 80, 540 60, 540 30 C 540 0, 520 -20, 500 -40 Z",
-    KF2: "M 500 20 C 440 60, 380 140, 400 230 C 420 320, 480 380, 500 410 C 520 380, 580 320, 600 230 C 620 140, 560 60, 500 20 Z",
-    KF3: "M 500 80 C 380 180, 320 300, 360 440 C 400 560, 480 620, 500 660 C 520 620, 600 560, 640 440 C 680 300, 620 180, 500 80 Z",
-    KF4: "M 500 180 C 420 320, 380 460, 440 600 C 480 720, 500 780, 500 840 C 500 780, 520 720, 560 600 C 620 460, 580 320, 500 180 Z",
+    KF1: "M 500 0 C 470 100, 460 220, 480 360 C 500 500, 490 640, 510 780 C 520 880, 500 950, 500 1000 C 500 950, 480 880, 490 780 C 510 640, 500 500, 520 360 C 540 220, 530 100, 500 0 Z",
+    KF2: "M 500 0 C 440 120, 480 240, 460 380 C 440 520, 510 660, 530 800 C 540 900, 510 960, 500 1000 C 490 960, 460 900, 470 800 C 490 660, 560 520, 540 380 C 520 240, 560 120, 500 0 Z",
+    KF3: "M 500 0 C 480 140, 440 260, 470 400 C 500 540, 470 680, 490 820 C 500 910, 520 970, 500 1000 C 480 970, 500 910, 510 820 C 530 680, 500 540, 530 400 C 560 260, 520 140, 500 0 Z",
+    KF4: "M 500 0 C 460 110, 480 250, 460 390 C 440 530, 520 670, 540 810 C 550 900, 520 960, 500 1000 C 480 960, 450 900, 460 810 C 480 670, 560 530, 540 390 C 520 250, 540 110, 500 0 Z",
 };
 
 const root = document.querySelector("[data-liquid-bridge]");
@@ -61,10 +43,9 @@ if (root) {
     const particles = Array.from(root.querySelectorAll("[data-lb-particle]"));
     const flowPath  = root.querySelector("[data-lb-flow-path]");
     const turb      = root.querySelector("[data-lb-turb]");
-    const label     = root.querySelector("[data-lb-label]");
 
     if (!blob || !flowPath) {
-        // bail safely
+        // bail
     }
 
     mm.add(BREAKPOINTS, (ctx) => {
@@ -73,18 +54,12 @@ if (root) {
         // ====== Estados iniciales ======
         gsap.set(blob, { attr: { d: BLOB_KEYFRAMES.KF1 } });
         gsap.set(particles, { opacity: 0, scale: 0.4 });
-        if (label) gsap.set(label, { opacity: 0, y: -8 });
 
         if (reduceMotion) {
-            gsap.set(blob, { attr: { d: BLOB_KEYFRAMES.KF3 }, opacity: 0.5 });
-            if (label) gsap.set(label, { opacity: 0.5, y: 0 });
             return;
         }
 
-        // ====== TURBULENCE IDLE ======
-        // baseFrequency oscila → distorsión acuosa continua sutil.
-        // No scroll-bound — loop infinito. Skill: gsap-plugins (animar
-        // SVG attrs continuos).
+        // ====== TURBULENCE IDLE — distortion acuosa continua ======
         if (turb) {
             gsap.to(turb, {
                 attr: { baseFrequency: "0.030 0.045" },
@@ -94,98 +69,52 @@ if (root) {
             });
         }
 
-        // ====== MASTER TIMELINE scroll-scrubbed ======
-        const tl = gsap.timeline({
-            defaults: { ease: "power2.inOut" },
-            scrollTrigger: {
-                trigger: root,
-                start: "top bottom",
-                end:   "bottom top",
-                scrub: isMobile ? 0.6 : 1.0,
-                invalidateOnRefresh: true,
-            },
-        });
+        // ====== BLOB MORPH LOOP continuo ======
+        // Cicla entre los 4 keyframes — KF1 → KF2 → KF3 → KF4 → KF1.
+        // No scroll-bound: el blob respira continuamente.
+        // Skill: gsap-timeline + animar SVG attr `d`.
+        const morphTl = gsap.timeline({ repeat: -1 });
+        morphTl.to(blob, { attr: { d: BLOB_KEYFRAMES.KF2 }, duration: 3.2, ease: "sine.inOut" })
+               .to(blob, { attr: { d: BLOB_KEYFRAMES.KF3 }, duration: 3.5, ease: "sine.inOut" })
+               .to(blob, { attr: { d: BLOB_KEYFRAMES.KF4 }, duration: 3.0, ease: "sine.inOut" })
+               .to(blob, { attr: { d: BLOB_KEYFRAMES.KF1 }, duration: 3.4, ease: "sine.inOut" });
 
-        // PHASE 1 (0.00 → 0.25): blob emerge — KF1 → KF2
-        // Pequeño blob aparece del top y crece descendiendo. Ease custom
-        // "liquid" registrado en registerGsap = anticipation + overshoot.
-        tl.to(blob, {
-            attr: { d: BLOB_KEYFRAMES.KF2 },
-            duration: 0.25,
-            ease: "liquid",
-        }, 0);
-
-        // PHASE 2 (0.20 → 0.55): expand + morph — KF2 → KF3
-        // Blob alcanza tamaño completo, forma ovalada drenando.
-        tl.to(blob, {
-            attr: { d: BLOB_KEYFRAMES.KF3 },
-            duration: 0.35,
-            ease: "power2.inOut",
-        }, 0.20);
-
-        // PHASE 3 (0.30 → 0.85): particles flow interior con MotionPath.
-        // Cada particle sigue el flowPath con timing único + opacity sine
-        // para shimmer. autoRotate false (las particles son circles, no
-        // necesitan orientación). Skill: gsap-plugins MotionPathPlugin.
+        // ====== PARTICLES FLOW LOOP continuo ======
+        // Cada particle tiene timeline infinito: fade-in → flow down
+        // via MotionPath → fade-out → restart con delay random.
+        // Naturalismo: stagger inicial + duración variable per particle.
+        // Skill: gsap-plugins MotionPathPlugin + gsap-utils.random.
         particles.forEach((p, i) => {
-            const t0 = 0.30 + (i * 0.025) + gsap.utils.random(-0.02, 0.02);
-            const dur = gsap.utils.random(0.42, 0.62);
-            const peakOpacity = gsap.utils.random(0.65, 0.95);
+            const flowDur   = gsap.utils.random(2.4, 4.2);
+            const startDelay = gsap.utils.random(0, 5);
+            const peakOpacity = gsap.utils.random(0.55, 0.95);
+            const startPct = gsap.utils.random(0, 0.15);
+            const endPct   = gsap.utils.random(0.85, 1);
 
-            // Fade-in
-            tl.to(p, { opacity: peakOpacity, scale: 1, duration: 0.04 }, t0);
+            const tl = gsap.timeline({
+                repeat: -1,
+                delay: startDelay,
+                repeatDelay: gsap.utils.random(0.2, 1.5),
+            });
 
-            // Flow descent siguiendo flowPath — start/end aleatorios
-            // para que cada particle recorra una porción del path
-            // (algunas largas, otras cortas)
-            const start = gsap.utils.random(0, 0.2);
-            const end   = gsap.utils.random(0.78, 1);
+            tl.set(p, { opacity: 0, scale: 0.4 });
+            tl.to(p, { opacity: peakOpacity, scale: 1, duration: 0.15 });
             tl.to(p, {
                 motionPath: {
                     path: flowPath,
                     align: flowPath,
                     alignOrigin: [0.5, 0.5],
                     autoRotate: false,
-                    start,
-                    end,
+                    start: startPct,
+                    end: endPct,
                 },
-                duration: dur,
+                duration: flowDur,
                 ease: "power1.in",  // gravity-ish
-            }, t0);
-
-            // Fade-out al final del recorrido
-            tl.to(p, {
-                opacity: 0,
-                scale: 0.4,
-                duration: 0.06,
-            }, t0 + dur - 0.06);
+            }, "-=0.08");
+            tl.to(p, { opacity: 0, scale: 0.4, duration: 0.15 }, "-=0.1");
         });
 
-        // PHASE 4 (0.50 → 0.90): drain + morph final — KF3 → KF4
-        // El blob se alarga hacia abajo, dissolviendo bajo el mask
-        // gradient (la mask hace fade-to-black automático al cruzar
-        // el 75% vertical). Ease "power3.in" → gravity drain.
-        tl.to(blob, {
-            attr: { d: BLOB_KEYFRAMES.KF4 },
-            duration: 0.40,
-            ease: "power3.in",
-        }, 0.50);
-
-        // ====== LABEL FADE (independent toggleActions) ======
-        if (label) {
-            gsap.to(label, {
-                opacity: 0.85, y: 0,
-                duration: 0.6, ease: "power2.out",
-                scrollTrigger: {
-                    trigger: root,
-                    start: "top 80%",
-                    end:   "top 30%",
-                    toggleActions: "play none none reverse",
-                },
-            });
-        }
-
-        // ====== RESIZE handler ======
+        // ====== Cleanup ======
         const onResize = () => ScrollTrigger.refresh();
         window.addEventListener("resize", onResize);
         return () => window.removeEventListener("resize", onResize);
