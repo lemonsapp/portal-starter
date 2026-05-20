@@ -1,47 +1,46 @@
 ---
-// OrganicConnector — bridge GSAP exótico entre HumanSupport (asesoramiento)
-// y ProductFloatSlider (los 5 productos).
+// OrganicConnector — REDISEÑO 2026-05-20: "Fluid Drops Cascade"
 //
-// CONCEPTO: el asesoramiento humano es la "raíz" que nutre los productos.
-// Mostramos un sistema de raíces que crece scroll-driven desde el fondo
-// del Asesoramiento hacia el slider, ramificándose en 5 puntas — una por
-// producto. Cada rama lleva una hoja que sprouts al revelarse, y por una
-// de las raíces principales rueda una gota de fertilizante verde.
+// Cliente pidió reemplazar la metáfora de raíces por gotas de agua/
+// fertilizante que chorrean hacia abajo, conectando HumanSupport
+// (asesoramiento) con LineasEstrella (productos estrella). Antes:
+// sistema de raíces growing con DrawSVG. Ahora: cascada líquida
+// realista con física.
 //
-// Skills:
-//   • gsap-core               → timeline + matchMedia (reduced-motion)
-//   • gsap-scrolltrigger      → scrub linkeado al scroll por la sección
-//   • gsap-utils              → toArray, random para naturalismo
-//   • gsap-plugins (stroke)   → emulamos DrawSVG con stroke-dasharray
-//                                (no usamos DrawSVG plugin → license)
-//   • frontend-design         → SVG con goo filter para "liquid roots"
-//                                + paleta brand verde Holistic
-//   • accessibility           → aria-hidden, prefers-reduced-motion
+// CONCEPTO:
+//   "El asesoramiento humano se condensa en fertilizante que
+//    nutre los productos estrella" — visualmente: gotas que caen
+//    del header, se acumulan en streams verticales, impactan con
+//    splash y ondas que se difunden hacia el siguiente bloque.
 //
-// Estructura SVG:
-//   • viewBox 1000x800, preserveAspectRatio para que escale
-//   • <defs>: goo filter + gradient para drops
-//   • <g class="oc__roots">: 1 main trunk + 4 sub-branches (5 puntas total)
-//   • <g class="oc__leaves">: hojas en los puntos de ramificación
-//   • <g class="oc__drops">: gotas de fertilizante que ruedan
-//   • <g class="oc__pollen">: motas/pollen drifting upward (idle CSS anim)
+// Técnicas (skills GSAP aplicadas):
+//   • gsap-plugins DrawSVGPlugin       → streams revelando stroke
+//   • gsap-plugins MotionPathPlugin    → drops siguiendo curvas
+//   • gsap-plugins Physics2DPlugin     → splash particles con gravity
+//   • gsap-plugins CustomBounce        → squash & stretch al impacto
+//   • gsap-plugins CustomEase ("liquid") → anticipation + overshoot
+//   • gsap-scrolltrigger scrub          → master timeline scroll-linked
+//   • gsap-timeline                     → labels secuenciales fase 1-5
+//   • gsap-utils.random + stagger       → naturalismo
+//   • gsap-core matchMedia              → reduced-motion + mobile tuning
+//   • gsap-performance                  → transforms only + will-change
 //
-// El bg de la sección es un gradient de cream (final HumanSupport)
-// → rose-cream (intro slider BIO), creando continuidad cromática.
-
-const BRANCH_TIPS = 5;  // 1 por producto del slider
+// Visual elements:
+//   1. Seed top center (anchor con tendril del HumanSupport)
+//   2. 5 streams verticales SVG paths con goo filter (líquido feel)
+//   3. Distortion via feTurbulence + feDisplacementMap (animated)
+//   4. 8 drops cayendo siguiendo MotionPath de cada stream
+//   5. Splash particles al impactar (8 partículas por stream con
+//      Physics2D velocity/angle/gravity, fade)
+//   6. Ripples expandiéndose en el bottom (ondas de impacto)
+//   7. Mist particles drifting (atmosférico, CSS-only idle)
 ---
 <section
     class="oc"
     data-organic-connector
-    aria-label="Conexión visual asesoramiento → productos"
+    aria-label="Cascada de fertilizante hacia los productos"
 >
-    <!-- BG gradient — transición de fondo del Asesoramiento al slider -->
     <div class="oc__bg" aria-hidden="true"></div>
-
-    <!-- Caption "EL SISTEMA NUTRE" removido (14/05): la metáfora ahora
-         la cuenta el tendril del HumanSupport — la raíz "brota" del
-         botón "Hablar con Holistic", no necesita label tipográfico. -->
 
     <!-- SVG canvas — full viewport, vertical -->
     <svg
@@ -52,51 +51,72 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
         data-oc-svg
     >
         <defs>
-            <!-- Goo filter para union líquido entre paths gruesos.
-                 Solo aplicamos donde necesitamos "liquid" feel (drops). -->
-            <filter id="oc-goo" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+            <!-- Goo filter: blur + alpha threshold para que drops y
+                 streams se "fundan" como mercurio. Strength 18 = drops
+                 cercanos se mergean, drops lejanos se mantienen
+                 separados. -->
+            <filter id="oc-goo" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
                 <feColorMatrix in="blur" mode="matrix" values="
                     1 0 0 0 0
                     0 1 0 0 0
                     0 0 1 0 0
-                    0 0 0 22 -11
+                    0 0 0 18 -7
                 " result="goo" />
                 <feComposite in="SourceGraphic" in2="goo" operator="atop" />
             </filter>
 
-            <!-- Gradient para los drops de fertilizante (verde holistic mint) -->
+            <!-- Turbulence distortion: simula movimiento orgánico líquido.
+                 La baseFrequency se anima con GSAP para shimmer continuo.
+                 displacement scale = cuánto distorsiona (12 = sutil pero
+                 visible).  -->
+            <filter id="oc-turb" x="-10%" y="-10%" width="120%" height="120%">
+                <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.012 0.022"
+                    numOctaves="2"
+                    seed="3"
+                    result="turb"
+                    data-oc-turb
+                />
+                <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="turb"
+                    scale="14"
+                    xChannelSelector="R"
+                    yChannelSelector="G"
+                />
+            </filter>
+
+            <!-- Gradient para los drops: cabeza blanca brillante,
+                 cuerpo mint, cola verde profundo. -->
             <radialGradient id="oc-drop-grad" cx="35%" cy="30%" r="65%">
-                <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.95"/>
-                <stop offset="40%" stop-color="#A7F5C8" stop-opacity="0.85"/>
+                <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.95"/>
+                <stop offset="35%"  stop-color="#A7F5C8" stop-opacity="0.92"/>
                 <stop offset="100%" stop-color="#2E8F6E" stop-opacity="1"/>
             </radialGradient>
 
-            <!-- Linear gradient para las raíces. Transición CROMÁTICA del
-                 verde "asesoramiento" (top) al celeste pastel del primer
-                 panel del slider (LÍNEA PRO #9ad8f5) en el bottom — la raíz
-                 conecta visualmente el verde orgánico con el color del
-                 primer producto. userSpaceOnUse para que las 5 raíces
-                 transicionen contra la MISMA escala vertical (no cada
-                 una contra su bounding box) → el bottom de cada raíz
-                 llega exactamente al mismo celeste. -->
-            <linearGradient id="oc-root-grad"
+            <!-- Gradient para streams verticales: mint translucent top
+                 → mint sólido bottom (la columna se "carga" hacia abajo). -->
+            <linearGradient id="oc-stream-grad"
                 gradientUnits="userSpaceOnUse"
                 x1="500" y1="0" x2="500" y2="1200">
-                <stop offset="0%"   stop-color="#2E8F6E" stop-opacity="0.9"/>
-                <stop offset="30%"  stop-color="#1f6b50" stop-opacity="1"/>
-                <stop offset="55%"  stop-color="#3f8d99" stop-opacity="1"/>
-                <stop offset="80%"  stop-color="#7ac1e0" stop-opacity="1"/>
-                <stop offset="100%" stop-color="#9ad8f5" stop-opacity="1"/>
+                <stop offset="0%"   stop-color="#A7F5C8" stop-opacity="0.55"/>
+                <stop offset="25%"  stop-color="#7ed4a4" stop-opacity="0.85"/>
+                <stop offset="65%"  stop-color="#2E8F6E" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#1f6b50" stop-opacity="1"/>
             </linearGradient>
+
+            <!-- Ripple ring gradient: anillo brillante al center, fade
+                 hacia afuera. Usado por las ondas de impacto. -->
+            <radialGradient id="oc-ripple-grad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"   stop-color="#A7F5C8" stop-opacity="0"/>
+                <stop offset="85%"  stop-color="#A7F5C8" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#2E8F6E" stop-opacity="0"/>
+            </radialGradient>
         </defs>
 
-        <!-- ============ ORIGEN — "germinación" en el top center ============
-             Pequeño dot que matchea EXACTAMENTE el tip del tendril del
-             HumanSupport (mismo color #A7F5C8 + halo verde mint). Visualmente
-             el tendril del botón "Hablar con Holistic" llega hasta acá y
-             desde acá brota la raíz al scrollear. Static — no se anima
-             (queda visible siempre, como punto de anclaje). -->
+        <!-- ====== SEED: punto de germinación en el top ====== -->
         <circle
             class="oc__seed"
             data-oc-seed
@@ -104,119 +124,97 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
             fill="#A7F5C8"
         />
 
-        <!-- ============ RAÍCES (root system) ============
-             Paths estilo "growing roots" — un main trunk vertical + 4 sub-branches.
-             Cada path se anima con stroke-dasharray para emular DrawSVG.
-             stroke-linecap=round → ends orgánicos, stroke-width variable. -->
-        <g class="oc__roots" stroke="url(#oc-root-grad)" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <!-- Main trunk (centro, baja recta con leve waviness) -->
-            <path
-                class="oc__root oc__root--main"
-                data-oc-root
-                data-tip="0"
-                d="M 500 0 C 502 120, 498 240, 504 360 C 510 480, 494 600, 500 720 C 506 840, 498 960, 500 1080 L 500 1200"
-                stroke-width="4.5"
-            />
-            <!-- Sub-branch 1 (izquierda lejana) -->
-            <path
-                class="oc__root oc__root--sub"
-                data-oc-root
-                data-tip="1"
-                d="M 500 280 C 460 320, 380 360, 290 410 C 200 460, 150 540, 130 660 C 115 760, 140 880, 160 1000 C 175 1080, 165 1140, 170 1200"
-                stroke-width="3"
-            />
-            <!-- Sub-branch 2 (izquierda cercana) -->
-            <path
-                class="oc__root oc__root--sub"
-                data-oc-root
-                data-tip="2"
-                d="M 500 420 C 470 460, 420 510, 380 580 C 340 660, 320 760, 330 870 C 340 970, 355 1080, 360 1200"
-                stroke-width="2.8"
-            />
-            <!-- Sub-branch 3 (derecha cercana) -->
-            <path
-                class="oc__root oc__root--sub"
-                data-oc-root
-                data-tip="3"
-                d="M 500 380 C 540 430, 600 490, 650 580 C 700 670, 720 780, 700 890 C 680 990, 660 1090, 660 1200"
-                stroke-width="3.2"
-            />
-            <!-- Sub-branch 4 (derecha lejana) -->
-            <path
-                class="oc__root oc__root--sub"
-                data-oc-root
-                data-tip="4"
-                d="M 500 240 C 560 290, 660 350, 760 430 C 850 510, 890 620, 880 740 C 870 870, 860 1010, 850 1200"
-                stroke-width="3"
-            />
+        <!-- ====== STREAMS: 5 columnas líquidas verticales ======
+             Cada stream es un path vertical con leve waviness orgánica.
+             Goo filter unifica drops cercanos al stream. Stroke se
+             revela con DrawSVG según scroll progress + se aplica
+             distorsión turbulence (selectivamente, no todos a la vez
+             para performance). -->
+        <g class="oc__streams" filter="url(#oc-goo)"
+           stroke="url(#oc-stream-grad)" fill="none"
+           stroke-linecap="round" stroke-linejoin="round">
+            <path class="oc__stream" data-oc-stream data-i="0"
+                d="M 500 0 C 502 200, 498 400, 504 600 C 510 800, 494 1000, 500 1200"
+                stroke-width="6" />
+            <path class="oc__stream" data-oc-stream data-i="1"
+                d="M 250 60 C 246 240, 256 430, 250 620 C 244 810, 252 1000, 248 1200"
+                stroke-width="4.5" />
+            <path class="oc__stream" data-oc-stream data-i="2"
+                d="M 380 30 C 384 220, 374 410, 380 600 C 386 790, 376 990, 380 1200"
+                stroke-width="5" />
+            <path class="oc__stream" data-oc-stream data-i="3"
+                d="M 620 30 C 616 220, 626 410, 620 600 C 614 790, 624 990, 620 1200"
+                stroke-width="5" />
+            <path class="oc__stream" data-oc-stream data-i="4"
+                d="M 750 60 C 754 240, 744 430, 750 620 C 756 810, 748 1000, 752 1200"
+                stroke-width="4.5" />
         </g>
 
-        <!-- ============ HOJAS (leaves) — sprouts en bifurcaciones ============
-             Pequeñas hojas SVG que pop al revelarse. Posicionadas a mano
-             en puntos de ramificación de las raíces. Cada una usa
-             scale 0→1 + rotate randomized. -->
-        <g class="oc__leaves" data-oc-leaves>
-            <!-- Hoja 1 — izq alta -->
-            <g class="oc__leaf" data-oc-leaf transform="translate(395 332) rotate(-25)">
-                <path d="M 0 0 C -8 -12, -16 -20, -22 -12 C -28 -4, -22 12, -12 18 C -2 24, 8 14, 0 0 Z"
-                    fill="#3DA86E" opacity="0.92"/>
-                <path d="M 0 0 L -16 -2" stroke="#1f6b50" stroke-width="0.8" fill="none"/>
-            </g>
-            <!-- Hoja 2 — der alta -->
-            <g class="oc__leaf" data-oc-leaf transform="translate(610 320) rotate(28)">
-                <path d="M 0 0 C 8 -12, 16 -20, 22 -12 C 28 -4, 22 12, 12 18 C 2 24, -8 14, 0 0 Z"
-                    fill="#2E8F6E" opacity="0.95"/>
-                <path d="M 0 0 L 16 -2" stroke="#0f3527" stroke-width="0.8" fill="none"/>
-            </g>
-            <!-- Hoja 3 — izq media -->
-            <g class="oc__leaf" data-oc-leaf transform="translate(330 555) rotate(-15)">
-                <path d="M 0 0 C -10 -15, -20 -25, -28 -15 C -36 -5, -28 15, -15 22 C -2 29, 10 18, 0 0 Z"
-                    fill="#3DA86E" opacity="0.85"/>
-                <path d="M 0 0 L -20 -3" stroke="#1f6b50" stroke-width="0.8" fill="none"/>
-            </g>
-            <!-- Hoja 4 — der media -->
-            <g class="oc__leaf" data-oc-leaf transform="translate(675 575) rotate(20)">
-                <path d="M 0 0 C 10 -15, 20 -25, 28 -15 C 36 -5, 28 15, 15 22 C 2 29, -10 18, 0 0 Z"
-                    fill="#2E8F6E" opacity="0.95"/>
-                <path d="M 0 0 L 20 -3" stroke="#0f3527" stroke-width="0.8" fill="none"/>
-            </g>
-            <!-- Hoja 5 — centro baja, más grande -->
-            <g class="oc__leaf" data-oc-leaf transform="translate(515 800) rotate(8)">
-                <path d="M 0 0 C 12 -18, 24 -28, 32 -16 C 40 -4, 28 18, 14 26 C 0 34, -14 18, 0 0 Z"
-                    fill="#3DA86E" opacity="0.95"/>
-                <path d="M 0 0 L 24 -4" stroke="#1f6b50" stroke-width="1" fill="none"/>
-            </g>
-            <!-- Hojas chiquitas para densidad -->
-            <circle class="oc__leaf oc__leaf--bud" data-oc-leaf cx="155" cy="720" r="4" fill="#A7F5C8" opacity="0.8"/>
-            <circle class="oc__leaf oc__leaf--bud" data-oc-leaf cx="345" cy="870" r="5" fill="#A7F5C8" opacity="0.7"/>
-            <circle class="oc__leaf oc__leaf--bud" data-oc-leaf cx="685" cy="850" r="4.5" fill="#A7F5C8" opacity="0.78"/>
-            <circle class="oc__leaf oc__leaf--bud" data-oc-leaf cx="855" cy="960" r="4" fill="#A7F5C8" opacity="0.72"/>
-        </g>
-
-        <!-- ============ GOTAS de fertilizante — rolling down ============
-             3 drops rodando por distintas ramas; scroll-driven motionPath
-             emulado via translate sobre el path. -->
+        <!-- ====== DROPS: gotas cayendo por los streams ======
+             Cada drop es un ellipse (forma de gota — más alto que ancho).
+             MotionPath les hace seguir su stream con autoRotate para
+             alinear la "cola" con la trayectoria. Ease "power3.in" da
+             aceleración tipo gravedad. -->
         <g class="oc__drops" data-oc-drops filter="url(#oc-goo)">
-            <circle class="oc__drop" data-oc-drop data-path-target="0" r="9" fill="url(#oc-drop-grad)" />
-            <circle class="oc__drop" data-oc-drop data-path-target="3" r="7" fill="url(#oc-drop-grad)" />
-            <circle class="oc__drop" data-oc-drop data-path-target="4" r="6" fill="url(#oc-drop-grad)" />
+            <ellipse class="oc__drop" data-oc-drop data-stream="0" rx="9"  ry="13" fill="url(#oc-drop-grad)"/>
+            <ellipse class="oc__drop" data-oc-drop data-stream="0" rx="7"  ry="11" fill="url(#oc-drop-grad)"/>
+            <ellipse class="oc__drop" data-oc-drop data-stream="1" rx="6"  ry="9"  fill="url(#oc-drop-grad)"/>
+            <ellipse class="oc__drop" data-oc-drop data-stream="2" rx="7"  ry="11" fill="url(#oc-drop-grad)"/>
+            <ellipse class="oc__drop" data-oc-drop data-stream="3" rx="8"  ry="12" fill="url(#oc-drop-grad)"/>
+            <ellipse class="oc__drop" data-oc-drop data-stream="3" rx="6"  ry="9"  fill="url(#oc-drop-grad)"/>
+            <ellipse class="oc__drop" data-oc-drop data-stream="4" rx="7"  ry="10" fill="url(#oc-drop-grad)"/>
+            <ellipse class="oc__drop" data-oc-drop data-stream="2" rx="5"  ry="8"  fill="url(#oc-drop-grad)"/>
         </g>
 
-        <!-- ============ PUNTAS — tip glow al final de cada raíz ============
-             Cuando la raíz termina de dibujarse, su tip pulsa con halo. -->
-        <g class="oc__tips" data-oc-tips>
-            <circle class="oc__tip" data-oc-tip data-tip="0" cx="500" cy="1180" r="7"/>
-            <circle class="oc__tip" data-oc-tip data-tip="1" cx="170" cy="1180" r="6"/>
-            <circle class="oc__tip" data-oc-tip data-tip="2" cx="360" cy="1180" r="6.5"/>
-            <circle class="oc__tip" data-oc-tip data-tip="3" cx="660" cy="1180" r="6.5"/>
-            <circle class="oc__tip" data-oc-tip data-tip="4" cx="850" cy="1180" r="6"/>
+        <!-- ====== SPLASH PARTICLES: spawns en el bottom de cada stream ======
+             8 partículas por stream — small circles que vuelan con
+             Physics2D (velocity + angle + gravity) al impactar. Aleatorios
+             por instance. Inicialmente invisibles, fade-in al activar. -->
+        <g class="oc__splashes" data-oc-splashes>
+            {[0,1,2,3,4].map((streamIdx) => (
+                <g class="oc__splash-group" data-oc-splash-group data-stream={streamIdx}>
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <circle
+                            class="oc__splash"
+                            data-oc-splash
+                            data-stream={streamIdx}
+                            data-i={i}
+                            cx={[500, 250, 380, 620, 750][streamIdx]}
+                            cy="1180"
+                            r="3"
+                            fill="url(#oc-drop-grad)"
+                        />
+                    ))}
+                </g>
+            ))}
+        </g>
+
+        <!-- ====== RIPPLES: ondas de impacto en el bottom ======
+             Anillos expansivos que pulsan al final de cada stream.
+             scale 0 → 3, opacity 1 → 0 — efecto "splash ring". -->
+        <g class="oc__ripples" data-oc-ripples>
+            {[0,1,2,3,4].map((streamIdx) => (
+                <circle
+                    class="oc__ripple"
+                    data-oc-ripple
+                    data-stream={streamIdx}
+                    cx={[500, 250, 380, 620, 750][streamIdx]}
+                    cy="1180"
+                    r="18"
+                    fill="none"
+                    stroke="url(#oc-ripple-grad)"
+                    stroke-width="2"
+                />
+            ))}
         </g>
     </svg>
 
-    <!-- POLLEN partículas drifting upward — pure CSS idle (independiente del scroll) -->
-    <div class="oc__pollen" aria-hidden="true">
-        {Array.from({ length: 14 }).map((_, i) => (
-            <span class="oc__pollen-dot" data-i={i} style={`--p-delay: ${(i * 0.6).toFixed(2)}s; --p-x: ${(8 + i * 6.2) % 100}%; --p-size: ${3 + (i % 4)}px; --p-dur: ${(8 + i % 5).toFixed(1)}s;`}></span>
+    <!-- ====== MIST: partículas atmosféricas drifting (CSS idle) ====== -->
+    <div class="oc__mist" aria-hidden="true">
+        {Array.from({ length: 18 }).map((_, i) => (
+            <span class="oc__mist-dot" data-i={i}
+                style={`--m-delay: ${(i * 0.5).toFixed(2)}s; --m-x: ${(6 + i * 5.4) % 100}%; --m-size: ${2 + (i % 4)}px; --m-dur: ${(10 + i % 5).toFixed(1)}s;`}>
+            </span>
         ))}
     </div>
 </section>
@@ -229,22 +227,18 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
     .oc {
         position: relative;
         width: 100%;
-        /* Alto generoso para que la animación tenga scroll-runway.
-           El section es PARTE de la página → flow normal, no pin.
-           El SVG llena la sección via aspect ratio fluido. */
-        min-height: 80vh;
+        min-height: 90vh;
         background:
             linear-gradient(
                 180deg,
-                #f3ead8 0%,    /* fin del HumanSupport bg */
-                #ecede0 45%,   /* puente cream → celeste muy sutil */
-                #dceaf2 80%,   /* celeste pastel intermedio */
-                #e8f4fb 100%   /* intro del primer panel del slider (LÍNEA PRO) */
+                #f3ead8 0%,
+                #ecede0 35%,
+                #dceaf2 75%,
+                #ffffff 100%   /* termina blanco para empatar con LineasEstrella */
             );
         overflow: hidden;
         isolation: isolate;
     }
-
     .oc__bg {
         position: absolute;
         inset: 0;
@@ -256,40 +250,11 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
                 transparent 75%
             ),
             radial-gradient(
-                ellipse 35% 25% at 50% 100%,
-                rgba(154, 216, 245, 0.34) 0%,   /* celeste PRO accent — empata con primer panel */
+                ellipse 40% 25% at 50% 100%,
+                rgba(167, 245, 200, 0.30) 0%,
                 transparent 75%
             );
         pointer-events: none;
-    }
-
-    .oc__caption {
-        position: absolute;
-        top: clamp(28px, 5vh, 60px);
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 5;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        font-family: var(--f-text, sans-serif);
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.34em;
-        text-transform: uppercase;
-        color: rgba(15, 53, 39, 0.65);
-        margin: 0;
-    }
-    .oc__caption-dot {
-        width: 0.45rem; height: 0.45rem;
-        border-radius: 50%;
-        background: #2E8F6E;
-        box-shadow: 0 0 10px rgba(46, 143, 110, 0.55);
-        animation: oc-caption-pulse 2.2s ease-in-out infinite;
-    }
-    @keyframes oc-caption-pulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50%      { transform: scale(0.5); opacity: 0.5; }
     }
 
     .oc__svg {
@@ -302,12 +267,9 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
         margin: 0 auto;
     }
 
-    /* Seed = punto de germinación en el top del trunk. Matchea el tip
-       del tendril del HumanSupport en color y tamaño → visualmente el
-       tendril del botón "se planta" acá y la raíz brota desde este
-       punto al scrollear. Pulse idle suave para mantenerlo "vivo". */
+    /* Seed pulsando — anchor con tendril del HumanSupport */
     .oc__seed {
-        filter: drop-shadow(0 0 12px rgba(167, 245, 200, 0.95));
+        filter: drop-shadow(0 0 14px rgba(167, 245, 200, 0.95));
         transform-box: fill-box;
         transform-origin: center;
         animation: oc-seed-pulse 1.6s ease-in-out infinite;
@@ -317,63 +279,58 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
         50%      { transform: scale(1.25); opacity: 0.85;}
     }
 
-    /* Roots: estado inicial → path COMPLETAMENTE OCULTO via stroke-dashoffset.
-       GSAP scrub anima dashoffset → 0 al scrollear, "dibujando" el path. */
-    .oc__root {
-        stroke-dasharray: var(--root-len, 1500);
-        stroke-dashoffset: var(--root-len, 1500);
-        opacity: 0.92;
+    /* Streams: estado inicial → invisible (DrawSVG anima desde 0%) */
+    .oc__stream {
+        stroke-dasharray: 1500;
+        stroke-dashoffset: 1500;
+        opacity: 0.85;
         will-change: stroke-dashoffset;
     }
-
-    /* Leaves: estado inicial → escala 0, rotate randomized.
-       GSAP scrub anima scale → 1 cuando la rama detrás se reveló. */
-    .oc__leaf {
-        transform-box: fill-box;
-        transform-origin: center;
-        opacity: 0;
-        will-change: transform, opacity;
-    }
-    .oc__leaf--bud {
-        animation: oc-bud-glow 3s ease-in-out infinite;
-        animation-delay: var(--bud-delay, 0s);
-    }
-    @keyframes oc-bud-glow {
-        0%, 100% { transform: scale(1); }
-        50%      { transform: scale(1.3); }
+    /* El stream central usa el turbulence filter para distortion líquida —
+       solo uno para preservar performance (filters SVG son costosos). */
+    .oc__stream[data-i="0"] {
+        filter: url(#oc-turb);
     }
 
-    /* Tips — donde terminan las raíces, halo pulsing una vez revelado. */
-    .oc__tip {
-        fill: #A7F5C8;
-        opacity: 0;
-        filter: drop-shadow(0 0 10px rgba(167, 245, 200, 0.85));
-        will-change: opacity, transform;
-        transform-box: fill-box;
-        transform-origin: center;
-    }
-
-    /* Drops: estado inicial → arriba del path; GSAP anima a "rodar" hacia abajo. */
+    /* Drops: invisibles antes del scroll trigger */
     .oc__drop {
         opacity: 0;
         will-change: transform, opacity;
-        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.25));
+        filter: drop-shadow(0 4px 8px rgba(46, 143, 110, 0.45));
+        transform-box: fill-box;
+        transform-origin: center;
     }
 
-    /* Pollen drifting — CSS-only idle animation */
-    .oc__pollen {
+    /* Splash particles: invisibles, pop al activar */
+    .oc__splash {
+        opacity: 0;
+        will-change: transform, opacity;
+        transform-box: fill-box;
+        transform-origin: center;
+    }
+
+    /* Ripples: invisibles antes del impact */
+    .oc__ripple {
+        opacity: 0;
+        transform-box: fill-box;
+        transform-origin: center;
+        will-change: transform, opacity;
+    }
+
+    /* Mist atmosférico — CSS-only drift */
+    .oc__mist {
         position: absolute;
         inset: 0;
         z-index: 3;
         pointer-events: none;
         overflow: hidden;
     }
-    .oc__pollen-dot {
+    .oc__mist-dot {
         position: absolute;
         bottom: -8%;
-        left: var(--p-x);
-        width: var(--p-size);
-        height: var(--p-size);
+        left: var(--m-x);
+        width: var(--m-size);
+        height: var(--m-size);
         border-radius: 50%;
         background: radial-gradient(
             circle at 35% 30%,
@@ -382,33 +339,27 @@ const BRANCH_TIPS = 5;  // 1 por producto del slider
             transparent 75%
         );
         opacity: 0;
-        filter: blur(0.4px);
-        animation: oc-pollen-drift var(--p-dur, 9s) linear infinite;
-        animation-delay: var(--p-delay, 0s);
+        filter: blur(0.5px);
+        animation: oc-mist-drift var(--m-dur, 10s) linear infinite;
+        animation-delay: var(--m-delay, 0s);
     }
-    @keyframes oc-pollen-drift {
+    @keyframes oc-mist-drift {
         0%   { transform: translate3d(0, 0, 0) scale(0.7); opacity: 0; }
-        10%  { opacity: 0.85; }
-        50%  { transform: translate3d(20px, -55vh, 0) scale(1); opacity: 0.7; }
-        90%  { opacity: 0.3; }
+        10%  { opacity: 0.75; }
+        50%  { transform: translate3d(20px, -55vh, 0) scale(1); opacity: 0.5; }
+        90%  { opacity: 0.2; }
         100% { transform: translate3d(-15px, -110vh, 0) scale(0.5); opacity: 0; }
     }
 
-    /* Reducida — todo en estado final inmediato, sin scrub */
+    /* Reduced motion: estados finales sin scrub */
     @media (prefers-reduced-motion: reduce) {
-        .oc__root  { stroke-dashoffset: 0 !important; }
-        .oc__leaf  { opacity: 1 !important; transform: scale(1) !important; }
-        .oc__tip   { opacity: 1 !important; }
-        .oc__drop  { opacity: 0 !important; }
-        .oc__pollen-dot,
-        .oc__caption-dot,
-        .oc__leaf--bud { animation: none !important; }
+        .oc__stream { stroke-dashoffset: 0 !important; }
+        .oc__drop, .oc__splash, .oc__ripple { opacity: 0 !important; }
+        .oc__mist-dot, .oc__seed { animation: none !important; }
     }
 
-    /* Mobile: SVG más bajo, caption más chica */
     @media (max-width: 700px) {
         .oc { min-height: 70vh; }
         .oc__svg { max-height: 75vh; }
-        .oc__caption { font-size: 0.62rem; }
     }
 </style>

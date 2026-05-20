@@ -1,154 +1,187 @@
 /* =====================================================================
-   OrganicConnector — animaciones GSAP scroll-driven entre HumanSupport
-   y ProductFloatSlider. Sistema de raíces que crece + hojas que sprout
-   + gotas de fertilizante que ruedan. Tema: "el asesoramiento humano
-   nutre los productos, como las raíces nutren la planta".
+   OrganicConnector — Fluid Drops Cascade (rewrite 2026-05-20).
+
+   Reemplaza el sistema de raíces growing por una cascada líquida
+   realista: streams verticales + drops cayendo con gravedad + splash
+   physics al impacto + ripples expansivas + turbulence orgánica.
 
    Skills aplicadas:
-     • gsap-core matchMedia      → reduce-motion + breakpoints
-     • gsap-timeline             → master tl con labels secuenciales
-     • gsap-scrolltrigger        → scrub linkeado al scroll de la sección
-     • gsap-plugins DrawSVGPlugin → draw real de paths (% based, suave)
-     • gsap-plugins MotionPathPlugin → drops rolling along root paths
-     • gsap-utils.toArray, random  → naturalismo en stagger + delays
-     • gsap-performance          → transforms only, will-change scoped
+     • gsap-plugins DrawSVGPlugin         → streams revelando con stroke
+     • gsap-plugins MotionPathPlugin      → drops siguen curvas del stream
+     • gsap-plugins Physics2DPlugin       → splash particles con gravity
+     • gsap-plugins CustomBounce          → squash & stretch al impacto
+     • gsap-plugins CustomEase ("liquid") → anticipation + overshoot
+     • gsap-scrolltrigger scrub           → master timeline scroll-linked
+     • gsap-timeline labels               → phases secuenciales 1-5
+     • gsap-utils.random + stagger        → naturalismo per drop/particle
+     • gsap-core matchMedia               → reduced-motion + mobile
+     • gsap-performance                   → transforms + will-change scoped
 
-   ScrollTrigger setup:
-     • trigger = el section .oc
-     • start = "top bottom" (cuando el top del section entra al viewport)
-     • end   = "bottom top" (cuando termina de salir)
-     • scrub = true (lineal con el scroll)
+   Master phases (timeline labels):
+     0.00 .. 0.55  → streams DrawSVG reveal
+     0.10 .. 0.85  → drops fall (MotionPath + power3.in gravity)
+     0.70 .. 0.95  → splash particles spawn (Physics2D velocity/angle)
+     0.72 .. 0.98  → ripples expand
+   Plus: turbulence baseFrequency idle yoyo loop (no scroll-bound)
    ===================================================================== */
 
 import {
-    gsap, mm, BREAKPOINTS, ScrollTrigger, DrawSVGPlugin, MotionPathPlugin,
+    gsap, mm, BREAKPOINTS, ScrollTrigger,
+    DrawSVGPlugin, MotionPathPlugin, Physics2DPlugin, CustomBounce,
 } from "./lib/registerGsap.js";
 
 const root = document.querySelector("[data-organic-connector]");
 if (root) {
-    const svg     = root.querySelector("[data-oc-svg]");
-    const roots   = Array.from(root.querySelectorAll("[data-oc-root]"));
-    const leaves  = Array.from(root.querySelectorAll("[data-oc-leaf]"));
-    const tips    = Array.from(root.querySelectorAll("[data-oc-tip]"));
-    const drops   = Array.from(root.querySelectorAll("[data-oc-drop]"));
-    const caption = root.querySelector("[data-oc-caption]");
+    const svg       = root.querySelector("[data-oc-svg]");
+    const streams   = Array.from(root.querySelectorAll("[data-oc-stream]"));
+    const drops     = Array.from(root.querySelectorAll("[data-oc-drop]"));
+    const splashes  = Array.from(root.querySelectorAll("[data-oc-splash]"));
+    const ripples   = Array.from(root.querySelectorAll("[data-oc-ripple]"));
+    const turb      = root.querySelector("[data-oc-turb]");
 
     mm.add(BREAKPOINTS, (ctx) => {
         const { reduceMotion, isMobile } = ctx.conditions;
 
-        // ----- Estados iniciales -----
-        // Roots: dibujados al 0% (no se ven)
-        gsap.set(roots, { drawSVG: "0%" });
-        // Leaves: escala 0 con un poco de rotación random + opacity 0
-        leaves.forEach((leaf) => {
-            const rotJitter = gsap.utils.random(-15, 15, 1);
-            gsap.set(leaf, { scale: 0, rotate: `+=${rotJitter}`, opacity: 0 });
-        });
-        // Tips: opacity 0, scale 0 → pulsan al final de cada root
-        gsap.set(tips, { opacity: 0, scale: 0 });
-        // Drops: opacity 0 al inicio del path correspondiente
-        gsap.set(drops, { opacity: 0 });
-        // Caption: fade in suave al entrar al viewport
-        if (caption) gsap.set(caption, { autoAlpha: 0, y: 12 });
+        // ====== Estados iniciales ======
+        gsap.set(streams, { drawSVG: "0%" });
+        gsap.set(drops,    { opacity: 0, scale: 0.6 });
+        gsap.set(splashes, { opacity: 0, scale: 0.5 });
+        gsap.set(ripples,  { opacity: 0, scale: 0.3 });
 
         if (reduceMotion) {
-            gsap.set(roots, { drawSVG: "100%" });
-            gsap.set(leaves, { scale: 1, opacity: 1 });
-            gsap.set(tips,   { opacity: 1, scale: 1 });
-            if (caption) gsap.set(caption, { autoAlpha: 0.8, y: 0 });
+            gsap.set(streams, { drawSVG: "100%" });
             return;
         }
 
-        // ----- Caption entrance — independiente del scrub, fade rápido -----
-        if (caption) {
-            gsap.to(caption, {
-                autoAlpha: 0.85, y: 0, duration: 0.9, ease: "power2.out",
-                scrollTrigger: {
-                    trigger: root,
-                    start: "top 85%",
-                    toggleActions: "play none none reverse",
-                },
+        // ====== TURBULENCE IDLE — distorsión orgánica continua ======
+        // baseFrequency animada con `attr` tween → shimmer suave que
+        // hace los streams "respirar" como líquido. Loop infinito,
+        // independiente del scroll, sutil (frequency oscila en rango chico).
+        // Skill: gsap-plugins (animar SVG attrs).
+        if (turb) {
+            gsap.to(turb, {
+                attr: { baseFrequency: "0.025 0.035" },
+                duration: 4.2,
+                ease: "sine.inOut",
+                yoyo: true, repeat: -1,
             });
         }
 
-        // ----- MASTER timeline scroll-scrubbed -----
+        // ====== MASTER TIMELINE scroll-scrubbed ======
         const tl = gsap.timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
                 trigger: root,
                 start: "top bottom",
                 end:   "bottom top",
-                scrub: isMobile ? 0.6 : 1.0,   // mobile más responsive
+                scrub: isMobile ? 0.6 : 1.0,
                 invalidateOnRefresh: true,
             },
         });
 
-        // PHASE 1 (0 → 0.4): main trunk crece desde top hacia abajo
-        const mainTrunk = roots.find((r) => r.dataset.tip === "0");
-        if (mainTrunk) {
-            tl.to(mainTrunk, { drawSVG: "100%", duration: 0.4 }, 0);
-        }
-
-        // PHASE 2 (0.18 → 0.65): sub-branches divergen escalonadas
-        const subs = roots.filter((r) => r.dataset.tip !== "0");
-        subs.forEach((sub, i) => {
-            tl.to(sub, { drawSVG: "100%", duration: 0.45 }, 0.18 + i * 0.05);
+        // PHASE 1 (0.00 → 0.55): streams reveal — DrawSVG cada uno con
+        // su timing escalonado para que la cascada arranque del center y
+        // los streams laterales sigan.
+        streams.forEach((s, i) => {
+            const start = i === 0 ? 0 : 0.06 + i * 0.04;
+            tl.to(s, { drawSVG: "100%", duration: 0.50 }, start);
         });
 
-        // PHASE 3 (0.32 → 0.75): hojas sprout con stagger natural
-        // Cada leaf scale 0→1 + rotate back a 0 + opacity 0→1
-        leaves.forEach((leaf, i) => {
-            // Para hojas "bud" (small circles) usamos un timing distinto
-            const isBud = leaf.classList.contains("oc__leaf--bud");
-            const delay = 0.32 + i * (isBud ? 0.025 : 0.045);
-            tl.to(leaf, {
-                scale: 1,
-                rotate: "+=0",   // termina sin offset → vuelve al transform original
-                opacity: isBud ? gsap.utils.random(0.6, 0.85) : gsap.utils.random(0.85, 1),
-                duration: isBud ? 0.18 : 0.28,
-                ease: "back.out(1.6)",
-            }, delay);
-        });
-
-        // PHASE 4 (0.55 → 0.9): tips fade-in + scale pulse cuando la raíz
-        // termina de dibujarse. Tip "0" es del main trunk, los otros de subs.
-        tips.forEach((tip, i) => {
-            tl.to(tip, {
-                opacity: 1,
-                scale: 1,
-                duration: 0.18,
-                ease: "back.out(2)",
-            }, 0.55 + i * 0.06);
-        });
-
-        // PHASE 5 (0.4 → 0.95): gotas de fertilizante ruedan por sus paths.
-        // motionPath les hace seguir la curva del root correspondiente.
-        // El target del path se lee de data-path-target.
+        // PHASE 2 (0.10 → 0.85): drops cayendo por sus streams.
+        // MotionPath les hace seguir el path; ease "power3.in" simula
+        // gravity (aceleración cuadrática). Cada drop con timing único
+        // para que la cascada sea desincronizada (realismo).
         drops.forEach((drop, i) => {
-            const pathTarget = drop.dataset.pathTarget;
-            const pathEl = roots.find((r) => r.dataset.tip === pathTarget);
+            const streamIdx = parseInt(drop.dataset.stream, 10);
+            const pathEl = streams[streamIdx];
             if (!pathEl) return;
 
-            // Fade-in del drop al inicio del recorrido
-            tl.to(drop, { opacity: 0.95, duration: 0.05 }, 0.4 + i * 0.08);
-            // Motion path: alignOrigin centra el drop sobre el path
+            const fallDelay = 0.10 + (i * 0.08) + gsap.utils.random(-0.03, 0.03);
+            const fallDur   = gsap.utils.random(0.50, 0.70);
+
+            // Fade-in del drop al inicio del fall
+            tl.to(drop, { opacity: 0.95, scale: 1, duration: 0.06 }, fallDelay);
+
+            // Caída siguiendo MotionPath del stream — autoRotate alinea
+            // la cola del ellipse con la tangente del path (gota sigue
+            // la curva). Skill: gsap-plugins MotionPathPlugin.
             tl.to(drop, {
                 motionPath: {
                     path: pathEl,
                     align: pathEl,
                     alignOrigin: [0.5, 0.5],
-                    autoRotate: false,
+                    autoRotate: true,
                     start: 0,
                     end: 1,
                 },
-                duration: 0.55,
-                ease: "power1.in",   // acelera (gravedad)
-            }, 0.4 + i * 0.08);
-            // Fade-out al final (cuando ya llegó a la punta)
-            tl.to(drop, { opacity: 0, duration: 0.08 }, 0.92 + i * 0.02);
+                duration: fallDur,
+                ease: "power3.in",   // gravity: cuadrática acelerando
+                // Stretch durante la caída — el drop se elonga al acelerar
+                // (skill gsap-performance: transforms only)
+                scaleY: 1.35,
+                scaleX: 0.85,
+            }, fallDelay);
+
+            // Fade-out justo antes del impacto (la "absorción" en el splash)
+            tl.to(drop, {
+                opacity: 0,
+                duration: 0.04,
+            }, fallDelay + fallDur - 0.04);
         });
 
-        // ----- Refresh on resize (DrawSVG lee tamaños computados) -----
+        // PHASE 3 (0.70 → 0.95): splash particles spawn con Physics2D.
+        // Cada partícula recibe velocity + angle + gravity randomized —
+        // simula explosión líquida al impactar. Skill: gsap-plugins
+        // Physics2DPlugin.
+        splashes.forEach((p) => {
+            const streamIdx = parseInt(p.dataset.stream, 10);
+            const i = parseInt(p.dataset.i, 10);
+            const fallEnd = 0.10 + (streamIdx * 0.16) + 0.60;  // approx fin de caída por stream
+            const spawn = fallEnd + gsap.utils.random(-0.02, 0.04);
+
+            // Splash trajectory: arco ±90° desde la vertical
+            // (angle 0° = abajo en Physics2DPlugin; usamos 270° base
+            // y rotamos ± para que vuelen hacia los lados/arriba).
+            // velocity entre 200-380 → distancia variada
+            // gravity 600 → caen rápido después del peak
+            const angleSpread = gsap.utils.random(220, 320);  // 270° = up
+            const velocity    = gsap.utils.random(180, 360);
+
+            // Fade-in instantáneo
+            tl.to(p, { opacity: 0.95, scale: 1, duration: 0.02 }, spawn);
+
+            // Physics fling
+            tl.to(p, {
+                physics2D: {
+                    velocity: velocity,
+                    angle:    angleSpread,
+                    gravity:  650,
+                },
+                duration: 0.42,
+                ease: "none",
+                opacity: 0,
+                scale: 0.4,
+            }, spawn);
+        });
+
+        // PHASE 4 (0.72 → 0.98): ripples expanding rings al impacto.
+        // scale 0.3 → 3.2, opacity 0 → 1 → 0 (peak en el medio).
+        // Cada ripple tiene su timing exacto post-impact del stream.
+        ripples.forEach((ripple, i) => {
+            const fallEnd = 0.10 + (i * 0.16) + 0.62;
+
+            // Opacity peak + scale expand simultáneo. Ease "liquid"
+            // custom = anticipation + overshoot.
+            tl.to(ripple, { opacity: 1, scale: 1, duration: 0.04 }, fallEnd);
+            tl.to(ripple, {
+                scale: 3.4,
+                opacity: 0,
+                duration: 0.38,
+                ease: "power2.out",
+            }, fallEnd);
+        });
+
+        // ====== RESIZE handler ======
         const onResize = () => ScrollTrigger.refresh();
         window.addEventListener("resize", onResize);
         return () => window.removeEventListener("resize", onResize);

@@ -13,9 +13,17 @@ import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { Observer } from "gsap/Observer";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import { Physics2DPlugin } from "gsap/Physics2DPlugin";
+import { CustomBounce } from "gsap/CustomBounce";
 
 if (!window.__holisticGsapRegistered) {
-    gsap.registerPlugin(ScrollTrigger, CustomEase, SplitText, DrawSVGPlugin, Observer, MotionPathPlugin, Physics2DPlugin);
+    gsap.registerPlugin(ScrollTrigger, CustomEase, SplitText, DrawSVGPlugin, Observer, MotionPathPlugin, Physics2DPlugin, CustomBounce);
+
+    // Bounce eases para splash physics — squash & stretch al impactar.
+    // Strength alto → más rebote; endAtStart para que el squash arranque
+    // ANTES del impacto (anticipation).
+    if (!CustomBounce.get?.("liquidSplash")) {
+        CustomBounce.create("liquidSplash", { strength: 0.6, squash: 2, endAtStart: false });
+    }
 
     if (!CustomEase.get("heroIn")) {
         CustomEase.create("heroIn", "M0,0 C0.1,0 0.2,1 1,1");
@@ -60,4 +68,4 @@ export const BREAKPOINTS = {
     reduceMotion: "(prefers-reduced-motion: reduce)",
 };
 
-export { gsap, ScrollTrigger, CustomEase, SplitText, DrawSVGPlugin, Observer, MotionPathPlugin, Physics2DPlugin };
+export { gsap, ScrollTrigger, CustomEase, SplitText, DrawSVGPlugin, Observer, MotionPathPlugin, Physics2DPlugin, CustomBounce };
