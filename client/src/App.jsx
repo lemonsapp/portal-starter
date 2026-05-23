@@ -38,6 +38,7 @@ const ShopCheckout     = lazy(() => import("./pages/ShopCheckout.jsx"));
 const ShopCheckoutSuccess = lazy(() => import("./pages/ShopCheckoutSuccess.jsx"));
 const ShopCheckoutFailure = lazy(() => import("./pages/ShopCheckoutFailure.jsx"));
 import CartDrawer from "./components/CartDrawer.jsx";
+import ChunkErrorBoundary from "./components/ChunkErrorBoundary.jsx";
 
 // Fallback minimo mientras baja un chunk (evita pantalla en blanco).
 function PageLoader() {
@@ -164,6 +165,7 @@ export default function App() {
       <AppNotification />
       <TopNav />
       <CartDrawer />
+      <ChunkErrorBoundary>
       <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Publicas sin sidebar */}
@@ -202,6 +204,7 @@ export default function App() {
         <Route path="*"       element={<Navigate to="/" replace />} />
       </Routes>
       </Suspense>
+      </ChunkErrorBoundary>
     </BrowserRouter>
     </UserProvider>
     </ToastProvider>

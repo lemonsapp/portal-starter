@@ -21,9 +21,12 @@
 
     <!-- Fonts: Gotham self-hosted (WOFF2) — única familia.
          Preload del Book + Black para que el primer paint no parpadee.
-         @font-face declarations viven en src/styles.css. -->
-    <link rel="preload" href="fonts/holistic/gotham-book.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="fonts/holistic/gotham-black.woff2" as="font" type="font/woff2" crossorigin />
+         @font-face declarations viven en src/styles.css.
+         Paths ABSOLUTOS (/portal/) porque cuando la URL es /inicio
+         (Vercel rewrite a /portal/index.html), las paths relativas
+         resuelven contra /inicio → 404. -->
+    <link rel="preload" href="/portal/fonts/holistic/gotham-book.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/portal/fonts/holistic/gotham-black.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- Fraunces (variable serif, Google Fonts) — usado en /shop y
          /shop/:slug como accent italic editorial (matchea el landing,
@@ -42,17 +45,20 @@
     <meta name="msapplication-TileColor" content="#04060d" />
     <meta name="msapplication-TileImage" content="icons/icon-192.png" />
 
-    <!-- Manifest (path relativo: en deploy unificado /portal/ resuelve a /portal/manifest.json) -->
-    <link rel="manifest" href="manifest.json" />
+    <!-- Manifest — path ABSOLUTO /portal/manifest.json para que funcione
+         cuando la URL es /inicio, /admin, /shop, etc. (Vercel rewrites
+         envían esas URLs al /portal/index.html pero el browser resuelve
+         paths relativos contra la URL en barra). -->
+    <link rel="manifest" href="/portal/manifest.json" />
 
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="icons/icon-192.png" />
-    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
-    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
+    <!-- Apple Touch Icons (mismo razonamiento: paths absolutos) -->
+    <link rel="apple-touch-icon" href="/portal/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/portal/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/portal/icons/icon-512.png" />
 
     <!-- Favicon — overrideado en runtime por useBranding() si admin sube uno. -->
-    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="icon" type="image/svg+xml" href="/portal/icons/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/portal/icons/icon-192.png" />
   <style>
     /* ── DESIGN TOKENS (alineados al landing) ── */
     :root {

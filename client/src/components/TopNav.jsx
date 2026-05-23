@@ -89,11 +89,18 @@ export default function TopNav() {
         const token = getToken();
         if (!token) return;
         fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-            .then((r) => r.json()).then((d) => { if (d.user) setMe(d.user); }).catch(() => {});
-        // Balance de coins (si feature está activa, no rompe si 404)
-        fetch(`${API}/coins/me`, { headers: { Authorization: `Bearer ${token}` } })
-            .then((r) => r.ok ? r.json() : null)
-            .then((d) => { if (d?.balance != null) setBalance(d.balance); })
+            .then((r) => r.json())
+            .then((d) => {
+                if (!d.user) return;
+                setMe(d.user);
+                // Fix: el endpoint es /coins/:userId, no /coins/me. Fetch sólo
+                // cuando tenemos el ID. Falla silenciosa si feature off o
+                // server error (no es crítico para que el nav funcione).
+                fetch(`${API}/coins/${d.user.id}`, { headers: { Authorization: `Bearer ${token}` } })
+                    .then((r) => r.ok ? r.json() : null)
+                    .then((cd) => { if (cd?.balance != null) setBalance(cd.balance); })
+                    .catch(() => {});
+            })
             .catch(() => {});
         // Unread chat
         const checkUnread = async () => {
