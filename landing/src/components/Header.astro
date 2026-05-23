@@ -52,14 +52,59 @@ const links = [
                 <span class="header__socios-cta__sheen" aria-hidden="true"></span>
             </a>
 
-            <button class="header__icon header__icon--cart" aria-label="Carrito">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-2 10H8L6 6z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
-                <span class="header__badge">0</span>
-            </button>
+            {/* Cart link al portal /shop — el portal mantiene el carrito vivo
+                en localStorage del mismo origin, así que el badge refleja el
+                count real aunque el shopper haya agregado ítems desde el portal. */}
+            <a
+                href="/shop"
+                class="header__icon header__icon--cart"
+                aria-label="Ver carrito"
+                data-cursor="hover"
+                data-cart-link
+            >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/></svg>
+                <span class="header__badge" data-cart-badge style="display:none">0</span>
+            </a>
         </div>
     </div>
 
     <script>
         import "../scripts/socios-button-animations.js";
+    </script>
+
+    {/* Hidratador del badge del carrito — vanilla JS (no React). Lee el
+        mismo localStorage key que usa el portal (holistic.cart.v1) y
+        sincroniza el count. Se actualiza en:
+          • mount inicial
+          • storage event (otra pestaña agregó/sacó)
+          • holistic-cart-changed CustomEvent (mismo tab)
+        Mismo contrato que client/src/lib/useCart.js. */}
+    <script is:inline>
+      (function () {
+        var KEY = "holistic.cart.v1";
+        var badge = document.querySelector("[data-cart-badge]");
+        if (!badge) return;
+        function read() {
+          try {
+            var raw = localStorage.getItem(KEY);
+            if (!raw) return [];
+            var arr = JSON.parse(raw);
+            return Array.isArray(arr) ? arr : [];
+          } catch (e) { return []; }
+        }
+        function paint() {
+          var items = read();
+          var count = items.reduce(function (acc, i) { return acc + (Number(i.quantity) || 0); }, 0);
+          if (count > 0) {
+            badge.textContent = String(count);
+            badge.style.display = "";
+          } else {
+            badge.style.display = "none";
+          }
+        }
+        paint();
+        window.addEventListener("storage", function (e) { if (e.key === KEY) paint(); });
+        window.addEventListener("holistic-cart-changed", paint);
+      })();
     </script>
 </header>

@@ -212,66 +212,62 @@ export const productDetails = {
             kicker: "LÍNEA RACE",
             headline: "Sistema completo de fertilizantes\npara cultivo indoor y outdoor.",
             claim: "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
-            // CTAs intencionalmente omitidos para Race — el hero queda
-            // como statement editorial puro sobre el video. ProductDeepDive
-            // renderiza los CTAs condicionalmente: si no están definidos,
-            // el bloque entero de botones se omite.
             color: "#2E8F6E",
             colorSoft: "#C7F0DD",
-            // Hero CINEMATOGRÁFICO: video MP4 full-bleed como fondo
-            // (no como elemento separado al lado del texto). El componente
-            // detecta `heroBackground: true` para layout overlay vs. stage.
+            // Hero CINEMATOGRÁFICO: video MP4 full-bleed como fondo. La
+            // botella render queda como fallback poster si el video no carga.
             heroVideo: {
                 src: "/video/race/cinematic-violeta-splash-radial.mp4",
                 poster: "/img/race/cinematic-violeta-splash-radial-poster.png",
             },
-            heroImage: "/img/race/bottle-violeta-field-sunset.jpg",
-            // Flag que el componente lee para usar el layout fullbleed.
+            heroImage: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
             heroBackground: true,
         },
         // Cada highlight tiene su imagen propia + color tema. El componente
         // ProductHighlights lee estos colores (vía data-colors) para teñir
         // halo, big number atrás, gradient bg, dot pulsante, partículas
         // orbitales y progress bar de cada highlight activa.
+        // Highlights con renders premium 500ml (zip 2026-05-23). Cada panel
+        // muestra la botella real del SKU correspondiente al chapter.
         highlights: [
             {
                 kicker: "VEGETATIVO",
                 title: "Race 1 — NPK concentrado.",
                 body: "Concentrado de alta carga nitrogenada para arranque vigoroso. Hojas grandes, internudos cortos, masa vegetal sólida para entrar a floración con potencia máxima. Se utiliza durante todo el ciclo.",
-                image: "/img/race/bottle-violeta-a-roots.jpg",
-                color: "#8E24AA",
+                image: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
+                color: "#3DA86E",
                 stat: "01",
             },
             {
                 kicker: "FLORACIÓN",
                 title: "Race 2 — Calcio + Nitrógeno.",
                 body: "Part A aporta calcio y magnesio, Part B entrega fósforo y potasio en la proporción exacta. La química correcta para flores densas y compactas.",
-                image: "/img/race/bottle-verde-greenhouse.jpg",
-                color: "#2E8F6E",
+                image: "/img/productos/linea-race/500ml/race-2-part-a-500ml.png",
+                color: "#8E24AA",
                 stat: "02",
             },
             {
                 kicker: "3A",
                 title: "Race 3 — 1ª parte PK.",
                 body: "Son 2 partes PK de crecimiento y maduración. Activan la translocación de azúcares y agrandan flores en el pico productivo del ciclo.",
-                image: "/img/race/bottle-violeta-sunset.jpg",
-                color: "#6B3BAF",
+                image: "/img/productos/linea-race/500ml/race-3-rosa-500ml.png",
+                color: "#EC407A",
                 stat: "03",
             },
             {
                 kicker: "3B",
                 title: "Race 3 — 2ª parte PK.",
                 body: "Son 2 partes PK de crecimiento y maduración. Aplicadas en secuencia, sostienen el desarrollo de flores densas hasta el cierre del ciclo.",
-                image: "/img/race/bottle-violeta-sunset.jpg",
-                color: "#7E2EB8",
+                image: "/img/productos/linea-race/500ml/race-2-part-b-500ml.png",
+                color: "#6B3BAF",
                 stat: "04",
             },
             {
                 kicker: "CICLO COMPLETO",
                 title: "Race 4 — Micro + Magnesio.",
                 body: "Para los últimos días del ciclo. Compacta tejidos, potencia aromas y resinas, y prepara la planta para el cierre definitivo con Day-0.",
-                image: "/img/race/bottle-rosa-sunset.jpg",
-                color: "#EC407A",
+                image: "/img/productos/linea-race/500ml/race-4-celeste-500ml.png",
+                color: "#3FB5CB",
                 stat: "05",
             },
         ],
@@ -299,8 +295,8 @@ export const productDetails = {
             {
                 name: "RACE 1",
                 size: "Vegetativo",
-                image: "/img/race/bottle-violeta-a-roots.jpg",
-                color: "#8E24AA",
+                image: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
+                color: "#3DA86E",
                 tagline: "NPK concentrado.",
                 description:
                     "Alta carga nitrogenada para arranque vigoroso. Hojas grandes, internudos cortos, masa vegetal sólida para entrar a floración con potencia máxima. Se utiliza durante todo el ciclo.",
@@ -308,8 +304,8 @@ export const productDetails = {
             {
                 name: "RACE 2",
                 size: "Floración",
-                image: "/img/race/bottle-verde-greenhouse.jpg",
-                color: "#2E8F6E",
+                image: "/img/productos/linea-race/500ml/race-2-part-a-500ml.png",
+                color: "#8E24AA",
                 tagline: "Calcio + Nitrógeno.",
                 description:
                     "Part A aporta calcio y magnesio, Part B entrega fósforo y potasio en la proporción exacta. La química correcta para flores densas y compactas.",
@@ -317,8 +313,8 @@ export const productDetails = {
             {
                 name: "RACE 3",
                 size: "Crecimiento y Maduración",
-                image: "/img/race/bottle-violeta-sunset.jpg",
-                color: "#6B3BAF",
+                image: "/img/productos/linea-race/500ml/race-3-rosa-500ml.png",
+                color: "#EC407A",
                 tagline: "PK en dos partes.",
                 description:
                     "Son 2 partes PK de crecimiento y maduración. Aplicadas en secuencia (3A → 3B), activan la translocación de azúcares y sostienen el desarrollo de flores densas en el pico productivo.",
@@ -326,8 +322,8 @@ export const productDetails = {
             {
                 name: "RACE 4",
                 size: "Micro + Magnesio",
-                image: "/img/race/bottle-rosa-sunset.jpg",
-                color: "#EC407A",
+                image: "/img/productos/linea-race/500ml/race-4-celeste-500ml.png",
+                color: "#3FB5CB",
                 tagline: "Micro + Magnesio.",
                 description:
                     "Para los últimos días del ciclo. Compacta tejidos, potencia aromas y resinas, y prepara la planta para el cierre definitivo con Day-0.",
