@@ -34,6 +34,7 @@ export default function ShopCheckoutSuccess() {
     const confettiRef    = useRef(null);
     const headlineRef    = useRef(null);
     const subRef         = useRef(null);
+    const flowRef        = useRef(null);
     const orderBoxRef    = useRef(null);
     const ctaRowRef      = useRef(null);
 
@@ -66,6 +67,7 @@ export default function ShopCheckoutSuccess() {
                 yPercent: 110, opacity: 0, rotationX: -30, transformOrigin: "50% 100%",
             });
             gsap.set(subRef.current, { y: 24, opacity: 0 });
+            gsap.set(flowRef.current?.querySelectorAll("[data-flow-step]") || [], { x: -24, opacity: 0 });
             gsap.set(orderBoxRef.current, { y: 30, opacity: 0, scale: 0.92 });
             gsap.set(ctaRowRef.current, { y: 24, opacity: 0 });
 
@@ -108,24 +110,34 @@ export default function ShopCheckoutSuccess() {
                 duration: 0.6,
             }, 0.85);
 
-            // 6) Order box scale-in
+            // 6) Flow steps — slide-in stagger desde la izquierda
+            const steps = flowRef.current?.querySelectorAll("[data-flow-step]") || [];
+            if (steps.length) {
+                tl.to(steps, {
+                    x: 0, opacity: 1,
+                    duration: 0.55,
+                    stagger: 0.12,
+                }, 1.0);
+            }
+
+            // 7) Order box scale-in
             tl.to(orderBoxRef.current, {
                 y: 0, opacity: 1, scale: 1,
                 duration: 0.65, ease: "back.out(1.6)",
-            }, 1.05);
+            }, 1.5);
 
-            // 7) CTAs row
+            // 8) CTAs row
             tl.to(ctaRowRef.current, {
                 y: 0, opacity: 1,
                 duration: 0.5,
-            }, 1.25);
+            }, 1.7);
 
-            // 8) Halo idle pulse — yoyo después de toda la entrada
+            // 9) Halo idle pulse — yoyo después de toda la entrada
             tl.to(haloRef.current, {
                 scale: 1.35, opacity: 0.7,
                 duration: 2.4, ease: "sine.inOut",
                 yoyo: true, repeat: -1,
-            }, 1.6);
+            }, 2.0);
         }, rootRef);
 
         return () => ctx.revert();
@@ -135,23 +147,33 @@ export default function ShopCheckoutSuccess() {
     const isPaid = status === "paid" || isFree;
     const isManual = status === "pending_payment" && !isFree;
 
-    const headlineText = isFree
-        ? "¡Compra confirmada!"
-        : isPaid
-            ? "¡Compra confirmada!"
-            : isPending
-                ? "Pago pendiente"
-                : "Orden recibida";
+    // Headline narrativo (no exclamativo) según el estado real del pedido.
+    const headlineText = isPaid
+        ? "Hemos recibido tu compra"
+        : isPending
+            ? "Pago pendiente"
+            : "Orden recibida";
 
-    const subText = isFree
-        ? "Tu pedido fue procesado con 100% de descuento. Vamos a despacharte el envío y te avisamos por email."
-        : isPaid
-            ? "Recibimos tu pago. En las próximas horas te escribimos por WhatsApp con la fecha de envío."
-            : isPending
-                ? "MercadoPago todavía está procesando el pago. Te avisamos por email cuando se confirme."
-                : isManual
-                    ? "Guardamos tu pedido. Te contactamos por WhatsApp para coordinar pago y envío."
-                    : "Te contactamos por WhatsApp para coordinar.";
+    // Sub-text corto + descripción del flujo siguiente. El flujo detallado
+    // se renderiza aparte como step list (ver flowSteps abajo).
+    const subText = isPaid
+        ? "El equipo va a empezar a preparar tus productos. Te mantenemos al tanto por email."
+        : isPending
+            ? "MercadoPago todavía está procesando el pago. Te avisamos por email cuando se confirme."
+            : isManual
+                ? "Guardamos tu pedido. Te contactamos por WhatsApp para coordinar pago y envío."
+                : "Te contactamos por WhatsApp para coordinar.";
+
+    // Step list visible cuando la compra ya está confirmada (paid o free).
+    // Refleja el flujo real del post-checkout: armado → email confirmación →
+    // despacho → email tracking. Si más adelante hay tracking real, el ítem 3
+    // pasa a "en camino" con número.
+    const flowSteps = isPaid ? [
+        { icon: "✓", title: "Compra recibida",   desc: "Tu pedido ya está en nuestro sistema.", done: true },
+        { icon: "✉", title: "Email de confirmación", desc: "Te enviamos un mail con los detalles de la compra.", done: true },
+        { icon: "📦", title: "Preparación",       desc: "El equipo está armando tu pedido.", done: false, active: true },
+        { icon: "🚚", title: "Despacho",          desc: "Te enviamos otro email cuando salga hacia tu domicilio.", done: false },
+    ] : [];
 
     return (
         <div ref={rootRef} style={S.shell}>
@@ -216,6 +238,28 @@ export default function ShopCheckoutSuccess() {
 
                 {/* Sub */}
                 <p ref={subRef} style={S.sub}>{subText}</p>
+
+                {/* Flow steps — sólo cuando el pago/orden está confirmada */}
+                {flowSteps.length > 0 && (
+                    <div ref={flowRef} style={S.flow}>
+                        {flowSteps.map((step, i) => (
+                            <div
+                                key={i}
+                                data-flow-step
+                                style={S.flowStep(step.done, step.active)}
+                            >
+                                <div style={S.flowIcon(step.done, step.active)}>{step.icon}</div>
+                                <div style={S.flowBody}>
+                                    <div style={S.flowTitle(step.done, step.active)}>{step.title}</div>
+                                    <div style={S.flowDesc}>{step.desc}</div>
+                                </div>
+                                {i < flowSteps.length - 1 && (
+                                    <div style={S.flowConnector(step.done)} aria-hidden="true" />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* Order box */}
                 {orderParam && (
@@ -344,6 +388,74 @@ const S = {
         color: "rgba(237,233,224,.78)",
         fontSize: 15, lineHeight: 1.55,
     },
+
+    flow: {
+        position: "relative", zIndex: 2,
+        margin: "8px auto 28px",
+        maxWidth: 460,
+        textAlign: "left",
+        display: "flex", flexDirection: "column",
+        gap: 0,
+    },
+    flowStep: (done, active) => ({
+        position: "relative",
+        display: "grid",
+        gridTemplateColumns: "44px 1fr",
+        gap: 14,
+        alignItems: "flex-start",
+        padding: "12px 0",
+        opacity: done ? 1 : active ? 1 : 0.65,
+    }),
+    flowIcon: (done, active) => ({
+        width: 36, height: 36,
+        borderRadius: "50%",
+        display: "grid", placeItems: "center",
+        fontSize: 16,
+        background: done
+            ? "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)"
+            : active
+                ? "rgba(167,245,200,0.16)"
+                : "rgba(255,255,255,0.05)",
+        border: done
+            ? "1px solid rgba(167,245,200,0.5)"
+            : active
+                ? "1px solid rgba(167,245,200,0.4)"
+                : "1px solid rgba(255,255,255,0.10)",
+        color: done ? "#07130c" : active ? "var(--brand-primary, #A7F5C8)" : "rgba(237,233,224,0.55)",
+        fontWeight: 900,
+        boxShadow: done
+            ? "0 6px 16px -4px rgba(46,143,110,0.45)"
+            : active
+                ? "0 0 0 4px rgba(167,245,200,0.10)"
+                : "none",
+        flexShrink: 0,
+        position: "relative",
+        zIndex: 1,
+    }),
+    flowBody: { paddingTop: 6 },
+    flowTitle: (done, active) => ({
+        fontSize: 14,
+        fontWeight: done || active ? 800 : 700,
+        color: done || active ? "var(--brand-text, #ede9e0)" : "rgba(237,233,224,0.7)",
+        letterSpacing: "0.01em",
+        marginBottom: 3,
+    }),
+    flowDesc: {
+        fontSize: 13,
+        color: "rgba(237,233,224,0.62)",
+        lineHeight: 1.5,
+    },
+    flowConnector: (done) => ({
+        position: "absolute",
+        top: 48,
+        left: 17, // 36/2 - 1px del border
+        bottom: -12,
+        width: 2,
+        background: done
+            ? "linear-gradient(180deg, rgba(46,143,110,0.55), rgba(167,245,200,0.22))"
+            : "rgba(255,255,255,0.08)",
+        zIndex: 0,
+    }),
 
     orderBox: {
         position: "relative", zIndex: 2,
