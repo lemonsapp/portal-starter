@@ -5067,15 +5067,22 @@ html.is-loading body {
     letter-spacing: 0.36em;
     text-transform: uppercase;
     color: var(--pdd-color, #c9a34e);
+    text-align: center;
 }
 .pdd__section-title {
-    margin: 0;
+    margin: 0 auto;
     font-family: var(--f-title);
     font-size: clamp(2rem, 4.6vw, 4rem);
-    line-height: 1;
+    /* line-height 1 → 1.08 — evita corte de descenders en uppercase
+       (Q tiene cola). El text-align center con margin auto centra el
+       título en el contenedor de su sección. */
+    line-height: 1.08;
     letter-spacing: -0.02em;
     text-transform: uppercase;
     color: #1a1a1a;
+    text-align: center;
+    padding-bottom: 0.05em;
+    max-width: 22ch;
 }
 
 /* ---------- 1) HERO ---------- */
@@ -5137,13 +5144,28 @@ html.is-loading body {
     margin: 0;
     font-family: var(--f-title);
     font-size: clamp(2.6rem, 7vw, 6rem);
-    line-height: 0.95;
+    /* line-height bump 0.95 → 1.05: el headline usa SplitText mask:"lines"
+       + word reveal con rotationX. Un line-height < 1 deja altura de
+       mask insuficiente, corta descenders (g, p, j, y) y a veces parte
+       superior del glyph durante la rotación 3D. */
+    line-height: 1.05;
     letter-spacing: -0.025em;
     text-transform: uppercase;
     color: #1a1a1a;
     text-align: center;
+    padding-bottom: 0.06em;
 }
 .pdd__hero-line { display: block; }
+/* Lines wrapper que SplitText crea con mask:"lines" — hereda line-height
+   pero forzamos overflow visible suficiente para que rotationX no clipe. */
+.pdd__hero-line-split {
+    line-height: 1.05;
+    padding-bottom: 0.04em;
+}
+.pdd__hero-word {
+    display: inline-block;
+    line-height: 1.05;
+}
 .pdd__hero-em {
     font-family: 'Gotham', serif;
     font-style: italic;
@@ -5153,12 +5175,13 @@ html.is-loading body {
     color: var(--pdd-color, #c9a34e);
 }
 .pdd__hero-claim {
-    margin: 0;
+    margin: 0 auto;
     max-width: 60ch;
     font-family: 'Gotham', serif;
     font-size: clamp(1.05rem, 1.4vw, 1.3rem);
     line-height: 1.6;
     color: rgba(26, 26, 26, 0.78);
+    text-align: center;
 }
 .pdd__hero-ctas {
     display: flex;
@@ -5760,7 +5783,8 @@ html.is-loading body {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
 }
 .pdd__bento-grid {
     width: min(1280px, 92vw);
@@ -6048,6 +6072,7 @@ html.is-loading body {
 .pdd__specs-head {
     width: min(1100px, 92vw);
     margin: 0 auto clamp(30px, 5vh, 60px);
+    text-align: center;
 }
 .pdd__specs-list {
     width: min(1100px, 92vw);

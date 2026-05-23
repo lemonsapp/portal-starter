@@ -550,6 +550,14 @@ const colorList = highlights.map((h) => h.color || defaultAccent).join(",");
         transform: translateY(20px);
         pointer-events: none;
         will-change: opacity, transform;
+        /* Centrar todos los textos dentro del panel (kicker inline-flex,
+           title h3, body p, rule svg). Combina con margin auto en body +
+           text-align center en title + svg block + margin auto. */
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
     .ph__panel.is-active {
         opacity: 1;
@@ -581,23 +589,37 @@ const colorList = highlights.map((h) => h.color || defaultAccent).join(",");
         font-family: 'Gotham', sans-serif;
         font-weight: 400;
         font-size: clamp(2rem, 4.5vw, 3.6rem);
-        line-height: 0.98;
+        /* line-height bump 0.98 → 1.12 — antes los descenders (g, p, y, j)
+           se cortaban porque SplitText con mask:"words" hereda line-height
+           del título, y un line-height < 1 deja altura de mask menor a
+           la del glyph. */
+        line-height: 1.12;
         letter-spacing: 0.005em;
         text-transform: uppercase;
         color: #fff;
+        text-align: center;
+        /* Padding-bottom extra para garantizar descenders incluso si la
+           font-metrics deja algunos pixeles afuera. */
+        padding-bottom: 0.08em;
     }
     .ph__title-line { overflow: hidden; display: block; }
     .ph__title-word {
         display: inline-block;
         will-change: transform;
+        /* Mismo padding extra a nivel word — SplitText con mask:"words"
+           crea wrappers que clipean por word. Forzar line-height >=1.1
+           en el word evita corte aunque el contenedor padre no lo herede. */
+        line-height: 1.12;
+        padding-bottom: 0.04em;
     }
 
     .ph__body {
-        margin: 0 0 clamp(1rem, 2.5vh, 1.6rem);
+        margin: 0 auto clamp(1rem, 2.5vh, 1.6rem);
         font-size: clamp(0.95rem, 1.2vw, 1.05rem);
         line-height: 1.65;
         color: rgba(255, 255, 255, 0.78);
         max-width: 48ch;
+        text-align: center;
     }
 
     .ph__rule {
