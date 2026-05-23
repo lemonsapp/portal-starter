@@ -121,46 +121,63 @@ const TOTAL_FORMULAS = 5;
         </p>
 
         <!-- ============================================================
-             CTA SUPER ANIMADO — magnético + liquid fill + dual text
-             que se rota con clip-path al hover.
+             CTAs del hero — primary (Race) + secondary (Tienda).
+             Secondary es ghost-style para no competir con la principal,
+             pero suficientemente visible para que el visitor entienda
+             "puedo comprar sin registrarme".
              ============================================================ -->
-        <a
-            href="/linea-race"
-            class="vh-cta"
-            data-vh-cta
-            data-cursor="hover"
-            data-magnetic
-            data-magnetic-strength="0.32"
-            aria-label="Entrar en Línea Race"
-        >
-            <!-- Capas de glow + shimmer rotativo removidas (14/05 turno 5)
-                 por pedido del cliente: "el cosito que gira" molestaba.
-                 Queda el pill limpio, mismo magnetic + liquid fill al hover. -->
+        <div class="vh__ctas">
+            <a
+                href="/linea-race"
+                class="vh-cta"
+                data-vh-cta
+                data-cursor="hover"
+                data-magnetic
+                data-magnetic-strength="0.32"
+                aria-label="Entrar en Línea Race"
+            >
+                <span class="vh-cta__inner">
+                    <span class="vh-cta__fill" data-vh-cta-fill aria-hidden="true"></span>
+                    <span class="vh-cta__text" data-vh-cta-text>
+                        <span class="vh-cta__label vh-cta__label--default">
+                            <span>ENTRAR EN LÍNEA RACE</span>
+                        </span>
+                        <span class="vh-cta__label vh-cta__label--hover" aria-hidden="true">
+                            <span>VEAMOS LA RACE</span>
+                        </span>
+                    </span>
+                    <span class="vh-cta__arrow" data-vh-cta-arrow aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </span>
+            </a>
 
-            <!-- Pill body — el círculo blanco se expande al hover desde el cursor -->
-            <span class="vh-cta__inner">
-                <span class="vh-cta__fill" data-vh-cta-fill aria-hidden="true"></span>
-                <span class="vh-cta__text" data-vh-cta-text>
-                    <!-- Dual labels: la primera se va arriba al hover, la segunda
-                         entra desde abajo. Mismo texto pero con colores opuestos. -->
-                    <span class="vh-cta__label vh-cta__label--default">
-                        <span>ENTRAR EN LÍNEA RACE</span>
-                    </span>
-                    <span class="vh-cta__label vh-cta__label--hover" aria-hidden="true">
-                        <span>VEAMOS LA RACE</span>
-                    </span>
-                </span>
-                <span class="vh-cta__arrow" data-vh-cta-arrow aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="20" height="20">
-                        <path
-                            d="M5 12h14M13 6l6 6-6 6"
-                            stroke="currentColor" stroke-width="2.2"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round"
-                        />
+            <!-- CTA Tienda (secondary) — "comprá sin registrarte" -->
+            <a
+                href="/shop"
+                class="vh-cta-shop"
+                data-cursor="hover"
+                data-magnetic
+                data-magnetic-strength="0.22"
+                aria-label="Ir a la tienda — comprá sin registrarte"
+            >
+                <span class="vh-cta-shop__inner">
+                    <svg class="vh-cta-shop__icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="9" cy="20" r="1.5"/>
+                        <circle cx="18" cy="20" r="1.5"/>
+                        <path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/>
                     </svg>
+                    <span class="vh-cta-shop__label">
+                        <span class="vh-cta-shop__label-top">IR A LA TIENDA</span>
+                        <span class="vh-cta-shop__label-sub">Comprá sin registrarte</span>
+                    </span>
+                    <span class="vh-cta-shop__arrow" aria-hidden="true">→</span>
                 </span>
-            </span>
-        </a>
+                <span class="vh-cta-shop__pulse" aria-hidden="true"></span>
+            </a>
+        </div>
     </div>
 
     <!-- ============================================================
@@ -459,6 +476,115 @@ const TOTAL_FORMULAS = 5;
         color: var(--vh-fg-dim);
         font-style: italic;
         margin-top: 0.4rem;
+    }
+
+    /* ====================================================================
+       CTAs wrapper — primary + secondary side-by-side (stack en mobile)
+       ==================================================================== */
+    .vh__ctas {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: clamp(14px, 2vw, 22px);
+        margin-top: clamp(20px, 3vh, 32px);
+    }
+
+    /* ====================================================================
+       CTA secundario — IR A LA TIENDA (compra sin registro)
+       Ghost style: borde mint + bg semi-transparente. No compite con la
+       primary del hero pero suficientemente visible.
+       ==================================================================== */
+    .vh-cta-shop {
+        position: relative;
+        display: inline-flex;
+        text-decoration: none;
+        opacity: 0;
+        animation: vh-cta-shop-in 0.9s cubic-bezier(.2,.8,.2,1) 1.2s forwards;
+        isolation: isolate;
+    }
+    @keyframes vh-cta-shop-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .vh-cta-shop__inner {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 13px 24px 13px 20px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1.5px solid rgba(167, 245, 200, 0.55);
+        color: #ffffff;
+        font-family: var(--f-title, 'Gotham', sans-serif);
+        transition:
+            background 0.3s cubic-bezier(.2,.8,.2,1),
+            border-color 0.3s ease,
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
+        box-shadow: 0 0 30px -6px rgba(167, 245, 200, 0.25);
+        z-index: 2;
+    }
+    .vh-cta-shop:hover .vh-cta-shop__inner {
+        background: rgba(167, 245, 200, 0.18);
+        border-color: rgba(167, 245, 200, 0.9);
+        box-shadow:
+            0 12px 30px -6px rgba(46, 143, 110, 0.45),
+            0 0 50px -6px rgba(167, 245, 200, 0.55);
+    }
+    .vh-cta-shop__icon {
+        color: rgba(167, 245, 200, 1);
+        flex-shrink: 0;
+    }
+    .vh-cta-shop__label {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        line-height: 1.1;
+    }
+    .vh-cta-shop__label-top {
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    .vh-cta-shop__label-sub {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: rgba(167, 245, 200, 0.85);
+        text-transform: none;
+        font-family: var(--f-text, system-ui);
+    }
+    .vh-cta-shop__arrow {
+        font-size: 18px;
+        font-weight: 800;
+        color: rgba(167, 245, 200, 0.9);
+        transition: transform 0.3s cubic-bezier(.2,.8,.2,1);
+    }
+    .vh-cta-shop:hover .vh-cta-shop__arrow {
+        transform: translateX(6px);
+    }
+    /* Pulse ring sutil idle — para que el ojo lo encuentre */
+    .vh-cta-shop__pulse {
+        position: absolute;
+        inset: 0;
+        border-radius: 999px;
+        border: 1.5px solid rgba(167, 245, 200, 0.5);
+        animation: vh-cta-shop-pulse 2.8s cubic-bezier(.4, 0, .6, 1) infinite;
+        pointer-events: none;
+        z-index: 1;
+    }
+    @keyframes vh-cta-shop-pulse {
+        0%   { transform: scale(1);    opacity: 0.55; }
+        80%  { transform: scale(1.18); opacity: 0; }
+        100% { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .vh-cta-shop__pulse { animation: none; }
+        .vh-cta-shop { animation: none; opacity: 1; }
     }
 
     /* ====================================================================

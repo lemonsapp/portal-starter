@@ -9,6 +9,9 @@ const links = [
     { href: "/bio-estimulante", label: "Bio Estimulante" },
     { href: "/cloner", label: "Cloner" },
     { href: "/day-0", label: "Day 0" },
+    // Sprint 14 (2026-05-23): shop con destacado mint. Compra sin registro
+    // — el cliente ve que puede comprar como invitado desde el primer click.
+    { href: "/shop", label: "Tienda", highlight: true },
 ];
 ---
 <header class="header">
@@ -18,8 +21,16 @@ const links = [
         </a>
 
         <nav class="header__nav" aria-label="Navegación principal">
-            {links.map(({ href, label }) => (
-                <a href={href} class="header__link">{label}</a>
+            {links.map(({ href, label, highlight }) => (
+                <a href={href} class={highlight ? "header__link header__link--shop" : "header__link"}>
+                    {highlight && (
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:6px;vertical-align:middle;">
+                            <circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/>
+                            <path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/>
+                        </svg>
+                    )}
+                    {label}
+                </a>
             ))}
         </nav>
 
