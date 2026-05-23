@@ -17,6 +17,14 @@ const express = require("express");
 const { z } = require("zod");
 const db = require("../db");
 
+// Helper para que un fallo en un INSERT no aborte el resto del migrate.
+// Imprime el error y sigue. Solo lo aplicamos a INSERT seed (las CREATE
+// TABLE se dejan duras: si una falla, el resto no tiene sentido seguir).
+async function safeQuery(sql, label = "seed") {
+  try { await db.query(sql); }
+  catch (e) { console.error(`[SHOP MIGRATE ${label}]`, e.message || e); }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Auto-migración + seed (idempotente). Patrón inherited de routes/profile.js:
 // se corre una vez al hacer require() del módulo. Todas las queries son
@@ -350,29 +358,34 @@ async function migrate() {
        '{"linea":"pro","etapa":"floracion","formato":"1kg"}'),
 
       -- ═══════════════ BIO + DAY-0 size variants ═══════════════
+      -- Bio + Day-0 variantes — SKUs renombrados (BIO-EST-* / DAY0-EST-*)
+      -- para no chocar con los SKUs de los kits originales (BIO-1L y DAY0-500).
       ('bio-estimulante-500ml',
        'Bio Estimulante — 500ml',
        'Bioestimulante orgánico. Ácidos húmicos, fúlvicos, carboxílicos. Potasio soluble.',
-       5500000, 'BIO-500', 'bioestimulantes', 50,
+       5500000, 'BIO-EST-500', 'bioestimulantes', 50,
        '{"formato":"500ml"}'),
       ('bio-estimulante-1l',
        'Bio Estimulante — 1 Litro',
        'Bioestimulante orgánico. Ácidos húmicos, fúlvicos, carboxílicos. Potasio soluble.',
-       8500000, 'BIO-1L', 'bioestimulantes', 51,
+       8500000, 'BIO-EST-1L', 'bioestimulantes', 51,
        '{"formato":"1L"}'),
       ('day-0-500ml',
        'Day-0 — 500ml',
        'Finalizador previo a cosecha. Limpia reservorios, pule sabor y aroma.',
-       5500000, 'DAY0-500', 'finalizadores', 60,
+       5500000, 'DAY0-EST-500', 'finalizadores', 60,
        '{"formato":"500ml"}'),
       ('day-0-1l',
        'Day-0 — 1 Litro',
        'Finalizador previo a cosecha. Limpia reservorios, pule sabor y aroma.',
-       8500000, 'DAY0-1L', 'finalizadores', 61,
+       8500000, 'DAY0-EST-1L', 'finalizadores', 61,
        '{"formato":"1L"}')
     ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
     LEFT JOIN product_categories c ON c.slug = v.cat_slug
-    ON CONFLICT (slug) DO NOTHING
+    -- ON CONFLICT DO NOTHING (catch-all sin target) → cualquier UNIQUE violation
+    -- (slug O sku duplicados) skipea la fila en vez de abortar el INSERT entero.
+    -- Patrón canónico para seeds idempotentes en Postgres.
+    ON CONFLICT DO NOTHING
   `);
 
   // Imágenes de los nuevos SKUs — apuntan a los renders del zip ya copiados
