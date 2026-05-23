@@ -311,6 +311,7 @@ async function getStatus() {
   // "completo" = al menos cloudinary + branding + resend tienen valores set
   const status = {
     cloudinary: false, branding: false, resend: false, telegram: false, rules: true,
+    mercadopago: false, shop: true,  // F4: shop tiene default features.shop=true
   };
   status.branding   = !!(await getConfig("branding.name"));  // tenemos default → siempre true salvo override
   // Para los demás chequeamos secret keys
@@ -320,6 +321,9 @@ async function getStatus() {
   status.resend = !!resR.rows[0];
   const tgR = await db.query("SELECT 1 FROM app_config WHERE key='telegram.bot_token' AND value_encrypted IS NOT NULL");
   status.telegram = !!tgR.rows[0];
+  // Sprint 14 F2: MP configurado = access_token presente (encrypted)
+  const mpR = await db.query("SELECT 1 FROM app_config WHERE key='mercadopago.access_token' AND value_encrypted IS NOT NULL");
+  status.mercadopago = !!mpR.rows[0];
   return status;
 }
 

@@ -495,6 +495,122 @@ function StepRules({ goNext, goSkip }) {
   );
 }
 
+// ── Step: MercadoPago (Shop F2) ─────────────────────────────────────────────
+function StepMercadoPago({ goNext, goSkip }) {
+  const [v, setV] = useState({ access_token: "", public_key: "", webhook_secret: "" });
+  const [msg, setMsg] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadSection("mercadopago").then(d => setV(p => ({
+      ...p,
+      ...d,
+      access_token:   d.access_token   === "••••••" ? "" : (d.access_token || ""),
+      webhook_secret: d.webhook_secret === "••••••" ? "" : (d.webhook_secret || ""),
+    })));
+  }, []);
+
+  const save = async () => {
+    setSaving(true); setMsg(null);
+    const payload = {}; for (const k of ["access_token","public_key","webhook_secret"]) if (v[k]) payload[k] = v[k];
+    const r = await saveSection("mercadopago", payload);
+    setSaving(false);
+    setMsg(r.ok ? { type: "ok", text: "✓ Guardado." } : { type: "err", text: "Error" });
+  };
+
+  return (
+    <StepShell
+      title="6. MercadoPago (pagos del shop)"
+      subtitle="Para que los clientes paguen en /shop con tarjeta, débito o efectivo (Rapipago/PagoFácil). Sin esto, el shop crea órdenes 'pendientes' que coordinás manual por WhatsApp."
+      guide={<GuidePanel
+        title="📖 Cómo obtener tus credenciales de MercadoPago"
+        steps={[
+          <>Andá a <a href="https://www.mercadopago.com.ar/developers/panel/app" target="_blank" rel="noreferrer" style={S.link}>mercadopago.com.ar/developers/panel/app</a>. Si no tenés cuenta, registrate como <b>vendedor</b> con tu CUIT.</>,
+          <>Click <b>Crear aplicación</b> → nombre (ej. "Holistic Shop") → modelo "Pagos online" → producto "Checkout Pro".</>,
+          <>En tu app → tab <b>Credenciales de producción</b> → copiá el <code>Access Token</code> y el <code>Public Key</code>. Si querés probar primero, usá las <b>Credenciales de prueba</b> (mismo lugar, otro tab).</>,
+          <>Pegá el access_token abajo (es secreto — se encripta). public_key es opcional acá: solo lo necesitás si en el futuro pasamos a Checkout Bricks embebido.</>,
+          <><b>webhook_secret</b> (opcional pero recomendado): cualquier string random que vos elijas, ej. <code>hl-mp-2026-xyz</code>. Lo usa el server para validar que las notificaciones vienen realmente de MercadoPago.</>,
+          <>Después de guardar, en tu app de MP → <b>Webhooks</b> → URL: <code>{`${typeof window !== "undefined" ? window.location.origin : ""}/api/webhooks/mercadopago?secret=TU_WEBHOOK_SECRET`}</code> → eventos: payment.</>,
+        ]}
+      />}
+      onSave={save} onNext={goNext} onSkip={goSkip}
+      msg={msg || (!v.access_token ? { type: "warn", text: "⚠ Sin MP el shop funciona en modo manual — las órdenes se crean pero no se cobran online." } : null)}
+      saving={saving}
+    >
+      <label style={S.label}>Access Token (secreto)</label>
+      <input style={S.input} value={v.access_token} onChange={e => setV({ ...v, access_token: e.target.value })} placeholder="APP_USR-xxx-xxx-xxx" type="password" autoComplete="off" />
+      <div style={S.hint}>Empieza con <code>APP_USR-</code> (prod) o <code>TEST-</code> (sandbox).</div>
+
+      <label style={S.label}>Public Key (opcional)</label>
+      <input style={S.input} value={v.public_key} onChange={e => setV({ ...v, public_key: e.target.value })} placeholder="APP_USR-pubkey-xxx" />
+      <div style={S.hint}>Solo necesario si después usás Bricks embebido. Checkout Pro (redirect) no lo necesita.</div>
+
+      <label style={S.label}>Webhook Secret</label>
+      <input style={S.input} value={v.webhook_secret} onChange={e => setV({ ...v, webhook_secret: e.target.value })} placeholder="cualquier-string-random-tuyo" type="password" autoComplete="off" />
+      <div style={S.hint}>Random tuyo. Se appendea como <code>?secret=…</code> en la URL de webhook que cargás en MP.</div>
+    </StepShell>
+  );
+}
+
+// ── Step: Shop (envío + moneda) ─────────────────────────────────────────────
+function StepShop({ goNext, goSkip }) {
+  const [v, setV] = useState({ currency: "ARS", shipping_cost_cents: 0 });
+  const [msg, setMsg] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadSection("shop").then(d => setV(p => ({
+      ...p,
+      currency: d.currency || "ARS",
+      shipping_cost_cents: d.shipping_cost_cents != null ? Number(d.shipping_cost_cents) : 0,
+    })));
+  }, []);
+
+  const save = async () => {
+    setSaving(true); setMsg(null);
+    const payload = {
+      currency: v.currency,
+      shipping_cost_cents: String(Math.max(0, Math.round(Number(v.shipping_cost_cents) || 0))),
+    };
+    const r = await saveSection("shop", payload);
+    setSaving(false);
+    setMsg(r.ok ? { type: "ok", text: "✓ Guardado." } : { type: "err", text: "Error" });
+  };
+
+  const shippingArs = (Number(v.shipping_cost_cents) || 0) / 100;
+
+  return (
+    <StepShell
+      title="7. Shop (envío y moneda)"
+      subtitle="Costo de envío fijo y moneda del catálogo. Productos individuales se gestionan desde /admin → Productos."
+      guide={<GuidePanel
+        title="📖 Configuración del shop"
+        defaultOpen={false}
+        steps={[
+          <><b>Costo de envío</b>: monto fijo en pesos que se agrega a cada orden. 0 = envío gratis o se coordina aparte. F5+ podemos agregar tabla por provincia / por peso.</>,
+          <><b>Moneda</b>: por ahora soporta solo ARS. Productos se cargan en pesos enteros (sin centavos) desde /admin → Productos.</>,
+          <><b>Productos del catálogo</b>: ya viene seed con ~40 SKUs reales de Holistic. Podés editarlos / agregar nuevos / sacar lo que no vendés desde /admin → Productos.</>,
+        ]}
+      />}
+      onSave={save} onNext={goNext} onSkip={goSkip} msg={msg} saving={saving}
+    >
+      <label style={S.label}>Moneda</label>
+      <select style={S.input} value={v.currency} onChange={e => setV({ ...v, currency: e.target.value })}>
+        <option value="ARS">ARS (Pesos argentinos)</option>
+      </select>
+
+      <label style={S.label}>Costo de envío (ARS)</label>
+      <input
+        style={S.input} type="number" min="0" step="100"
+        value={shippingArs}
+        onChange={e => setV({ ...v, shipping_cost_cents: String(Math.round(Number(e.target.value || 0) * 100)) })}
+        placeholder="0 = a coordinar"
+      />
+      <div style={S.hint}>0 = se coordina con cada cliente (recomendado mientras armás logística). Si poneé un monto fijo se agrega automáticamente al total.</div>
+    </StepShell>
+  );
+}
+
 // ── Step 6: Final review ────────────────────────────────────────────────────
 function StepFinal({ status, onLaunch }) {
   const allCriticalDone = status?.cloudinary && status?.resend && status?.branding;
@@ -537,13 +653,15 @@ export default function AdminSetup() {
   const navigate = useNavigate();
 
   const STEPS = useMemo(() => [
-    { key: "welcome",    label: "Inicio",     done: false },
-    { key: "cloudinary", label: "Cloudinary", done: status?.cloudinary },
-    { key: "branding",   label: "Marca",      done: status?.branding },
-    { key: "resend",     label: "Emails",     done: status?.resend },
-    { key: "telegram",   label: "Telegram",   done: status?.telegram },
-    { key: "rules",      label: "Reglas",     done: status?.rules },
-    { key: "final",      label: "Listo",      done: false },
+    { key: "welcome",     label: "Inicio",      done: false },
+    { key: "cloudinary",  label: "Cloudinary",  done: status?.cloudinary },
+    { key: "branding",    label: "Marca",       done: status?.branding },
+    { key: "resend",      label: "Emails",      done: status?.resend },
+    { key: "telegram",    label: "Telegram",    done: status?.telegram },
+    { key: "mercadopago", label: "MercadoPago", done: status?.mercadopago },
+    { key: "shop",        label: "Shop",        done: status?.shop },
+    { key: "rules",       label: "Reglas",      done: status?.rules },
+    { key: "final",       label: "Listo",       done: false },
   ], [status]);
 
   const goNext = () => { reload(); setStep(s => Math.min(s + 1, STEPS.length - 1)); };
@@ -569,13 +687,15 @@ export default function AdminSetup() {
           ))}
         </div>
 
-        {step === 0 && <StepWelcome    goNext={goNext} />}
-        {step === 1 && <StepCloudinary goNext={goNext} goSkip={goSkip} />}
-        {step === 2 && <StepBranding   goNext={goNext} goSkip={goSkip} />}
-        {step === 3 && <StepEmail      goNext={goNext} goSkip={goSkip} />}
-        {step === 4 && <StepTelegram   goNext={goNext} goSkip={goSkip} />}
-        {step === 5 && <StepRules      goNext={goNext} goSkip={goSkip} />}
-        {step === 6 && <StepFinal      status={status} onLaunch={launch} />}
+        {step === 0 && <StepWelcome     goNext={goNext} />}
+        {step === 1 && <StepCloudinary  goNext={goNext} goSkip={goSkip} />}
+        {step === 2 && <StepBranding    goNext={goNext} goSkip={goSkip} />}
+        {step === 3 && <StepEmail       goNext={goNext} goSkip={goSkip} />}
+        {step === 4 && <StepTelegram    goNext={goNext} goSkip={goSkip} />}
+        {step === 5 && <StepMercadoPago goNext={goNext} goSkip={goSkip} />}
+        {step === 6 && <StepShop        goNext={goNext} goSkip={goSkip} />}
+        {step === 7 && <StepRules       goNext={goNext} goSkip={goSkip} />}
+        {step === 8 && <StepFinal       status={status} onLaunch={launch} />}
       </div>
     </div>
   );
