@@ -4,6 +4,7 @@ import { UserProvider } from "./context/UserContext.jsx";
 import { ToastProvider } from "./components/ToastReward.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 import Topbar from "./components/Topbar.jsx";
+import TopNav from "./components/TopNav.jsx";
 import Footer from "./components/Footer.jsx";
 import PremiumFX from "./components/PremiumFX.jsx";
 import { useBranding, useFeatureFlag } from "./lib/branding.js";
@@ -102,31 +103,24 @@ async function fetchMe() {
   } catch { return null; }
 }
 
-// Layout con Topbar + Sidebar para rutas autenticadas
+// Layout con TopNav arriba para rutas autenticadas. La TopNav se monta
+// globalmente en App() (renderiza en cualquier ruta no-auth), así que acá
+// sólo armamos el wrapper de contenido + footer + onboarding.
+//
+// Legacy Sidebar.jsx + Topbar.jsx quedan en el repo por si hay que
+// rollback rápido — ya no se importan en el árbol de App.
 function AppLayout({ children, me, refreshMe }) {
   usePresence(45000); // heartbeat global cada 45s mientras esté autenticado
   const location = useLocation();
-
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
   return (
     <div style={{ display:"flex", flexDirection:"column", minHeight:"100vh", background:"transparent", position:"relative", zIndex:3 }}>
-      <Topbar />
-      <div style={{ display:"flex", flex:1, position:"relative" }}>
-        {!isMobile && <Sidebar />}
-        <main style={{ flex:1, overflowY:"auto", minWidth:0, display:"flex", flexDirection:"column" }}>
-          <div key={location.pathname} className="fxPage" style={{ flex:1 }}>
-            {children}
-          </div>
-          {!isMobile && <Footer />}
-        </main>
-      </div>
-      {/* Sidebar bottom en mobile — visible en todas las rutas autenticadas */}
-      {isMobile && (
-        <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:400, background:"rgba(5,5,5,0.98)", borderTop:"1px solid rgba(var(--brand-primary-rgb),0.1)", display:"flex", justifyContent:"space-around", padding:"6px 0 max(6px,env(safe-area-inset-bottom))" }}>
-          <Sidebar mobile />
+      <main style={{ flex:1, overflowY:"auto", minWidth:0, display:"flex", flexDirection:"column" }}>
+        <div key={location.pathname} className="fxPage" style={{ flex:1 }}>
+          {children}
         </div>
-      )}
-      {isMobile && <div style={{ height:70 }} />}
+        {!isMobile && <Footer />}
+      </main>
       {me && <OnboardingModal user={me} onComplete={(u) => refreshMe?.(u)} />}
     </div>
   );
@@ -168,6 +162,7 @@ export default function App() {
       <PremiumFX />
       <PWAManager />
       <AppNotification />
+      <TopNav />
       <CartDrawer />
       <Suspense fallback={<PageLoader />}>
       <Routes>
