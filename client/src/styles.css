@@ -74,12 +74,14 @@
    consumen estos. Los legacy siguen funcionando.
    ========================================================= */
 :root {
-  /* ── Surfaces (dark ascending) ── */
-  --h-bg-0:        #050708;
-  --h-bg-1:        #0a0d10;
-  --h-bg-2:        #131618;
-  --h-bg-3:        #1c2024;
-  --h-bg-glass:    rgba(10, 13, 16, 0.72);
+  /* ── Surfaces — alineadas al design system fijo del index.html (2026-05-23)
+     Mismo cool near-black que el shop y la TopNav para que el portal
+     entero se vea homogéneo. */
+  --h-bg-0:        var(--c-bg, #06070A);
+  --h-bg-1:        var(--c-surface, #0E1014);
+  --h-bg-2:        var(--c-surface-2, #161A20);
+  --h-bg-3:        var(--c-surface-3, #1F242C);
+  --h-bg-glass:    rgba(14, 16, 20, 0.72);
 
   /* ── Text scale ── */
   --h-text-1:      #ede9e0;
@@ -93,17 +95,19 @@
   --h-line-2:      rgba(237, 233, 224, 0.10);
   --h-line-3:      rgba(237, 233, 224, 0.16);
 
-  /* ── Brand: Holistic green + sand accent ──
-     Pisados en runtime por useBranding desde /api/config/public.
-     Fallbacks son starter genéricos verdes. */
-  --h-green:       var(--brand-primary, #52b788);
-  --h-green-soft:  color-mix(in srgb, var(--brand-primary, #52b788) 12%, transparent);
-  --h-green-mid:   color-mix(in srgb, var(--brand-primary, #52b788) 26%, transparent);
-  --h-green-glow:  color-mix(in srgb, var(--brand-primary, #52b788) 40%, transparent);
+  /* ── Brand: mapeado al design system fijo (2026-05-23) ──
+     useBranding ya NO los pisa en runtime. Una sola fuente de verdad
+     para los acentos: --c-accent / --c-accent-2 del :root del index.html.
+     "Sand" pasó a ser sinónimo de mint en lugar del beige legacy —
+     unifica la paleta del portal con el landing. */
+  --h-green:       var(--c-accent, #A7F5C8);
+  --h-green-soft:  rgba(167, 245, 200, 0.10);
+  --h-green-mid:   rgba(167, 245, 200, 0.22);
+  --h-green-glow:  rgba(167, 245, 200, 0.36);
 
-  --h-sand:        var(--brand-accent, #d4a574);
-  --h-sand-soft:   color-mix(in srgb, var(--brand-accent, #d4a574) 12%, transparent);
-  --h-sand-mid:    color-mix(in srgb, var(--brand-accent, #d4a574) 26%, transparent);
+  --h-sand:        var(--c-accent, #A7F5C8);
+  --h-sand-soft:   rgba(167, 245, 200, 0.10);
+  --h-sand-mid:    rgba(167, 245, 200, 0.22);
 
   /* ── Semantic states ── */
   --h-danger:      #ef4444;

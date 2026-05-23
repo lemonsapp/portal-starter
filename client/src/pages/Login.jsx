@@ -163,126 +163,361 @@ export default function Login() {
   return (
     <div className="lg-root">
       <style>{`
-        .lg-root{min-height:100vh;min-height:100svh;background:#020307;color:#f0ece3;display:grid;grid-template-columns:1.05fr .95fr;font-family:'Gotham', sans-serif;overflow:hidden;position:relative}
-        .lg-root::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.026;pointer-events:none;z-index:9}
-
-        /* LEFT — branding panel */
-        .lg-left{position:relative;overflow:hidden;border-right:1px solid rgba(240,236,227,.07);display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px}
-        .lg-bg{position:absolute;inset:0;background-image:url("${fondoLogin}");background-size:cover;background-position:center;filter:brightness(.32) saturate(.6);z-index:0}
-        .lg-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(2,3,7,.9) 0%,rgba(2,3,7,.55) 50%,rgba(2,3,7,.95) 100%)}
-        .lg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
-        .lg-watermark{position:absolute;font-family:'Gotham', sans-serif;font-weight:900;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-6px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;bottom:-60px;right:-40px;user-select:none}
-        .lg-logo-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;max-width:540px;opacity:.06;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
-        .lg-lemon{position:absolute;right:-6%;bottom:-2%;height:96%;max-height:780px;z-index:2;pointer-events:none;animation:lgFloat 6s ease-in-out infinite;filter:drop-shadow(0 0 60px rgba(var(--brand-primary-rgb),.18))}
-        @keyframes lgFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-18px) rotate(2deg)}}
-        .lg-left-inner{position:relative;z-index:3;display:flex;flex-direction:column;height:100%;justify-content:space-between}
-
-        .lg-top{display:flex;align-items:center;justify-content:space-between}
-        .lg-logo{font-family:'Gotham', sans-serif;font-weight:900;font-size:18px;letter-spacing:3px;display:flex;align-items:center;gap:10px}
-        .lg-logo .y{color:var(--brand-primary, #f5e03a)}
-        .lg-dot{width:6px;height:6px;border-radius:50%;background:var(--brand-accent, #ff5500);animation:lgdot 2s ease-in-out infinite}
-        @keyframes lgdot{0%,100%{opacity:1}50%{opacity:.2}}
-        .lg-eyebrow{font-family:'Gotham', sans-serif;font-weight:700;font-size:10px;letter-spacing:2.6px;text-transform:uppercase;color:var(--brand-accent, #ff5500);display:flex;align-items:center;gap:12px}
-        .lg-eyebrow::before{content:'';width:28px;height:1px;background:var(--brand-accent, #ff5500)}
-
-        .lg-title{position:relative}
-        .lg-title h1{font-family:'Gotham', sans-serif;font-weight:900;font-size:clamp(64px,9vw,140px);line-height:.86;letter-spacing:-0.04em;margin:0;color:#f0ece3}
-        .lg-title .yl{color:var(--brand-primary, #f5e03a)}
-        .lg-title .out{-webkit-text-stroke:1.5px rgba(240,236,227,.32);color:transparent}
-        .lg-line{overflow:hidden;display:block}
-        .lg-line span{display:inline-block;transform:translateY(110%);transition:transform 1s cubic-bezier(.2,.8,.2,1)}
-        .lg-title.in .lg-line:nth-child(1) span{transform:translateY(0);transition-delay:.05s}
-        .lg-title.in .lg-line:nth-child(2) span{transform:translateY(0);transition-delay:.18s}
-        .lg-title.in .lg-line:nth-child(3) span{transform:translateY(0);transition-delay:.31s}
-
-        .lg-sub{font-size:15px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.85;max-width:420px;margin-top:36px;opacity:0;transform:translateY(16px);transition:all .8s ease .55s}
-        .lg-title.in + .lg-sub{opacity:1;transform:translateY(0)}
-        .lg-sub strong{color:#f0ece3;font-weight:600}
-
-        .lg-foot{display:flex;align-items:center;gap:24px;font-family:'Gotham', sans-serif;font-weight:700;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(240,236,227,.3);flex-wrap:wrap}
-        .lg-foot-item{display:flex;align-items:center;gap:8px}
-        .lg-foot-item b{color:var(--brand-primary, #f5e03a);font-weight:900;font-family:'Gotham', sans-serif;font-size:22px;letter-spacing:0}
-        .lg-foot-sep{width:1px;height:18px;background:rgba(240,236,227,.1)}
-
-        /* RIGHT — form */
-        .lg-right{position:relative;display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:#020307}
-        .lg-form-wrap{width:100%;max-width:440px;opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1) .25s}
-        .lg-form-wrap.in{opacity:1;transform:translateY(0)}
-        .lg-form-eyebrow{font-family:'Gotham', sans-serif;font-weight:700;font-size:10px;letter-spacing:2.6px;text-transform:uppercase;color:var(--brand-accent, #ff5500);display:flex;align-items:center;gap:12px;margin-bottom:18px}
-        .lg-form-eyebrow::before{content:'';width:28px;height:1px;background:var(--brand-accent, #ff5500)}
-        .lg-form-title{font-family:'Gotham', sans-serif;font-weight:900;font-size:clamp(40px,5.4vw,64px);line-height:.94;letter-spacing:-0.025em;color:#f0ece3;margin-bottom:8px}
-        .lg-form-title em{font-style:normal;color:var(--brand-primary, #f5e03a)}
-        .lg-form-desc{font-size:14px;font-weight:400;color:rgba(240,236,227,.55);line-height:1.7;margin-bottom:36px}
-
-        .lg-field{margin-bottom:18px}
-        .lg-field label{display:block;font-family:'Gotham', sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,236,227,.4);margin-bottom:10px}
-        .lg-input{width:100%;background:rgba(255,255,255,.025);border:1px solid rgba(240,236,227,.08);color:#f0ece3;font-family:'Gotham', sans-serif;font-weight:400;font-size:15px;padding:15px 18px;outline:none;transition:all .25s;border-radius:0}
-        .lg-input:focus{border-color:rgba(var(--brand-primary-rgb),.5);background:rgba(var(--brand-primary-rgb),.04);box-shadow:0 0 0 1px rgba(var(--brand-primary-rgb),.2)}
-        .lg-input::placeholder{color:rgba(240,236,227,.18)}
-
-        .lg-row{display:flex;align-items:center;justify-content:space-between;margin:8px 0 26px}
-        .lg-check{display:flex;align-items:center;gap:10px;cursor:pointer;font-family:'Gotham', sans-serif;font-weight:700;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:rgba(240,236,227,.45);user-select:none}
-        .lg-check input{width:14px;height:14px;accent-color:var(--brand-primary, #f5e03a);cursor:pointer}
-        .lg-link{font-family:'Gotham', sans-serif;font-weight:700;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);cursor:pointer;border-bottom:1px solid transparent;transition:border .2s;background:none;border-top:none;border-left:none;border-right:none;padding:0}
-        .lg-link:hover{border-bottom-color:var(--brand-primary, #f5e03a)}
-
-        .lg-btn{width:100%;font-family:'Gotham', sans-serif;font-size:13px;font-weight:900;letter-spacing:2.2px;text-transform:uppercase;background:var(--brand-primary, #f5e03a);color:#000;border:none;padding:18px 28px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden}
-        .lg-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--brand-primary, #fff7a0),var(--brand-primary, #f5e03a),var(--brand-primary, #fff7a0));background-size:200% 100%;opacity:0;transition:opacity .3s;animation:lgshim 2.4s linear infinite}
-        @keyframes lgshim{0%{background-position:0% 0}100%{background-position:200% 0}}
-        .lg-btn:hover::before{opacity:1}
-        .lg-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(var(--brand-primary-rgb),.18)}
-        .lg-btn:active{transform:translateY(0)}
-        .lg-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
-        .lg-btn span{position:relative;z-index:1}
-        .lg-btn .arr{position:relative;z-index:1;transition:transform .3s}
-        .lg-btn:hover .arr{transform:translateX(4px)}
-
-        .lg-err{margin-bottom:18px;padding:12px 16px;background:rgba(var(--brand-accent-rgb),.06);border:1px solid rgba(var(--brand-accent-rgb),.18);color:#ffb07a;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;font-family:'Gotham', sans-serif}
-        .lg-err::before{content:'⚠';color:var(--brand-accent, #ff5500);font-size:14px}
-
-        .lg-divider{display:flex;align-items:center;gap:14px;margin:32px 0 24px;font-family:'Gotham', sans-serif;font-weight:700;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(240,236,227,.25)}
-        .lg-divider::before,.lg-divider::after{content:'';flex:1;height:1px;background:rgba(240,236,227,.07)}
-
-        .lg-register{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:rgba(240,236,227,.4);font-weight:400}
-        .lg-register a{color:var(--brand-primary, #f5e03a);font-weight:700;text-decoration:none;border-bottom:1px solid transparent;transition:border .2s;cursor:pointer}
-        .lg-register a:hover{border-bottom-color:var(--brand-primary, #f5e03a)}
-
-        /* Decorative numbers like watermarks */
-        .lg-num{position:absolute;font-family:'Gotham', sans-serif;font-weight:900;font-size:160px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.05);pointer-events:none;user-select:none}
-        .lg-num.tl{top:14px;right:14px;font-size:90px}
-
-        /* RESPONSIVE */
-        @media (max-width: 980px){
-          .lg-root{grid-template-columns:1fr}
-          .lg-left{padding:32px 28px;min-height:340px}
-          .lg-right{padding:40px 24px}
-          .lg-foot{display:none}
-          .lg-lemon{height:60%;max-height:380px;right:-12%}
+        /* ══════════════════════════════════════════════════════════════════
+           LOGIN — minimalista 2026-05-23
+           Layout split 50/50: izquierda branding hero, derecha form.
+           Tipografía bi-modo Gotham black + Fraunces italic accent.
+           Colores: del design system fijo (--c-bg, --c-accent mint, etc.)
+           ══════════════════════════════════════════════════════════════════ */
+        .lg-root {
+          min-height: 100vh; min-height: 100svh;
+          background: var(--c-bg, #06070A);
+          color: var(--c-text, #F5F2EB);
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          font-family: var(--f-body, 'Gotham', sans-serif);
+          overflow: hidden;
+          position: relative;
         }
-        @media (max-width: 600px){
-          .lg-form-title{font-size:42px}
-          .lg-lemon{display:none}
+
+        /* ── LEFT: branding hero ── */
+        .lg-left {
+          position: relative;
+          overflow: hidden;
+          padding: clamp(36px, 5vw, 64px);
+          display: flex; flex-direction: column;
+          justify-content: space-between;
+          background: linear-gradient(
+            155deg,
+            var(--c-bg) 0%,
+            var(--c-surface) 40%,
+            #0a1814 100%
+          );
+          border-right: 1px solid var(--c-border);
+        }
+        .lg-left::before {
+          content: ''; position: absolute; inset: 0;
+          background:
+            radial-gradient(ellipse 60% 50% at 70% 20%, rgba(167,245,200,0.12), transparent 60%),
+            radial-gradient(ellipse 80% 70% at 30% 90%, rgba(46,143,110,0.08), transparent 70%);
+          pointer-events: none;
+        }
+        .lg-grid {
+          position: absolute; inset: 0;
+          background-image:
+            linear-gradient(rgba(167,245,200,.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(167,245,200,.025) 1px, transparent 1px);
+          background-size: 64px 64px;
+          pointer-events: none;
+          mask-image: radial-gradient(ellipse 70% 50% at 50% 50%, black, transparent 75%);
+        }
+        .lg-left-inner {
+          position: relative; z-index: 3;
+          display: flex; flex-direction: column;
+          height: 100%; justify-content: space-between;
+          gap: 40px;
+        }
+
+        .lg-top { display: flex; flex-direction: column; gap: 14px; }
+        .lg-eyebrow {
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 11px; letter-spacing: 0.32em;
+          text-transform: uppercase;
+          color: var(--c-accent, #A7F5C8);
+          display: inline-flex; align-items: center; gap: 12px;
+        }
+        .lg-eyebrow::before {
+          content: ''; width: 26px; height: 1px;
+          background: var(--c-accent, #A7F5C8); opacity: .7;
+        }
+        .lg-logo {
+          font-family: var(--f-display, 'Gotham', sans-serif);
+          font-weight: 900; font-size: 20px;
+          letter-spacing: 0.18em;
+        }
+
+        /* Hero display centered vertically */
+        .lg-hero {
+          display: flex; flex-direction: column; gap: 20px;
+        }
+        .lg-hero-headline {
+          font-family: var(--f-display, 'Gotham', sans-serif);
+          font-weight: 900;
+          font-size: clamp(48px, 6.5vw, 84px);
+          line-height: 0.95;
+          letter-spacing: -0.03em;
+          color: var(--c-text);
+          margin: 0;
+        }
+        .lg-hero-headline em {
+          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
+          font-style: italic; font-weight: 400;
+          color: var(--c-accent, #A7F5C8);
+          letter-spacing: -0.015em;
+        }
+        .lg-hero-sub {
+          max-width: 440px;
+          font-size: 15px; line-height: 1.6;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+        }
+
+        .lg-foot {
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 11px; letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: var(--c-text-3, rgba(245,242,235,.5));
+          display: flex; gap: 24px;
+          flex-wrap: wrap;
+        }
+        .lg-foot-item {
+          display: inline-flex; align-items: center; gap: 8px;
+        }
+        .lg-foot-dot {
+          width: 6px; height: 6px; border-radius: 50%;
+          background: var(--c-accent, #A7F5C8);
+          box-shadow: 0 0 8px var(--c-accent, #A7F5C8);
+        }
+
+        /* ── RIGHT: form ── */
+        .lg-right {
+          position: relative;
+          display: flex; align-items: center; justify-content: center;
+          padding: clamp(36px, 5vw, 64px);
+          background: var(--c-bg, #06070A);
+        }
+        .lg-form-wrap {
+          width: 100%; max-width: 420px;
+          opacity: 0; transform: translateY(16px);
+          transition: opacity .8s var(--ease-out), transform .8s var(--ease-out);
+        }
+        .lg-form-wrap.in { opacity: 1; transform: translateY(0); }
+        .lg-form-eyebrow {
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 11px; letter-spacing: 0.32em;
+          text-transform: uppercase;
+          color: var(--c-accent, #A7F5C8);
+          display: inline-flex; align-items: center; gap: 12px;
+          margin-bottom: 16px;
+        }
+        .lg-form-eyebrow::before {
+          content: ''; width: 24px; height: 1px;
+          background: var(--c-accent, #A7F5C8); opacity: .7;
+        }
+        .lg-form-title {
+          font-family: var(--f-display, 'Gotham', sans-serif);
+          font-weight: 900;
+          font-size: clamp(36px, 4.6vw, 54px);
+          line-height: 0.98;
+          letter-spacing: -0.025em;
+          color: var(--c-text);
+          margin-bottom: 10px;
+        }
+        .lg-form-title em {
+          font-style: italic;
+          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
+          font-weight: 400;
+          color: var(--c-accent, #A7F5C8);
+          letter-spacing: -0.015em;
+        }
+        .lg-form-desc {
+          font-size: 14px; line-height: 1.65;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+          margin-bottom: 32px;
+        }
+
+        .lg-field { margin-bottom: 16px; }
+        .lg-field label {
+          display: block;
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 10px; letter-spacing: 0.24em;
+          text-transform: uppercase;
+          color: var(--c-text-3, rgba(245,242,235,.5));
+          margin-bottom: 10px;
+        }
+        .lg-input {
+          width: 100%;
+          background: var(--c-surface, #0E1014);
+          border: 1px solid var(--c-border-2, rgba(255,255,255,.10));
+          color: var(--c-text, #F5F2EB);
+          font-family: inherit; font-weight: 400;
+          font-size: 15px; padding: 14px 16px;
+          outline: none;
+          border-radius: var(--r-2, 10px);
+          transition:
+            border-color var(--dur-base, .24s) var(--ease-out),
+            background var(--dur-base, .24s) var(--ease-out),
+            box-shadow var(--dur-base, .24s) var(--ease-out);
+        }
+        .lg-input:hover { border-color: var(--c-border-3, rgba(255,255,255,.16)); }
+        .lg-input:focus {
+          border-color: var(--c-accent, #A7F5C8);
+          background: var(--c-surface-2, #161A20);
+          box-shadow: 0 0 0 3px rgba(167,245,200,.18);
+        }
+        .lg-input::placeholder { color: var(--c-text-3, rgba(245,242,235,.5)); }
+
+        .lg-row {
+          display: flex; align-items: center;
+          justify-content: space-between;
+          margin: 10px 0 28px;
+        }
+        .lg-check {
+          display: inline-flex; align-items: center; gap: 8px;
+          cursor: pointer;
+          font-family: var(--f-body); font-weight: 600;
+          font-size: 12px;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+          user-select: none;
+        }
+        .lg-check input {
+          width: 16px; height: 16px;
+          accent-color: var(--c-accent, #A7F5C8);
+          cursor: pointer;
+        }
+        .lg-link {
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 12px;
+          color: var(--c-accent, #A7F5C8);
+          cursor: pointer;
+          background: transparent; border: none; padding: 0;
+          border-bottom: 1px solid transparent;
+          transition: border-color var(--dur-fast, .15s) ease;
+        }
+        .lg-link:hover { border-bottom-color: var(--c-accent, #A7F5C8); }
+
+        .lg-btn {
+          width: 100%;
+          font-family: inherit;
+          font-size: 13px; font-weight: 900;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          background: linear-gradient(135deg, var(--c-accent-2, #25D366) 0%, #1AAE54 100%);
+          color: #07130c;
+          border: 1px solid rgba(167,245,200,.45);
+          padding: 16px 26px;
+          cursor: pointer;
+          border-radius: var(--r-pill, 999px);
+          transition:
+            transform var(--dur-fast, .15s) ease,
+            box-shadow var(--dur-base, .24s) ease;
+          display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+          box-shadow:
+            0 14px 30px -6px rgba(46,143,110,.55),
+            0 0 0 1px rgba(167,245,200,.20) inset;
+        }
+        .lg-btn:hover {
+          transform: translateY(-2px);
+          box-shadow:
+            0 22px 40px -8px rgba(46,143,110,.7),
+            0 0 0 2px rgba(167,245,200,.6),
+            0 0 60px -10px rgba(167,245,200,.45);
+        }
+        .lg-btn:active { transform: translateY(0); }
+        .lg-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .lg-btn .arr { transition: transform var(--dur-base, .24s) ease; }
+        .lg-btn:hover .arr { transform: translateX(6px); }
+
+        .lg-err {
+          margin-bottom: 16px; padding: 13px 16px;
+          background: rgba(252,165,165,.08);
+          border: 1px solid rgba(252,165,165,.25);
+          color: var(--c-danger, #FCA5A5);
+          font-size: 13px;
+          border-radius: var(--r-2, 10px);
+          display: flex; align-items: center; gap: 10px;
+        }
+        .lg-err::before { content: '⚠'; font-size: 14px; }
+
+        .lg-divider {
+          display: flex; align-items: center; gap: 14px;
+          margin: 28px 0 22px;
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 10px; letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: var(--c-text-3, rgba(245,242,235,.5));
+        }
+        .lg-divider::before, .lg-divider::after {
+          content: ''; flex: 1; height: 1px;
+          background: var(--c-border, rgba(255,255,255,.06));
+        }
+
+        .lg-register {
+          display: flex; align-items: center; justify-content: center;
+          gap: 8px; font-size: 13px;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+        }
+        .lg-register a {
+          color: var(--c-accent, #A7F5C8);
+          font-weight: 700;
+          text-decoration: none; cursor: pointer;
+          border-bottom: 1px solid transparent;
+          transition: border-color var(--dur-fast, .15s) ease;
+        }
+        .lg-register a:hover { border-bottom-color: var(--c-accent, #A7F5C8); }
+
+        /* ── Biometric button — ghost style mint ── */
+        .lg-bio {
+          width: 100%;
+          padding: 14px 18px;
+          margin-bottom: 16px;
+          background: rgba(167,245,200,.06);
+          border: 1px solid rgba(167,245,200,.25);
+          color: var(--c-accent, #A7F5C8);
+          font-family: inherit; font-size: 13px; font-weight: 700;
+          letter-spacing: 0.14em; text-transform: uppercase;
+          border-radius: var(--r-pill, 999px);
+          cursor: pointer;
+          display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+          transition: background var(--dur-base, .24s) ease, border-color var(--dur-base, .24s) ease;
+        }
+        .lg-bio:hover {
+          background: rgba(167,245,200,.12);
+          border-color: rgba(167,245,200,.5);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 980px) {
+          .lg-root { grid-template-columns: 1fr; }
+          .lg-left { padding: 28px; min-height: 280px; gap: 32px; border-right: none; border-bottom: 1px solid var(--c-border); }
+          .lg-hero-headline { font-size: clamp(36px, 9vw, 56px); }
+          .lg-foot { display: none; }
+        }
+        @media (max-width: 600px) {
+          .lg-form-title { font-size: 34px; }
         }
       `}</style>
 
-      {/* LEFT */}
+      {/* LEFT: branding hero — bi-tipo Gotham + Fraunces */}
       <div className="lg-left">
-        <div className="lg-bg" />
         <div className="lg-grid" />
-        <img src="/icons/icon.svg" alt="" className="lg-logo-img" />
         <div className="lg-left-inner">
           <div className="lg-top">
-            <div className="lg-logo">{(branding.name || "Mi Portal").toUpperCase()}</div>
-            <div className="lg-eyebrow">{branding.slogan || "Portal exclusivo"}</div>
+            <span className="lg-eyebrow">{branding.slogan || "Nutrición Superior"}</span>
+            <span className="lg-logo">{(branding.name || "HOLISTIC").toUpperCase()}</span>
+          </div>
+
+          <div className="lg-hero">
+            <h1 className="lg-hero-headline">
+              Bienvenido <em>al portal</em><br />
+              de la comunidad.
+            </h1>
+            <p className="lg-hero-sub">
+              Coins, recompensas, contenido exclusivo y la línea completa
+              de fertilizantes Holistic en un solo lugar.
+            </p>
+          </div>
+
+          <div className="lg-foot">
+            <span className="lg-foot-item"><span className="lg-foot-dot" /> Cultivo indoor &amp; outdoor</span>
+            <span className="lg-foot-item"><span className="lg-foot-dot" /> Soporte humano</span>
           </div>
         </div>
       </div>
 
-      {/* RIGHT */}
+      {/* RIGHT: form */}
       <div className="lg-right">
-        <div className="lg-num tl">01</div>
         <div ref={formRef} className="lg-form-wrap">
-          <div className="lg-form-eyebrow">Acceso seguro</div>
+          <div className="lg-form-eyebrow">Acceso</div>
           <div className="lg-form-title">Bienvenido <em>de vuelta</em></div>
           <div className="lg-form-desc">Ingresá con tu cuenta para acceder al portal y a tu comunidad.</div>
 
