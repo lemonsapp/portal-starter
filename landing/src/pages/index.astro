@@ -8,7 +8,7 @@ import LineasEstrella from "../components/LineasEstrella.astro";
 import ComplementosIdeales from "../components/ComplementosIdeales.astro";
 import HumanSupport from "../components/HumanSupport.astro";
 import OrganicConnector from "../components/OrganicConnector.astro";
-import LiquidBridge from "../components/LiquidBridge.astro";
+import LeCmpTransition from "../components/LeCmpTransition.astro";
 import FinalCTA from "../components/FinalCTA.astro";
 // ChapterSection + VineDivider + capitulos importes removidos:
 // los chapters bio/cloner/race/elite/pro/day-0 ya no se renderean
@@ -55,15 +55,12 @@ import FinalCTA from "../components/FinalCTA.astro";
          DrawSVG + matchMedia + scrolltrigger. -->
     <LineasEstrella />
 
-    <!-- LIQUID BRIDGE — transición líquida entre LineasEstrella (bg
-         blanco) y ComplementosIdeales (bg dark). Ink pour morphing:
-         blob orgánico SVG morpha entre 4 keyframes mientras drena
-         hacia abajo + 22 partículas interiores fluyen con MotionPath
-         + feTurbulence FUERTE animada para distortion acuosa. Bridge
-         cromático white → black que dissolve en mask gradient. Skills
-         gsap-plugins MotionPath + gsap-timeline + gsap-scrolltrigger
-         scrub. -->
-    <LiquidBridge />
+    {/* LiquidBridge removido 2026-05-23 — el blob morphing verde era
+        demasiado pesado visualmente y rompía el ritmo entre las dos
+        secciones. Reemplazado por LeCmpTransition, una transición
+        editorial con SplitText + Flip que cambia de "pestaña" entre
+        las dos secciones sin elementos decorativos pesados. */}
+    <LeCmpTransition />
 
     <!-- COMPLEMENTOS IDEALES — sección dedicada inmediatamente
          debajo del slider. Bio + Day-0 como complementos cinematográficos

@@ -1,0 +1,180 @@
+---
+// LeCmpTransition.astro — transición editorial entre LineasEstrella (bg
+// blanco) y ComplementosIdeales (bg dark). 2026-05-23.
+//
+// Reemplaza al LiquidBridge (blob verde morphing) por una transición
+// tipográfica scroll-driven con "cambio de pestaña":
+//
+//   FASE 1 — Headers "EL CATÁLOGO" / "ESTRELLA" hace fade-out (resto del LE)
+//   FASE 2 — Aparece label central "MÁS HOLISTIC" en SplitText chars-rise
+//   FASE 3 — El bg se voltea de blanco → dark (mask reveal con clip-path)
+//   FASE 4 — Aparece label "COMPLEMENTOS IDEALES" lentamente desde dark
+//
+// Implementación: section auto-altura con gradient continuous + 2 labels
+// posicionados absolute. GSAP scrolltrigger con scrub controla:
+//   • el morphing entre los 2 labels (uno fade-out, otro fade-in)
+//   • el bg revealing con clip-path circle expanding
+//   • un mini-decorator de líneas vertical que cruzan
+//
+// Skills aplicadas:
+//   • gsap-plugins SplitText  → chars-rise + scramble
+//   • gsap-scrolltrigger scrub → todo tied a scroll
+//   • gsap-plugins DrawSVG    → línea decorativa vertical
+//   • gsap-timeline master    → coreografía
+//   • gsap-utils.random       → stagger natural
+---
+<section
+    class="lct"
+    data-le-cmp-transition
+    aria-hidden="true"
+>
+    <!-- Bg dark que se revela con clip-path scroll-driven -->
+    <div class="lct__dark-reveal" data-lct-dark-reveal></div>
+
+    <!-- Label 1: "MÁS HOLISTIC" (aparece + se va) -->
+    <div class="lct__label-wrap lct__label-wrap--1" data-lct-label-1>
+        <span class="lct__eyebrow">· Tu cultivo, completo ·</span>
+        <h2 class="lct__label">
+            <span class="lct__word" data-lct-word>MÁS</span>
+            <span class="lct__word lct__word--accent" data-lct-word>HOLISTIC</span>
+        </h2>
+    </div>
+
+    <!-- Label 2: "COMPLEMENTOS" (aparece después del flip) -->
+    <div class="lct__label-wrap lct__label-wrap--2" data-lct-label-2>
+        <span class="lct__eyebrow lct__eyebrow--light">· Para cerrar el sistema ·</span>
+        <h2 class="lct__label lct__label--light">
+            <span class="lct__word" data-lct-word>VAN</span>
+            <span class="lct__word lct__word--accent-light" data-lct-word>COMPLEMENTOS</span>
+        </h2>
+    </div>
+
+    <!-- Línea decorativa vertical — DrawSVG cross-section divider -->
+    <svg class="lct__line" data-lct-line aria-hidden="true" viewBox="0 0 4 200" preserveAspectRatio="none">
+        <defs>
+            <linearGradient id="lctLineGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stop-color="#1a1a1a" stop-opacity="0.0"/>
+                <stop offset="20%"  stop-color="#1a1a1a" stop-opacity="0.4"/>
+                <stop offset="50%"  stop-color="#A7F5C8" stop-opacity="1.0"/>
+                <stop offset="80%"  stop-color="#A7F5C8" stop-opacity="0.6"/>
+                <stop offset="100%" stop-color="#A7F5C8" stop-opacity="0.0"/>
+            </linearGradient>
+        </defs>
+        <line data-lct-line-path
+              x1="2" y1="0" x2="2" y2="200"
+              stroke="url(#lctLineGrad)" stroke-width="2" stroke-linecap="round" />
+    </svg>
+</section>
+
+<script>
+    import "../scripts/le-cmp-transition.js";
+</script>
+
+<style>
+    .lct {
+        position: relative;
+        width: 100%;
+        min-height: 90vh;
+        background: #ffffff;  /* arranca matcheando LineasEstrella */
+        overflow: hidden;
+        isolation: isolate;
+        margin-top: -1px;
+        margin-bottom: -1px;
+    }
+
+    /* Reveal del bg dark — clip-path expanding desde el centro abajo.
+       GSAP scrolltrigger scrub anima el inset() entre 100% → 0%. */
+    .lct__dark-reveal {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: #0a0a0a;
+        clip-path: inset(100% 0 0 0);  /* invisible inicial (bottom 100%) */
+        will-change: clip-path;
+    }
+
+    /* Labels — posicionados absolute en el viewport center */
+    .lct__label-wrap {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 92%;
+        max-width: 900px;
+        text-align: center;
+        z-index: 3;
+        pointer-events: none;
+        will-change: opacity, transform;
+    }
+    .lct__label-wrap--1 { opacity: 1; }
+    .lct__label-wrap--2 { opacity: 0; }
+
+    .lct__eyebrow {
+        display: inline-block;
+        font-family: var(--f-text);
+        font-size: clamp(11px, 1.1vw, 13px);
+        font-weight: 700;
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+        color: rgba(26, 26, 26, 0.6);
+        margin-bottom: clamp(14px, 2vh, 22px);
+    }
+    .lct__eyebrow--light { color: rgba(167, 245, 200, 0.85); }
+
+    .lct__label {
+        margin: 0;
+        font-family: var(--f-title, 'Gotham', sans-serif);
+        font-size: clamp(3rem, 9vw, 7rem);
+        font-weight: 900;
+        letter-spacing: -0.025em;
+        line-height: 0.96;
+        text-transform: uppercase;
+        color: #1a1a1a;
+        padding-bottom: 0.06em;
+    }
+    .lct__label--light { color: #ffffff; }
+
+    .lct__word {
+        display: inline-block;
+        margin: 0 clamp(8px, 1vw, 14px);
+        will-change: transform, opacity;
+    }
+    .lct__word--accent {
+        font-style: italic;
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 500;
+        font-size: clamp(3rem, 9vw, 7rem);
+        color: #2E8F6E;
+        letter-spacing: -0.015em;
+    }
+    .lct__word--accent-light {
+        font-style: italic;
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 500;
+        font-size: clamp(3rem, 9vw, 7rem);
+        color: #A7F5C8;
+        letter-spacing: -0.015em;
+    }
+
+    /* Línea decorativa vertical — divide los dos labels visualmente */
+    .lct__line {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 4px;
+        height: clamp(140px, 22vh, 220px);
+        z-index: 2;
+        pointer-events: none;
+        will-change: stroke-dashoffset;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .lct__dark-reveal { clip-path: inset(50% 0 0 0); }
+        .lct__label-wrap--2 { opacity: 1; }
+    }
+
+    @media (max-width: 700px) {
+        .lct { min-height: 75vh; }
+    }
+</style>

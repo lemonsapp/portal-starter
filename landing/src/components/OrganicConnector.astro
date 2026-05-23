@@ -47,13 +47,16 @@
                 <stop offset="100%" stop-color="#3DA86E" stop-opacity="0.55"/>
             </radialGradient>
 
-            <!-- Stem gradient — emerald oscuro (raíz) → fresh green (yema) -->
+            <!-- Stem gradient — invertido para legibilidad sobre el bg
+                 dark→white del OC v5. Mint top (visible sobre dark) →
+                 emerald deep bottom (visible sobre blanco/mint pale). -->
             <linearGradient id="oc-stem-grad"
                 gradientUnits="userSpaceOnUse"
                 x1="700" y1="700" x2="700" y2="0">
-                <stop offset="0%"   stop-color="#1f5e44" stop-opacity="0.95"/>
-                <stop offset="55%"  stop-color="#2E8F6E" stop-opacity="0.9"/>
-                <stop offset="100%" stop-color="#7ee2a5" stop-opacity="0.85"/>
+                <stop offset="0%"   stop-color="#1f5e44" stop-opacity="0.85"/>
+                <stop offset="40%"  stop-color="#2E8F6E" stop-opacity="0.95"/>
+                <stop offset="70%"  stop-color="#A7F5C8" stop-opacity="1"/>
+                <stop offset="100%" stop-color="#E8FBF2" stop-opacity="1"/>
             </linearGradient>
 
             <!-- Leaf gradient — emerald body + edge lighter -->
@@ -182,48 +185,74 @@
         position: relative;
         width: 100%;
         min-height: 55vh;
+        /* Gradient continuo dark→white:
+           - 0% match HumanSupport (#050807 dark)
+           - 25% emerald deep (puente cromático)
+           - 60% mint pale
+           - 100% match LineasEstrella (#ffffff)
+           El tallo emitido del CTA "Hablar con Holistic" arriba se sumerge
+           en el dark del top y los tallos del OC nacen de ese mismo dark.
+           El bottom termina en blanco puro = arranque seamless de LE. */
         background:
             linear-gradient(
                 180deg,
-                #efe6d2 0%,
-                #e6efe1 28%,
-                #d8e8d9 62%,
-                #f4faf6 92%,
+                #050807 0%,
+                #0d2418 14%,
+                #1a4d35 28%,
+                #3da86e 45%,
+                #a7f5c8 65%,
+                #e8f5ee 82%,
                 #ffffff 100%
             );
         overflow: hidden;
         isolation: isolate;
+        /* margin negativo para que el OC se "monte" sobre el bottom de
+           HumanSupport y elimine cualquier línea visible de unión. */
+        margin-top: -1px;
+        margin-bottom: -1px;
     }
     .oc__bg {
         position: absolute;
         inset: 0;
         z-index: 0;
         background:
-            /* tierra cálida abajo, muy sutil */
+            /* Halo mint intenso en el área transitoria (mid-section)
+               donde converge dark→light. Realza los tallos contra el
+               emerald del gradient. */
             radial-gradient(
-                ellipse 90% 25% at 50% 100%,
-                rgba(95, 68, 38, 0.10) 0%,
-                transparent 75%
+                ellipse 90% 35% at 50% 38%,
+                rgba(167, 245, 200, 0.30) 0%,
+                transparent 70%
+            ),
+            /* Luz cenital arriba — refuerza la sensación de "subida hacia
+               la copa" anti-gravity. */
+            radial-gradient(
+                ellipse 70% 30% at 50% 0%,
+                rgba(167, 245, 200, 0.18) 0%,
+                transparent 80%
             );
         pointer-events: none;
     }
-    /* Halo de fotosíntesis — top, opacity sube con scroll */
+    /* Halo de fotosíntesis — top, opacity sube con scroll. Ahora más sutil
+       porque el bg dark→light ya da contraste por sí solo. */
     .oc__halo {
         position: absolute;
-        top: -10%;
+        top: -8%;
         left: 0;
         right: 0;
-        height: 55%;
+        height: 65%;
         z-index: 1;
         opacity: 0;
         will-change: opacity;
         background:
             radial-gradient(
-                ellipse 55% 100% at 50% 0%,
-                rgba(167, 245, 200, 0.75) 0%,
+                ellipse 65% 100% at 50% 0%,
+                rgba(167, 245, 200, 0.85) 0%,
+                rgba(167, 245, 200, 0.20) 50%,
                 rgba(167, 245, 200, 0.0) 80%
             );
         pointer-events: none;
+        mix-blend-mode: screen;
     }
 
     .oc__svg {
