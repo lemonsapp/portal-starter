@@ -85,17 +85,19 @@ export default function AdminPanel() {
           <button style={styles.tab(tab === "coins")}    onClick={() => setTab("coins")}>🪙 Coins</button>
           <button style={styles.tab(tab === "feed")}     onClick={() => setTab("feed")}>📰 Feed</button>
           <button style={styles.tab(tab === "products")} onClick={() => setTab("products")}>🛒 Productos</button>
-          <button style={styles.tab(tab === "orders")}   onClick={() => setTab("orders")}>📦 Pedidos</button>
-          <button style={styles.tab(tab === "branding")} onClick={() => setTab("branding")}>🎨 Branding</button>
-          <button style={styles.tab(tab === "settings")} onClick={() => setTab("settings")}>⚙️ Configuración</button>
+          <button style={styles.tab(tab === "orders")}    onClick={() => setTab("orders")}>📦 Pedidos</button>
+          <button style={styles.tab(tab === "customers")} onClick={() => setTab("customers")}>👥 Clientes</button>
+          <button style={styles.tab(tab === "branding")}  onClick={() => setTab("branding")}>🎨 Branding</button>
+          <button style={styles.tab(tab === "settings")}  onClick={() => setTab("settings")}>⚙️ Configuración</button>
         </div>
 
-        {tab === "coins"    && <CoinsTab />}
-        {tab === "feed"     && <FeedTab />}
-        {tab === "products" && <ProductsTab />}
-        {tab === "orders"   && <OrdersTab />}
-        {tab === "branding" && <BrandingTab />}
-        {tab === "settings" && <SettingsTab />}
+        {tab === "coins"     && <CoinsTab />}
+        {tab === "feed"      && <FeedTab />}
+        {tab === "products"  && <ProductsTab />}
+        {tab === "orders"    && <OrdersTab />}
+        {tab === "customers" && <CustomersTab />}
+        {tab === "branding"  && <BrandingTab />}
+        {tab === "settings"  && <SettingsTab />}
       </div>
     </div>
   );
@@ -1183,4 +1185,172 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
 function formatARS(cents) {
   if (cents == null) return "—";
   return (cents / 100).toLocaleString("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+// ── Tab: Clientes (Shop F3) ─────────────────────────────────────────────────
+// Vista de marketing: lista de customers con métricas acumuladas
+// (orders_count, total_spent), filtros, toggle opt-in y export CSV para
+// campañas externas (Mailchimp, etc).
+function CustomersTab() {
+  const [customers, setCustomers] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [marketingCount, setMarketingCount] = useState(0);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all"); // all | optin | optout
+  const [loading, setLoading] = useState(true);
+
+  async function load() {
+    setLoading(true);
+    const qs = new URLSearchParams();
+    if (search.trim()) qs.set("search", search.trim());
+    if (filter === "optin") qs.set("marketing", "1");
+    if (filter === "optout") qs.set("marketing", "0");
+    try {
+      const r = await fetch(`${API}/api/admin/shop/customers?${qs.toString()}`, { headers: authHdr() });
+      const d = await r.json();
+      setCustomers(d.customers || []);
+      setTotal(d.total || 0);
+      setMarketingCount(d.marketing_count || 0);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [filter]);
+
+  async function toggleMarketing(c) {
+    const r = await fetch(`${API}/api/admin/shop/customers/${c.id}/marketing`, {
+      method: "POST", headers: jsonHdr(),
+      body: JSON.stringify({ opted_in: !c.opted_in_marketing }),
+    });
+    if (r.ok) load();
+  }
+
+  function downloadCsv(onlyMarketing) {
+    const token = getToken();
+    const qs = onlyMarketing ? "?marketing=1" : "";
+    // CSV requiere Authorization header → fetch + download manual.
+    fetch(`${API}/api/admin/shop/customers/export.csv${qs}`, { headers: authHdr() })
+      .then((r) => r.blob())
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `holistic-customers-${new Date().toISOString().slice(0, 10)}${onlyMarketing ? "-marketing" : ""}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <h2 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>Clientes del shop</h2>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button style={styles.btn()} onClick={() => downloadCsv(false)}>↓ Exportar todos</button>
+          <button style={styles.btn(true)} onClick={() => downloadCsv(true)}>↓ Solo opt-in marketing</button>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 14 }}>
+        <StatCard label="Clientes totales" value={total} />
+        <StatCard label="Opt-in marketing" value={marketingCount} accent />
+        <StatCard label="Tasa opt-in" value={total > 0 ? `${Math.round((marketingCount / total) * 100)}%` : "—"} />
+      </div>
+
+      <div style={styles.card}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+          <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>Todos</FilterPill>
+          <FilterPill active={filter === "optin"} onClick={() => setFilter("optin")}>✅ Opt-in marketing</FilterPill>
+          <FilterPill active={filter === "optout"} onClick={() => setFilter("optout")}>🚫 Unsubscribe</FilterPill>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <input
+            style={{ ...styles.input, maxWidth: 360 }}
+            placeholder="Buscar por email o nombre…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") load(); }}
+          />
+          <button style={styles.btn()} onClick={load}>Buscar</button>
+        </div>
+      </div>
+
+      <div style={styles.card}>
+        {loading ? <div>Cargando…</div> : customers.length === 0 ? (
+          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
+            Sin clientes que coincidan. Los nuevos se crean automáticamente al confirmar un pedido en /shop.
+          </div>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Cliente</th>
+                <th style={styles.th}>Email / Contacto</th>
+                <th style={styles.th}>Pedidos</th>
+                <th style={styles.th}>Gastado</th>
+                <th style={styles.th}>Último pedido</th>
+                <th style={styles.th}>Marketing</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.map((c) => (
+                <tr key={c.id}>
+                  <td style={styles.td}>
+                    <div style={{ fontWeight: 600 }}>{c.first_name || "—"} {c.last_name || ""}</div>
+                    <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>
+                      {(c.last_address?.city || "") + (c.last_address?.province ? `, ${c.last_address.province}` : "")}
+                    </div>
+                  </td>
+                  <td style={styles.td}>
+                    <a href={`mailto:${c.email}`} style={{ color: "inherit" }}>{c.email}</a>
+                    {c.phone && <div style={{ fontSize: 11, color: "rgba(237,233,224,.55)" }}>📱 {c.phone}</div>}
+                  </td>
+                  <td style={styles.td}>
+                    <strong>{c.orders_count}</strong>
+                  </td>
+                  <td style={styles.td}>
+                    <strong style={{ color: "var(--brand-primary, #A7F5C8)" }}>{c.total_spent_formatted}</strong>
+                  </td>
+                  <td style={styles.td}>
+                    <span style={{ fontSize: 12, color: "rgba(237,233,224,.7)" }}>
+                      {c.last_order_at ? new Date(c.last_order_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+                    </span>
+                  </td>
+                  <td style={styles.td}>
+                    <button
+                      style={{
+                        padding: "5px 11px", fontSize: 11, fontWeight: 700,
+                        borderRadius: 999, border: "none", fontFamily: "inherit",
+                        background: c.opted_in_marketing ? "rgba(167,245,200,.15)" : "rgba(239,68,68,.12)",
+                        color: c.opted_in_marketing ? "#86efac" : "#fca5a5",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => toggleMarketing(c)}
+                      title="Click para alternar"
+                    >
+                      {c.opted_in_marketing ? "✓ Opt-in" : "✗ Out"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, accent }) {
+  return (
+    <div style={{ ...styles.card, padding: 16, margin: 0, textAlign: "center" }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 8 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 900, color: accent ? "var(--brand-primary, #A7F5C8)" : "inherit", lineHeight: 1 }}>
+        {value}
+      </div>
+    </div>
+  );
 }

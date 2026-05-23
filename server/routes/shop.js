@@ -228,6 +228,48 @@ async function migrate() {
     )
   `);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id)`);
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // F3: CUSTOMERS — base para marketing + tracking de comportamiento
+  // ═════════════════════════════════════════════════════════════════════════
+  //
+  // Email es la PK natural (guest checkout permite repetir customer sin user_id).
+  // Capturamos en checkout POST: UPSERT con datos del cliente + acumulado de
+  // métricas (orders_count, total_spent_cents, last_order_at).
+  //
+  // opted_in_marketing default TRUE — el cliente puede pedir baja desde un
+  // unsubscribe link en cualquier email. F4 (campañas) sólo manda a quienes
+  // tengan TRUE.
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS customers (
+      id                    SERIAL PRIMARY KEY,
+      email                 TEXT UNIQUE NOT NULL,
+      first_name            TEXT,
+      last_name             TEXT,
+      phone                 TEXT,
+      -- última dirección usada (snapshot del último envío). Para campañas
+      -- "destinatarios cerca de tu ciudad" o re-uso en próximas compras.
+      last_address          JSONB NOT NULL DEFAULT '{}'::jsonb,
+      -- contadores acumulados — más rápido leer aquí que hacer GROUP BY
+      -- sobre orders cada vez.
+      orders_count          INT NOT NULL DEFAULT 0,
+      total_spent_cents     INT NOT NULL DEFAULT 0,
+      last_order_at         TIMESTAMPTZ,
+      first_order_at        TIMESTAMPTZ,
+      -- marketing opt-in. Por defecto TRUE (el cliente al checkout acepta
+      -- los TyC que incluyen aviso de emails transaccionales y de promo).
+      -- F4: respetar este flag en envíos masivos.
+      opted_in_marketing    BOOLEAN NOT NULL DEFAULT TRUE,
+      unsubscribed_at       TIMESTAMPTZ,
+      -- vínculo opcional con user del portal (si registró cuenta más tarde).
+      user_id               INT REFERENCES users(id) ON DELETE SET NULL,
+      created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(LOWER(email))`);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_customers_marketing ON customers(opted_in_marketing) WHERE opted_in_marketing = TRUE`);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_customers_last_order ON customers(last_order_at DESC NULLS LAST)`);
 }
 migrate().catch((e) => console.error("[SHOP MIGRATE]", e));
 

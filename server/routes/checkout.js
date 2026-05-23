@@ -26,6 +26,7 @@ const crypto = require("crypto");
 const { z } = require("zod");
 const db = require("../db");
 const cs = require("../lib/configStore");
+const shopNotify = require("../lib/shopNotify");
 
 const MP_API = "https://api.mercadopago.com";
 
@@ -327,7 +328,23 @@ function publicRouter() {
 
       await client.query("COMMIT");
 
-      // 4. Crear preference en MercadoPago (con graceful fallback).
+      // 4. Capture customer (UPSERT) — para marketing F4. Acumula
+      //    orders_count + total_spent + actualiza last_address.
+      await shopNotify.upsertCustomer({
+        email: body.customer.email,
+        first_name: body.customer.first_name,
+        last_name: body.customer.last_name,
+        phone: body.customer.phone,
+        address: body.shipping_address,
+        totalCents: totalCents,
+      });
+
+      // 5. Notificaciones: email al cliente + email al admin + broadcast
+      //    in-app target=admin. Non-blocking, fail-silent si Resend no
+      //    está configurado.
+      shopNotify.onOrderCreated(inserted, lineItems).catch(() => {});
+
+      // 6. Crear preference en MercadoPago (con graceful fallback).
       const appUrl = getAppUrl(req);
       const webhookSecret = await cs.getConfig("mercadopago.webhook_secret");
       const mp = await createMpPreference({
@@ -459,6 +476,15 @@ function webhookRouter() {
         updateParams
       );
 
+      // F3: si la orden pasó a 'paid', disparar email de confirmación
+      //     al cliente + broadcast admin "pago confirmado".
+      if (newStatus === "paid") {
+        const data = await loadOrderByPublicId(externalRef);
+        if (data) {
+          shopNotify.onOrderPaid(data.order, data.items).catch(() => {});
+        }
+      }
+
       return res.status(200).send("ok");
     } catch (e) {
       console.error("[mp webhook]", e);
@@ -560,17 +586,134 @@ function adminRouter({ authRequired, requireRole }) {
         sets.push(`admin_notes = $${params.length}`);
       }
       params.push(id);
+      const prevStatusRes = await db.query(`SELECT status FROM orders WHERE id = $1`, [id]);
+      const prevStatus = prevStatusRes.rows[0]?.status;
+
       const { rows } = await db.query(
         `UPDATE orders SET ${sets.join(", ")} WHERE id = $${params.length} RETURNING *`,
         params
       );
       if (!rows[0]) return res.status(404).json({ error: "Orden no encontrada" });
       const data = await loadOrderById(id);
+
+      // F3 triggers per transición. Solo disparamos email si efectivamente
+      // cambió a ese estado (no spam al hacer "save" sin cambio real).
+      if (body.status !== prevStatus) {
+        if (body.status === "paid") {
+          shopNotify.onOrderPaid(data.order, data.items).catch(() => {});
+        } else if (body.status === "dispatched") {
+          shopNotify.onOrderDispatched(data.order, data.items).catch(() => {});
+        }
+      }
+
       res.json({ order: serializeOrder(data.order, data.items) });
     } catch (e) {
       if (e.issues) return res.status(400).json({ error: "Status inválido", issues: e.issues });
       console.error("[admin order status]", e);
       res.status(500).json({ error: "Error al cambiar estado" });
+    }
+  });
+
+  // ── GET /api/admin/shop/customers?search=&marketing=
+  // Lista clientes con métricas acumuladas. Soporta filtro por
+  // marketing_opt (TRUE = solo opt-in para campañas F4).
+  router.get("/customers", ...readMw, async (req, res) => {
+    try {
+      const { search, marketing, limit, offset } = req.query;
+      const params = [];
+      const where = [];
+      if (search) {
+        params.push(`%${String(search).toLowerCase()}%`);
+        const i = params.length;
+        where.push(`(LOWER(email) LIKE $${i} OR LOWER(COALESCE(first_name,'')) LIKE $${i} OR LOWER(COALESCE(last_name,'')) LIKE $${i})`);
+      }
+      if (marketing === "1") where.push(`opted_in_marketing = TRUE`);
+      if (marketing === "0") where.push(`opted_in_marketing = FALSE`);
+
+      const lim = Math.min(500, Math.max(1, parseInt(limit, 10) || 100));
+      const off = Math.max(0, parseInt(offset, 10) || 0);
+      params.push(lim, off);
+
+      const sql = `
+        SELECT id, email, first_name, last_name, phone,
+               last_address, orders_count, total_spent_cents,
+               last_order_at, first_order_at,
+               opted_in_marketing, unsubscribed_at,
+               created_at
+        FROM customers
+        ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
+        ORDER BY last_order_at DESC NULLS LAST, id DESC
+        LIMIT $${params.length - 1} OFFSET $${params.length}
+      `;
+      const { rows } = await db.query(sql, params);
+      const total = await db.query(`SELECT COUNT(*)::int AS n FROM customers`);
+      const marketingCount = await db.query(`SELECT COUNT(*)::int AS n FROM customers WHERE opted_in_marketing = TRUE`);
+      res.json({
+        customers: rows.map((r) => ({
+          ...r,
+          total_spent_formatted: r.total_spent_cents != null
+            ? (r.total_spent_cents / 100).toLocaleString("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 0 })
+            : "—",
+        })),
+        total: total.rows[0]?.n || 0,
+        marketing_count: marketingCount.rows[0]?.n || 0,
+      });
+    } catch (e) {
+      console.error("[admin customers list]", e);
+      res.status(500).json({ error: "Error al listar clientes" });
+    }
+  });
+
+  // ── GET /api/admin/shop/customers/export.csv — para campañas externas
+  router.get("/customers/export.csv", ...readMw, async (req, res) => {
+    try {
+      const onlyMarketing = req.query.marketing === "1";
+      const { rows } = await db.query(
+        `SELECT email, first_name, last_name, phone, orders_count,
+                total_spent_cents, last_order_at, opted_in_marketing
+         FROM customers
+         ${onlyMarketing ? `WHERE opted_in_marketing = TRUE` : ""}
+         ORDER BY last_order_at DESC NULLS LAST`
+      );
+      const header = "email,first_name,last_name,phone,orders_count,total_spent_ars,last_order_at,opted_in_marketing";
+      const csv = [header, ...rows.map((r) => [
+        r.email,
+        (r.first_name || "").replace(/,/g, " "),
+        (r.last_name || "").replace(/,/g, " "),
+        (r.phone || "").replace(/,/g, " "),
+        r.orders_count,
+        (r.total_spent_cents || 0) / 100,
+        r.last_order_at ? new Date(r.last_order_at).toISOString() : "",
+        r.opted_in_marketing ? "yes" : "no",
+      ].join(","))].join("\n");
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="holistic-customers-${new Date().toISOString().slice(0, 10)}.csv"`);
+      res.send(csv);
+    } catch (e) {
+      console.error("[admin customers export]", e);
+      res.status(500).json({ error: "Error al exportar" });
+    }
+  });
+
+  // ── POST /api/admin/shop/customers/:id/marketing — toggle opt-in
+  router.post("/customers/:id/marketing", ...writeMw, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const optIn = req.body?.opted_in === true;
+      const { rows } = await db.query(
+        `UPDATE customers
+         SET opted_in_marketing = $1,
+             unsubscribed_at = CASE WHEN $1 = TRUE THEN NULL ELSE COALESCE(unsubscribed_at, NOW()) END,
+             updated_at = NOW()
+         WHERE id = $2
+         RETURNING id, opted_in_marketing, unsubscribed_at`,
+        [optIn, id]
+      );
+      if (!rows[0]) return res.status(404).json({ error: "Cliente no encontrado" });
+      res.json({ customer: rows[0] });
+    } catch (e) {
+      console.error("[admin customer marketing]", e);
+      res.status(500).json({ error: "Error al actualizar" });
     }
   });
 
