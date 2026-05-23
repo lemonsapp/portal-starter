@@ -78,103 +78,338 @@ export default function Register() {
   return (
     <div className="rg-root">
       <style>{`
-        .rg-root{min-height:100vh;min-height:100svh;background:#020307;color:#f0ece3;display:grid;grid-template-columns:.95fr 1.05fr;font-family:'Gotham', sans-serif;overflow:hidden;position:relative}
-        .rg-root::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.026;pointer-events:none;z-index:9}
-
-        /* LEFT — form */
-        .rg-left{position:relative;display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:#020307;border-right:1px solid rgba(240,236,227,.07)}
-        .rg-num{position:absolute;font-family:'Gotham', sans-serif;font-weight:900;font-size:90px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.05);pointer-events:none;user-select:none;top:14px;left:14px}
-
-        .rg-card{width:100%;max-width:460px;opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1) .25s}
-        .rg-card.in{opacity:1;transform:translateY(0)}
-        .rg-eyebrow{font-family:'Gotham', sans-serif;font-weight:700;font-size:10px;letter-spacing:2.6px;text-transform:uppercase;color:var(--brand-accent, #ff5500);display:flex;align-items:center;gap:12px;margin-bottom:18px}
-        .rg-eyebrow::before{content:'';width:28px;height:1px;background:var(--brand-accent, #ff5500)}
-        .rg-title{font-family:'Gotham', sans-serif;font-weight:900;font-size:clamp(40px,5.4vw,64px);line-height:.94;letter-spacing:-0.025em;color:#f0ece3;margin-bottom:8px}
-        .rg-title em{font-style:normal;color:var(--brand-primary, #f5e03a)}
-        .rg-desc{font-size:14px;font-weight:400;color:rgba(240,236,227,.55);line-height:1.7;margin-bottom:32px}
-
-        .rg-field{margin-bottom:16px}
-        .rg-field label{display:block;font-family:'Gotham', sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,236,227,.4);margin-bottom:9px}
-        .rg-field label.hot{color:var(--brand-primary, #f5e03a)}
-        .rg-input{width:100%;background:rgba(255,255,255,.025);border:1px solid rgba(240,236,227,.08);color:#f0ece3;font-family:'Gotham', sans-serif;font-weight:400;font-size:15px;padding:14px 18px;outline:none;transition:all .25s;border-radius:0}
-        .rg-input:focus{border-color:rgba(var(--brand-primary-rgb),.5);background:rgba(var(--brand-primary-rgb),.04);box-shadow:0 0 0 1px rgba(var(--brand-primary-rgb),.2)}
-        .rg-input::placeholder{color:rgba(240,236,227,.18)}
-        .rg-input.code{font-family:'Gotham', sans-serif;font-weight:700;font-size:18px;letter-spacing:4px;text-align:center;border-color:rgba(var(--brand-primary-rgb),.25);background:rgba(var(--brand-primary-rgb),.02)}
-        .rg-input.code:focus{border-color:var(--brand-primary, #f5e03a);background:rgba(var(--brand-primary-rgb),.06)}
-
-        .rg-btn{width:100%;font-family:'Gotham', sans-serif;font-size:13px;font-weight:900;letter-spacing:2.2px;text-transform:uppercase;background:var(--brand-primary, #f5e03a);color:#000;border:none;padding:18px 28px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;position:relative}
-        .rg-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(var(--brand-primary-rgb),.18);background:var(--brand-primary, #fff7a0)}
-        .rg-btn:active{transform:translateY(0)}
-        .rg-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
-        .rg-btn .arr{transition:transform .3s}
-        .rg-btn:hover .arr{transform:translateX(4px)}
-
-        .rg-err{margin-bottom:18px;padding:12px 16px;background:rgba(var(--brand-accent-rgb),.06);border:1px solid rgba(var(--brand-accent-rgb),.18);color:#ffb07a;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px}
-        .rg-err::before{content:'⚠';color:var(--brand-accent, #ff5500);font-size:14px}
-
-        .rg-divider{display:flex;align-items:center;gap:14px;margin:30px 0 20px;font-family:'Gotham', sans-serif;font-weight:700;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(240,236,227,.25)}
-        .rg-divider::before,.rg-divider::after{content:'';flex:1;height:1px;background:rgba(240,236,227,.07)}
-        .rg-back{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:rgba(240,236,227,.4)}
-        .rg-back a{color:var(--brand-primary, #f5e03a);font-weight:700;text-decoration:none;border-bottom:1px solid transparent;transition:border .2s;cursor:pointer}
-        .rg-back a:hover{border-bottom-color:var(--brand-primary, #f5e03a)}
-
-        /* SUCCESS */
-        .rg-success{text-align:center;padding:24px 0}
-        .rg-check-wrap{width:96px;height:96px;border-radius:50%;background:rgba(34,197,94,.08);border:1.5px solid rgba(34,197,94,.35);margin:0 auto 28px;display:flex;align-items:center;justify-content:center;font-size:44px;animation:rgPulse 2.4s ease-in-out infinite}
-        @keyframes rgPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.25)}50%{box-shadow:0 0 0 16px rgba(34,197,94,0)}}
-        .rg-success-title{font-family:'Gotham', sans-serif;font-weight:900;font-size:48px;line-height:.96;letter-spacing:-.02em;margin-bottom:14px}
-        .rg-success-title em{font-style:normal;color:#22c55e}
-        .rg-success-desc{font-size:14px;font-weight:400;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:18px}
-        .rg-coins-pill{display:inline-flex;align-items:center;gap:10px;font-family:'Gotham', sans-serif;font-weight:700;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;padding:10px 18px;background:rgba(var(--brand-primary-rgb),.06);border:1px solid rgba(var(--brand-primary-rgb),.2);color:var(--brand-primary, #f5e03a);margin-bottom:30px}
-        .rg-coins-pill b{font-family:'Gotham', sans-serif;font-weight:900;font-size:18px;letter-spacing:0}
-
-        /* RIGHT — branding panel */
-        .rg-right{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px;background:linear-gradient(135deg,#07090f 0%,#020307 70%)}
-        .rg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
-        .rg-watermark{position:absolute;font-family:'Gotham', sans-serif;font-weight:900;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-6px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;bottom:-60px;left:-40px;user-select:none}
-        .rg-logo-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;max-width:520px;opacity:.06;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
-        .rg-glow{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(var(--brand-primary-rgb),.04) 0%,transparent 70%);top:50%;right:-180px;transform:translateY(-50%);z-index:1;pointer-events:none}
-        .rg-right-inner{position:relative;z-index:3;display:flex;flex-direction:column;height:100%;justify-content:space-between}
-
-        .rg-top{display:flex;align-items:center;justify-content:space-between}
-        .rg-logo{font-family:'Gotham', sans-serif;font-weight:900;font-size:18px;letter-spacing:3px;display:flex;align-items:center;gap:10px}
-        .rg-logo .y{color:var(--brand-primary, #f5e03a)}
-        .rg-dot{width:6px;height:6px;border-radius:50%;background:var(--brand-accent, #ff5500);animation:rgdot 2s ease-in-out infinite}
-        @keyframes rgdot{0%,100%{opacity:1}50%{opacity:.2}}
-        .rg-back-link{font-family:'Gotham', sans-serif;font-weight:700;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(240,236,227,.4);text-decoration:none;cursor:pointer;border:none;background:none}
-        .rg-back-link:hover{color:var(--brand-primary, #f5e03a)}
-
-        .rg-pitch{position:relative}
-        .rg-pitch h2{font-family:'Gotham', sans-serif;font-weight:900;font-size:clamp(64px,9vw,140px);line-height:.86;letter-spacing:-0.04em;margin:0;color:#f0ece3}
-        .rg-pitch .yl{color:var(--brand-primary, #f5e03a)}
-        .rg-pitch-line{overflow:hidden;display:block}
-        .rg-pitch-line span{display:inline-block;transform:translateY(110%);transition:transform 1s cubic-bezier(.2,.8,.2,1)}
-        .rg-pitch.in .rg-pitch-line:nth-child(1) span{transform:translateY(0);transition-delay:.05s}
-        .rg-pitch.in .rg-pitch-line:nth-child(2) span{transform:translateY(0);transition-delay:.18s}
-        .rg-pitch-sub{font-size:15px;font-weight:400;color:rgba(240,236,227,.55);line-height:1.85;max-width:380px;margin-top:32px;opacity:0;transform:translateY(16px);transition:all .8s ease .55s}
-        .rg-pitch.in + .rg-pitch-sub{opacity:1;transform:translateY(0)}
-
-        .rg-perks{display:flex;flex-direction:column;gap:14px}
-        .rg-perk{display:flex;align-items:center;gap:14px;font-size:13px;color:rgba(240,236,227,.55);font-weight:400}
-        .rg-perk b{font-family:'Gotham', sans-serif;font-weight:900;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);min-width:54px}
-        .rg-perk-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--brand-primary-rgb),.25),rgba(var(--brand-primary-rgb),0))}
-
-        @media (max-width: 980px){
-          .rg-root{grid-template-columns:1fr}
-          .rg-right{padding:32px 28px;min-height:280px;order:-1}
-          .rg-left{padding:40px 24px;border-right:none}
-          .rg-perks{display:none}
+        /* ══════════════════════════════════════════════════════════════════
+           REGISTER — minimalista 2026-05-23, paridad con Login
+           Form a la izquierda, hero a la derecha (espejo).
+           ══════════════════════════════════════════════════════════════════ */
+        .rg-root {
+          min-height: 100vh; min-height: 100svh;
+          background: var(--c-bg, #06070A);
+          color: var(--c-text, #F5F2EB);
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          font-family: var(--f-body, 'Gotham', sans-serif);
+          overflow: hidden;
+          position: relative;
         }
-        @media (max-width: 600px){
-          .rg-pitch h2{font-size:60px;letter-spacing:-1.5px}
-          .rg-title{font-size:40px}
-          .rg-success-title{font-size:44px}
+
+        /* ── LEFT: form ── */
+        .rg-left {
+          position: relative;
+          display: flex; align-items: center; justify-content: center;
+          padding: clamp(36px, 5vw, 64px);
+          background: var(--c-bg, #06070A);
+        }
+        .rg-card {
+          width: 100%; max-width: 440px;
+          opacity: 0; transform: translateY(16px);
+          transition: opacity .8s var(--ease-out), transform .8s var(--ease-out);
+        }
+        .rg-card.in { opacity: 1; transform: translateY(0); }
+        .rg-eyebrow {
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 11px; letter-spacing: 0.32em;
+          text-transform: uppercase;
+          color: var(--c-accent, #A7F5C8);
+          display: inline-flex; align-items: center; gap: 12px;
+          margin-bottom: 16px;
+        }
+        .rg-eyebrow::before {
+          content: ''; width: 24px; height: 1px;
+          background: var(--c-accent, #A7F5C8); opacity: .7;
+        }
+        .rg-title {
+          font-family: var(--f-display, 'Gotham', sans-serif);
+          font-weight: 900;
+          font-size: clamp(36px, 4.6vw, 54px);
+          line-height: 0.98;
+          letter-spacing: -0.025em;
+          color: var(--c-text);
+          margin-bottom: 10px;
+        }
+        .rg-title em {
+          font-style: italic;
+          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
+          font-weight: 400;
+          color: var(--c-accent, #A7F5C8);
+          letter-spacing: -0.015em;
+        }
+        .rg-desc {
+          font-size: 14px; line-height: 1.65;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+          margin-bottom: 32px;
+        }
+
+        .rg-field { margin-bottom: 14px; }
+        .rg-field label {
+          display: block;
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 10px; letter-spacing: 0.24em;
+          text-transform: uppercase;
+          color: var(--c-text-3, rgba(245,242,235,.5));
+          margin-bottom: 8px;
+        }
+        .rg-field label.hot { color: var(--c-accent, #A7F5C8); }
+        .rg-input {
+          width: 100%;
+          background: var(--c-surface, #0E1014);
+          border: 1px solid var(--c-border-2, rgba(255,255,255,.10));
+          color: var(--c-text, #F5F2EB);
+          font-family: inherit; font-weight: 400;
+          font-size: 15px; padding: 13px 16px;
+          outline: none;
+          border-radius: var(--r-2, 10px);
+          transition:
+            border-color var(--dur-base, .24s) var(--ease-out),
+            background var(--dur-base, .24s) var(--ease-out),
+            box-shadow var(--dur-base, .24s) var(--ease-out);
+        }
+        .rg-input:hover { border-color: var(--c-border-3, rgba(255,255,255,.16)); }
+        .rg-input:focus {
+          border-color: var(--c-accent, #A7F5C8);
+          background: var(--c-surface-2, #161A20);
+          box-shadow: 0 0 0 3px rgba(167,245,200,.18);
+        }
+        .rg-input::placeholder { color: var(--c-text-3, rgba(245,242,235,.5)); }
+        .rg-input.code {
+          font-family: var(--f-mono, ui-monospace, monospace);
+          font-weight: 700; font-size: 17px;
+          letter-spacing: 0.32em; text-align: center;
+          border-color: rgba(167,245,200,.30);
+          background: rgba(167,245,200,.04);
+        }
+        .rg-input.code:focus {
+          border-color: var(--c-accent, #A7F5C8);
+          background: rgba(167,245,200,.07);
+        }
+
+        .rg-btn {
+          width: 100%;
+          font-family: inherit;
+          font-size: 13px; font-weight: 900;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          background: linear-gradient(135deg, var(--c-accent-2, #25D366) 0%, #1AAE54 100%);
+          color: #07130c;
+          border: 1px solid rgba(167,245,200,.45);
+          padding: 15px 26px;
+          cursor: pointer;
+          border-radius: var(--r-pill, 999px);
+          transition:
+            transform var(--dur-fast, .15s) ease,
+            box-shadow var(--dur-base, .24s) ease;
+          display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+          margin-top: 14px;
+          box-shadow:
+            0 14px 30px -6px rgba(46,143,110,.55),
+            0 0 0 1px rgba(167,245,200,.20) inset;
+        }
+        .rg-btn:hover {
+          transform: translateY(-2px);
+          box-shadow:
+            0 22px 40px -8px rgba(46,143,110,.7),
+            0 0 0 2px rgba(167,245,200,.6),
+            0 0 60px -10px rgba(167,245,200,.45);
+        }
+        .rg-btn:active { transform: translateY(0); }
+        .rg-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .rg-btn .arr { transition: transform var(--dur-base, .24s) ease; }
+        .rg-btn:hover .arr { transform: translateX(6px); }
+
+        .rg-err {
+          margin-bottom: 16px; padding: 13px 16px;
+          background: rgba(252,165,165,.08);
+          border: 1px solid rgba(252,165,165,.25);
+          color: var(--c-danger, #FCA5A5);
+          font-size: 13px;
+          border-radius: var(--r-2, 10px);
+          display: flex; align-items: center; gap: 10px;
+        }
+        .rg-err::before { content: '⚠'; font-size: 14px; }
+
+        .rg-divider {
+          display: flex; align-items: center; gap: 14px;
+          margin: 26px 0 18px;
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 10px; letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: var(--c-text-3, rgba(245,242,235,.5));
+        }
+        .rg-divider::before, .rg-divider::after {
+          content: ''; flex: 1; height: 1px;
+          background: var(--c-border, rgba(255,255,255,.06));
+        }
+        .rg-back {
+          display: flex; align-items: center; justify-content: center;
+          gap: 8px; font-size: 13px;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+        }
+        .rg-back a {
+          color: var(--c-accent, #A7F5C8);
+          font-weight: 700; text-decoration: none; cursor: pointer;
+          border-bottom: 1px solid transparent;
+          transition: border-color var(--dur-fast, .15s) ease;
+        }
+        .rg-back a:hover { border-bottom-color: var(--c-accent, #A7F5C8); }
+
+        /* ── SUCCESS state ── */
+        .rg-success { text-align: center; padding: 16px 0; }
+        .rg-check-wrap {
+          width: 88px; height: 88px; border-radius: 50%;
+          background: rgba(167,245,200,.08);
+          border: 1.5px solid rgba(167,245,200,.45);
+          color: var(--c-accent, #A7F5C8);
+          margin: 0 auto 26px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 40px;
+          animation: rgPulse 2.4s ease-in-out infinite;
+        }
+        @keyframes rgPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(167,245,200,.30); }
+          50%      { box-shadow: 0 0 0 16px rgba(167,245,200,0); }
+        }
+        .rg-success-title {
+          font-family: var(--f-display);
+          font-weight: 900; font-size: 44px;
+          line-height: 0.98; letter-spacing: -.02em;
+          margin-bottom: 12px;
+        }
+        .rg-success-title em {
+          font-style: italic;
+          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
+          font-weight: 400;
+          color: var(--c-accent, #A7F5C8);
+        }
+        .rg-success-desc {
+          font-size: 14px; line-height: 1.75;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+          margin-bottom: 18px;
+        }
+        .rg-coins-pill {
+          display: inline-flex; align-items: center; gap: 10px;
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 11px; letter-spacing: 0.18em;
+          text-transform: uppercase;
+          padding: 9px 18px;
+          background: rgba(167,245,200,.06);
+          border: 1px solid rgba(167,245,200,.25);
+          color: var(--c-accent, #A7F5C8);
+          border-radius: var(--r-pill, 999px);
+          margin-bottom: 28px;
+        }
+        .rg-coins-pill b { font-weight: 900; font-size: 16px; letter-spacing: 0; }
+
+        /* ── RIGHT: branding hero ── */
+        .rg-right {
+          position: relative; overflow: hidden;
+          display: flex; flex-direction: column;
+          justify-content: space-between;
+          padding: clamp(36px, 5vw, 64px);
+          background: linear-gradient(
+            205deg,
+            var(--c-bg) 0%,
+            var(--c-surface) 40%,
+            #0a1814 100%
+          );
+          border-left: 1px solid var(--c-border);
+        }
+        .rg-right::before {
+          content: ''; position: absolute; inset: 0;
+          background:
+            radial-gradient(ellipse 60% 50% at 30% 20%, rgba(167,245,200,0.12), transparent 60%),
+            radial-gradient(ellipse 80% 70% at 70% 90%, rgba(46,143,110,0.08), transparent 70%);
+          pointer-events: none;
+        }
+        .rg-grid {
+          position: absolute; inset: 0;
+          background-image:
+            linear-gradient(rgba(167,245,200,.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(167,245,200,.025) 1px, transparent 1px);
+          background-size: 64px 64px;
+          pointer-events: none;
+          mask-image: radial-gradient(ellipse 70% 50% at 50% 50%, black, transparent 75%);
+        }
+        .rg-right-inner {
+          position: relative; z-index: 3;
+          display: flex; flex-direction: column;
+          height: 100%; justify-content: space-between;
+          gap: 40px;
+        }
+
+        .rg-top { display: flex; align-items: center; justify-content: space-between; }
+        .rg-logo {
+          font-family: var(--f-display);
+          font-weight: 900; font-size: 20px;
+          letter-spacing: 0.18em;
+        }
+        .rg-back-link {
+          font-family: var(--f-body); font-weight: 700;
+          font-size: 11px; letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+          text-decoration: none; cursor: pointer;
+          background: none; border: none; padding: 0;
+          transition: color var(--dur-base, .24s) ease;
+        }
+        .rg-back-link:hover { color: var(--c-accent, #A7F5C8); }
+
+        .rg-pitch { display: flex; flex-direction: column; gap: 18px; }
+        .rg-pitch h2 {
+          font-family: var(--f-display);
+          font-weight: 900;
+          font-size: clamp(48px, 6.5vw, 84px);
+          line-height: 0.95;
+          letter-spacing: -0.03em;
+          margin: 0;
+          color: var(--c-text);
+        }
+        .rg-pitch h2 em {
+          font-style: italic;
+          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
+          font-weight: 400;
+          color: var(--c-accent, #A7F5C8);
+        }
+        .rg-pitch-sub {
+          max-width: 420px;
+          font-size: 15px; line-height: 1.6;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+          margin: 0;
+        }
+
+        .rg-perks {
+          display: flex; flex-direction: column; gap: 14px;
+        }
+        .rg-perk {
+          display: flex; align-items: center; gap: 14px;
+          font-size: 13px;
+          color: var(--c-text-2, rgba(245,242,235,.72));
+        }
+        .rg-perk b {
+          font-family: var(--f-mono, ui-monospace, monospace);
+          font-weight: 700; font-size: 11px;
+          letter-spacing: 0.12em;
+          color: var(--c-accent, #A7F5C8);
+          min-width: 26px;
+        }
+        .rg-perk-line {
+          flex: 1; height: 1px;
+          background: linear-gradient(90deg, rgba(167,245,200,.30), rgba(167,245,200,0));
+        }
+
+        @media (max-width: 980px) {
+          .rg-root { grid-template-columns: 1fr; }
+          .rg-right { padding: 28px; min-height: 240px; order: -1; border-left: none; border-bottom: 1px solid var(--c-border); gap: 24px; }
+          .rg-pitch h2 { font-size: clamp(34px, 9vw, 52px); }
+          .rg-perks { display: none; }
+        }
+        @media (max-width: 600px) {
+          .rg-title { font-size: 32px; }
+          .rg-success-title { font-size: 36px; }
         }
       `}</style>
 
       {/* LEFT — form */}
       <div className="rg-left">
-        <div className="rg-num">02</div>
         <div ref={cardRef} className="rg-card">
           {step === "success" ? (
             <div className="rg-success">
@@ -187,12 +422,12 @@ export default function Register() {
               <button onClick={() => navigate("/")} className="rg-btn">
                 <span>Ir al login</span><span className="arr">→</span>
               </button>
-              <div style={{ marginTop: 18, fontSize: 12, color: "rgba(240,236,227,.45)" }}>
+              <div style={{ marginTop: 18, fontSize: 12, color: "var(--c-text-3, rgba(245,242,235,.5))" }}>
                 {resendStatus === "cooldown" ? (
                   <span>Mail reenviado{resendCooldown > 0 ? `. Podés reintentar en ${resendCooldown}s.` : "."}</span>
                 ) : (
                   <button type="button" onClick={resendVerification} disabled={resendStatus === "sending"}
-                    style={{ background: "none", border: "none", color: "var(--brand-primary, #f5e03a)", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>
+                    style={{ background: "none", border: "none", color: "var(--c-accent, #A7F5C8)", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>
                     {resendStatus === "sending" ? "Reenviando..." : "¿No te llegó? Reenviar mail"}
                   </button>
                 )}
@@ -247,27 +482,22 @@ export default function Register() {
         </div>
       </div>
 
-      {/* RIGHT — branding */}
+      {/* RIGHT — branding hero */}
       <div className="rg-right">
         <div className="rg-grid" />
-        <div className="rg-watermark">PORTAL</div>
-        <img src="/icons/icon.svg" alt="" className="rg-logo-img" />
-        <div className="rg-glow" />
         <div className="rg-right-inner">
           <div className="rg-top">
-            <div className="rg-logo">{(branding.name || "Mi Portal").toUpperCase()}</div>
+            <div className="rg-logo">{(branding.name || "HOLISTIC").toUpperCase()}</div>
             <button className="rg-back-link" onClick={() => navigate("/")}>← Volver al login</button>
           </div>
 
           <div ref={titleRef} className="rg-pitch">
-            <h2>
-              <span className="rg-pitch-line"><span>UN PORTAL</span></span>
-              <span className="rg-pitch-line"><span className="yl">PARA VOS</span></span>
-            </h2>
+            <h2>Sumate al cultivo<br /><em>de la comunidad.</em></h2>
+            <p className="rg-pitch-sub">
+              Acceso a la línea completa Holistic, Coins, recompensas y soporte
+              humano de ingenieros agrónomos. Todo en un solo lugar.
+            </p>
           </div>
-          <p className="rg-pitch-sub">
-            Acceso completo a tu perfil, comunidad, chat, notificaciones y Coins. Todo en un solo lugar.
-          </p>
 
           <div className="rg-perks">
             <div className="rg-perk"><b>01</b> Comunidad y stories <span className="rg-perk-line" /></div>
