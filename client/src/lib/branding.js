@@ -77,18 +77,14 @@ function setMeta(selector, attr, value) {
 
 function applyToDOM(b) {
   if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  root.style.setProperty("--brand-primary", b.color_primary);
-  root.style.setProperty("--brand-accent",  b.color_accent);
-  root.style.setProperty("--brand-bg",      b.color_bg);
-  root.style.setProperty("--brand-text",    b.color_text);
-  root.style.setProperty("--brand-font",    BRANDING_DEFAULTS.fonts[b.font_preset] || BRANDING_DEFAULTS.fonts.moderna);
-  // RGB triplets para componer rgba() en CSS sin perder customización.
-  // Uso: rgba(var(--brand-primary-rgb), 0.5)
-  const primaryRgb = hexToRgbTriplet(b.color_primary);
-  const accentRgb  = hexToRgbTriplet(b.color_accent);
-  if (primaryRgb) root.style.setProperty("--brand-primary-rgb", primaryRgb);
-  if (accentRgb)  root.style.setProperty("--brand-accent-rgb",  accentRgb);
+  // Sprint 14 (2026-05-23): los colores y la tipografía quedaron CONGELADOS
+  // en el design system fijo del client/index.html. Ya no se aplican en
+  // runtime — el wizard de admin sigue editando branding.name/slogan/logo
+  // pero esos campos NO modifican los tokens visuales. Esto garantiza
+  // consistencia visual y evita "branding wars" entre tenants.
+  //
+  // Lo que SÍ sigue aplicándose en runtime: title + meta tags + favicon
+  // (afectan SEO + chrome del browser, no el visual del producto).
 
   // Title
   if (b.name) document.title = b.name;
@@ -107,9 +103,12 @@ function applyToDOM(b) {
     setMeta("property='og:description'",  "content", b.slogan);
     setMeta("name='twitter:description'", "content", b.slogan);
   }
-  if (b.color_primary) setMeta("name='theme-color'", "content", b.color_primary);
-  if (b.color_bg)      setMeta("name='msapplication-TileColor'", "content", b.color_bg);
-  if (b.logo_url)      setMeta("property='og:image'", "content", b.logo_url);
+  // theme-color y msapplication-TileColor hardcoded al design system fijo
+  // (mismos valores que :root del index.html). Antes se ataban al wizard
+  // pero ahora los colores están congelados.
+  setMeta("name='theme-color'", "content", "#06070A");
+  setMeta("name='msapplication-TileColor'", "content", "#06070A");
+  if (b.logo_url) setMeta("property='og:image'", "content", b.logo_url);
 
   // Favicon (si el admin subió uno custom)
   if (b.favicon_url) {

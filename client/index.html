@@ -60,78 +60,309 @@
     <link rel="icon" type="image/svg+xml" href="/portal/icons/icon.svg" />
     <link rel="icon" type="image/png" sizes="192x192" href="/portal/icons/icon-192.png" />
   <style>
-    /* ── DESIGN TOKENS (alineados al landing) ── */
+    /* ══════════════════════════════════════════════════════════════════════
+       DESIGN SYSTEM — Holistic Portal v2 (2026-05-23)
+       Swiss Modernism 2.0 + Dark Mode OLED + Exaggerated Minimalism.
+       Tokens FIJOS — el usuario NO los puede cambiar en runtime (el wizard
+       de admin sigue editando branding.name/slogan/logo pero los colores
+       quedan congelados acá para garantizar consistencia visual).
+       ══════════════════════════════════════════════════════════════════════ */
     :root {
-      --black: #020307;
-      --dark: #07090f;
-      --card: #0b0d18;
-      --lemon: #f5e03a;
-      --orange: #ff5500;
-      --white: #f0ece3;
-      --ghost: rgba(240,236,227,.4);
-      --border: rgba(240,236,227,.07);
-      --border2: rgba(240,236,227,.12);
-      --legacy-orange: #f5a623;
-      --legacy-orange-hot: #ff6200;
+      /* ── Surface palette (OLED-friendly) ── */
+      --c-bg:           #06070A;     /* deep near-black, slight cool tint */
+      --c-surface:      #0E1014;     /* card / panel */
+      --c-surface-2:    #161A20;     /* elevated card */
+      --c-surface-3:    #1F242C;     /* hover / focused surface */
+
+      /* ── Text scale (4.5:1+ contrast) ── */
+      --c-text:         #F5F2EB;     /* primary — warm off-white */
+      --c-text-2:       rgba(245, 242, 235, 0.72);
+      --c-text-3:       rgba(245, 242, 235, 0.50);
+      --c-text-disabled:rgba(245, 242, 235, 0.30);
+
+      /* ── Brand accents (mint Holistic) ── */
+      --c-accent:       #A7F5C8;     /* primary mint */
+      --c-accent-rgb:   167, 245, 200;
+      --c-accent-2:     #25D366;     /* CTA strong */
+      --c-accent-soft:  rgba(167, 245, 200, 0.10);
+      --c-accent-glow:  rgba(167, 245, 200, 0.32);
+
+      /* ── Borders ── */
+      --c-border:       rgba(255, 255, 255, 0.06);
+      --c-border-2:     rgba(255, 255, 255, 0.10);
+      --c-border-3:     rgba(255, 255, 255, 0.16);
+
+      /* ── Status ── */
+      --c-success:      #86EFAC;
+      --c-warning:      #FCD34D;
+      --c-danger:       #FCA5A5;
+      --c-info:         #93C5FD;
+
+      /* ── Typography ── */
+      --f-display:      'Gotham', system-ui, sans-serif;
+      --f-body:         'Gotham', system-ui, sans-serif;
+      --f-italic:       'Fraunces', Georgia, serif;
+      --f-mono:         'Gotham', ui-monospace, monospace;
+
+      /* ── Spacing scale (8px base) ── */
+      --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+      --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+      --sp-12: 48px; --sp-16: 64px; --sp-20: 80px;
+
+      /* ── Radii ── */
+      --r-1: 6px; --r-2: 10px; --r-3: 14px; --r-4: 18px; --r-5: 24px; --r-pill: 999px;
+
+      /* ── Shadows ── */
+      --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.35);
+      --shadow-md:  0 8px 24px -6px rgba(0, 0, 0, 0.5);
+      --shadow-lg:  0 22px 60px -12px rgba(0, 0, 0, 0.65);
+      --shadow-glow:0 0 30px -6px var(--c-accent-glow);
+
+      /* ── Motion ── */
+      --ease-out:       cubic-bezier(.2, .8, .2, 1);
+      --ease-spring:    cubic-bezier(.34, 1.56, .64, 1);
+      --dur-fast:       150ms;
+      --dur-base:       240ms;
+      --dur-slow:       400ms;
+
+      /* ── Z-index scale (predecible) ── */
+      --z-base: 1; --z-dropdown: 50; --z-sticky: 100; --z-fixed: 200;
+      --z-modal-bg: 300; --z-modal: 400; --z-toast: 500;
+
+      /* ── Layout ── */
+      --container: 1200px;
+      --container-wide: 1440px;
+
+      /* ── Legacy aliases (compat con código antiguo) ── */
+      --brand-bg:       var(--c-bg);
+      --brand-text:     var(--c-text);
+      --brand-primary:  var(--c-accent);
+      --brand-primary-rgb: var(--c-accent-rgb);
+      --brand-accent:   var(--c-accent-2);
+      --brand-font:     var(--f-body);
+      --black:          var(--c-bg);
+      --dark:           var(--c-surface);
+      --card:           var(--c-surface);
+      --white:          var(--c-text);
+      --ghost:          var(--c-text-3);
+      --border:         var(--c-border);
+      --border2:        var(--c-border-2);
+      /* Legacy lemon/orange — quedan apuntando al accent para no romper
+         estilos viejos, pero ya no se usan visualmente. */
+      --lemon:          var(--c-accent);
+      --orange:         var(--c-accent-2);
+      --legacy-orange:  var(--c-accent);
+      --legacy-orange-hot: var(--c-accent-2);
+
+      color-scheme: dark;
     }
 
+    /* ── Reset + base typography ── */
     *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     html, body { margin: 0; padding: 0; overflow-x: hidden; }
-    body { background: #080808; color: #fff; font-family: 'Gotham', system-ui, sans-serif; }
+    body {
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-family: var(--f-body);
+      font-size: 15px;
+      line-height: 1.55;
+      letter-spacing: 0.005em;
+      min-height: 100vh;
+    }
 
-    /* ── Helpers tipográficos (era Bebas/DM Mono/Barlow Condensed → todo Gotham con weight + tracking apropiados) ── */
-    .ff-bebas { font-family: 'Gotham', sans-serif; font-weight: 900; letter-spacing: 0; }
-    .ff-mono  { font-family: 'Gotham', sans-serif; font-weight: 700; letter-spacing: 0.04em; }
-    .ff-cond  { font-family: 'Gotham', sans-serif; font-weight: 700; letter-spacing: 0.02em; }
-    .lbl-mono { font-family: 'Gotham', sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--ghost); }
-    .eyebrow  { font-family: 'Gotham', sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: var(--orange); display: inline-flex; align-items: center; gap: 12px; }
-    .eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--orange); }
+    /* Focus ring premium — visible para keyboard nav (a11y critical) */
+    *:focus { outline: none; }
+    *:focus-visible {
+      outline: 2px solid var(--c-accent);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
 
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    /* Selección de texto */
+    ::selection { background: var(--c-accent-soft); color: var(--c-text); }
+
+    /* Link reset */
+    a { color: inherit; }
+
+    /* Headings — declarative scale */
+    h1, h2, h3, h4, h5 { margin: 0; font-family: var(--f-display); font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+    p { margin: 0; }
+
+    /* Reduced motion respect */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* ── Helpers tipográficos ── */
+    .ff-bebas { font-family: var(--f-display); font-weight: 900; letter-spacing: 0; }
+    .ff-mono  { font-family: var(--f-mono); font-weight: 700; letter-spacing: 0.04em; }
+    .ff-cond  { font-family: var(--f-display); font-weight: 700; letter-spacing: 0.02em; }
+    .ff-italic{ font-family: var(--f-italic); font-style: italic; font-weight: 500; letter-spacing: -0.015em; }
+    .lbl-mono {
+      font-family: var(--f-body); font-weight: 700;
+      font-size: 10px; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--c-text-3);
+    }
+    .eyebrow {
+      font-family: var(--f-body); font-weight: 700;
+      font-size: 11px; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--c-accent);
+      display: inline-flex; align-items: center; gap: 12px;
+    }
+    .eyebrow::before {
+      content: ''; width: 24px; height: 1px;
+      background: var(--c-accent);
+      opacity: 0.7;
+    }
+
+    /* ── Scrollbar minimalista ── */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(245,224,58,0.28); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(245,224,58,0.5); }
-    
-    /* ── Tabla responsive ── */
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--r-pill);
+      transition: background var(--dur-base) var(--ease-out);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.18); }
+
+    /* ── Tabla responsive (refinada) ── */
     .tableWrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
-    .table th { padding: 10px 12px; text-align: left; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.4); border-bottom: 1px solid rgba(255,255,255,0.06); white-space: nowrap; }
-    .table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
-    .muted { color: rgba(255,255,255,0.35); }
-    .pill { display: inline-block; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.08); font-size: 11px; font-weight: 700; font-family: monospace; }
-    
-    /* ── Inputs globales ── */
+    .table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px; min-width: 600px;
+    }
+    .table th {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--c-text-3);
+      border-bottom: 1px solid var(--c-border);
+      white-space: nowrap;
+    }
+    .table td {
+      padding: 14px;
+      border-bottom: 1px solid var(--c-border);
+      vertical-align: middle;
+      color: var(--c-text-2);
+    }
+    .table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .muted { color: var(--c-text-3); }
+    .pill {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px;
+      border-radius: var(--r-pill);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--c-border);
+      font-size: 11px; font-weight: 700;
+      font-family: var(--f-mono);
+      letter-spacing: 0.04em;
+      color: var(--c-text-2);
+    }
+
+    /* ── Inputs globales (minimalista, subtle border) ── */
     .input {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(245,166,35,0.15);
-      border-radius: 10px; color: #fff;
-      font-size: 14px; padding: 10px 14px;
-      outline: none; transition: all .2s;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border-2);
+      border-radius: var(--r-2);
+      color: var(--c-text);
+      font-size: 14px;
+      padding: 11px 14px;
+      outline: none;
+      transition:
+        border-color var(--dur-base) var(--ease-out),
+        background var(--dur-base) var(--ease-out),
+        box-shadow var(--dur-base) var(--ease-out);
       font-family: inherit;
+      width: 100%;
+      box-sizing: border-box;
     }
-    .input:focus { border-color: rgba(245,166,35,0.5); background: rgba(245,166,35,0.06); }
-    .input::placeholder { color: rgba(255,255,255,0.25); }
+    .input:hover { border-color: var(--c-border-3); }
+    .input:focus {
+      border-color: var(--c-accent);
+      background: var(--c-surface-2);
+      box-shadow: 0 0 0 3px rgba(var(--c-accent-rgb), 0.18);
+    }
+    .input::placeholder { color: var(--c-text-3); }
     select.input { cursor: pointer; }
-    
-    /* ── Botones globales ── */
+
+    /* ── Botones globales (sistema unificado) ── */
     .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      height: 40px; padding: 0 16px; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.7);
-      font-size: 13px; font-weight: 700; cursor: pointer;
-      transition: all .2s; font-family: inherit; white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 40px;
+      min-width: 44px;            /* a11y touch target */
+      padding: 0 18px;
+      border-radius: var(--r-2);
+      border: 1px solid var(--c-border-2);
+      background: var(--c-surface);
+      color: var(--c-text);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition:
+        background var(--dur-base) var(--ease-out),
+        border-color var(--dur-base) var(--ease-out),
+        color var(--dur-base) var(--ease-out),
+        transform var(--dur-fast) var(--ease-out);
+      font-family: inherit;
+      white-space: nowrap;
     }
-    .btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn:hover {
+      background: var(--c-surface-2);
+      border-color: var(--c-border-3);
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
     .btnPrimary {
-      background: linear-gradient(135deg,#f5a623,#ff6200) !important;
-      color: #000 !important; border: none !important;
-      box-shadow: 0 4px 16px rgba(245,166,35,0.35);
+      background: linear-gradient(135deg, var(--c-accent-2), #1AAE54) !important;
+      color: #07130c !important;
+      border: 1px solid rgba(167, 245, 200, 0.4) !important;
+      font-weight: 800;
+      box-shadow: 0 8px 22px -6px rgba(37, 211, 102, 0.5);
     }
-    .btnPrimary:hover { box-shadow: 0 6px 24px rgba(245,166,35,0.5) !important; transform: translateY(-1px); }
+    .btnPrimary:hover {
+      box-shadow:
+        0 14px 32px -8px rgba(37, 211, 102, 0.6),
+        0 0 0 1.5px rgba(167, 245, 200, 0.6) !important;
+      transform: translateY(-1px);
+    }
+    .btnPrimary:active { transform: translateY(0); }
+
+    /* ── Cards globales ── */
+    .card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-3);
+      padding: var(--sp-6);
+      transition: border-color var(--dur-base) var(--ease-out), background var(--dur-base) var(--ease-out);
+    }
+    .card:hover { border-color: var(--c-border-2); }
+
+    /* ── Badges de estado ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--r-pill);
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+    .badge--success { background: rgba(134,239,172,0.10); color: var(--c-success); }
+    .badge--warn    { background: rgba(252,211,77,0.10);  color: var(--c-warning); }
+    .badge--danger  { background: rgba(252,165,165,0.10); color: var(--c-danger); }
+    .badge--accent  { background: var(--c-accent-soft); color: var(--c-accent); }
     
     /* ── Screen wrapper ── */
     .screen { padding: 0 16px 40px; }
