@@ -71,6 +71,13 @@ const organizationSchema = {
     <link rel="preload" href="/fonts/holistic/gotham-book.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/holistic/gotham-black.woff2" as="font" type="font/woff2" crossorigin />
 
+    {/* Fraunces — serif editorial variable (Google Fonts). Usado puntualmente
+        para el headline cursiva del FinalCTA "Explora todo" (contraste con
+        Gotham geométrica). Carga async via Google Fonts CDN, swap display. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500;1,9..144,600&display=swap" />
+
     {/* Schema JSON-LD Organization — Google rich results */}
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
 </head>

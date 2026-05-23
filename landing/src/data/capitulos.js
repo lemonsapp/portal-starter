@@ -81,20 +81,21 @@ export const capitulos = [
         nombreCorto: "LÍNEA",
         nombreDestacado: "RACE",
 
-        // SEO meta — v3 §4 (actualizado: removido "líquido concentrado")
-        seoTitle: "Línea Race — Sistema Completo de Fertilizantes para Indoor | Holistic",
+        // SEO meta — v4 (2026-05-23): indoor + outdoor, Race 4 = Micro + Magnesio,
+        // Race 3 dividida en 1ª y 2ª parte PK de crecimiento y maduración.
+        seoTitle: "Línea Race — Sistema Completo de Fertilizantes para Indoor y Outdoor | Holistic",
         seoDescription:
-            "Línea Race Holistic: 4 fertilizantes para el ciclo completo de cultivo indoor. Race 1 Vegetativo, Race 2 Floración, Race 3 Bloom Booster y Race 4 Finalizador. Diseñado para autoflorecientes e indoor de ciclo corto. Envío gratis.",
-        keywords: ["sistema de fertilizantes", "cultivo indoor", "bloom booster", "fertilizante vegetativo", "fertilizante de floración", "autoflorecientes", "ciclos cortos"],
+            "Línea Race Holistic: 4 fertilizantes para el ciclo completo de cultivo indoor y outdoor. Race 1 (NPK), Race 2 (Calcio + Nitrógeno, Part A + B), Race 3 (PK de crecimiento y maduración en 2 partes) y Race 4 (Micro + Magnesio). Envío gratis.",
+        keywords: ["sistema de fertilizantes", "cultivo indoor", "cultivo outdoor", "fertilizante NPK", "fertilizante PK", "calcio y nitrógeno", "micro y magnesio", "autoflorecientes", "ciclo completo"],
 
-        // Copy visible — v3 §4
-        h1: "Sistema completo de fertilizantes para cultivo indoor de ciclo corto.",
+        // Copy visible — v4
+        h1: "Sistema completo de fertilizantes para cultivo indoor y outdoor.",
         tagline: "Velocidad pura para cultivos exigentes.",
         parrafoIntro:
-            "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor: Race 1 Vegetativo, Race 2 Floración (Part A + B), Race 3 Bloom Booster y Race 4 Finalizador. Ideal para autoflorecientes, ciclos cortos y cultivadores que no quieren perder ni una semana.",
+            "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno, Part A + B), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
         descripcion:
-            "Línea premium en 4 fórmulas: Race 1 Vegetativo, Race 2 (Part A + B) Floración, Race 3 Bloom Booster y Race 4 Finalizador. Diseñada para extraer el máximo rendimiento en cada ciclo indoor.",
-        quote: "La velocidad sin control es ruido. Race es el fertilizante indoor que te da las dos cosas: velocidad y precisión.",
+            "4 fertilizantes para el ciclo completo indoor y outdoor: Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración, 2 partes) y Race 4 (Micro + Magnesio). Diseñada para extraer el máximo rendimiento en cada cultivo.",
+        quote: "La velocidad sin control es ruido. Race es el fertilizante que te da las dos cosas: velocidad y precisión, indoor y outdoor.",
 
         producto: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
         productoSecundario: "/img/productos/linea-race/500ml/race-3-rosa-500ml.png",

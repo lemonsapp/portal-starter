@@ -1,17 +1,47 @@
 ---
-// Último bloque de la home. Cursor se vuelve claro mientras esta sección
-// está en viewport (lo maneja story-animations.js).
+// FinalCTA — REWRITE 2026-05-23: foco shopping + carrito.
+//
+// Cambios vs versión anterior:
+//   • Title bi-tipo: "EXPLORÁ" Gotham Black bold + "todo el catálogo"
+//     Fraunces italic premium (contraste editorial premium).
+//   • Top eyebrow con badge "ENVÍO GRATIS · STOCK ARGENTINA" — trust
+//     signal inmediato.
+//   • CTA cambia de "VER CATÁLOGO" + arrow → "VER CATÁLOGO Y COMPRAR"
+//     + ícono de carrito (con badge "+" animado).
+//   • Trust strip inferior: 3 chips (Pago en cuotas · Envío 48hs ·
+//     Compra segura). Telegrafia que esto es shopping, no info.
+//   • Mini-hint debajo: "Catálogo completo en tu carrito a un click".
+//
+// Skills aplicadas: gsap-plugins SplitText (chars EXPLORÁ + words
+// Fraunces line) + gsap-timeline + gsap-scrolltrigger toggleActions.
 import { CTAS } from "../data/contacto.js";
 ---
 <section class="final-cta" data-final-cta>
     <div class="final-cta__inner">
+
+        <!-- Top badge — trust signal inmediato -->
+        <div class="final-cta__badge" data-final-badge aria-hidden="true">
+            <span class="final-cta__badge-dot"></span>
+            <span class="final-cta__badge-text">ENVÍO GRATIS · STOCK ARGENTINA</span>
+            <span class="final-cta__badge-dot"></span>
+        </div>
+
+        <!-- Title bi-tipo: Gotham bold + Fraunces italic premium -->
         <h2 class="final-cta__title" data-final-title>
-            <span class="word" data-split-final>EXPLORÁ</span>
-            <span class="word" data-split-final>TODO</span>
+            <span class="final-cta__title-row final-cta__title-row--bold">
+                <span class="word" data-split-final>EXPLORÁ</span>
+            </span>
+            <span class="final-cta__title-row final-cta__title-row--italic">
+                <span class="final-cta__italic-mask" data-final-italic-mask>
+                    <span class="final-cta__italic-inner" data-final-italic>todo el catálogo</span>
+                </span>
+            </span>
         </h2>
+
         <p class="final-cta__sub" data-final-sub>
-            Todos los fertilizantes para cultivo indoor de Holistic, en un solo lugar.
+            Sumá los fertilizantes que necesitás al carrito, pagás seguro y los recibís en 48 hs en todo el país.
         </p>
+
         <a
             href={CTAS.explorar_catalogo}
             class="final-cta__btn"
@@ -19,21 +49,294 @@ import { CTAS } from "../data/contacto.js";
             data-final-btn
             data-magnetic
             data-magnetic-strength="0.25"
+            aria-label="Ver catálogo y comprar — abre el portal de tienda"
         >
-            <span>VER CATÁLOGO</span>
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <!-- Cart icon con badge "+" pulsante para reforzar shopping -->
+            <span class="final-cta__btn-cart" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="20" r="1.4" />
+                    <circle cx="18" cy="20" r="1.4" />
+                    <path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6" />
+                </svg>
+                <span class="final-cta__btn-cart-badge" data-final-cart-badge>+</span>
+            </span>
+            <span class="final-cta__btn-text">VER CATÁLOGO Y COMPRAR</span>
+            <svg class="final-cta__btn-arrow" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                 <path
                     d="M5 12h14M13 6l6 6-6 6"
                     stroke="currentColor"
                     stroke-width="2"
                     fill="none"
                     stroke-linecap="round"
+                    stroke-linejoin="round"
                 />
             </svg>
         </a>
+
+        <!-- Trust chips: 3 mini-signals de confianza shopping -->
+        <ul class="final-cta__trust" data-final-trust aria-label="Garantías de compra">
+            <li class="final-cta__trust-chip" data-final-trust-chip>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="6" width="18" height="13" rx="2"/>
+                    <path d="M3 10h18M7 15h4"/>
+                </svg>
+                <span>Pago en cuotas</span>
+            </li>
+            <li class="final-cta__trust-chip" data-final-trust-chip>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 7h11v9H3z"/>
+                    <path d="M14 10h4l3 3v3h-7"/>
+                    <circle cx="7" cy="18" r="1.6"/>
+                    <circle cx="17" cy="18" r="1.6"/>
+                </svg>
+                <span>Envío en 48 hs</span>
+            </li>
+            <li class="final-cta__trust-chip" data-final-trust-chip>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 2 4 6v6c0 4.5 3 8.5 8 10 5-1.5 8-5.5 8-10V6z"/>
+                    <path d="M9 12l2 2 4-4"/>
+                </svg>
+                <span>Compra 100% segura</span>
+            </li>
+        </ul>
+
+        <p class="final-cta__hint" data-final-hint>
+            Sumás al carrito desde el portal · Pago con tarjeta o transferencia.
+        </p>
     </div>
 </section>
 
 <script>
     import "../scripts/final-cta-animations.js";
 </script>
+
+<style>
+    .final-cta {
+        position: relative;
+        padding: clamp(80px, 14vh, 140px) 6vw clamp(70px, 12vh, 120px);
+        background: #0a0a0a;
+        color: #fff;
+        text-align: center;
+        overflow: hidden;
+        isolation: isolate;
+    }
+    .final-cta__inner {
+        position: relative;
+        z-index: 2;
+        max-width: 920px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: clamp(20px, 3vh, 30px);
+    }
+
+    /* ---- TOP BADGE ---- */
+    .final-cta__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(167, 245, 200, 0.35);
+        background: rgba(167, 245, 200, 0.07);
+        font-family: var(--f-title, 'Gotham', sans-serif);
+        font-weight: 700;
+        font-size: 0.72rem;
+        letter-spacing: 0.18em;
+        color: #A7F5C8;
+        opacity: 0;
+        will-change: transform, opacity;
+    }
+    .final-cta__badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #A7F5C8;
+        box-shadow: 0 0 10px #A7F5C8;
+    }
+
+    /* ---- TITLE bi-tipo ---- */
+    .final-cta__title {
+        margin: 0;
+        font-family: var(--f-title, 'Gotham', sans-serif);
+        line-height: 0.95;
+        letter-spacing: -0.02em;
+    }
+    .final-cta__title-row {
+        display: block;
+    }
+    .final-cta__title-row--bold {
+        font-weight: 900;
+        font-size: clamp(3.5rem, 9vw, 6.5rem);
+        text-transform: uppercase;
+    }
+    .final-cta__title-row--italic {
+        margin-top: clamp(6px, 1vh, 12px);
+        font-family: 'Fraunces', Georgia, serif;
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(2.4rem, 6.5vw, 4.6rem);
+        letter-spacing: -0.01em;
+        color: #A7F5C8;
+        font-feature-settings: "ss01", "ss02";
+    }
+    .final-cta__italic-mask {
+        display: inline-block;
+        overflow: hidden;
+        line-height: 1.1;
+    }
+    .final-cta__italic-inner {
+        display: inline-block;
+        will-change: transform;
+    }
+
+    /* ---- SUB ---- */
+    .final-cta__sub {
+        margin: 0;
+        max-width: 56ch;
+        font-family: var(--f-text, 'Gotham', sans-serif);
+        font-size: clamp(0.98rem, 1.3vw, 1.18rem);
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.78);
+        opacity: 0;
+        will-change: transform, opacity;
+    }
+
+    /* ---- BUTTON shopping ---- */
+    .final-cta__btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 32px 18px 26px;
+        border-radius: 999px;
+        border: 1.5px solid rgba(167, 245, 200, 0.6);
+        background: linear-gradient(135deg, #25D366 0%, #2E8F6E 100%);
+        color: #fff;
+        text-decoration: none;
+        font-family: var(--f-title, 'Gotham', sans-serif);
+        font-weight: 800;
+        font-size: clamp(0.95rem, 1.15vw, 1.1rem);
+        letter-spacing: 0.06em;
+        box-shadow:
+            0 0 0 1px rgba(167, 245, 200, 0.18),
+            0 14px 30px -8px rgba(46, 143, 110, 0.6),
+            0 0 40px -6px rgba(167, 245, 200, 0.35);
+        opacity: 0;
+        will-change: transform, opacity, box-shadow;
+        transition: box-shadow 0.4s ease;
+    }
+    .final-cta__btn:hover {
+        box-shadow:
+            0 0 0 1px rgba(167, 245, 200, 0.35),
+            0 18px 38px -8px rgba(46, 143, 110, 0.75),
+            0 0 60px -6px rgba(167, 245, 200, 0.55);
+    }
+    .final-cta__btn-cart {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+    }
+    .final-cta__btn-cart svg {
+        will-change: transform;
+    }
+    .final-cta__btn-cart-badge {
+        position: absolute;
+        top: -8px;
+        right: -10px;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: #fff;
+        color: #1a1a1a;
+        font-family: var(--f-title, 'Gotham', sans-serif);
+        font-weight: 900;
+        font-size: 0.78rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        will-change: transform;
+    }
+    .final-cta__btn-text {
+        white-space: nowrap;
+    }
+    .final-cta__btn-arrow {
+        will-change: transform;
+    }
+
+    /* ---- TRUST CHIPS ---- */
+    .final-cta__trust {
+        list-style: none;
+        margin: clamp(8px, 1.5vh, 14px) 0 0;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px 14px;
+    }
+    .final-cta__trust-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.04);
+        font-family: var(--f-text, 'Gotham', sans-serif);
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.82);
+        opacity: 0;
+        will-change: transform, opacity;
+    }
+    .final-cta__trust-chip svg {
+        color: #A7F5C8;
+    }
+
+    /* ---- HINT bottom ---- */
+    .final-cta__hint {
+        margin: clamp(10px, 1.5vh, 18px) 0 0;
+        font-family: var(--f-text, 'Gotham', sans-serif);
+        font-size: 0.85rem;
+        letter-spacing: 0.02em;
+        color: rgba(255, 255, 255, 0.48);
+        opacity: 0;
+        will-change: opacity;
+    }
+
+    @media (max-width: 640px) {
+        .final-cta__badge {
+            font-size: 0.62rem;
+            padding: 7px 14px;
+        }
+        .final-cta__btn {
+            padding: 16px 24px 16px 20px;
+            font-size: 0.88rem;
+        }
+        .final-cta__btn-text {
+            font-size: 0.85rem;
+        }
+        .final-cta__trust-chip {
+            font-size: 0.78rem;
+            padding: 7px 12px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .final-cta__badge,
+        .final-cta__sub,
+        .final-cta__btn,
+        .final-cta__trust-chip,
+        .final-cta__hint {
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    }
+</style>

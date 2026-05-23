@@ -1,166 +1,180 @@
 /* =====================================================================
-   OrganicConnector — Fluid Drops Cascade v2 (compact + dense)
-   2026-05-20 — iteración tras feedback "queda espacio vacío".
+   OrganicConnector — v4 "Nutrición Ascendente" scroll-scrub botánico
+   2026-05-23 — refinement v3 con narrativa fertilizantes/cultivo.
 
-   Cambios vs v1:
-     • Streams visibles desde el inicio (sin DrawSVG hidden) — la
-       silueta ya aporta presencia visual instantánea.
-     • Drops cayendo en LOOP CONTINUO (independiente del scroll) —
-       la cascada está SIEMPRE activa, no solo en el momento de scroll.
-     • Splash + ripples también triggereados por los loops continuos
-       (cada drop al "morir" dispara su splash/ripple).
-     • Turbulence shimmer idle yoyo se mantiene.
+   Concepto:
+     • Tallos vegetales crecen bottom→top (DrawSVG scrub)
+     • Hojas se abren lateralmente desde el tallo central, cada una a
+       su ventana de scroll (scale 0 → target, back.out)
+     • Gotas de fertilizante líquido ascienden por los tallos
+       (MotionPath REVERSE scrub) con fade-in + fade-out
+     • Halo de fotosíntesis arriba se intensifica con el scroll
+     • Todo atado al scroll del usuario — sin loops infinitos
 
    Skills aplicadas:
-     • gsap-plugins MotionPathPlugin      → drops siguen streams
-     • gsap-plugins Physics2DPlugin       → splash con gravity
-     • gsap-plugins CustomEase ("liquid") → drops timing
-     • gsap-timeline (per-drop loop)      → cascada continua
-     • gsap-utils.random + stagger        → naturalismo
-     • gsap-core matchMedia               → reduced-motion + mobile
-     • gsap-performance                   → transforms + will-change
+     • gsap-scrolltrigger scrub        → master timeline tied a scroll
+     • gsap-plugins DrawSVGPlugin      → tallos + bloom
+     • gsap-plugins MotionPathPlugin   → drops ascendiendo
+     • gsap-core matchMedia            → reduced-motion + mobile
+     • gsap-timeline (master)          → orquestación de los 4 layers
    ===================================================================== */
 
 import {
     gsap, mm, BREAKPOINTS, ScrollTrigger,
-    MotionPathPlugin, Physics2DPlugin,
+    MotionPathPlugin, DrawSVGPlugin,
 } from "./lib/registerGsap.js";
 
 const root = document.querySelector("[data-organic-connector]");
 if (root) {
-    const svg       = root.querySelector("[data-oc-svg]");
-    const streams   = Array.from(root.querySelectorAll("[data-oc-stream]"));
-    const drops     = Array.from(root.querySelectorAll("[data-oc-drop]"));
-    const splashes  = Array.from(root.querySelectorAll("[data-oc-splash]"));
-    const ripples   = Array.from(root.querySelectorAll("[data-oc-ripple]"));
-    const turb      = root.querySelector("[data-oc-turb]");
+    const halo   = root.querySelector("[data-oc-halo]");
+    const stems  = Array.from(root.querySelectorAll("[data-oc-stem]"));
+    const leaves = Array.from(root.querySelectorAll("[data-oc-leaf]"));
+    const drops  = Array.from(root.querySelectorAll("[data-oc-drop]"));
 
     mm.add(BREAKPOINTS, (ctx) => {
         const { reduceMotion, isMobile } = ctx.conditions;
 
         // ====== Estados iniciales ======
-        gsap.set(drops,    { opacity: 0, scale: 0.6 });
-        gsap.set(splashes, { opacity: 0, scale: 0.5 });
-        gsap.set(ripples,  { opacity: 0, scale: 0.3 });
+        gsap.set(stems, { drawSVG: "0% 0%" });
+
+        leaves.forEach((leaf) => {
+            const x   = parseFloat(leaf.dataset.x);
+            const y   = parseFloat(leaf.dataset.y);
+            const rot = parseFloat(leaf.dataset.rot);
+            gsap.set(leaf, {
+                x, y, rotation: rot,
+                scale: 0,
+                transformOrigin: "0 0",
+            });
+        });
+
+        gsap.set(drops, { opacity: 0, scale: 0, transformOrigin: "50% 50%" });
+        gsap.set(halo, { opacity: 0 });
 
         if (reduceMotion) {
+            gsap.set(stems, { drawSVG: "0% 70%" });
+            gsap.set(halo, { opacity: 0.35 });
+            leaves.forEach((leaf) => {
+                const s = parseFloat(leaf.dataset.targetScale) * 0.85;
+                gsap.set(leaf, { scale: s });
+            });
             return;
         }
 
-        // ====== TURBULENCE IDLE loop ======
-        if (turb) {
-            gsap.to(turb, {
-                attr: { baseFrequency: "0.030 0.038" },
-                duration: 4.2,
+        // ====== MASTER TIMELINE — todo scroll-scrub bound ======
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: root,
+                start: "top bottom",
+                end:   "bottom top",
+                scrub: isMobile ? 0.4 : 1.0,
+                invalidateOnRefresh: true,
+            }
+        });
+
+        // --- LAYER 1: HALO fotosíntesis ---
+        // Se intensifica gradualmente desde el inicio del scroll, llega
+        // a full cuando el usuario está saliendo de la sección hacia
+        // Productos Estrella.
+        tl.to(halo, {
+            opacity: 1,
+            duration: 1,
+            ease: "none",
+        }, 0);
+
+        // --- LAYER 2: TALLOS crecen bottom→top ---
+        // DrawSVG anima el stroke desde "0% 0%" (invisible) hasta
+        // "0% 100%" (full). Como los paths van M(y=700) → end(y=0),
+        // el growth visualmente sube desde la base hacia la copa.
+        tl.to(stems, {
+            drawSVG: "0% 100%",
+            duration: 0.80,
+            ease: "none",
+            stagger: { each: 0.04, from: "center" },
+        }, 0);
+
+        // --- LAYER 3: HOJAS bloom secuencial ---
+        // Cada hoja florece en su propia ventana (data-progress es el
+        // scroll % donde arranca su crecimiento). back.out le da el
+        // pop botánico cuando se abre. Pequeña oscilación de rotación
+        // post-bloom para vibe respiración (idle infinito, ligero,
+        // no compite con el scrub).
+        leaves.forEach((leaf) => {
+            const targetScale = parseFloat(leaf.dataset.targetScale);
+            const baseRot     = parseFloat(leaf.dataset.rot);
+            const p           = parseFloat(leaf.dataset.progress);
+
+            tl.to(leaf, {
+                scale: targetScale,
+                duration: 0.10,
+                ease: "back.out(1.5)",
+            }, p);
+
+            // Idle respiration — pequeña oscilación de rotación post-bloom.
+            // Fuera del timeline (independent loop), arranca solo después
+            // de que la hoja apareció.
+            gsap.to(leaf, {
+                rotation: baseRot + (baseRot < -90 ? 3 : -3),
+                duration: gsap.utils.random(3.5, 5.2),
                 ease: "sine.inOut",
-                yoyo: true, repeat: -1,
-            });
-        }
-
-        // ====== LOOP CONTINUO de drops ======
-        // Cada drop tiene su propio timeline infinito: cae por su
-        // stream, dispara splash + ripple al impactar, fade-out,
-        // restart desde el top con delay aleatorio. No scroll-bound —
-        // siempre activo.
-        // Skill: gsap-timeline + gsap-utils.random + gsap-plugins
-        // MotionPathPlugin + Physics2DPlugin.
-        const streamX = [700, 100, 290, 480, 920, 1110, 1300];
-
-        drops.forEach((drop, i) => {
-            const streamIdx = parseInt(drop.dataset.stream, 10);
-            const pathEl = streams[streamIdx];
-            if (!pathEl) return;
-
-            const fallDur = gsap.utils.random(2.4, 3.8);
-            const startDelay = gsap.utils.random(0, 2.5);
-
-            // Drop loop: fall → splash spawn → restart
-            const dropTl = gsap.timeline({
+                yoyo: true,
                 repeat: -1,
-                delay: startDelay,
-                repeatDelay: gsap.utils.random(0.3, 1.2),
+                delay: gsap.utils.random(0, 1.5),
             });
+        });
 
-            dropTl.set(drop, { opacity: 0 });
-            dropTl.to(drop, { opacity: 0.95, scale: 1, duration: 0.12 });
-            dropTl.to(drop, {
+        // --- LAYER 4: GOTAS DE FERTILIZANTE ascienden ---
+        // motionPath con start: 0 (base del tallo, y=700) → end: 1
+        // (copa, y=0) = ascenso. Cada drop tiene su propia ventana
+        // de scroll con stagger. Lead drop arranca primero y arriba
+        // más temprano — visualmente "guía" al pelotón.
+        drops.forEach((drop, i) => {
+            const stemIdx = parseInt(drop.dataset.stem, 10);
+            const stem = stems[stemIdx];
+            const targetScale = parseFloat(drop.dataset.targetScale);
+            if (!stem) return;
+
+            const isLead = i === 0;
+            const startOffset = isLead ? 0.05 : 0.08 + (i / drops.length) * 0.28;
+            const windowLen   = isLead ? 0.80 : 0.65;
+            const endOffset   = Math.min(startOffset + windowLen, 0.98);
+            const actualWin   = endOffset - startOffset;
+
+            // 1) Fade-in + grow (primeros 12% del recorrido del drop)
+            tl.fromTo(drop,
+                { opacity: 0, scale: 0 },
+                {
+                    opacity: 1,
+                    scale: targetScale,
+                    duration: actualWin * 0.12,
+                    ease: "none",
+                },
+                startOffset
+            );
+
+            // 2) Ride ascendente — motionPath REVERSE direction
+            //    (start:0 = base del path = abajo, end:1 = top)
+            tl.to(drop, {
                 motionPath: {
-                    path: pathEl,
-                    align: pathEl,
+                    path: stem,
+                    align: stem,
                     alignOrigin: [0.5, 0.5],
-                    autoRotate: true,
+                    autoRotate: false,
                     start: 0,
                     end: 1,
                 },
-                duration: fallDur,
-                ease: "power2.in",   // gravity acceleration
-                scaleY: 1.45,
-                scaleX: 0.78,
-            }, "-=0.05");
-
-            // Trigger splash + ripple del stream correspondiente
-            dropTl.add(() => {
-                triggerSplash(streamIdx);
-                triggerRipple(streamIdx);
-            });
-
-            dropTl.to(drop, { opacity: 0, duration: 0.08 }, "<");
-        });
-
-        // ====== Helpers — trigger splash + ripple por stream ======
-        function triggerSplash(streamIdx) {
-            const group = splashes.filter((s) => parseInt(s.dataset.stream, 10) === streamIdx);
-            group.forEach((p) => {
-                gsap.set(p, {
-                    opacity: 0.95,
-                    scale: 1,
-                    cx: streamX[streamIdx],
-                    cy: 690,
-                });
-                gsap.to(p, {
-                    physics2D: {
-                        velocity: gsap.utils.random(120, 280),
-                        angle:    gsap.utils.random(220, 320),
-                        gravity:  600,
-                    },
-                    duration: gsap.utils.random(0.5, 0.8),
-                    ease: "none",
-                    opacity: 0,
-                    scale: 0.3,
-                });
-            });
-        }
-
-        function triggerRipple(streamIdx) {
-            const ripple = ripples.find((r) => parseInt(r.dataset.stream, 10) === streamIdx);
-            if (!ripple) return;
-            gsap.set(ripple, { opacity: 1, scale: 1 });
-            gsap.to(ripple, {
-                scale: 3.6,
-                opacity: 0,
-                duration: 0.55,
-                ease: "power2.out",
-            });
-        }
-
-        // ====== SCROLL-DRIVEN streams fade-up (encima del loop continuo) ======
-        // Los streams ya están visibles desde el inicio. Al scrollear,
-        // se "saturan" — opacity 0.85 → 1.0 + slight scaleX para que
-        // se sientan más densos. Skill: gsap-scrolltrigger scrub.
-        gsap.fromTo(streams,
-            { opacity: 0.55 },
-            {
-                opacity: 0.95,
-                duration: 1,
+                duration: actualWin,
                 ease: "none",
-                scrollTrigger: {
-                    trigger: root,
-                    start: "top bottom",
-                    end:   "center center",
-                    scrub: isMobile ? 0.6 : 1.0,
-                },
-            }
-        );
+            }, startOffset);
+
+            // 3) Fade-out + shrink (últimos 18% del recorrido)
+            tl.to(drop, {
+                opacity: 0,
+                scale: targetScale * 0.4,
+                duration: actualWin * 0.18,
+                ease: "none",
+            }, startOffset + actualWin * 0.82);
+        });
 
         // ====== Cleanup ======
         const onResize = () => ScrollTrigger.refresh();

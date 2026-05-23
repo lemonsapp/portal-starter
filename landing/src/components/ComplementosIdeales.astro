@@ -49,9 +49,15 @@ const complementos = [
         slug: "bioestimulante",
         num: "01",
         kicker: "ACTIVADOR ORGÁNICO",
-        nombre: "BIO-ESTIMULANTE",
+        nombre: "BIO ESTIMULANTE",
         tagline: "Activación radicular real.",
-        body: "Bioestimulante orgánico producido en biorreactor industrial. Azospirillum + Azotobacter ≥10⁹ UFC/ml. Riego, foliar, esquejes — multiplica eficiencia de absorción radicular.",
+        body: "Bioestimulante orgánico producido en biorreactor industrial.",
+        bullets: [
+            "Ácidos húmicos",
+            "Ácidos fúlvicos",
+            "Ácidos carboxílicos y grupos fenoles",
+            "Potasio soluble",
+        ],
         href: "/bio-estimulante",
         ctaLabel: "VER BIO-ESTIMULANTE",
         // Producto PNG transparente (perspectiva grande)
@@ -156,7 +162,7 @@ const complementos = [
 
         <p class="cmp__sub" data-cmp-sub>
             Activación radicular orgánica + finalización pulida.
-            Los 2 complementos que cierran cualquier sistema de cultivo.
+            Los 3 complementos que cierran cualquier sistema de cultivo.
         </p>
     </header>
 
@@ -204,6 +210,16 @@ const complementos = [
                 <h3 class="cmp__panel-name" data-cmp-name>{c.nombre}</h3>
                 <p class="cmp__panel-tagline" data-cmp-tagline>{c.tagline}</p>
                 <p class="cmp__panel-text" data-cmp-text>{c.body}</p>
+                {c.bullets && (
+                    <ul class="cmp__panel-bullets" data-cmp-bullets>
+                        {c.bullets.map((b) => (
+                            <li class="cmp__panel-bullet">
+                                <span class="cmp__panel-bullet-mark" aria-hidden="true"></span>
+                                <span>{b}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
                 <a
                     class="cmp__panel-cta"
                     data-cmp-cta
@@ -548,12 +564,37 @@ const complementos = [
         opacity: 0.92;
     }
     .cmp__panel-text {
-        margin: 0 0 clamp(24px, 4vh, 36px);
+        margin: 0 0 clamp(14px, 2vh, 18px);
         max-width: 52ch;
         font-family: var(--f-text);
         font-size: clamp(0.95rem, 1.15vw, 1.08rem);
         line-height: 1.55;
         color: rgba(255, 255, 255, 0.76);
+    }
+    .cmp__panel-bullets {
+        margin: 0 0 clamp(24px, 4vh, 36px);
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 8px;
+        max-width: 52ch;
+    }
+    .cmp__panel-bullet {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--f-text);
+        font-size: clamp(0.92rem, 1.1vw, 1.04rem);
+        line-height: 1.45;
+        color: rgba(255, 255, 255, 0.85);
+    }
+    .cmp__panel-bullet-mark {
+        flex: 0 0 6px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--cmp-panel-text-accent, #A7F5C8);
+        box-shadow: 0 0 8px var(--cmp-panel-text-accent, #A7F5C8);
     }
     .cmp__panel-cta {
         display: inline-flex;
