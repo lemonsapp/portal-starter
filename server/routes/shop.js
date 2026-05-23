@@ -152,6 +152,82 @@ async function migrate() {
     -- ya hay imágenes para ese producto (cualquiera) y skipeamos si sí.
     WHERE NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `);
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // F2: ORDERS — carrito + checkout + MercadoPago
+  // ═════════════════════════════════════════════════════════════════════════
+  //
+  // Lifecycle: pending_payment → paid → dispatched → completed
+  //                          └→ cancelled / failed (terminal)
+  //
+  // pending_payment = orden creada, esperando webhook MP.
+  // paid            = MP confirmó pago, admin tiene que despachar.
+  // dispatched      = admin marcó como despachado, esperando confirmación.
+  // completed       = ciclo cerrado (cliente recibió o admin marcó).
+  // cancelled       = cancelado por user/admin antes de pago.
+  // failed          = pago falló o expiró sin confirmar.
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id                  SERIAL PRIMARY KEY,
+      -- Identificador público corto (no exponer SERIAL al cliente para
+      -- evitar enumeration y datos sensibles en URLs). Generado al insert.
+      public_id           TEXT UNIQUE NOT NULL,
+      status              TEXT NOT NULL DEFAULT 'pending_payment'
+                          CHECK (status IN ('pending_payment','paid','dispatched','completed','cancelled','failed')),
+      -- Datos del cliente (guest checkout). Si user_id se setea, está logueado.
+      user_id             INT REFERENCES users(id) ON DELETE SET NULL,
+      customer_email      TEXT NOT NULL,
+      customer_first_name TEXT NOT NULL,
+      customer_last_name  TEXT,
+      customer_phone      TEXT,
+      -- Dirección de envío como JSONB (street, number, apartment, city,
+      -- province, postal_code, country, notes). Flexible para futuras
+      -- adiciones sin migrar schema.
+      shipping_address    JSONB NOT NULL DEFAULT '{}'::jsonb,
+      -- Montos en centavos ARS (entero, sin float drift).
+      subtotal_cents      INT NOT NULL DEFAULT 0,
+      shipping_cents      INT NOT NULL DEFAULT 0,
+      total_cents         INT NOT NULL DEFAULT 0,
+      currency            TEXT NOT NULL DEFAULT 'ARS',
+      -- MercadoPago: preference creada antes del redirect, payment_id viene
+      -- del webhook cuando confirma pago. Ambos opcionales (orden puede
+      -- existir sin MP si el cliente no completó el flow).
+      mp_preference_id    TEXT,
+      mp_payment_id       TEXT,
+      mp_status_raw       TEXT,                          -- raw status del webhook MP
+      -- Cuándo cada evento ocurrió (para audit + analytics).
+      paid_at             TIMESTAMPTZ,
+      dispatched_at       TIMESTAMPTZ,
+      completed_at        TIMESTAMPTZ,
+      -- Notas internas del admin (no visibles al cliente).
+      admin_notes         TEXT,
+      created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_orders_status_created ON orders(status, created_at DESC)`);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_orders_email          ON orders(LOWER(customer_email))`);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_orders_mp_preference  ON orders(mp_preference_id) WHERE mp_preference_id IS NOT NULL`);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_orders_mp_payment     ON orders(mp_payment_id) WHERE mp_payment_id IS NOT NULL`);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS order_items (
+      id                  SERIAL PRIMARY KEY,
+      order_id            INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+      -- product_id se setea pero NO se confía en él para precio/nombre:
+      -- snapshots inmutables (name_snapshot, price_cents_snapshot) protegen
+      -- el histórico si el admin edita el producto después de la venta.
+      product_id          INT REFERENCES products(id) ON DELETE SET NULL,
+      product_slug        TEXT NOT NULL,
+      name_snapshot       TEXT NOT NULL,
+      price_cents_snapshot INT NOT NULL CHECK (price_cents_snapshot >= 0),
+      quantity            INT NOT NULL CHECK (quantity > 0),
+      line_total_cents    INT NOT NULL CHECK (line_total_cents >= 0),
+      image_url_snapshot  TEXT,
+      created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id)`);
 }
 migrate().catch((e) => console.error("[SHOP MIGRATE]", e));
 

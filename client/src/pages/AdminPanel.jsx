@@ -85,6 +85,7 @@ export default function AdminPanel() {
           <button style={styles.tab(tab === "coins")}    onClick={() => setTab("coins")}>🪙 Coins</button>
           <button style={styles.tab(tab === "feed")}     onClick={() => setTab("feed")}>📰 Feed</button>
           <button style={styles.tab(tab === "products")} onClick={() => setTab("products")}>🛒 Productos</button>
+          <button style={styles.tab(tab === "orders")}   onClick={() => setTab("orders")}>📦 Pedidos</button>
           <button style={styles.tab(tab === "branding")} onClick={() => setTab("branding")}>🎨 Branding</button>
           <button style={styles.tab(tab === "settings")} onClick={() => setTab("settings")}>⚙️ Configuración</button>
         </div>
@@ -92,6 +93,7 @@ export default function AdminPanel() {
         {tab === "coins"    && <CoinsTab />}
         {tab === "feed"     && <FeedTab />}
         {tab === "products" && <ProductsTab />}
+        {tab === "orders"   && <OrdersTab />}
         {tab === "branding" && <BrandingTab />}
         {tab === "settings" && <SettingsTab />}
       </div>
@@ -874,4 +876,311 @@ function ProductModal({ product, categories, onClose, onSaved }) {
       </div>
     </div>
   );
+}
+
+// ── Tab: Pedidos (Shop F2) ──────────────────────────────────────────────────
+// Lista de órdenes con filtros por estado + tabs lifecycle. Click en una
+// fila abre el detalle con datos del cliente, items, dirección y acciones
+// de cambio de estado.
+const ORDER_STATUS_META = {
+  pending_payment: { label: "Pendiente de pago", color: "#fcd34d", emoji: "⏳" },
+  paid:            { label: "Pagado",            color: "#86efac", emoji: "💰" },
+  dispatched:      { label: "Despachado",        color: "#93c5fd", emoji: "🚚" },
+  completed:       { label: "Completado",        color: "#A7F5C8", emoji: "✅" },
+  cancelled:       { label: "Cancelado",         color: "rgba(237,233,224,.5)", emoji: "🚫" },
+  failed:          { label: "Fallido",           color: "#fca5a5", emoji: "❌" },
+};
+
+function OrdersTab() {
+  const [orders, setOrders] = useState([]);
+  const [counts, setCounts] = useState({});
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [detail, setDetail] = useState(null);
+
+  async function load() {
+    setLoading(true);
+    const qs = new URLSearchParams();
+    if (filter !== "all") qs.set("status", filter);
+    if (search.trim()) qs.set("search", search.trim());
+    try {
+      const r = await fetch(`${API}/api/admin/shop/orders?${qs.toString()}`, { headers: authHdr() });
+      const d = await r.json();
+      setOrders(d.orders || []);
+      setCounts(d.counts || {});
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(false);
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [filter]);
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 18, margin: "0 0 14px", fontWeight: 700 }}>Pedidos del shop</h2>
+
+      <div style={styles.card}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+          <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
+            Todos · {Object.values(counts).reduce((a, b) => a + b, 0)}
+          </FilterPill>
+          {Object.entries(ORDER_STATUS_META).map(([key, meta]) => (
+            <FilterPill key={key} active={filter === key} onClick={() => setFilter(key)} color={meta.color}>
+              {meta.emoji} {meta.label} · {counts[key] || 0}
+            </FilterPill>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <input
+            style={{ ...styles.input, maxWidth: 360 }}
+            placeholder="Buscar por email, nombre o número de orden…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") load(); }}
+          />
+          <button style={styles.btn()} onClick={load}>Buscar</button>
+        </div>
+      </div>
+
+      <div style={styles.card}>
+        {loading ? (
+          <div>Cargando…</div>
+        ) : orders.length === 0 ? (
+          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
+            No hay pedidos {filter !== "all" ? `con estado "${ORDER_STATUS_META[filter]?.label}"` : "todavía"}.
+          </div>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Orden</th>
+                <th style={styles.th}>Cliente</th>
+                <th style={styles.th}>Total</th>
+                <th style={styles.th}>Estado</th>
+                <th style={styles.th}>Fecha</th>
+                <th style={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((o) => {
+                const meta = ORDER_STATUS_META[o.status] || ORDER_STATUS_META.pending_payment;
+                return (
+                  <tr key={o.id} onClick={() => setDetail(o.id)} style={{ cursor: "pointer" }}>
+                    <td style={styles.td}>
+                      <code style={{ fontFamily: "monospace", fontWeight: 700 }}>{o.public_id}</code>
+                    </td>
+                    <td style={styles.td}>
+                      <div style={{ fontWeight: 600 }}>{o.customer_first_name} {o.customer_last_name || ""}</div>
+                      <div style={{ fontSize: 11, color: "rgba(237,233,224,.55)" }}>{o.customer_email}</div>
+                    </td>
+                    <td style={styles.td}>
+                      <strong style={{ color: "var(--brand-primary, #A7F5C8)" }}>{o.total_formatted}</strong>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: meta.color }}>
+                        <span>{meta.emoji}</span>
+                        <span>{meta.label}</span>
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={{ fontSize: 12, color: "rgba(237,233,224,.6)" }}>
+                        {new Date(o.created_at).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      <button style={styles.btn()} onClick={(e) => { e.stopPropagation(); setDetail(o.id); }}>Ver detalle</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {detail && <OrderDetailModal orderId={detail} onClose={() => setDetail(null)} onChanged={load} />}
+    </div>
+  );
+}
+
+function FilterPill({ active, onClick, color, children }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "8px 14px", borderRadius: 999,
+        border: active ? `1px solid ${color || "var(--brand-primary, #A7F5C8)"}` : "1px solid rgba(255,255,255,.1)",
+        background: active ? "rgba(167,245,200,.10)" : "transparent",
+        color: active ? (color || "var(--brand-primary, #A7F5C8)") : "rgba(237,233,224,.75)",
+        fontSize: 12, fontWeight: 700, cursor: "pointer",
+        fontFamily: "inherit",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function OrderDetailModal({ orderId, onClose, onChanged }) {
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [savingStatus, setSavingStatus] = useState("");
+
+  async function load() {
+    setLoading(true);
+    const r = await fetch(`${API}/api/admin/shop/orders/${orderId}`, { headers: authHdr() });
+    const d = await r.json();
+    setOrder(d.order || null);
+    setLoading(false);
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [orderId]);
+
+  async function changeStatus(newStatus) {
+    if (!confirm(`Cambiar estado a "${ORDER_STATUS_META[newStatus]?.label}"?`)) return;
+    setSavingStatus(newStatus);
+    const r = await fetch(`${API}/api/admin/shop/orders/${orderId}/status`, {
+      method: "POST", headers: jsonHdr(),
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (r.ok) {
+      await load();
+      onChanged?.();
+    } else {
+      alert("Error al cambiar estado");
+    }
+    setSavingStatus("");
+  }
+
+  const sa = order?.shipping_address || {};
+
+  return (
+    <div style={styles.modalBackdrop} onClick={onClose}>
+      <div
+        style={{ ...styles.modalCard, maxWidth: 720, maxHeight: "90vh", overflowY: "auto" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <h3 style={{ margin: 0, fontSize: 18 }}>
+            Pedido <code style={{ fontFamily: "monospace", color: "var(--brand-primary, #A7F5C8)" }}>{order?.public_id || "…"}</code>
+          </h3>
+          <button style={styles.btn()} onClick={onClose}>✕</button>
+        </div>
+
+        {loading && <div>Cargando…</div>}
+        {!loading && order && (
+          <>
+            {/* Estado actual + acciones */}
+            <div style={{ ...styles.card, marginBottom: 16, padding: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)" }}>Estado</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: ORDER_STATUS_META[order.status]?.color }}>
+                  {ORDER_STATUS_META[order.status]?.emoji} {ORDER_STATUS_META[order.status]?.label}
+                </div>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {Object.entries(ORDER_STATUS_META).map(([key, meta]) => (
+                  <button
+                    key={key}
+                    disabled={key === order.status || !!savingStatus}
+                    onClick={() => changeStatus(key)}
+                    style={{
+                      padding: "7px 11px", fontSize: 11, fontWeight: 700,
+                      borderRadius: 6, border: "1px solid rgba(255,255,255,.1)",
+                      background: key === order.status ? "rgba(167,245,200,.12)" : "rgba(255,255,255,.04)",
+                      color: key === order.status ? meta.color : "rgba(237,233,224,.8)",
+                      cursor: key === order.status ? "default" : "pointer",
+                      opacity: savingStatus === key ? 0.5 : 1,
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    {meta.emoji} {meta.label}
+                  </button>
+                ))}
+              </div>
+              <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)", marginTop: 10 }}>
+                Flujo típico: Pendiente → Pagado → Despachado → Completado.
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              {/* Cliente */}
+              <div style={styles.card}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>Cliente</div>
+                <div style={{ fontSize: 15, fontWeight: 700 }}>{order.customer_first_name} {order.customer_last_name || ""}</div>
+                <div style={{ fontSize: 13, color: "rgba(237,233,224,.75)", marginTop: 4 }}>
+                  <div>📧 <a href={`mailto:${order.customer_email}`} style={{ color: "inherit", textDecoration: "underline dotted" }}>{order.customer_email}</a></div>
+                  <div>📱 <a href={`https://wa.me/${order.customer_phone?.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline dotted" }}>{order.customer_phone}</a></div>
+                </div>
+              </div>
+
+              {/* Envío */}
+              <div style={styles.card}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>Dirección de envío</div>
+                <div style={{ fontSize: 13, lineHeight: 1.55 }}>
+                  <div>{sa.street} {sa.number}{sa.apartment ? ` · Dpto ${sa.apartment}` : ""}</div>
+                  <div>{sa.city}, {sa.province}</div>
+                  <div>CP {sa.postal_code}{sa.country ? ` · ${sa.country}` : ""}</div>
+                  {sa.notes && <div style={{ marginTop: 8, fontStyle: "italic", color: "rgba(237,233,224,.65)" }}>“{sa.notes}”</div>}
+                </div>
+              </div>
+            </div>
+
+            {/* Items */}
+            <div style={{ ...styles.card, marginTop: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>Productos ({order.items?.length || 0})</div>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}></th>
+                    <th style={styles.th}>Producto</th>
+                    <th style={styles.th}>Cant</th>
+                    <th style={styles.th}>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(order.items || []).map((it) => (
+                    <tr key={it.id}>
+                      <td style={styles.td}>
+                        {it.image_url
+                          ? <img src={it.image_url} alt="" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.03)" }} />
+                          : <div style={{ width: 36, height: 36, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />
+                        }
+                      </td>
+                      <td style={styles.td}>
+                        <div style={{ fontWeight: 600 }}>{it.name}</div>
+                        <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>/{it.product_slug}</div>
+                      </td>
+                      <td style={styles.td}>{it.quantity}</td>
+                      <td style={styles.td}>{formatARS(it.line_total_cents)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,.08)", display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: 14 }}>
+                <span style={{ fontSize: 13, color: "rgba(237,233,224,.7)" }}>Total</span>
+                <strong style={{ fontSize: 22, color: "var(--brand-primary, #A7F5C8)" }}>{order.total_formatted}</strong>
+              </div>
+            </div>
+
+            {/* Timestamps */}
+            <div style={{ ...styles.card, marginTop: 14, fontSize: 12, color: "rgba(237,233,224,.65)" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 8 }}>Historial</div>
+              <div>📥 Creado: {new Date(order.created_at).toLocaleString("es-AR")}</div>
+              {order.paid_at && <div>💰 Pagado: {new Date(order.paid_at).toLocaleString("es-AR")}</div>}
+              {order.dispatched_at && <div>🚚 Despachado: {new Date(order.dispatched_at).toLocaleString("es-AR")}</div>}
+              {order.completed_at && <div>✅ Completado: {new Date(order.completed_at).toLocaleString("es-AR")}</div>}
+              {order.mp_payment_id && <div style={{ marginTop: 6, fontFamily: "monospace", fontSize: 11 }}>MP payment_id: {order.mp_payment_id}</div>}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Helper local (no re-importamos useCart acá — AdminPanel sólo necesita formatear)
+function formatARS(cents) {
+  if (cents == null) return "—";
+  return (cents / 100).toLocaleString("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }

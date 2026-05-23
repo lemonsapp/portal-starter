@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
+import { useCart } from "../lib/useCart.js";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -127,8 +128,10 @@ export default function ShopProduct() {
   useBranding();
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [activeImg, setActiveImg] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [toast, setToast] = useState("");
@@ -180,10 +183,13 @@ export default function ShopProduct() {
   const inStock = product.stock == null || product.stock > 0;
 
   function addToCart() {
-    // Placeholder fase 2: cart real con localStorage + checkout MercadoPago.
-    // Por ahora solo telegrafiamos al user que está en proceso de carga.
-    setToast("Carrito en construcción — próximamente vas a poder comprar 🛒");
-    setTimeout(() => setToast(""), 4000);
+    if (!product) return;
+    addItem(product, Math.max(1, Number(quantity) || 1));
+    // Feedback visual: abrir el drawer + toast breve. El CartDrawer escucha
+    // el evento 'holistic-cart-open' como atajo de UX.
+    window.dispatchEvent(new CustomEvent("holistic-cart-open"));
+    setToast(`Agregado al carrito — ${quantity} ${quantity > 1 ? "unidades" : "unidad"}`);
+    setTimeout(() => setToast(""), 2500);
   }
 
   return (
@@ -226,6 +232,27 @@ export default function ShopProduct() {
                   : "Sin stock"}
               </span>
             </div>
+
+            {inStock && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".18em", textTransform: "uppercase", color: "rgba(237,233,224,.55)" }}>Cantidad</span>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,.06)", color: "inherit", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 18, fontWeight: 700 }}
+                    aria-label="Restar uno"
+                  >−</button>
+                  <span style={{ minWidth: 32, textAlign: "center", fontSize: 16, fontWeight: 700 }}>{quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.min(product.stock ?? 99, q + 1))}
+                    style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,.06)", color: "inherit", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 18, fontWeight: 700 }}
+                    aria-label="Sumar uno"
+                  >+</button>
+                </div>
+              </div>
+            )}
 
             <button
               style={{ ...styles.cta, ...(inStock ? {} : styles.ctaDisabled) }}

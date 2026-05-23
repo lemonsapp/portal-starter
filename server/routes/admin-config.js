@@ -23,7 +23,7 @@ function requireAdminMiddleware(authRequired, requireRole) {
   return [authRequired, requireRole(["admin"])];
 }
 
-const VALID_SECTIONS = ["branding", "cloudinary", "resend", "telegram", "rules", "features"];
+const VALID_SECTIONS = ["branding", "cloudinary", "resend", "telegram", "rules", "features", "mercadopago", "shop"];
 
 function validateSection(req, res, next) {
   const s = req.params.section;

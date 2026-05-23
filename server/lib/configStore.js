@@ -133,6 +133,18 @@ const KEY_CATALOG = {
   "features.coins":    { type: "bool", isSecret: false, default: true },
   "features.webauthn": { type: "bool", isSecret: false, default: true },
   "features.shop":     { type: "bool", isSecret: false, default: true },
+
+  // ── MercadoPago (Sprint 14 F2, 2026-05-23) ────────────────────────────────
+  // access_token = secreto del cliente (cuenta seller). public_key es solo
+  // para Bricks/Wallet en frontend (no usado en F2 — Checkout Pro redirect).
+  // webhook_secret protege el endpoint /api/webhooks/mercadopago contra
+  // requests fake.
+  "mercadopago.access_token":   { type: "string", isSecret: true,  default: "" },
+  "mercadopago.public_key":     { type: "string", isSecret: false, default: "" },
+  "mercadopago.webhook_secret": { type: "string", isSecret: true,  default: "" },
+  // Shop config no-secrets
+  "shop.currency":              { type: "string", isSecret: false, default: "ARS" },
+  "shop.shipping_cost_cents":   { type: "int",    isSecret: false, default: 0 },
 };
 
 function isKnownKey(key) {

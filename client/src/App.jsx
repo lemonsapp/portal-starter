@@ -33,6 +33,10 @@ const AdminSetup       = lazy(() => import("./pages/AdminSetup.jsx"));
 const SetupAdmin       = lazy(() => import("./pages/SetupAdmin.jsx"));
 const Shop             = lazy(() => import("./pages/Shop.jsx"));
 const ShopProduct      = lazy(() => import("./pages/ShopProduct.jsx"));
+const ShopCheckout     = lazy(() => import("./pages/ShopCheckout.jsx"));
+const ShopCheckoutSuccess = lazy(() => import("./pages/ShopCheckoutSuccess.jsx"));
+const ShopCheckoutFailure = lazy(() => import("./pages/ShopCheckoutFailure.jsx"));
+import CartDrawer from "./components/CartDrawer.jsx";
 
 // Fallback minimo mientras baja un chunk (evita pantalla en blanco).
 function PageLoader() {
@@ -164,6 +168,7 @@ export default function App() {
       <PremiumFX />
       <PWAManager />
       <AppNotification />
+      <CartDrawer />
       <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Publicas sin sidebar */}
@@ -190,9 +195,12 @@ export default function App() {
         <Route path="/admin"         element={<AuthGate allowRoles={["admin"]}><AdminPanel /></AuthGate>} />
         <Route path="/admin/setup"   element={<AuthGate allowRoles={["admin"]}><AdminSetup /></AuthGate>} />
 
-        {/* Shop fase 1 — público (sin auth). Guest checkout llega en fase 2. */}
-        <Route path="/shop"         element={<FeatureGate flag="shop"><Shop /></FeatureGate>} />
-        <Route path="/shop/:slug"   element={<FeatureGate flag="shop"><ShopProduct /></FeatureGate>} />
+        {/* Shop público — fase 1 catálogo + fase 2 checkout + MercadoPago redirect. */}
+        <Route path="/shop"                      element={<FeatureGate flag="shop"><Shop /></FeatureGate>} />
+        <Route path="/shop/checkout"             element={<FeatureGate flag="shop"><ShopCheckout /></FeatureGate>} />
+        <Route path="/shop/checkout/success"     element={<FeatureGate flag="shop"><ShopCheckoutSuccess /></FeatureGate>} />
+        <Route path="/shop/checkout/failure"     element={<FeatureGate flag="shop"><ShopCheckoutFailure /></FeatureGate>} />
+        <Route path="/shop/:slug"                element={<FeatureGate flag="shop"><ShopProduct /></FeatureGate>} />
 
         {/* Fallbacks */}
         <Route path="/client" element={<Navigate to="/inicio" replace />} />
