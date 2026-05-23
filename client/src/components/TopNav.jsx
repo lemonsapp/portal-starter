@@ -82,8 +82,11 @@ export default function TopNav() {
     const [userMenuOpen, setUserMenuOpen] = useState(false);  // desktop dropdown
     const userMenuRef = useRef(null);
 
-    // Hide on auth flow pages
-    if (HIDE_ON_PATHS.includes(location.pathname)) return null;
+    // Calcular si el nav debe ocultarse — necesitamos saberlo antes de
+    // posibles returns prematuros para mantener el orden de hooks
+    // consistente (React error #310: "rendered more hooks than during
+    // the previous render" si retornamos antes de algún useEffect).
+    const hidden = HIDE_ON_PATHS.includes(location.pathname);
 
     useEffect(() => {
         const token = getToken();
@@ -147,6 +150,12 @@ export default function TopNav() {
         // Hard reload to clear all state
         setTimeout(() => window.location.reload(), 50);
     }
+
+    // Después de TODOS los hooks: si la ruta está en HIDE_ON_PATHS,
+    // no renderizar. Antes había un `return null` arriba que rompía
+    // el orden de hooks → React error #310 al navegar entre auth y
+    // non-auth pages (cantidad de hooks cambia entre renders).
+    if (hidden) return null;
 
     return (
         <>
