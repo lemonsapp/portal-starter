@@ -30,6 +30,7 @@ const webauthnRouter     = require("./routes/webauthn");
 const adminConfig        = require("./routes/admin-config");    // 🪄 Setup wizard endpoints
 const adminFeed          = require("./routes/admin-feed");      // 📰 Feed editor del admin
 const adminUsers         = require("./routes/admin-users");     // 👥 Coins manager + lista users
+const shop               = require("./routes/shop");             // 🛒 Shop fase 1: catálogo + admin productos
 const { requireFeature } = require("./lib/featureFlags");        // 🚦 Toggle de features
 
 const app = express();
@@ -2178,6 +2179,11 @@ app.use("/", adminFeed.build({ authRequired, requireRole }));
 
 // ── Admin users + coins manager (Sprint 3) ────────────────────────────────────
 app.use("/admin", adminUsers.build({ authRequired, requireRole }));
+
+// ── Shop fase 1 (Sprint 14, 2026-05-23) ───────────────────────────────────────
+// Catálogo público + CRUD admin. Feature flag features.shop (default true).
+app.use("/api/shop",       requireFeature("shop"), shop.publicRouter());
+app.use("/api/admin/shop", requireFeature("shop"), shop.build({ authRequired, requireRole }));
 
 // ── Reclamar bonus primer envío (cliente) ──────────────────────────
 

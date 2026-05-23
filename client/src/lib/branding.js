@@ -37,7 +37,7 @@ const BRANDING_DEFAULTS = {
     friendly: "'Gotham Rounded', 'Gotham', ui-sans-serif, sans-serif",
   },
 };
-const FEATURE_DEFAULTS = { chat: true, stories: true, friends: true, coins: true, webauthn: true };
+const FEATURE_DEFAULTS = { chat: true, stories: true, friends: true, coins: true, webauthn: true, shop: true };
 const RULE_DEFAULTS    = { signup_mode: "open", email_verify_required: true };
 
 // ── Cache singleton ──────────────────────────────────────────────────────────

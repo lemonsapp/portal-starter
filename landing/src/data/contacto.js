@@ -66,10 +66,10 @@ export const PORTAL = {
 
 // CTAs cross-componente. Centralizar por si cambia el copy.
 export const CTAS = {
-    // FinalCTA: el cliente NO tiene /shop como pagina Astro propia. Dirigimos
-    // al registro del portal: "para ver el catalogo completo, registrate".
-    // Cuando se cree /shop como pagina Astro o /tienda, cambiar aca.
-    explorar_catalogo: PORTAL.register,
+    // Shop fase 1 (Sprint 14, 2026-05-23): el portal expone /shop como página
+    // real (catálogo público + checkout MercadoPago en fase 2). Antes apuntaba
+    // a /registro mientras no había tienda — ya no es necesario.
+    explorar_catalogo: "/shop",
     // Header "Mi cuenta": login (si el user ya estaba logueado, el portal
     // redirige a /inicio automatico).
     mi_cuenta: PORTAL.login,

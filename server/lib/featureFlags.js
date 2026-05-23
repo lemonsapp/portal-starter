@@ -12,7 +12,7 @@
 
 const cs = require("./configStore");
 
-const KNOWN_FLAGS = ["chat", "stories", "friends", "coins", "webauthn"];
+const KNOWN_FLAGS = ["chat", "stories", "friends", "coins", "webauthn", "shop"];
 
 async function isFeatureEnabled(name) {
   if (!KNOWN_FLAGS.includes(name)) {

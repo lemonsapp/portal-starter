@@ -335,11 +335,138 @@ CREATE TABLE IF NOT EXISTS feed_posts (
 CREATE INDEX IF NOT EXISTS idx_feed_posts_created  ON feed_posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_feed_posts_expires  ON feed_posts(expires_at) WHERE expires_at IS NOT NULL;
 
+-- ════════════════════════════════════════════════════════════════════════════
+-- E-COMMERCE / SHOP — Sprint 14 (2026-05-23)
+-- ════════════════════════════════════════════════════════════════════════════
+-- Fase 1: catálogo + admin productos. Fase 2 (orders, MercadoPago) y Fase 3
+-- (customers, lifecycle dispatched/completed) se agregan en sprints siguientes.
+-- Feature flag: `features.shop` en app_config (default true en KEY_CATALOG).
+
+CREATE TABLE IF NOT EXISTS product_categories (
+  id           SERIAL PRIMARY KEY,
+  slug         TEXT UNIQUE NOT NULL,
+  name         TEXT NOT NULL,
+  description  TEXT,
+  sort_order   INT NOT NULL DEFAULT 0,
+  active       BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  id                 SERIAL PRIMARY KEY,
+  slug               TEXT UNIQUE NOT NULL,
+  name               TEXT NOT NULL,
+  short_description  TEXT,
+  long_description   TEXT,
+  -- Precio en centavos ARS (entero) — evita float drift. Display = price_cents / 100.
+  price_cents        INT NOT NULL DEFAULT 0 CHECK (price_cents >= 0),
+  -- Stock: null = stock infinito (servicio), >=0 = inventario controlado.
+  stock              INT,
+  sku                TEXT UNIQUE,
+  category_id        INT REFERENCES product_categories(id) ON DELETE SET NULL,
+  active             BOOLEAN NOT NULL DEFAULT TRUE,
+  featured           BOOLEAN NOT NULL DEFAULT FALSE,
+  sort_order         INT NOT NULL DEFAULT 0,
+  -- Metadata libre (ml, presentación, atributos) — JSON para flexibilidad sin
+  -- explotar el schema cada vez que el cliente quiere un campo más.
+  meta               JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_products_active_sort ON products(active, sort_order, id);
+CREATE INDEX IF NOT EXISTS idx_products_category    ON products(category_id);
+CREATE INDEX IF NOT EXISTS idx_products_featured    ON products(featured) WHERE featured = TRUE;
+
+CREATE TABLE IF NOT EXISTS product_images (
+  id          SERIAL PRIMARY KEY,
+  product_id  INT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  url         TEXT NOT NULL,
+  alt         TEXT,
+  sort_order  INT NOT NULL DEFAULT 0,
+  is_primary  BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_product_images_product ON product_images(product_id, sort_order);
+-- Garantiza un solo primary por producto (parcial unique index).
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_product_images_primary
+  ON product_images(product_id) WHERE is_primary = TRUE;
+
 -- ─── Seed mínimo ──────────────────────────────────────────────────────────────
 -- Sala default para que el chat funcione out-of-the-box. El admin puede crear
 -- más salas desde el panel; el frontend usa slug='general' como sala principal.
 INSERT INTO chat_rooms (slug, name, description, icon, coins_required, is_active)
 VALUES ('general', 'Sala general', 'Charlá con toda la comunidad', '💬', 0, TRUE)
 ON CONFLICT (slug) DO NOTHING;
+
+-- ─── Seed Shop: 6 productos del catálogo Holistic ────────────────────────────
+-- Precios placeholder (admin los ajusta luego). Slugs alineados a las internas
+-- de la landing. Imágenes apuntan a /assets/* (sirven el mismo dist build).
+INSERT INTO product_categories (slug, name, description, sort_order) VALUES
+  ('fertilizantes',    'Fertilizantes',    'Sistemas completos de nutrición vegetal', 1),
+  ('bioestimulantes',  'Bioestimulantes',  'Activadores radiculares y de absorción',  2),
+  ('clonadores',       'Clonadores',       'Geles enraizantes para esquejes',         3),
+  ('finalizadores',    'Finalizadores',    'Tratamientos pre-cosecha',                4)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO products (slug, name, short_description, long_description, price_cents, stock, sku, category_id, featured, sort_order, meta)
+SELECT v.slug, v.name, v.short, v.long, v.price, v.stock, v.sku, c.id, v.featured, v.sort, v.meta::jsonb
+FROM (VALUES
+  ('linea-race',
+   'Línea Race — Sistema completo',
+   'Sistema de 4 fertilizantes para el ciclo completo indoor y outdoor.',
+   'Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en 2 partes) y Race 4 (Micro + Magnesio).',
+   25000000, NULL, 'RACE-KIT', 'fertilizantes', TRUE, 1,
+   '{"presentaciones": ["250ml", "500ml"], "linea": "race", "indoor_outdoor": true}'),
+  ('linea-elite',
+   'Línea Elite — Part 1 + Part 2',
+   'Fertilizante dual premium para hidroponía y sustratos.',
+   'Parte 1 aporta NPK y calcio, Parte 2 aporta magnesio y micro. Aplicadas juntas en cada riego, sin antagonismos químicos.',
+   18000000, NULL, 'ELITE-KIT', 'fertilizantes', TRUE, 2,
+   '{"presentaciones": ["250ml", "500ml", "1L", "5L", "10L", "20L"], "linea": "elite"}'),
+  ('linea-pro',
+   'Línea Pro — 4 etapas hidrosolubles',
+   'Fertilizante sólido hidrosoluble en 4 fórmulas etapa-específicas.',
+   'Enraizante, Vegetativo, Preflora y Flora. Pesás, disolvés, regás. EC programable, pH estable, 36 meses de vida útil.',
+   15000000, NULL, 'PRO-KIT', 'fertilizantes', TRUE, 3,
+   '{"presentaciones": ["25g", "100g", "500g", "1kg"], "linea": "pro"}'),
+  ('bio-estimulante',
+   'Bio Estimulante orgánico',
+   'Bioestimulante orgánico producido en biorreactor industrial.',
+   'Ácidos húmicos, fúlvicos, carboxílicos y grupos fenoles. Potasio soluble. Estimula raíces y absorción.',
+   8500000, NULL, 'BIO-1L', 'bioestimulantes', TRUE, 4,
+   '{"presentaciones": ["500ml", "1L"]}'),
+  ('cloner',
+   'Cloner — Gel enraizante',
+   'Gel enraizante de alta adherencia para esquejes y plantines.',
+   'Fórmula de contacto rápido que acelera el prendimiento radicular con mínima manipulación. El primer paso del ciclo.',
+   6500000, NULL, 'CLONER-50', 'clonadores', TRUE, 5,
+   '{"presentaciones": ["50ml"]}'),
+  ('day-0',
+   'Day-0 — Finalizador',
+   'Tratamiento finalizador previo a cosecha.',
+   'Aplicado en los últimos riegos antes del corte, limpia reservorios internos y pule sabor, aroma y textura final.',
+   7500000, NULL, 'DAY0-500', 'finalizadores', TRUE, 6,
+   '{"presentaciones": ["500ml", "1L"]}')
+) AS v(slug, name, short, long, price, stock, sku, cat_slug, featured, sort, meta)
+LEFT JOIN product_categories c ON c.slug = v.cat_slug
+ON CONFLICT (slug) DO NOTHING;
+
+-- Imágenes seed apuntan a los PNG del catálogo Holistic que ya viven en
+-- landing/public/img/* (servidos al raíz en el dist final por build-vercel.sh).
+INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+SELECT p.id, v.url, v.alt, v.sort, v.primary
+FROM (VALUES
+  ('linea-race',     '/img/productos/linea-race/500ml/race-1-verde-500ml.png',         'Race 1 vegetativo 500ml',     0, TRUE),
+  ('linea-race',     '/img/productos/linea-race/500ml/race-3-rosa-500ml.png',          'Race 3 PK rosa 500ml',         1, FALSE),
+  ('linea-elite',    '/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png',       'Elite Parte 1 1L',             0, TRUE),
+  ('linea-elite',    '/img/productos/linea-elite/1l/juntos-1l.png',                    'Elite Parte 1 + Parte 2 1L',   1, FALSE),
+  ('linea-pro',      '/img/productos/linea-pro/1kg/flora-1kg-1.png',                   'Pro Flora 1kg',                0, TRUE),
+  ('linea-pro',      '/img/productos/linea-pro/1kg/vegetativo-1kg-1.png',              'Pro Vegetativo 1kg',           1, FALSE),
+  ('bio-estimulante','/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png', 'Bio Estimulante perspectiva', 0, TRUE),
+  ('cloner',         '/assets/productos/cloner2.png',                                  'Cloner gel enraizante',        0, TRUE),
+  ('day-0',          '/img/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png','Day-0 finalizador',           0, TRUE)
+) AS v(prod_slug, url, alt, sort, primary)
+JOIN products p ON p.slug = v.prod_slug
+ON CONFLICT DO NOTHING;
 
 COMMIT;

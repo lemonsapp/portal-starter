@@ -31,6 +31,8 @@ const PrivateChatsPage = lazy(() => import("./pages/PrivateChatsPage.jsx"));
 const AdminPanel       = lazy(() => import("./pages/AdminPanel.jsx"));
 const AdminSetup       = lazy(() => import("./pages/AdminSetup.jsx"));
 const SetupAdmin       = lazy(() => import("./pages/SetupAdmin.jsx"));
+const Shop             = lazy(() => import("./pages/Shop.jsx"));
+const ShopProduct      = lazy(() => import("./pages/ShopProduct.jsx"));
 
 // Fallback minimo mientras baja un chunk (evita pantalla en blanco).
 function PageLoader() {
@@ -187,6 +189,10 @@ export default function App() {
         {/* Staff */}
         <Route path="/admin"         element={<AuthGate allowRoles={["admin"]}><AdminPanel /></AuthGate>} />
         <Route path="/admin/setup"   element={<AuthGate allowRoles={["admin"]}><AdminSetup /></AuthGate>} />
+
+        {/* Shop fase 1 — público (sin auth). Guest checkout llega en fase 2. */}
+        <Route path="/shop"         element={<FeatureGate flag="shop"><Shop /></FeatureGate>} />
+        <Route path="/shop/:slug"   element={<FeatureGate flag="shop"><ShopProduct /></FeatureGate>} />
 
         {/* Fallbacks */}
         <Route path="/client" element={<Navigate to="/inicio" replace />} />

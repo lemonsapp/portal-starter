@@ -84,12 +84,14 @@ export default function AdminPanel() {
         <div style={styles.tabs}>
           <button style={styles.tab(tab === "coins")}    onClick={() => setTab("coins")}>🪙 Coins</button>
           <button style={styles.tab(tab === "feed")}     onClick={() => setTab("feed")}>📰 Feed</button>
+          <button style={styles.tab(tab === "products")} onClick={() => setTab("products")}>🛒 Productos</button>
           <button style={styles.tab(tab === "branding")} onClick={() => setTab("branding")}>🎨 Branding</button>
           <button style={styles.tab(tab === "settings")} onClick={() => setTab("settings")}>⚙️ Configuración</button>
         </div>
 
         {tab === "coins"    && <CoinsTab />}
         {tab === "feed"     && <FeedTab />}
+        {tab === "products" && <ProductsTab />}
         {tab === "branding" && <BrandingTab />}
         {tab === "settings" && <SettingsTab />}
       </div>
@@ -556,6 +558,318 @@ function SettingsTab() {
         <div style={{ marginTop: 12, fontSize: 12, color: "rgba(237,233,224,.5)" }}>
           El wizard te permite editar cada sección (Cloudinary, Marca, Resend, Telegram, Reglas) de forma individual.
           Los cambios se aplican al instante (con cache-bust del frontend al recargar).
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Tab: Productos (Shop fase 1) ────────────────────────────────────────────
+// Lista + CRUD de productos. Imágenes por URL (file upload llega en fase 2).
+function ProductsTab() {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(null);   // null = no modal | "new" | productObj
+  const [err, setErr] = useState("");
+
+  async function load() {
+    setLoading(true);
+    try {
+      const [pr, cr] = await Promise.all([
+        fetch(`${API}/api/admin/shop/products`, { headers: authHdr() }),
+        fetch(`${API}/api/admin/shop/categories`, { headers: authHdr() }),
+      ]);
+      const pd = await pr.json();
+      const cd = await cr.json();
+      setProducts(pd.products || []);
+      setCategories(cd.categories || []);
+    } catch (e) {
+      setErr("No se pudo cargar el catálogo");
+    }
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function remove(p) {
+    if (!confirm(`¿Borrar "${p.name}"? Esta acción no se puede deshacer.`)) return;
+    const r = await fetch(`${API}/api/admin/shop/products/${p.id}`, {
+      method: "DELETE", headers: authHdr(),
+    });
+    if (r.ok) load();
+    else alert("Error al borrar");
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <h2 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>Productos del catálogo</h2>
+        <button style={styles.btn(true)} onClick={() => setEditing("new")}>+ Nuevo producto</button>
+      </div>
+
+      {err && <div style={{ ...styles.card, color: "#fca5a5", borderColor: "rgba(239,68,68,.4)" }}>{err}</div>}
+
+      <div style={styles.card}>
+        {loading ? (
+          <div>Cargando…</div>
+        ) : products.length === 0 ? (
+          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
+            Sin productos. Hacé clic en <strong>+ Nuevo producto</strong> para arrancar.
+          </div>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}></th>
+                <th style={styles.th}>Producto</th>
+                <th style={styles.th}>Categoría</th>
+                <th style={styles.th}>Precio</th>
+                <th style={styles.th}>Stock</th>
+                <th style={styles.th}>Estado</th>
+                <th style={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((p) => (
+                <tr key={p.id}>
+                  <td style={styles.td}>
+                    {p.primary_image
+                      ? <img src={p.primary_image} alt="" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.03)" }} />
+                      : <div style={{ width: 36, height: 36, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />
+                    }
+                  </td>
+                  <td style={styles.td}>
+                    <div style={{ fontWeight: 600 }}>{p.name}</div>
+                    <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>/{p.slug}{p.featured ? " · ⭐ destacado" : ""}</div>
+                  </td>
+                  <td style={styles.td}>{p.category?.name || "—"}</td>
+                  <td style={styles.td}>{p.price_formatted}</td>
+                  <td style={styles.td}>{p.stock == null ? "∞" : p.stock}</td>
+                  <td style={styles.td}>
+                    <span style={{ fontSize: 11, color: p.active ? "#86efac" : "rgba(237,233,224,.4)" }}>
+                      {p.active ? "✓ activo" : "— oculto"}
+                    </span>
+                  </td>
+                  <td style={styles.td}>
+                    <button style={styles.btn()} onClick={() => setEditing(p)}>Editar</button>{" "}
+                    <button style={styles.btn(false, true)} onClick={() => remove(p)}>Borrar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {editing && (
+        <ProductModal
+          product={editing === "new" ? null : editing}
+          categories={categories}
+          onClose={() => setEditing(null)}
+          onSaved={() => { setEditing(null); load(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Modal: crear/editar producto ────────────────────────────────────────────
+function ProductModal({ product, categories, onClose, onSaved }) {
+  const isNew = !product;
+  const [name, setName] = useState(product?.name || "");
+  const [slug, setSlug] = useState(product?.slug || "");
+  const [shortDesc, setShortDesc] = useState(product?.short_description || "");
+  const [longDesc, setLongDesc] = useState(product?.long_description || "");
+  // price_cents en ARS — el form trabaja en pesos (1.000 = $1.000), se convierte a centavos al guardar.
+  const [priceArs, setPriceArs] = useState(
+    product?.price_cents != null ? Math.round(product.price_cents / 100) : ""
+  );
+  const [stock, setStock] = useState(product?.stock ?? "");
+  const [sku, setSku] = useState(product?.sku || "");
+  const [categoryId, setCategoryId] = useState(product?.category?.id || "");
+  const [active, setActive] = useState(product?.active !== false);
+  const [featured, setFeatured] = useState(product?.featured === true);
+  const [sortOrder, setSortOrder] = useState(product?.sort_order ?? 0);
+  // Imágenes como lista de { url, alt, is_primary }
+  const [images, setImages] = useState(
+    product?.images?.length ? product.images.map((i) => ({
+      url: i.url, alt: i.alt || "", is_primary: !!i.is_primary,
+    })) : [{ url: "", alt: "", is_primary: true }]
+  );
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  // Auto-slug a partir del nombre cuando es nuevo y el slug está vacío.
+  function maybeAutoSlug(v) {
+    setName(v);
+    if (isNew && !slug) {
+      const auto = v.toLowerCase()
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      setSlug(auto);
+    }
+  }
+
+  function updateImage(i, field, value) {
+    setImages((arr) => arr.map((img, idx) => idx === i ? { ...img, [field]: value } : img));
+  }
+  function setPrimary(i) {
+    setImages((arr) => arr.map((img, idx) => ({ ...img, is_primary: idx === i })));
+  }
+  function addImage() {
+    setImages((arr) => [...arr, { url: "", alt: "", is_primary: false }]);
+  }
+  function removeImage(i) {
+    setImages((arr) => {
+      const next = arr.filter((_, idx) => idx !== i);
+      if (next.length && !next.some((img) => img.is_primary)) next[0].is_primary = true;
+      return next.length ? next : [{ url: "", alt: "", is_primary: true }];
+    });
+  }
+
+  async function save() {
+    setErr("");
+    setSaving(true);
+    const payload = {
+      slug: slug.trim(),
+      name: name.trim(),
+      short_description: shortDesc.trim() || null,
+      long_description: longDesc.trim() || null,
+      price_cents: Math.max(0, Math.round(Number(priceArs || 0) * 100)),
+      stock: stock === "" ? null : Math.max(0, Number(stock)),
+      sku: sku.trim() || null,
+      category_id: categoryId ? Number(categoryId) : null,
+      active, featured,
+      sort_order: Number(sortOrder) || 0,
+      images: images
+        .filter((i) => i.url.trim())
+        .map((i, idx) => ({
+          url: i.url.trim(),
+          alt: i.alt.trim() || null,
+          sort_order: idx,
+          is_primary: !!i.is_primary,
+        })),
+    };
+
+    try {
+      const url = isNew
+        ? `${API}/api/admin/shop/products`
+        : `${API}/api/admin/shop/products/${product.id}`;
+      const r = await fetch(url, {
+        method: isNew ? "POST" : "PUT",
+        headers: jsonHdr(),
+        body: JSON.stringify(payload),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        setErr(d.error || "Error al guardar");
+        setSaving(false);
+        return;
+      }
+      onSaved();
+    } catch (e) {
+      setErr("Error de red");
+    }
+    setSaving(false);
+  }
+
+  return (
+    <div style={styles.modalBackdrop} onClick={onClose}>
+      <div
+        style={{ ...styles.modalCard, maxWidth: 640, maxHeight: "88vh", overflowY: "auto" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <h3 style={{ margin: 0, fontSize: 18 }}>{isNew ? "Nuevo producto" : `Editar — ${product.name}`}</h3>
+          <button style={styles.btn()} onClick={onClose}>✕</button>
+        </div>
+
+        {err && (
+          <div style={{ padding: 10, marginBottom: 12, background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.35)", borderRadius: 6, color: "#fca5a5", fontSize: 13 }}>
+            {err}
+          </div>
+        )}
+
+        <label style={styles.label}>Nombre</label>
+        <input style={styles.input} value={name} onChange={(e) => maybeAutoSlug(e.target.value)} placeholder="Ej: Línea Race — Race 1 Vegetativo 500ml" />
+
+        <label style={styles.label}>Slug (URL)</label>
+        <input style={styles.input} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="race-1-vegetativo-500ml" />
+        <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 4 }}>Aparecerá como /shop/{slug || "..."}</div>
+
+        <label style={styles.label}>Descripción corta</label>
+        <input style={styles.input} value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} placeholder="Tarjeta del catálogo, 1-2 líneas" />
+
+        <label style={styles.label}>Descripción larga</label>
+        <textarea style={{ ...styles.input, minHeight: 90, resize: "vertical" }} value={longDesc} onChange={(e) => setLongDesc(e.target.value)} placeholder="Detalle del producto en la página de producto" />
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+          <div>
+            <label style={styles.label}>Precio (ARS)</label>
+            <input style={styles.input} type="number" min="0" step="1" value={priceArs} onChange={(e) => setPriceArs(e.target.value)} placeholder="25000" />
+          </div>
+          <div>
+            <label style={styles.label}>Stock (vacío = ∞)</label>
+            <input style={styles.input} type="number" min="0" step="1" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="50" />
+          </div>
+          <div>
+            <label style={styles.label}>SKU</label>
+            <input style={styles.input} value={sku} onChange={(e) => setSku(e.target.value)} placeholder="RACE-1-500" />
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 10 }}>
+          <div>
+            <label style={styles.label}>Categoría</label>
+            <select style={styles.input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="">— Sin categoría —</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={styles.label}>Orden</label>
+            <input style={styles.input} type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 18, marginTop: 14, fontSize: 13 }}>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
+            Activo (visible en /shop)
+          </label>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+            Destacado ⭐
+          </label>
+        </div>
+
+        <label style={{ ...styles.label, marginTop: 18 }}>Imágenes (URL)</label>
+        <div style={{ display: "grid", gap: 8 }}>
+          {images.map((img, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1fr 1fr auto auto", gap: 6, alignItems: "center" }}>
+              {img.url
+                ? <img src={img.url} alt="" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
+                : <div style={{ width: 32, height: 32, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />
+              }
+              <input style={styles.input} value={img.url} onChange={(e) => updateImage(i, "url", e.target.value)} placeholder="URL de la imagen (ej: /img/productos/race/...)" />
+              <input style={styles.input} value={img.alt} onChange={(e) => updateImage(i, "alt", e.target.value)} placeholder="Alt text (a11y)" />
+              <label style={{ fontSize: 11, color: "rgba(237,233,224,.6)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+                <input type="radio" name="primary" checked={img.is_primary} onChange={() => setPrimary(i)} />
+                Principal
+              </label>
+              <button style={{ ...styles.btn(false, true), padding: "4px 10px" }} onClick={() => removeImage(i)}>×</button>
+            </div>
+          ))}
+          <button style={{ ...styles.btn(), alignSelf: "start", marginTop: 4 }} onClick={addImage}>+ Agregar imagen</button>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
+          <button style={styles.btn()} onClick={onClose} disabled={saving}>Cancelar</button>
+          <button style={styles.btn(true)} onClick={save} disabled={saving || !name || !slug || priceArs === ""}>
+            {saving ? "Guardando…" : (isNew ? "Crear producto" : "Guardar cambios")}
+          </button>
         </div>
       </div>
     </div>

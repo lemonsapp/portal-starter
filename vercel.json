@@ -20,6 +20,8 @@
     { "source": "/admin/:path*",          "destination": "/portal/index.html" },
     { "source": "/chats",                 "destination": "/portal/index.html" },
     { "source": "/chats/:path*",          "destination": "/portal/index.html" },
-    { "source": "/chat",                  "destination": "/portal/index.html" }
+    { "source": "/chat",                  "destination": "/portal/index.html" },
+    { "source": "/shop",                  "destination": "/portal/index.html" },
+    { "source": "/shop/:path*",           "destination": "/portal/index.html" }
   ]
 }

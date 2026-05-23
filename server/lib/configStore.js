@@ -132,6 +132,7 @@ const KEY_CATALOG = {
   "features.friends":  { type: "bool", isSecret: false, default: true },
   "features.coins":    { type: "bool", isSecret: false, default: true },
   "features.webauthn": { type: "bool", isSecret: false, default: true },
+  "features.shop":     { type: "bool", isSecret: false, default: true },
 };
 
 function isKnownKey(key) {
