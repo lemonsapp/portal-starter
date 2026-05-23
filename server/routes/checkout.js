@@ -57,6 +57,38 @@ function esc(str) {
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Promo codes — helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Valida un código contra subtotal_cents y devuelve descuento aplicable.
+ * Returns:
+ *   { ok: true,  promo: row, discount_cents }
+ *   { ok: false, reason: "not_found" | "inactive" | "expired" | "max_uses" | "min_subtotal" }
+ *
+ * NO incrementa current_uses — eso lo hace finalizeCheckoutCode al checkout.
+ */
+async function validatePromoCode(code, subtotalCents) {
+  if (!code || typeof code !== "string") return { ok: false, reason: "not_found" };
+  const { rows } = await db.query(
+    `SELECT * FROM promo_codes WHERE UPPER(code) = UPPER($1) LIMIT 1`,
+    [code.trim()]
+  );
+  const row = rows[0];
+  if (!row) return { ok: false, reason: "not_found" };
+  if (!row.active) return { ok: false, reason: "inactive" };
+  if (row.expires_at && new Date(row.expires_at) < new Date()) return { ok: false, reason: "expired" };
+  if (row.max_uses != null && row.current_uses >= row.max_uses) return { ok: false, reason: "max_uses" };
+  if (subtotalCents < row.min_subtotal_cents) {
+    return { ok: false, reason: "min_subtotal", min_subtotal_cents: row.min_subtotal_cents };
+  }
+  const discount = row.kind === "percent"
+    ? Math.floor((subtotalCents * row.value) / 100)
+    : Math.min(row.value, subtotalCents);  // fixed cents — capped al subtotal
+  return { ok: true, promo: row, discount_cents: discount };
+}
+
 function serializeOrder(order, items = []) {
   return {
     id: order.id,
@@ -234,6 +266,8 @@ const checkoutSchema = z.object({
     product_id: z.number().int().positive(),
     quantity: z.number().int().positive().max(99),
   })).min(1).max(40),
+  // F5: código de promoción opcional
+  promo_code: z.string().trim().max(40).optional().nullable(),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -290,7 +324,24 @@ function publicRouter() {
       }
 
       const shippingCents = parseInt(await cs.getConfig("shop.shipping_cost_cents"), 10) || 0;
-      const totalCents = subtotalCents + shippingCents;
+
+      // F5: validar + aplicar promo_code si vino
+      let discountCents = 0;
+      let appliedPromoCode = null;
+      if (body.promo_code) {
+        const promoResult = await validatePromoCode(body.promo_code, subtotalCents);
+        if (!promoResult.ok) {
+          await client.query("ROLLBACK");
+          return res.status(400).json({
+            error: `Código promocional inválido: ${promoResult.reason}`,
+            promo_invalid: true,
+          });
+        }
+        discountCents = promoResult.discount_cents;
+        appliedPromoCode = promoResult.promo.code;
+      }
+
+      const totalCents = Math.max(0, subtotalCents - discountCents + shippingCents);
 
       // 2. Crear orden con public_id único.
       let publicId;
@@ -301,8 +352,9 @@ function publicRouter() {
           const { rows } = await client.query(
             `INSERT INTO orders
                (public_id, status, customer_email, customer_first_name, customer_last_name,
-                customer_phone, shipping_address, subtotal_cents, shipping_cents, total_cents)
-             VALUES ($1, 'pending_payment', $2, $3, $4, $5, $6, $7, $8, $9)
+                customer_phone, shipping_address, subtotal_cents, shipping_cents, total_cents,
+                promo_code, discount_cents)
+             VALUES ($1, 'pending_payment', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
              RETURNING *`,
             [publicId,
              body.customer.email,
@@ -310,7 +362,8 @@ function publicRouter() {
              body.customer.last_name,
              body.customer.phone,
              JSON.stringify(body.shipping_address),
-             subtotalCents, shippingCents, totalCents]
+             subtotalCents, shippingCents, totalCents,
+             appliedPromoCode, discountCents]
           );
           inserted = rows[0];
           break;
@@ -320,6 +373,14 @@ function publicRouter() {
         }
       }
       if (!inserted) throw new Error("No se pudo generar public_id único");
+
+      // F5: incrementar current_uses del código (después de crear orden con éxito)
+      if (appliedPromoCode) {
+        await client.query(
+          `UPDATE promo_codes SET current_uses = current_uses + 1, updated_at = NOW() WHERE UPPER(code) = UPPER($1)`,
+          [appliedPromoCode]
+        );
+      }
 
       // 3. Insertar order_items.
       for (const li of lineItems) {
@@ -432,6 +493,38 @@ a{color:${color};text-decoration:underline dotted;}
         "#fca5a5"
       ));
     }
+  });
+
+  // ── POST /api/shop/checkout/validate-code — preview de descuento
+  // Permite al cliente probar un código antes de finalizar checkout.
+  // Body: { code: "TEST10", subtotal_cents: 1000000 }
+  router.post("/checkout/validate-code", async (req, res) => {
+    const { code, subtotal_cents } = req.body || {};
+    const subtotal = parseInt(subtotal_cents, 10) || 0;
+    const result = await validatePromoCode(code, subtotal);
+    if (!result.ok) {
+      const messages = {
+        not_found: "Código no válido",
+        inactive: "Código desactivado",
+        expired: "Código expirado",
+        max_uses: "Código agotado",
+        min_subtotal: `Compra mínima de ${formatARS(result.min_subtotal_cents)} para usar este código`,
+      };
+      return res.status(400).json({
+        ok: false,
+        error: messages[result.reason] || "Código inválido",
+      });
+    }
+    res.json({
+      ok: true,
+      code: result.promo.code,
+      kind: result.promo.kind,
+      value: result.promo.value,
+      discount_cents: result.discount_cents,
+      discount_formatted: formatARS(result.discount_cents),
+      new_total_cents: subtotal - result.discount_cents,
+      new_total_formatted: formatARS(subtotal - result.discount_cents),
+    });
   });
 
   // GET /api/shop/orders/:public_id — consulta pública (para success page)
@@ -744,6 +837,107 @@ function adminRouter({ authRequired, requireRole }) {
     } catch (e) {
       console.error("[admin customers export]", e);
       res.status(500).json({ error: "Error al exportar" });
+    }
+  });
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // F5: PROMO CODES (admin CRUD)
+  // ═════════════════════════════════════════════════════════════════════════
+
+  const promoCodeSchema = z.object({
+    code: z.string().trim().min(2).max(40).regex(/^[A-Z0-9_-]+$/i, "código solo letras, números, _ y -")
+      .transform((s) => s.toUpperCase()),
+    kind: z.enum(["percent", "fixed_cents"]),
+    value: z.number().int().positive(),
+    min_subtotal_cents: z.number().int().min(0).optional().nullable(),
+    max_uses: z.number().int().positive().optional().nullable(),
+    expires_at: z.string().datetime().optional().nullable(),
+    active: z.boolean().optional(),
+    notes: z.string().max(500).optional().nullable(),
+  });
+
+  router.get("/promo-codes", ...readMw, async (_req, res) => {
+    try {
+      const { rows } = await db.query(`SELECT * FROM promo_codes ORDER BY created_at DESC`);
+      res.json({
+        promo_codes: rows.map((r) => ({
+          ...r,
+          discount_display: r.kind === "percent" ? `${r.value}%` : formatARS(r.value),
+          uses_display: r.max_uses != null ? `${r.current_uses}/${r.max_uses}` : `${r.current_uses}`,
+        })),
+      });
+    } catch (e) {
+      console.error("[admin promo-codes list]", e);
+      res.status(500).json({ error: "Error al listar códigos" });
+    }
+  });
+
+  router.post("/promo-codes", ...writeMw, async (req, res) => {
+    let body;
+    try { body = promoCodeSchema.parse(req.body); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+
+    // Validar value según kind
+    if (body.kind === "percent" && (body.value < 1 || body.value > 100)) {
+      return res.status(400).json({ error: "Porcentaje debe estar entre 1 y 100" });
+    }
+    try {
+      const { rows } = await db.query(
+        `INSERT INTO promo_codes
+           (code, kind, value, min_subtotal_cents, max_uses, expires_at, active, notes, created_by)
+         VALUES ($1, $2, $3, COALESCE($4, 0), $5, $6, COALESCE($7, TRUE), $8, $9)
+         RETURNING *`,
+        [body.code, body.kind, body.value,
+         body.min_subtotal_cents, body.max_uses, body.expires_at,
+         body.active, body.notes, req.user?.id || null]
+      );
+      res.status(201).json({ promo_code: rows[0] });
+    } catch (e) {
+      console.error("[admin promo-codes create]", e);
+      if (e.code === "23505") return res.status(409).json({ error: "Código duplicado" });
+      res.status(500).json({ error: "Error al crear código" });
+    }
+  });
+
+  router.put("/promo-codes/:id", ...writeMw, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ error: "ID inválido" });
+    let body;
+    try { body = promoCodeSchema.partial().parse(req.body); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+
+    const sets = ["updated_at = NOW()"];
+    const params = [];
+    for (const k of ["code", "kind", "value", "min_subtotal_cents", "max_uses", "expires_at", "active", "notes"]) {
+      if (body[k] !== undefined) {
+        params.push(body[k]);
+        sets.push(`${k} = $${params.length}`);
+      }
+    }
+    params.push(id);
+    try {
+      const { rows } = await db.query(
+        `UPDATE promo_codes SET ${sets.join(", ")} WHERE id = $${params.length} RETURNING *`,
+        params
+      );
+      if (!rows[0]) return res.status(404).json({ error: "No encontrado" });
+      res.json({ promo_code: rows[0] });
+    } catch (e) {
+      console.error("[admin promo-codes update]", e);
+      if (e.code === "23505") return res.status(409).json({ error: "Código duplicado" });
+      res.status(500).json({ error: "Error al actualizar" });
+    }
+  });
+
+  router.delete("/promo-codes/:id", ...writeMw, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    try {
+      const r = await db.query(`DELETE FROM promo_codes WHERE id = $1`, [id]);
+      if (r.rowCount === 0) return res.status(404).json({ error: "No encontrado" });
+      res.json({ ok: true });
+    } catch (e) {
+      console.error("[admin promo-codes delete]", e);
+      res.status(500).json({ error: "Error al borrar" });
     }
   });
 

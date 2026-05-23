@@ -88,6 +88,7 @@ export default function AdminPanel() {
           <button style={styles.tab(tab === "orders")}    onClick={() => setTab("orders")}>📦 Pedidos</button>
           <button style={styles.tab(tab === "customers")} onClick={() => setTab("customers")}>👥 Clientes</button>
           <button style={styles.tab(tab === "campaigns")} onClick={() => setTab("campaigns")}>📧 Campañas</button>
+          <button style={styles.tab(tab === "promos")}    onClick={() => setTab("promos")}>🎟️ Códigos</button>
           <button style={styles.tab(tab === "branding")}  onClick={() => setTab("branding")}>🎨 Branding</button>
           <button style={styles.tab(tab === "settings")}  onClick={() => setTab("settings")}>⚙️ Configuración</button>
         </div>
@@ -98,6 +99,7 @@ export default function AdminPanel() {
         {tab === "orders"    && <OrdersTab />}
         {tab === "customers" && <CustomersTab />}
         {tab === "campaigns" && <CampaignsTab />}
+        {tab === "promos"    && <PromoCodesTab />}
         {tab === "branding"  && <BrandingTab />}
         {tab === "settings"  && <SettingsTab />}
       </div>
@@ -1844,6 +1846,246 @@ function CampaignDetailModal({ campaignId, onClose, onChanged }) {
             {campaign.body_html}
           </pre>
         </details>
+      </div>
+    </div>
+  );
+}
+
+// ── Tab: Códigos Promocionales (Shop F5) ────────────────────────────────────
+function PromoCodesTab() {
+  const [codes, setCodes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(null);  // null | "new" | rowObj
+
+  async function load() {
+    setLoading(true);
+    try {
+      const r = await fetch(`${API}/api/admin/shop/promo-codes`, { headers: authHdr() });
+      const d = await r.json();
+      setCodes(d.promo_codes || []);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function remove(c) {
+    if (!confirm(`¿Borrar código ${c.code}? Esta acción no se puede deshacer.`)) return;
+    const r = await fetch(`${API}/api/admin/shop/promo-codes/${c.id}`, {
+      method: "DELETE", headers: authHdr(),
+    });
+    if (r.ok) load(); else alert("Error al borrar");
+  }
+  async function toggleActive(c) {
+    const r = await fetch(`${API}/api/admin/shop/promo-codes/${c.id}`, {
+      method: "PUT", headers: jsonHdr(),
+      body: JSON.stringify({ active: !c.active }),
+    });
+    if (r.ok) load();
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div>
+          <h2 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>Códigos promocionales</h2>
+          <div style={{ fontSize: 12, color: "rgba(237,233,224,.55)", marginTop: 3 }}>
+            Aplican en /checkout. El cliente los tipea o se les manda por campaña.
+          </div>
+        </div>
+        <button style={styles.btn(true)} onClick={() => setEditing("new")}>+ Nuevo código</button>
+      </div>
+
+      <div style={styles.card}>
+        {loading ? <div>Cargando…</div> : codes.length === 0 ? (
+          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
+            Sin códigos todavía. Hacé clic en <strong>+ Nuevo código</strong> para crear el primero.
+          </div>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Código</th>
+                <th style={styles.th}>Descuento</th>
+                <th style={styles.th}>Mín. compra</th>
+                <th style={styles.th}>Usos</th>
+                <th style={styles.th}>Estado</th>
+                <th style={styles.th}>Expira</th>
+                <th style={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {codes.map((c) => (
+                <tr key={c.id}>
+                  <td style={styles.td}>
+                    <code style={{ fontFamily: "monospace", fontWeight: 800, fontSize: 14, color: "var(--brand-primary, #A7F5C8)" }}>
+                      {c.code}
+                    </code>
+                    {c.notes && <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>{c.notes}</div>}
+                  </td>
+                  <td style={styles.td}>
+                    <strong>{c.discount_display}</strong>
+                    <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>
+                      {c.kind === "percent" ? "porcentaje" : "monto fijo"}
+                    </div>
+                  </td>
+                  <td style={styles.td}>
+                    {c.min_subtotal_cents > 0
+                      ? `$${(c.min_subtotal_cents / 100).toLocaleString("es-AR")}`
+                      : "—"}
+                  </td>
+                  <td style={styles.td}>{c.uses_display}</td>
+                  <td style={styles.td}>
+                    <button
+                      style={{
+                        padding: "4px 10px", fontSize: 11, fontWeight: 700,
+                        borderRadius: 999, border: "none", fontFamily: "inherit",
+                        background: c.active ? "rgba(167,245,200,.15)" : "rgba(239,68,68,.12)",
+                        color: c.active ? "#86efac" : "#fca5a5",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => toggleActive(c)}
+                    >
+                      {c.active ? "✓ activo" : "✗ inactivo"}
+                    </button>
+                  </td>
+                  <td style={styles.td}>
+                    {c.expires_at ? (
+                      <span style={{ fontSize: 12, color: "rgba(237,233,224,.7)" }}>
+                        {new Date(c.expires_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
+                      </span>
+                    ) : <span style={{ color: "rgba(237,233,224,.4)" }}>—</span>}
+                  </td>
+                  <td style={styles.td}>
+                    <button style={styles.btn()} onClick={() => setEditing(c)}>Editar</button>{" "}
+                    <button style={styles.btn(false, true)} onClick={() => remove(c)}>Borrar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {editing && (
+        <PromoCodeModal
+          code={editing === "new" ? null : editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => { setEditing(null); load(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function PromoCodeModal({ code, onClose, onSaved }) {
+  const isNew = !code;
+  const [c, setC] = useState({
+    code: code?.code || "",
+    kind: code?.kind || "percent",
+    value: code?.value || (code?.kind === "fixed_cents" ? 1000 : 10),
+    min_subtotal_ars: code?.min_subtotal_cents ? code.min_subtotal_cents / 100 : 0,
+    max_uses: code?.max_uses || "",
+    expires_at: code?.expires_at ? code.expires_at.slice(0, 10) : "",
+    notes: code?.notes || "",
+    active: code?.active !== false,
+  });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function save() {
+    setErr("");
+    setSaving(true);
+    const payload = {
+      code: c.code.trim().toUpperCase(),
+      kind: c.kind,
+      value: c.kind === "fixed_cents"
+        ? Math.round(Number(c.value) * 100)   // ars → cents
+        : Number(c.value),
+      min_subtotal_cents: Math.round(Number(c.min_subtotal_ars || 0) * 100),
+      max_uses: c.max_uses ? Number(c.max_uses) : null,
+      expires_at: c.expires_at ? new Date(c.expires_at + "T23:59:59").toISOString() : null,
+      notes: c.notes.trim() || null,
+      active: c.active,
+    };
+    try {
+      const url = isNew
+        ? `${API}/api/admin/shop/promo-codes`
+        : `${API}/api/admin/shop/promo-codes/${code.id}`;
+      const r = await fetch(url, {
+        method: isNew ? "POST" : "PUT",
+        headers: jsonHdr(),
+        body: JSON.stringify(payload),
+      });
+      const d = await r.json();
+      if (!r.ok) { setErr(d.error || "Error al guardar"); setSaving(false); return; }
+      onSaved();
+    } catch (e) { setErr("Error de red"); }
+    setSaving(false);
+  }
+
+  return (
+    <div style={styles.modalBackdrop} onClick={onClose}>
+      <div style={{ ...styles.modalCard, maxWidth: 540 }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <h3 style={{ margin: 0, fontSize: 18 }}>{isNew ? "Nuevo código" : `Editar ${code.code}`}</h3>
+          <button style={styles.btn()} onClick={onClose}>✕</button>
+        </div>
+
+        {err && <div style={{ padding: 10, marginBottom: 12, background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.35)", borderRadius: 6, color: "#fca5a5", fontSize: 13 }}>{err}</div>}
+
+        <label style={styles.label}>Código (el cliente lo tipea)</label>
+        <input style={{ ...styles.input, fontFamily: "monospace", textTransform: "uppercase", letterSpacing: ".08em" }}
+          value={c.code} onChange={(e) => setC({ ...c, code: e.target.value })} placeholder="VERANO15" />
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+          <div>
+            <label style={styles.label}>Tipo</label>
+            <select style={styles.input} value={c.kind} onChange={(e) => setC({ ...c, kind: e.target.value })}>
+              <option value="percent">Porcentaje (%)</option>
+              <option value="fixed_cents">Monto fijo (ARS)</option>
+            </select>
+          </div>
+          <div>
+            <label style={styles.label}>{c.kind === "percent" ? "Porcentaje (1-100)" : "Monto ARS"}</label>
+            <input style={styles.input} type="number" min="1" max={c.kind === "percent" ? 100 : 9999999}
+              value={c.value} onChange={(e) => setC({ ...c, value: e.target.value })} />
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+          <div>
+            <label style={styles.label}>Compra mínima (ARS)</label>
+            <input style={styles.input} type="number" min="0"
+              value={c.min_subtotal_ars} onChange={(e) => setC({ ...c, min_subtotal_ars: e.target.value })}
+              placeholder="0 = sin mínimo" />
+          </div>
+          <div>
+            <label style={styles.label}>Usos máximos</label>
+            <input style={styles.input} type="number" min="1"
+              value={c.max_uses} onChange={(e) => setC({ ...c, max_uses: e.target.value })}
+              placeholder="vacío = ilimitado" />
+          </div>
+        </div>
+
+        <label style={styles.label}>Expira (opcional)</label>
+        <input style={styles.input} type="date"
+          value={c.expires_at} onChange={(e) => setC({ ...c, expires_at: e.target.value })} />
+
+        <label style={styles.label}>Notas internas (admin)</label>
+        <input style={styles.input} value={c.notes} onChange={(e) => setC({ ...c, notes: e.target.value })}
+          placeholder="Para qué se creó este código" />
+
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 14, fontSize: 13, cursor: "pointer" }}>
+          <input type="checkbox" checked={c.active} onChange={(e) => setC({ ...c, active: e.target.checked })} />
+          Código activo
+        </label>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
+          <button style={styles.btn()} onClick={onClose} disabled={saving}>Cancelar</button>
+          <button style={styles.btn(true)} onClick={save} disabled={saving || !c.code.trim() || !c.value}>
+            {saving ? "Guardando…" : (isNew ? "Crear código" : "Guardar")}
+          </button>
+        </div>
       </div>
     </div>
   );

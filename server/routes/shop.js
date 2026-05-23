@@ -620,6 +620,47 @@ async function migrate() {
   `);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_email_sends_campaign ON email_sends(campaign_id, status)`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_email_sends_customer ON email_sends(customer_id, created_at DESC) WHERE customer_id IS NOT NULL`);
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // F5: PROMO CODES — descuentos aplicables en checkout
+  // ═════════════════════════════════════════════════════════════════════════
+  //
+  // kind=percent: value = 0-100 (porcentaje del subtotal)
+  // kind=fixed_cents: value = monto en centavos a descontar
+  // min_subtotal_cents = monto mínimo requerido (0 = sin mínimo)
+  // max_uses NULL = ilimitado; INT = capped al N
+  // current_uses = contador incrementado cada checkout exitoso
+  // expires_at NULL = sin expiración
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS promo_codes (
+      id                    SERIAL PRIMARY KEY,
+      code                  TEXT UNIQUE NOT NULL,
+      kind                  TEXT NOT NULL CHECK (kind IN ('percent', 'fixed_cents')),
+      value                 INT NOT NULL CHECK (value > 0),
+      min_subtotal_cents    INT NOT NULL DEFAULT 0,
+      max_uses              INT,
+      current_uses          INT NOT NULL DEFAULT 0,
+      expires_at            TIMESTAMPTZ,
+      active                BOOLEAN NOT NULL DEFAULT TRUE,
+      notes                 TEXT,
+      created_by            INT REFERENCES users(id) ON DELETE SET NULL,
+      created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_promo_codes_active ON promo_codes(active, expires_at) WHERE active = TRUE`);
+  await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uniq_promo_codes_code_upper ON promo_codes(UPPER(code))`);
+
+  // Agregar columnas a orders para tracking del descuento aplicado (idempotente).
+  await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS promo_code TEXT`);
+  await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_cents INT NOT NULL DEFAULT 0`);
+
+  // Seed de un código TEST para que el admin pueda probar el flow inmediato.
+  await db.query(`
+    INSERT INTO promo_codes (code, kind, value, max_uses, notes, active)
+    VALUES ('TEST10', 'percent', 10, NULL, 'Código de prueba seed — 10% off, ilimitado', TRUE)
+    ON CONFLICT (code) DO NOTHING
+  `);
 }
 migrate().catch((e) => console.error("[SHOP MIGRATE]", e));
 

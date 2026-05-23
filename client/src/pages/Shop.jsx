@@ -1,123 +1,35 @@
 // client/src/pages/Shop.jsx
 //
-// Catálogo público del shop (fase 1 — Sprint 14, 2026-05-23). Sin auth
-// requerido para browse. El botón "Agregar al carrito" queda preparado
-// pero la lógica del carrito real (localStorage + MercadoPago) llega en
-// fase 2.
-//
-// Rutas:
-//   /shop               → este componente (grid + filtros)
-//   /shop/:slug         → ShopProduct.jsx (detalle)
-//
-// Feature flag features.shop: si está OFF, /api/shop devuelve 404 →
-// el catálogo muestra estado vacío con mensaje.
+// Catálogo público — REWRITE editorial 2026-05-23.
+// Estilo Holistic landing: dark + mint accents, Gotham Black para
+// headings, Fraunces italic para accents, cards más grandes con hover
+// scale del producto, hero con eyebrow + display title.
 
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
+import { useCart } from "../lib/useCart.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
-const styles = {
-  shell: {
-    minHeight: "100vh",
-    background: "var(--brand-bg, #080808)",
-    color: "var(--brand-text, #ede9e0)",
-    fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
-    padding: "48px 20px 80px",
-  },
-  container: { maxWidth: 1240, margin: "0 auto" },
-  header: { textAlign: "center", marginBottom: 40 },
-  eyebrow: {
-    fontSize: 12, fontWeight: 700, letterSpacing: "0.32em",
-    textTransform: "uppercase", color: "var(--brand-primary, #A7F5C8)",
-    marginBottom: 14,
-  },
-  h1: {
-    fontFamily: "'Gotham', sans-serif",
-    fontSize: "clamp(2.4rem, 5vw, 3.6rem)", fontWeight: 900,
-    margin: "0 0 14px", letterSpacing: "-0.02em", lineHeight: 1.05,
-    textTransform: "uppercase",
-  },
-  sub: {
-    maxWidth: 620, margin: "0 auto",
-    fontSize: "clamp(0.98rem, 1.2vw, 1.1rem)",
-    lineHeight: 1.55, color: "rgba(237,233,224,.7)",
-  },
-  filters: {
-    display: "flex", flexWrap: "wrap", justifyContent: "center",
-    gap: 8, margin: "32px 0 40px",
-  },
-  pill: (active) => ({
-    padding: "9px 18px", borderRadius: 999,
-    border: active
-      ? "1px solid var(--brand-primary, #A7F5C8)"
-      : "1px solid rgba(237,233,224,.15)",
-    background: active ? "rgba(167, 245, 200, 0.12)" : "transparent",
-    color: active ? "var(--brand-primary, #A7F5C8)" : "rgba(237,233,224,.7)",
-    fontSize: 13, fontWeight: 600, letterSpacing: ".04em",
-    cursor: "pointer", fontFamily: "inherit",
-    transition: "background .25s ease, border-color .25s ease, color .25s ease",
-  }),
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-    gap: 22,
-  },
-  card: {
-    display: "flex", flexDirection: "column",
-    background: "rgba(255,255,255,.03)",
-    border: "1px solid rgba(255,255,255,.07)",
-    borderRadius: 14, overflow: "hidden",
-    textDecoration: "none", color: "inherit",
-    transition: "transform .35s cubic-bezier(.2,.8,.2,1), border-color .35s ease, box-shadow .35s ease",
-    cursor: "pointer",
-  },
-  cardImg: {
-    width: "100%", aspectRatio: "1 / 1",
-    objectFit: "contain", padding: 28,
-    background: "rgba(255,255,255,.02)",
-    display: "block",
-  },
-  cardBody: { padding: "16px 18px 20px", display: "flex", flexDirection: "column", gap: 6, flex: 1 },
-  cardCat: {
-    fontSize: 10, fontWeight: 700, letterSpacing: ".22em",
-    textTransform: "uppercase", color: "rgba(167,245,200,.85)",
-  },
-  cardName: { fontSize: 17, fontWeight: 700, lineHeight: 1.2, margin: 0 },
-  cardDesc: { fontSize: 13, color: "rgba(237,233,224,.65)", lineHeight: 1.5, margin: 0, flex: 1 },
-  cardPrice: { fontSize: 19, fontWeight: 800, marginTop: 8, color: "var(--brand-primary, #A7F5C8)" },
-  cardFeatured: {
-    position: "absolute", top: 12, right: 12,
-    padding: "4px 10px", borderRadius: 999,
-    background: "rgba(167,245,200,.18)",
-    color: "var(--brand-primary, #A7F5C8)",
-    fontSize: 10, fontWeight: 700, letterSpacing: ".18em",
-    textTransform: "uppercase",
-  },
-  empty: {
-    textAlign: "center", padding: "80px 20px",
-    color: "rgba(237,233,224,.55)", fontSize: 15,
-  },
-};
-
 export default function Shop() {
   useBranding();
+  const { addItem } = useCart();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [searchInput, setSearchInput] = useState("");
 
   useEffect(() => {
     (async () => {
       try {
         const [pr, cr] = await Promise.all([
-          fetch(`${API}/api/shop/products?limit=100`),
+          fetch(`${API}/api/shop/products?limit=200`),
           fetch(`${API}/api/shop/categories`),
         ]);
         if (pr.status === 404) {
-          // feature flag OFF
           setErr("La tienda está temporalmente deshabilitada. Volvé pronto.");
           setLoading(false);
           return;
@@ -134,37 +46,69 @@ export default function Shop() {
   }, []);
 
   const filtered = useMemo(() => {
-    if (activeCategory === "all") return products;
-    return products.filter((p) => p.category?.slug === activeCategory);
-  }, [products, activeCategory]);
+    let list = products;
+    if (activeCategory !== "all") {
+      list = list.filter((p) => p.category?.slug === activeCategory);
+    }
+    if (searchInput.trim()) {
+      const q = searchInput.trim().toLowerCase();
+      list = list.filter((p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.slug.toLowerCase().includes(q) ||
+        (p.short_description || "").toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [products, activeCategory, searchInput]);
+
+  function handleAdd(e, product) {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product, 1);
+    window.dispatchEvent(new CustomEvent("holistic-cart-open"));
+  }
 
   return (
-    <div style={styles.shell}>
-      <div style={styles.container}>
-        <header style={styles.header}>
-          <div style={styles.eyebrow}>· Catálogo Holistic ·</div>
-          <h1 style={styles.h1}>Fertilizantes para cultivo indoor y outdoor</h1>
-          <p style={styles.sub}>
-            Sumá los productos al carrito y pagás seguro. Envío en 48 hs a todo el país.
-            Soporte técnico humano sin cargo: ingenieros agrónomos y cultivadores
-            del equipo Holistic.
+    <div style={S.shell}>
+      {/* Hero — eyebrow + display + sub + decorative line */}
+      <header style={S.hero}>
+        <div style={S.heroGlow} aria-hidden="true" />
+        <div style={S.heroInner}>
+          <div style={S.eyebrow}>
+            <span style={S.eyebrowDot} />
+            CATÁLOGO HOLISTIC
+            <span style={S.eyebrowDot} />
+          </div>
+          <h1 style={S.display}>
+            <span style={S.displayLine}>FERTILIZANTES</span>
+            <span style={S.displayItalic}>premium</span>
+            <span style={S.displayLine}>PARA CULTIVO</span>
+            <span style={S.displayItalic}>indoor &amp; outdoor</span>
+          </h1>
+          <p style={S.heroSub}>
+            Sumá los productos al carrito y pagás seguro con MercadoPago.
+            <br />
+            Envío en 48 hs a todo el país. Soporte humano sin cargo.
           </p>
-        </header>
+        </div>
+      </header>
 
-        {categories.length > 0 && (
-          <div style={styles.filters} role="tablist" aria-label="Filtrar por categoría">
+      <div style={S.container}>
+        {/* Filters: categories + search */}
+        <div style={S.filters}>
+          <div style={S.filterPills} role="tablist" aria-label="Filtrar por categoría">
             <button
-              style={styles.pill(activeCategory === "all")}
+              style={S.pill(activeCategory === "all")}
               onClick={() => setActiveCategory("all")}
               role="tab"
               aria-selected={activeCategory === "all"}
             >
-              Todos
+              Todos{products.length ? ` · ${products.length}` : ""}
             </button>
             {categories.map((c) => (
               <button
                 key={c.id}
-                style={styles.pill(activeCategory === c.slug)}
+                style={S.pill(activeCategory === c.slug)}
                 onClick={() => setActiveCategory(c.slug)}
                 role="tab"
                 aria-selected={activeCategory === c.slug}
@@ -173,58 +117,328 @@ export default function Shop() {
               </button>
             ))}
           </div>
-        )}
+          <div style={S.searchWrap}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" />
+            </svg>
+            <input
+              type="search"
+              placeholder="Buscar producto…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={S.searchInput}
+            />
+          </div>
+        </div>
 
-        {loading && <div style={styles.empty}>Cargando catálogo…</div>}
+        {/* Result count line */}
+        <div style={S.resultCount}>
+          {loading
+            ? "Cargando catálogo…"
+            : err
+              ? err
+              : `${filtered.length} ${filtered.length === 1 ? "producto" : "productos"}`}
+        </div>
 
-        {!loading && err && <div style={styles.empty}>{err}</div>}
-
+        {/* Grid */}
         {!loading && !err && filtered.length === 0 && (
-          <div style={styles.empty}>
-            No hay productos en esta categoría todavía.
+          <div style={S.empty}>
+            No encontramos productos que coincidan.
+            <br />
+            <button style={S.emptyReset} onClick={() => { setActiveCategory("all"); setSearchInput(""); }}>
+              Limpiar filtros
+            </button>
           </div>
         )}
 
         {!loading && !err && filtered.length > 0 && (
-          <div style={styles.grid}>
-            {filtered.map((p) => <ShopCard key={p.id} product={p} />)}
+          <div style={S.grid}>
+            {filtered.map((p) => <ShopCard key={p.id} product={p} onAdd={handleAdd} />)}
           </div>
         )}
+      </div>
+
+      {/* Footer signature line */}
+      <div style={S.signature}>
+        <span>Holistic Growshop</span>
+        <span>· Nutrición Superior · Cultivo Indoor / Outdoor ·</span>
       </div>
     </div>
   );
 }
 
-function ShopCard({ product }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Card de producto — hover lift + image scale + add-to-cart inline
+// ─────────────────────────────────────────────────────────────────────────────
+function ShopCard({ product, onAdd }) {
   const [hover, setHover] = useState(false);
   return (
     <Link
       to={`/shop/${product.slug}`}
       style={{
-        ...styles.card,
-        position: "relative",
-        transform: hover ? "translateY(-4px)" : "translateY(0)",
-        borderColor: hover ? "rgba(167,245,200,.35)" : "rgba(255,255,255,.07)",
-        boxShadow: hover ? "0 18px 48px rgba(0,0,0,0.35)" : "none",
+        ...S.card,
+        transform: hover ? "translateY(-6px)" : "translateY(0)",
+        borderColor: hover ? "rgba(167,245,200,.4)" : "rgba(255,255,255,.06)",
+        boxShadow: hover ? "0 30px 60px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(167,245,200,.08)" : "none",
       }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       aria-label={`Ver ${product.name}`}
     >
-      {product.featured && <span style={styles.cardFeatured}>⭐ Destacado</span>}
-      {product.primary_image ? (
-        <img src={product.primary_image} alt={product.name} style={styles.cardImg} loading="lazy" />
-      ) : (
-        <div style={{ ...styles.cardImg, background: "rgba(255,255,255,.04)" }} />
-      )}
-      <div style={styles.cardBody}>
-        {product.category && <span style={styles.cardCat}>{product.category.name}</span>}
-        <h3 style={styles.cardName}>{product.name}</h3>
-        {product.short_description && (
-          <p style={styles.cardDesc}>{product.short_description}</p>
+      {product.featured && <span style={S.cardFeatured}>⭐ Destacado</span>}
+
+      <div style={S.cardImgWrap}>
+        {product.primary_image ? (
+          <img
+            src={product.primary_image}
+            alt={product.name}
+            loading="lazy"
+            style={{ ...S.cardImg, transform: hover ? "scale(1.06)" : "scale(1)" }}
+          />
+        ) : (
+          <div style={{ ...S.cardImg, background: "rgba(255,255,255,.04)" }} />
         )}
-        <div style={styles.cardPrice}>{product.price_formatted}</div>
+      </div>
+
+      <div style={S.cardBody}>
+        {product.category && <span style={S.cardCat}>{product.category.name}</span>}
+        <h3 style={S.cardName}>{product.name}</h3>
+        {product.short_description && (
+          <p style={S.cardDesc}>{product.short_description}</p>
+        )}
+        <div style={S.cardPriceRow}>
+          <span style={S.cardPrice}>{product.price_formatted}</span>
+          <button
+            onClick={(e) => onAdd(e, product)}
+            style={{ ...S.cardCta, opacity: hover ? 1 : 0.85 }}
+            aria-label={`Agregar ${product.name} al carrito`}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="9" cy="20" r="1.4" />
+              <circle cx="18" cy="20" r="1.4" />
+              <path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6" />
+            </svg>
+            <span>Sumar</span>
+          </button>
+        </div>
       </div>
     </Link>
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Styles — namespace S
+// ─────────────────────────────────────────────────────────────────────────────
+const S = {
+  shell: {
+    minHeight: "100vh",
+    background: "var(--brand-bg, #060606)",
+    color: "var(--brand-text, #ede9e0)",
+    fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
+    paddingBottom: "120px",
+  },
+  hero: {
+    position: "relative",
+    overflow: "hidden",
+    padding: "clamp(48px, 9vh, 96px) 24px clamp(36px, 6vh, 70px)",
+    textAlign: "center",
+    isolation: "isolate",
+    background:
+      "radial-gradient(ellipse 70% 90% at 50% 0%, rgba(167,245,200,.12) 0%, transparent 60%)",
+  },
+  heroGlow: {
+    position: "absolute",
+    top: "-40%", left: "50%",
+    transform: "translateX(-50%)",
+    width: "70%",
+    height: "120%",
+    background: "radial-gradient(circle at 50% 30%, rgba(46,143,110,.22) 0%, transparent 60%)",
+    filter: "blur(60px)",
+    zIndex: -1,
+  },
+  heroInner: { maxWidth: 920, margin: "0 auto" },
+  eyebrow: {
+    display: "inline-flex", alignItems: "center", gap: 14,
+    fontSize: 11, fontWeight: 700, letterSpacing: "0.32em",
+    textTransform: "uppercase",
+    color: "var(--brand-primary, #A7F5C8)",
+    marginBottom: 28,
+  },
+  eyebrowDot: {
+    display: "inline-block",
+    width: 5, height: 5, borderRadius: "50%",
+    background: "var(--brand-primary, #A7F5C8)",
+    boxShadow: "0 0 10px var(--brand-primary, #A7F5C8)",
+  },
+  display: {
+    margin: 0,
+    fontFamily: "'Gotham', sans-serif",
+    fontSize: "clamp(2.6rem, 7vw, 5.6rem)",
+    fontWeight: 900,
+    lineHeight: 0.95,
+    letterSpacing: "-0.025em",
+    textTransform: "uppercase",
+    paddingBottom: "0.06em",
+  },
+  displayLine: { display: "block" },
+  displayItalic: {
+    display: "block",
+    fontFamily: "'Fraunces', Georgia, serif",
+    fontStyle: "italic",
+    fontWeight: 400,
+    textTransform: "none",
+    fontSize: "0.78em",
+    color: "var(--brand-primary, #A7F5C8)",
+    letterSpacing: "-0.01em",
+    margin: "0.04em 0",
+  },
+  heroSub: {
+    marginTop: 28,
+    fontSize: "clamp(0.98rem, 1.25vw, 1.18rem)",
+    lineHeight: 1.6,
+    color: "rgba(237,233,224,.7)",
+    maxWidth: 620, marginLeft: "auto", marginRight: "auto",
+  },
+
+  container: { maxWidth: 1320, margin: "0 auto", padding: "0 24px" },
+
+  filters: {
+    position: "sticky", top: 0, zIndex: 30,
+    background: "rgba(6,6,6,0.92)",
+    backdropFilter: "blur(14px)",
+    margin: "0 -24px",
+    padding: "18px 24px",
+    borderBottom: "1px solid rgba(255,255,255,.06)",
+    display: "flex", flexWrap: "wrap", gap: 16,
+    alignItems: "center", justifyContent: "space-between",
+  },
+  filterPills: { display: "flex", flexWrap: "wrap", gap: 8 },
+  pill: (active) => ({
+    padding: "9px 18px",
+    borderRadius: 999,
+    border: active ? "1px solid var(--brand-primary, #A7F5C8)" : "1px solid rgba(255,255,255,.1)",
+    background: active ? "rgba(167,245,200,.10)" : "transparent",
+    color: active ? "var(--brand-primary, #A7F5C8)" : "rgba(237,233,224,.7)",
+    fontSize: 12, fontWeight: 700, letterSpacing: ".06em",
+    cursor: "pointer", fontFamily: "inherit",
+    transition: "all .25s ease",
+    textTransform: "uppercase",
+  }),
+  searchWrap: {
+    display: "inline-flex", alignItems: "center", gap: 8,
+    padding: "9px 14px",
+    border: "1px solid rgba(255,255,255,.1)",
+    borderRadius: 999,
+    background: "rgba(255,255,255,.03)",
+    color: "rgba(237,233,224,.55)",
+    minWidth: 200,
+  },
+  searchInput: {
+    background: "transparent", border: "none", outline: "none",
+    color: "var(--brand-text, #ede9e0)",
+    fontFamily: "inherit", fontSize: 13, flex: 1,
+  },
+
+  resultCount: {
+    margin: "28px 0 18px",
+    fontSize: 12, fontWeight: 700, letterSpacing: ".18em",
+    textTransform: "uppercase",
+    color: "rgba(237,233,224,.45)",
+  },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+    gap: 24,
+  },
+
+  card: {
+    position: "relative",
+    display: "flex", flexDirection: "column",
+    background: "rgba(255,255,255,.025)",
+    border: "1px solid rgba(255,255,255,.06)",
+    borderRadius: 18, overflow: "hidden",
+    textDecoration: "none", color: "inherit",
+    cursor: "pointer",
+    transition: "transform .4s cubic-bezier(.2,.8,.2,1), border-color .4s ease, box-shadow .4s ease",
+  },
+  cardImgWrap: {
+    width: "100%", aspectRatio: "1 / 1",
+    background: "linear-gradient(135deg, rgba(167,245,200,.04), rgba(46,143,110,.06))",
+    overflow: "hidden",
+    display: "grid", placeItems: "center",
+    padding: "12%",
+  },
+  cardImg: {
+    width: "100%", height: "100%",
+    objectFit: "contain",
+    display: "block",
+    transition: "transform .5s cubic-bezier(.2,.8,.2,1)",
+  },
+  cardBody: { padding: "22px 22px 24px", display: "flex", flexDirection: "column", gap: 8, flex: 1 },
+  cardCat: {
+    fontSize: 10, fontWeight: 800, letterSpacing: ".24em",
+    textTransform: "uppercase", color: "rgba(167,245,200,.85)",
+    marginBottom: 4,
+  },
+  cardName: { fontSize: 18, fontWeight: 800, lineHeight: 1.2, margin: 0, letterSpacing: "-0.01em" },
+  cardDesc: { fontSize: 13, color: "rgba(237,233,224,.6)", lineHeight: 1.5, margin: 0, flex: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" },
+  cardPriceRow: {
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    marginTop: 10, paddingTop: 14,
+    borderTop: "1px solid rgba(255,255,255,.06)",
+    gap: 10,
+  },
+  cardPrice: {
+    fontSize: 20, fontWeight: 900,
+    color: "var(--brand-primary, #A7F5C8)",
+    letterSpacing: "-0.01em",
+  },
+  cardCta: {
+    display: "inline-flex", alignItems: "center", gap: 6,
+    padding: "9px 16px",
+    borderRadius: 999, border: "none",
+    background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+    color: "#fff",
+    fontFamily: "inherit", fontWeight: 800, fontSize: 11,
+    letterSpacing: ".06em", textTransform: "uppercase",
+    cursor: "pointer",
+    boxShadow: "0 8px 20px -6px rgba(46,143,110,.5)",
+    transition: "opacity .25s ease, transform .2s ease",
+  },
+  cardFeatured: {
+    position: "absolute", top: 16, right: 16, zIndex: 2,
+    padding: "5px 12px", borderRadius: 999,
+    background: "rgba(167,245,200,.18)",
+    color: "var(--brand-primary, #A7F5C8)",
+    fontSize: 10, fontWeight: 800, letterSpacing: ".18em",
+    textTransform: "uppercase",
+    backdropFilter: "blur(8px)",
+  },
+
+  empty: {
+    textAlign: "center", padding: "80px 20px",
+    color: "rgba(237,233,224,.55)", fontSize: 16,
+  },
+  emptyReset: {
+    marginTop: 16,
+    padding: "10px 22px", borderRadius: 999,
+    background: "rgba(167,245,200,.10)", color: "var(--brand-primary, #A7F5C8)",
+    border: "1px solid rgba(167,245,200,.25)",
+    fontFamily: "inherit", fontWeight: 700, fontSize: 12,
+    letterSpacing: ".06em", textTransform: "uppercase",
+    cursor: "pointer",
+  },
+
+  signature: {
+    marginTop: 80,
+    paddingTop: 36,
+    borderTop: "1px solid rgba(255,255,255,.05)",
+    textAlign: "center",
+    fontSize: 11, fontWeight: 700, letterSpacing: ".32em",
+    textTransform: "uppercase",
+    color: "rgba(237,233,224,.32)",
+    display: "flex", flexDirection: "column", gap: 8,
+  },
+};

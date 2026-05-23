@@ -114,6 +114,42 @@ export default function ShopCheckout() {
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState("");
 
+  // ── Promo code state (F5) ───────────────────────────────────────────────
+  const [promoInput, setPromoInput] = useState("");
+  const [promoApplied, setPromoApplied] = useState(null);  // { code, discount_cents, ... } | null
+  const [promoMsg, setPromoMsg] = useState(null);          // {type:'ok'|'err', text}
+  const [promoChecking, setPromoChecking] = useState(false);
+
+  async function applyPromoCode() {
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoChecking(true);
+    setPromoMsg(null);
+    try {
+      const r = await fetch(`${API}/api/shop/checkout/validate-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, subtotal_cents: subtotalCents }),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.ok) {
+        setPromoApplied(null);
+        setPromoMsg({ type: "err", text: d.error || "Código inválido" });
+      } else {
+        setPromoApplied(d);
+        setPromoMsg({ type: "ok", text: `Descuento aplicado: ${d.discount_formatted}` });
+      }
+    } catch (e) {
+      setPromoMsg({ type: "err", text: "Error al validar código" });
+    }
+    setPromoChecking(false);
+  }
+  function clearPromo() {
+    setPromoApplied(null);
+    setPromoInput("");
+    setPromoMsg(null);
+  }
+
   // Redirect a /shop si el carrito está vacío.
   useEffect(() => {
     if (items.length === 0) {
@@ -126,7 +162,8 @@ export default function ShopCheckout() {
     }
   }, [items, navigate]);
 
-  const totalCents = subtotalCents;  // envío 0 por ahora (config en app_config llega después)
+  const discountCents = promoApplied?.discount_cents || 0;
+  const totalCents = Math.max(0, subtotalCents - discountCents);
 
   function set(k, v) { setForm((f) => ({ ...f, [k]: v })); }
 
@@ -166,6 +203,7 @@ export default function ShopCheckout() {
             notes: form.notes.trim() || null,
           },
           items: items.map((i) => ({ product_id: i.id, quantity: i.quantity })),
+          promo_code: promoApplied?.code || null,
         }),
       });
       const data = await r.json();
@@ -304,10 +342,84 @@ export default function ShopCheckout() {
                   <span style={{ color: "rgba(237,233,224,.65)" }}>Envío</span>
                   <span style={{ fontWeight: 600 }}>A coordinar</span>
                 </div>
+                {promoApplied && (
+                  <div style={styles.totalLine}>
+                    <span style={{ color: "var(--brand-primary, #A7F5C8)" }}>
+                      🎟️ {promoApplied.code}
+                    </span>
+                    <span style={{ fontWeight: 600, color: "var(--brand-primary, #A7F5C8)" }}>
+                      −{promoApplied.discount_formatted}
+                    </span>
+                  </div>
+                )}
                 <div style={{ ...styles.totalLine, marginTop: 10 }}>
                   <span style={{ fontWeight: 700 }}>Total</span>
                   <span style={styles.totalGrand}>{formatARS(totalCents)}</span>
                 </div>
+              </div>
+
+              {/* ── Campo de código promocional ── */}
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.06)" }}>
+                {!promoApplied ? (
+                  <>
+                    <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.55)", marginBottom: 6, display: "block" }}>
+                      🎟️ Código promocional
+                    </label>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        type="text"
+                        value={promoInput}
+                        onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyPromoCode(); } }}
+                        placeholder="TEST10"
+                        style={{
+                          flex: 1, padding: "10px 12px", fontSize: 13,
+                          background: "rgba(255,255,255,.04)",
+                          border: "1px solid rgba(255,255,255,.1)",
+                          borderRadius: 8, color: "inherit", fontFamily: "inherit",
+                          letterSpacing: ".06em", textTransform: "uppercase",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={applyPromoCode}
+                        disabled={promoChecking || !promoInput.trim()}
+                        style={{
+                          padding: "10px 16px", borderRadius: 8, border: "none",
+                          background: "rgba(167,245,200,.12)",
+                          color: "var(--brand-primary, #A7F5C8)",
+                          fontFamily: "inherit", fontWeight: 700, fontSize: 12,
+                          letterSpacing: ".08em", textTransform: "uppercase",
+                          cursor: promoChecking || !promoInput.trim() ? "not-allowed" : "pointer",
+                          opacity: promoChecking || !promoInput.trim() ? 0.5 : 1,
+                        }}
+                      >
+                        {promoChecking ? "..." : "Aplicar"}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, color: "var(--brand-primary, #A7F5C8)", fontWeight: 700 }}>
+                      ✓ {promoApplied.code} aplicado
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearPromo}
+                      style={{ background: "transparent", border: "none", color: "rgba(237,233,224,.55)", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                )}
+                {promoMsg && (
+                  <div style={{
+                    marginTop: 8, fontSize: 11,
+                    color: promoMsg.type === "ok" ? "var(--brand-primary, #A7F5C8)" : "#fca5a5",
+                  }}>
+                    {promoMsg.text}
+                  </div>
+                )}
               </div>
 
               <button
