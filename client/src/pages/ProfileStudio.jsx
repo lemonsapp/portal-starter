@@ -1,7 +1,7 @@
 // ProfileStudio.jsx
 import { useState, useEffect, useRef } from "react";
 import { useUser } from "../context/UserContext.jsx";
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 const hdrs = () => ({ Authorization: "Bearer " + getToken(), "Content-Type": "application/json" });
 const PALETTE = ["var(--brand-primary, #f5e03a)","var(--brand-accent, #ff5500)","#ff3300","#22c55e","#60a5fa","#a78bfa","#f472b6","#e11d48","#0ea5e9","#14b8a6","#06b6d4","#ffffff","#ede9e0","#000000"];

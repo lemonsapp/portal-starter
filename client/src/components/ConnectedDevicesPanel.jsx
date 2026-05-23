@@ -3,7 +3,7 @@
 // con biometría registrada (passkeys WebAuthn).
 import { useState, useEffect } from "react";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 function getToken() {
   return localStorage.getItem("token") || sessionStorage.getItem("token") || "";

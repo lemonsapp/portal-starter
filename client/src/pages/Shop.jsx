@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 const styles = {
   shell: {

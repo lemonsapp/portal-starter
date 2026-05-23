@@ -11,7 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart, formatARS } from "../lib/useCart.js";
 import { useBranding } from "../lib/branding.js";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 const PROVINCIAS_AR = [
   "Buenos Aires", "CABA", "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes",

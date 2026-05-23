@@ -9,7 +9,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 function useStatus() {

@@ -3,7 +3,7 @@ import { useToast } from "../components/ToastReward.jsx";
 import { Pop, FadeUp, Pulse, Jumbo, CountUp } from "../components/MotionPop.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 const hdrs = () => ({ Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" });
 const ICONS_MAP = { gold:"🥇", diamond:"💎", crown:"👑" };

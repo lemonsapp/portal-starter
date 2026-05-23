@@ -20,7 +20,7 @@ import FriendsPanel from "../components/FriendsPanel.jsx";
 import Stories from "../components/Stories.jsx";
 import { useFeatureFlag } from "../lib/branding.js";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 /* Categorías de anuncios — color-coded.

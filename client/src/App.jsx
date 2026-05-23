@@ -89,7 +89,7 @@ function ProfileByIdRedirect() {
   return <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#080808", color: "rgba(var(--brand-primary-rgb),.4)", fontFamily: "monospace", fontSize: 12, letterSpacing: 2 }}>CARGANDO PERFIL...</div>;
 }
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 async function fetchMe() {

@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from "react";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 // Defaults inlined — espejar /branding.json del repo. Se aplican antes del
 // fetch a /api/config/public para evitar flash. Si actualizás branding.json,

@@ -8,7 +8,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useCart } from "../lib/useCart.js";
 import { useBranding } from "../lib/branding.js";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 const styles = {
   shell: {

@@ -12,7 +12,7 @@ import ProfileStudio from "./ProfileStudio.jsx";
 import { BannerCanvas, BadgePreview } from "./ProfileStudio.jsx";
 import ConnectedDevicesPanel from "../components/ConnectedDevicesPanel";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 const RARITY = {
@@ -283,7 +283,7 @@ function PostCard({ post, onDelete, isOwn }) {
   const [loadingComments, setLoadingComments] = useState(false);
   const [savingComment, setSavingComment] = useState(false);
   const [commentCount, setCommentCount] = useState(post.comments||0);
-  const API2 = import.meta.env.VITE_API_URL || "http://localhost:4000";
+  const API2 = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
   const getTok = () => localStorage.getItem("token")||sessionStorage.getItem("token");
 
   async function loadComments() {
