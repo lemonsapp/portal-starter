@@ -50,6 +50,10 @@ function initProductHighlights(root) {
     const progressFill = root.querySelector("[data-ph-progress-fill]");
 
     let activeIdx = 0;
+    // splits[i] = SplitText instance del title de cada panel. Se popula
+    // dentro de mm.add() ya que SplitText necesita correr post-DOM.
+    // setActive lo usa para reset/reveal del título al cambiar de panel.
+    let splits = [];
 
     /**
      * Aplica el highlight `nextIdx`: actualiza color tema, cross-fade
@@ -123,6 +127,17 @@ function initProductHighlights(root) {
                     autoAlpha: 1, y: 0,
                     duration: 0.65, ease: "power3.out", overwrite: "auto",
                 });
+                // Title words: subir desde abajo del mask (yPercent: 110)
+                // hasta 0 con stagger. Fix 2026-05-23 — antes solo el
+                // primer panel se revelaba; los demás quedaban con título
+                // invisible al scrollear.
+                const split = splits[i];
+                if (split && split.words) {
+                    gsap.fromTo(split.words,
+                        { yPercent: 110 },
+                        { yPercent: 0, duration: 0.8, stagger: 0.04, ease: "expo.out", delay: 0.15, overwrite: "auto" }
+                    );
+                }
                 const ruleLine = ruleLines[i];
                 const ruleCap = ruleCaps[i];
                 if (ruleLine && ruleCap) {
@@ -141,6 +156,13 @@ function initProductHighlights(root) {
                     autoAlpha: 0, y: i < activeIdx ? -20 : 20,
                     duration: 0.45, ease: "power2.in", overwrite: "auto",
                 });
+                // Reset title words al ocultar el panel — así cuando
+                // vuelve a activarse, el reveal arranca limpio desde
+                // abajo del mask (efecto consistente en cada visita).
+                const split = splits[i];
+                if (split && split.words) {
+                    gsap.set(split.words, { yPercent: 110 });
+                }
             }
         });
 
@@ -180,8 +202,9 @@ function initProductHighlights(root) {
         gsap.set(ruleLines, { drawSVG: "0% 0%" });
         gsap.set(ruleCaps, { autoAlpha: 0, scale: 0 });
 
-        // SplitText opcional sobre cada title
-        const splits = [];
+        // SplitText sobre cada title — popula el outer `splits` para que
+        // setActive() pueda animar el reveal/reset al cambiar de panel.
+        splits = [];
         try {
             if (SplitText && typeof SplitText.create === "function") {
                 titles.forEach((t) => {
