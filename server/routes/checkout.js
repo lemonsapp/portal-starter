@@ -50,6 +50,13 @@ function formatARS(cents) {
   });
 }
 
+function esc(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 function serializeOrder(order, items = []) {
   return {
     id: order.id,
@@ -379,6 +386,51 @@ function publicRouter() {
       res.status(500).json({ error: "Error al procesar la orden" });
     } finally {
       client.release();
+    }
+  });
+
+  // ── GET /api/shop/unsubscribe?token=XXX — público (link en footer emails)
+  // Aplica opt-out + página HTML de confirmación. Token validado con HMAC
+  // del MASTER_KEY — no requiere DB lookup para verificar autenticidad.
+  router.get("/unsubscribe", async (req, res) => {
+    const token = String(req.query.token || "");
+    const result = await shopNotify.applyUnsubscribe(token);
+
+    const page = (title, msg, color = "#A7F5C8") => `<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title} · Holistic</title>
+<style>
+body{margin:0;padding:40px 20px;background:#0a0a0a;color:#ede9e0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;display:grid;place-items:center;}
+.card{max-width:520px;width:100%;background:rgba(255,255,255,.03);border:1px solid ${color}33;border-radius:18px;padding:40px 32px;text-align:center;box-shadow:0 0 80px ${color}11;}
+.icon{font-size:48px;margin-bottom:14px;}
+h1{margin:0 0 12px;font-size:24px;font-weight:900;letter-spacing:-.01em;text-transform:uppercase;}
+p{margin:0 0 18px;color:rgba(237,233,224,.78);font-size:15px;line-height:1.55;}
+.eyebrow{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:${color};margin-bottom:10px;}
+a{color:${color};text-decoration:underline dotted;}
+.cta{display:inline-block;margin-top:14px;padding:12px 22px;border-radius:999px;background:linear-gradient(135deg,#25D366 0%,#2E8F6E 100%);color:#fff;text-decoration:none;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;}
+</style></head>
+<body><div class="card">
+  <div class="eyebrow">· Holistic Growshop ·</div>
+  <div class="icon">${result.ok ? "👋" : "⚠️"}</div>
+  <h1>${title}</h1>
+  ${msg}
+  <a class="cta" href="/shop">Volver al catálogo</a>
+</div></body></html>`;
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    if (result.ok) {
+      res.send(page(
+        "Te diste de baja",
+        `<p>Dejamos de mandar emails de marketing a <strong>${esc(result.email)}</strong>.<br>Vas a seguir recibiendo solo confirmaciones de pedidos.</p>
+         <p style="font-size:13px;color:rgba(237,233,224,.5);">Si fue por error, escribinos por WhatsApp y te volvemos a suscribir.</p>`,
+        "#A7F5C8"
+      ));
+    } else {
+      res.status(400).send(page(
+        "Link inválido",
+        `<p>El link de baja no es válido o ya fue usado. Si seguís recibiendo emails que no querés, escribinos por WhatsApp.</p>`,
+        "#fca5a5"
+      ));
     }
   });
 
@@ -714,6 +766,178 @@ function adminRouter({ authRequired, requireRole }) {
     } catch (e) {
       console.error("[admin customer marketing]", e);
       res.status(500).json({ error: "Error al actualizar" });
+    }
+  });
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // F4: EMAIL CAMPAIGNS (admin)
+  // ═════════════════════════════════════════════════════════════════════════
+
+  const campaignSchema = z.object({
+    name: z.string().trim().min(1).max(200),
+    subject: z.string().trim().min(1).max(300),
+    body_html: z.string().min(1),
+    body_text: z.string().optional().nullable(),
+    preheader: z.string().max(200).optional().nullable(),
+    template_kind: z.enum(["promo", "anuncio", "newsletter", "custom"]).optional(),
+    segment: z.enum(["all", "opt_in"]).optional(),
+  });
+
+  // ── GET /api/admin/shop/campaigns — listar
+  router.get("/campaigns", ...readMw, async (_req, res) => {
+    try {
+      const { rows } = await db.query(
+        `SELECT id, name, subject, template_kind, segment, status,
+                total_count, sent_count, failed_count,
+                started_at, finished_at, created_at, updated_at
+         FROM email_campaigns
+         ORDER BY created_at DESC
+         LIMIT 100`
+      );
+      // Conteos de cada segmento para preview en el form
+      const optInRes = await db.query(`SELECT COUNT(*)::int AS n FROM customers WHERE opted_in_marketing = TRUE`);
+      const allRes = await db.query(`SELECT COUNT(*)::int AS n FROM customers`);
+      res.json({
+        campaigns: rows,
+        segments: {
+          opt_in: optInRes.rows[0]?.n || 0,
+          all: allRes.rows[0]?.n || 0,
+        },
+      });
+    } catch (e) {
+      console.error("[admin campaigns list]", e);
+      res.status(500).json({ error: "Error al listar campañas" });
+    }
+  });
+
+  // ── GET /api/admin/shop/campaigns/:id — detalle + últimos sends
+  router.get("/campaigns/:id", ...readMw, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const { rows } = await db.query(`SELECT * FROM email_campaigns WHERE id=$1`, [id]);
+      if (!rows[0]) return res.status(404).json({ error: "Campaña no encontrada" });
+      const { rows: sends } = await db.query(
+        `SELECT id, email_snapshot, status, sent_at, error_message
+         FROM email_sends WHERE campaign_id=$1
+         ORDER BY id DESC LIMIT 200`,
+        [id]
+      );
+      res.json({ campaign: rows[0], sends });
+    } catch (e) {
+      console.error("[admin campaign detail]", e);
+      res.status(500).json({ error: "Error al obtener campaña" });
+    }
+  });
+
+  // ── POST /api/admin/shop/campaigns — crear draft
+  router.post("/campaigns", ...writeMw, async (req, res) => {
+    let body;
+    try { body = campaignSchema.parse(req.body); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    try {
+      const { rows } = await db.query(
+        `INSERT INTO email_campaigns
+           (name, subject, body_html, body_text, preheader,
+            template_kind, segment, status, created_by)
+         VALUES ($1, $2, $3, $4, $5,
+                 COALESCE($6, 'custom'), COALESCE($7, 'opt_in'), 'draft', $8)
+         RETURNING *`,
+        [body.name, body.subject, body.body_html, body.body_text || null,
+         body.preheader || null, body.template_kind, body.segment,
+         req.user?.id || null]
+      );
+      res.status(201).json({ campaign: rows[0] });
+    } catch (e) {
+      console.error("[admin campaigns create]", e);
+      res.status(500).json({ error: "Error al crear campaña" });
+    }
+  });
+
+  // ── PUT /api/admin/shop/campaigns/:id — editar draft
+  router.put("/campaigns/:id", ...writeMw, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    let body;
+    try { body = campaignSchema.partial().parse(req.body); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    try {
+      const cur = await db.query(`SELECT status FROM email_campaigns WHERE id=$1`, [id]);
+      if (!cur.rows[0]) return res.status(404).json({ error: "No encontrada" });
+      if (cur.rows[0].status !== "draft") {
+        return res.status(409).json({ error: "Solo se pueden editar campañas en draft" });
+      }
+      const sets = ["updated_at = NOW()"];
+      const params = [];
+      for (const k of ["name","subject","body_html","body_text","preheader","template_kind","segment"]) {
+        if (body[k] !== undefined) {
+          params.push(body[k]);
+          sets.push(`${k} = $${params.length}`);
+        }
+      }
+      params.push(id);
+      const { rows } = await db.query(
+        `UPDATE email_campaigns SET ${sets.join(", ")} WHERE id=$${params.length} RETURNING *`,
+        params
+      );
+      res.json({ campaign: rows[0] });
+    } catch (e) {
+      console.error("[admin campaigns update]", e);
+      res.status(500).json({ error: "Error al actualizar campaña" });
+    }
+  });
+
+  // ── POST /api/admin/shop/campaigns/:id/send — kickoff
+  // Devuelve inmediatamente, el sender corre en background. Throttle
+  // y daily limit dentro de sendCampaign.
+  router.post("/campaigns/:id/send", ...writeMw, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    try {
+      const cur = await db.query(`SELECT status FROM email_campaigns WHERE id=$1`, [id]);
+      if (!cur.rows[0]) return res.status(404).json({ error: "No encontrada" });
+      if (cur.rows[0].status !== "draft") {
+        return res.status(409).json({ error: `No se puede enviar en status '${cur.rows[0].status}'` });
+      }
+      // Background kickoff (non-blocking) — la response vuelve enseguida.
+      setImmediate(() => {
+        shopNotify.sendCampaign(id).catch((e) => {
+          console.error(`[campaign ${id} send] error`, e);
+        });
+      });
+      res.json({ ok: true, message: "Campaña en envío. Refrescá para ver progreso." });
+    } catch (e) {
+      console.error("[admin campaigns send]", e);
+      res.status(500).json({ error: "Error al disparar envío" });
+    }
+  });
+
+  // ── POST /api/admin/shop/campaigns/:id/cancel — interrumpir
+  router.post("/campaigns/:id/cancel", ...writeMw, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    try {
+      const { rows } = await db.query(
+        `UPDATE email_campaigns
+         SET status='cancelled', finished_at=NOW(), updated_at=NOW()
+         WHERE id=$1 AND status IN ('draft','sending')
+         RETURNING *`,
+        [id]
+      );
+      if (!rows[0]) return res.status(404).json({ error: "No encontrada o ya terminó" });
+      res.json({ campaign: rows[0] });
+    } catch (e) {
+      console.error("[admin campaigns cancel]", e);
+      res.status(500).json({ error: "Error al cancelar" });
+    }
+  });
+
+  // ── DELETE /api/admin/shop/campaigns/:id — borrar draft
+  router.delete("/campaigns/:id", ...writeMw, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    try {
+      const r = await db.query(`DELETE FROM email_campaigns WHERE id=$1 AND status='draft'`, [id]);
+      if (r.rowCount === 0) return res.status(409).json({ error: "Solo se pueden borrar drafts" });
+      res.json({ ok: true });
+    } catch (e) {
+      console.error("[admin campaigns delete]", e);
+      res.status(500).json({ error: "Error al borrar" });
     }
   });
 

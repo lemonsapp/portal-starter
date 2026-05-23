@@ -270,6 +270,63 @@ async function migrate() {
   await db.query(`CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(LOWER(email))`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_customers_marketing ON customers(opted_in_marketing) WHERE opted_in_marketing = TRUE`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_customers_last_order ON customers(last_order_at DESC NULLS LAST)`);
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // F4: EMAIL CAMPAIGNS — broadcast marketing a base de customers
+  // ═════════════════════════════════════════════════════════════════════════
+  //
+  // Lifecycle: draft → sending → sent  (o cancelled / failed)
+  //
+  // Una campaña es un email único que se manda a un segmento de customers
+  // (all, opt_in, etc.). Cada destinatario genera una row en email_sends
+  // con su propio unsubscribe_token (HMAC firmado) — link único por send
+  // que permite tracking + revocación granular sin exponer secrets.
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS email_campaigns (
+      id              SERIAL PRIMARY KEY,
+      name            TEXT NOT NULL,                    -- nombre interno admin-only
+      subject         TEXT NOT NULL,                    -- asunto del email
+      body_html       TEXT NOT NULL,
+      body_text       TEXT,                             -- fallback plain (optional, auto-gen si falta)
+      preheader       TEXT,                             -- línea visible en inbox preview
+      template_kind   TEXT NOT NULL DEFAULT 'custom',   -- promo | anuncio | newsletter | custom
+      segment         TEXT NOT NULL DEFAULT 'opt_in',   -- all | opt_in | custom
+      status          TEXT NOT NULL DEFAULT 'draft'
+                      CHECK (status IN ('draft','sending','sent','cancelled','failed')),
+      scheduled_at    TIMESTAMPTZ,                      -- futuro: schedule send
+      started_at      TIMESTAMPTZ,                      -- cuando arrancó el bucle de envío
+      finished_at     TIMESTAMPTZ,                      -- cuando terminó
+      sent_count      INT NOT NULL DEFAULT 0,
+      failed_count    INT NOT NULL DEFAULT 0,
+      total_count     INT NOT NULL DEFAULT 0,           -- size del segmento snapshot al send
+      created_by      INT REFERENCES users(id) ON DELETE SET NULL,
+      created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_email_campaigns_status_created ON email_campaigns(status, created_at DESC)`);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS email_sends (
+      id                  SERIAL PRIMARY KEY,
+      campaign_id         INT NOT NULL REFERENCES email_campaigns(id) ON DELETE CASCADE,
+      customer_id         INT REFERENCES customers(id) ON DELETE SET NULL,
+      email_snapshot      TEXT NOT NULL,
+      status              TEXT NOT NULL DEFAULT 'pending'
+                          CHECK (status IN ('pending','sent','failed','bounced','unsubscribed')),
+      -- Token único por send, HMAC firmado de campaign_id:customer_id:email.
+      -- Permite unsubscribe sin login + tracking de open/click sin riesgo
+      -- de enumeration (no se puede inferir el token de otro send).
+      unsubscribe_token   TEXT UNIQUE NOT NULL,
+      sent_at             TIMESTAMPTZ,
+      error_message       TEXT,
+      resend_message_id   TEXT,                         -- id del email en Resend (futuro: tracking)
+      opened_at           TIMESTAMPTZ,                  -- futuro: 1px pixel
+      created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_email_sends_campaign ON email_sends(campaign_id, status)`);
+  await db.query(`CREATE INDEX IF NOT EXISTS idx_email_sends_customer ON email_sends(customer_id, created_at DESC) WHERE customer_id IS NOT NULL`);
 }
 migrate().catch((e) => console.error("[SHOP MIGRATE]", e));
 

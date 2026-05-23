@@ -87,6 +87,7 @@ export default function AdminPanel() {
           <button style={styles.tab(tab === "products")} onClick={() => setTab("products")}>🛒 Productos</button>
           <button style={styles.tab(tab === "orders")}    onClick={() => setTab("orders")}>📦 Pedidos</button>
           <button style={styles.tab(tab === "customers")} onClick={() => setTab("customers")}>👥 Clientes</button>
+          <button style={styles.tab(tab === "campaigns")} onClick={() => setTab("campaigns")}>📧 Campañas</button>
           <button style={styles.tab(tab === "branding")}  onClick={() => setTab("branding")}>🎨 Branding</button>
           <button style={styles.tab(tab === "settings")}  onClick={() => setTab("settings")}>⚙️ Configuración</button>
         </div>
@@ -96,6 +97,7 @@ export default function AdminPanel() {
         {tab === "products"  && <ProductsTab />}
         {tab === "orders"    && <OrdersTab />}
         {tab === "customers" && <CustomersTab />}
+        {tab === "campaigns" && <CampaignsTab />}
         {tab === "branding"  && <BrandingTab />}
         {tab === "settings"  && <SettingsTab />}
       </div>
@@ -1350,6 +1352,498 @@ function StatCard({ label, value, accent }) {
       </div>
       <div style={{ fontSize: 28, fontWeight: 900, color: accent ? "var(--brand-primary, #A7F5C8)" : "inherit", lineHeight: 1 }}>
         {value}
+      </div>
+    </div>
+  );
+}
+
+// ── Tab: Campañas Email (Shop F4) ───────────────────────────────────────────
+// Compose + send broadcast emails a base de customers opt-in. Throttle
+// (90/día / 2s gap) lo maneja el backend. Esta UI sólo orquesta.
+
+const CAMPAIGN_TEMPLATES = {
+  promo: {
+    label: "🏷️ Promo / Oferta",
+    subject: "Oferta exclusiva en Holistic Growshop 🌱",
+    body: `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden;font-family:-apple-system,sans-serif;">
+  <tr><td style="background:#0a0a0a;padding:32px;text-align:center;color:#fff;">
+    <div style="font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:#A7F5C8;">HOLISTIC · GROWSHOP</div>
+    <h1 style="margin:8px 0 0;font-size:28px;font-weight:900;">OFERTA EXCLUSIVA</h1>
+  </td></tr>
+  <tr><td style="padding:32px;color:#1a1a1a;">
+    <p style="margin:0 0 18px;font-size:16px;line-height:1.55;">¡Hola! Tenemos una oferta especial para nuestros clientes:</p>
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:18px;margin:16px 0;text-align:center;">
+      <div style="font-size:32px;font-weight:900;color:#15803d;">20% OFF</div>
+      <div style="font-size:14px;color:#666;margin-top:4px;">En toda la línea Race · Cupón: HOLISTIC20</div>
+    </div>
+    <p style="text-align:center;margin:24px 0;">
+      <a href="https://portal-starter.vercel.app/shop" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#25D366 0%,#2E8F6E 100%);color:#fff;text-decoration:none;font-weight:800;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;font-size:13px;">Aprovechar oferta →</a>
+    </p>
+    <p style="font-size:13px;color:#666;text-align:center;margin:20px 0 0;">Válido hasta agotar stock.</p>
+  </td></tr>
+</table>`,
+  },
+  anuncio: {
+    label: "📣 Anuncio / Update",
+    subject: "Novedades de Holistic Growshop",
+    body: `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden;font-family:-apple-system,sans-serif;">
+  <tr><td style="background:#0a0a0a;padding:32px;text-align:center;color:#fff;">
+    <div style="font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:#A7F5C8;">HOLISTIC · NOVEDADES</div>
+    <h1 style="margin:8px 0 0;font-size:24px;font-weight:900;">Nuevo producto en el catálogo</h1>
+  </td></tr>
+  <tr><td style="padding:32px;color:#1a1a1a;">
+    <p style="margin:0 0 14px;font-size:16px;line-height:1.55;">Sumamos un nuevo producto que querés conocer:</p>
+    <h2 style="margin:18px 0 8px;font-size:20px;">[Nombre del producto]</h2>
+    <p style="margin:0 0 18px;font-size:15px;line-height:1.55;color:#444;">[Descripción corta del producto y por qué le interesa al cliente]</p>
+    <p style="text-align:center;margin:24px 0;">
+      <a href="https://portal-starter.vercel.app/shop" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#25D366 0%,#2E8F6E 100%);color:#fff;text-decoration:none;font-weight:800;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;font-size:13px;">Ver en el catálogo →</a>
+    </p>
+  </td></tr>
+</table>`,
+  },
+  newsletter: {
+    label: "📰 Newsletter / Boletín",
+    subject: "Newsletter Holistic — Tips para tu cultivo",
+    body: `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden;font-family:-apple-system,sans-serif;">
+  <tr><td style="background:#0a0a0a;padding:32px;text-align:center;color:#fff;">
+    <div style="font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:#A7F5C8;">HOLISTIC · NEWSLETTER</div>
+    <h1 style="margin:8px 0 0;font-size:24px;font-weight:900;">Tips del mes</h1>
+  </td></tr>
+  <tr><td style="padding:32px;color:#1a1a1a;">
+    <h2 style="margin:0 0 10px;font-size:18px;color:#2E8F6E;">🌱 Tip 1: Título</h2>
+    <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:#444;">[Texto del primer tip]</p>
+    <h2 style="margin:0 0 10px;font-size:18px;color:#2E8F6E;">💧 Tip 2: Título</h2>
+    <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:#444;">[Texto del segundo tip]</p>
+    <h2 style="margin:0 0 10px;font-size:18px;color:#2E8F6E;">⚡ Tip 3: Título</h2>
+    <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:#444;">[Texto del tercer tip]</p>
+    <p style="text-align:center;margin:24px 0;">
+      <a href="https://portal-starter.vercel.app/shop" style="display:inline-block;padding:12px 24px;background:rgba(46,143,110,.1);color:#2E8F6E;text-decoration:none;font-weight:700;border-radius:999px;font-size:13px;">Ver catálogo</a>
+    </p>
+  </td></tr>
+</table>`,
+  },
+};
+
+const CAMPAIGN_STATUS_META = {
+  draft:      { label: "Borrador",  color: "rgba(237,233,224,.6)", emoji: "📝" },
+  sending:    { label: "Enviando…", color: "#fcd34d", emoji: "📡" },
+  sent:       { label: "Enviada",   color: "#86efac", emoji: "✅" },
+  cancelled:  { label: "Cancelada", color: "rgba(237,233,224,.4)", emoji: "🚫" },
+  failed:     { label: "Falló",     color: "#fca5a5", emoji: "❌" },
+};
+
+function CampaignsTab() {
+  const [campaigns, setCampaigns] = useState([]);
+  const [segments, setSegments] = useState({ opt_in: 0, all: 0 });
+  const [loading, setLoading] = useState(true);
+  const [composer, setComposer] = useState(null); // null | "new" | campaignObj
+  const [detail, setDetail] = useState(null);
+
+  async function load() {
+    setLoading(true);
+    try {
+      const r = await fetch(`${API}/api/admin/shop/campaigns`, { headers: authHdr() });
+      const d = await r.json();
+      setCampaigns(d.campaigns || []);
+      setSegments(d.segments || { opt_in: 0, all: 0 });
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, []);
+
+  // Auto-refresh cada 5s mientras haya alguna campaña en estado "sending"
+  useEffect(() => {
+    const anySending = campaigns.some((c) => c.status === "sending");
+    if (!anySending) return;
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line
+  }, [campaigns.map((c) => c.status).join("|")]);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div>
+          <h2 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>Campañas de email</h2>
+          <div style={{ fontSize: 12, color: "rgba(237,233,224,.55)", marginTop: 3 }}>
+            {segments.opt_in} clientes opt-in · {segments.all} totales · Free tier: 90/día
+          </div>
+        </div>
+        <button style={styles.btn(true)} onClick={() => setComposer("new")}>+ Nueva campaña</button>
+      </div>
+
+      <div style={styles.card}>
+        {loading ? <div>Cargando…</div> : campaigns.length === 0 ? (
+          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
+            No hay campañas todavía. Tocá <strong>Nueva campaña</strong> para arrancar.
+          </div>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Campaña</th>
+                <th style={styles.th}>Segmento</th>
+                <th style={styles.th}>Estado</th>
+                <th style={styles.th}>Progreso</th>
+                <th style={styles.th}>Fecha</th>
+                <th style={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {campaigns.map((c) => {
+                const meta = CAMPAIGN_STATUS_META[c.status] || CAMPAIGN_STATUS_META.draft;
+                const progress = c.total_count > 0
+                  ? Math.round(((c.sent_count + c.failed_count) / c.total_count) * 100)
+                  : 0;
+                return (
+                  <tr key={c.id} onClick={() => setDetail(c.id)} style={{ cursor: "pointer" }}>
+                    <td style={styles.td}>
+                      <div style={{ fontWeight: 600 }}>{c.name}</div>
+                      <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>{c.subject}</div>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={{ fontSize: 11, color: "rgba(237,233,224,.7)", textTransform: "uppercase", letterSpacing: ".1em" }}>
+                        {c.segment === "all" ? "Todos" : "Opt-in"}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: meta.color, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        {meta.emoji} {meta.label}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      {c.total_count > 0 ? (
+                        <div>
+                          <div style={{ fontSize: 12 }}>{c.sent_count + c.failed_count} / {c.total_count}{c.failed_count > 0 ? ` · ${c.failed_count} fallaron` : ""}</div>
+                          <div style={{ width: 90, height: 5, background: "rgba(255,255,255,.06)", borderRadius: 999, marginTop: 4, overflow: "hidden" }}>
+                            <div style={{ width: `${progress}%`, height: "100%", background: meta.color, transition: "width .4s" }} />
+                          </div>
+                        </div>
+                      ) : (
+                        <span style={{ color: "rgba(237,233,224,.4)" }}>—</span>
+                      )}
+                    </td>
+                    <td style={styles.td}>
+                      <span style={{ fontSize: 12, color: "rgba(237,233,224,.6)" }}>
+                        {new Date(c.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      <button style={styles.btn()} onClick={(e) => { e.stopPropagation(); setDetail(c.id); }}>Ver</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {composer && (
+        <CampaignComposer
+          campaign={composer === "new" ? null : composer}
+          segments={segments}
+          onClose={() => setComposer(null)}
+          onSaved={() => { setComposer(null); load(); }}
+        />
+      )}
+
+      {detail && (
+        <CampaignDetailModal
+          campaignId={detail}
+          onClose={() => setDetail(null)}
+          onChanged={load}
+        />
+      )}
+    </div>
+  );
+}
+
+function CampaignComposer({ campaign, segments, onClose, onSaved }) {
+  const [templateKind, setTemplateKind] = useState(campaign?.template_kind || "custom");
+  const [name, setName] = useState(campaign?.name || "");
+  const [subject, setSubject] = useState(campaign?.subject || "");
+  const [bodyHtml, setBodyHtml] = useState(campaign?.body_html || "");
+  const [preheader, setPreheader] = useState(campaign?.preheader || "");
+  const [segment, setSegment] = useState(campaign?.segment || "opt_in");
+  const [previewMode, setPreviewMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  function applyTemplate(kind) {
+    setTemplateKind(kind);
+    const tpl = CAMPAIGN_TEMPLATES[kind];
+    if (tpl) {
+      if (!subject) setSubject(tpl.subject);
+      if (!bodyHtml || confirm("¿Reemplazar el HTML actual con el del template?")) {
+        setBodyHtml(tpl.body);
+      }
+    }
+  }
+
+  async function save() {
+    setSaving(true);
+    const r = await fetch(`${API}/api/admin/shop/campaigns`, {
+      method: "POST", headers: jsonHdr(),
+      body: JSON.stringify({
+        name: name.trim(), subject: subject.trim(),
+        body_html: bodyHtml, preheader: preheader.trim() || null,
+        template_kind: templateKind, segment,
+      }),
+    });
+    setSaving(false);
+    if (r.ok) onSaved();
+    else { const d = await r.json(); alert(d.error || "Error al crear"); }
+  }
+
+  const audienceCount = segment === "all" ? segments.all : segments.opt_in;
+  const dailyLimitReached = audienceCount > 90;
+
+  return (
+    <div style={styles.modalBackdrop} onClick={onClose}>
+      <div
+        style={{ ...styles.modalCard, maxWidth: 900, maxHeight: "92vh", overflowY: "auto" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 18 }}>Nueva campaña</h3>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button style={styles.btn(false)} onClick={() => setPreviewMode(!previewMode)}>
+              {previewMode ? "✏️ Editar" : "👁️ Vista previa"}
+            </button>
+            <button style={styles.btn()} onClick={onClose}>✕</button>
+          </div>
+        </div>
+
+        <label style={styles.label}>Template base</label>
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {Object.entries(CAMPAIGN_TEMPLATES).map(([k, t]) => (
+            <button
+              key={k}
+              onClick={() => applyTemplate(k)}
+              style={{
+                ...styles.btn(templateKind === k),
+                padding: "9px 14px", fontSize: 12,
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+          <button
+            onClick={() => setTemplateKind("custom")}
+            style={{ ...styles.btn(templateKind === "custom"), padding: "9px 14px", fontSize: 12 }}
+          >
+            🎨 Custom
+          </button>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 10, marginBottom: 8 }}>
+          <div>
+            <label style={styles.label}>Nombre interno *</label>
+            <input style={styles.input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Promo Race Mayo 2026" />
+          </div>
+          <div>
+            <label style={styles.label}>Segmento</label>
+            <select style={styles.input} value={segment} onChange={(e) => setSegment(e.target.value)}>
+              <option value="opt_in">Solo opt-in marketing ({segments.opt_in})</option>
+              <option value="all">Todos los clientes ({segments.all})</option>
+            </select>
+          </div>
+        </div>
+
+        <label style={styles.label}>Asunto del email *</label>
+        <input style={styles.input} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Lo que aparece en el inbox" />
+
+        <label style={styles.label}>Preheader (preview en inbox)</label>
+        <input style={styles.input} value={preheader} onChange={(e) => setPreheader(e.target.value)} placeholder="Texto chico que aparece al lado del asunto" />
+
+        <label style={styles.label}>Contenido HTML</label>
+        {previewMode ? (
+          <iframe
+            srcDoc={bodyHtml + `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:24px;border-top:1px solid #e5e5e5;padding-top:16px;"><tr><td style="font-family:sans-serif;font-size:11px;line-height:1.5;color:#999;text-align:center;">Recibís este email porque estás en la lista de clientes de Holistic Growshop.<br>¿No querés más? <a href="#">Darse de baja</a>.</td></tr></table>`}
+            style={{ width: "100%", height: 540, border: "1px solid rgba(255,255,255,.1)", borderRadius: 8, background: "#fff" }}
+            title="Preview del email"
+            sandbox=""
+          />
+        ) : (
+          <textarea
+            style={{ ...styles.input, minHeight: 320, resize: "vertical", fontFamily: "monospace", fontSize: 12 }}
+            value={bodyHtml}
+            onChange={(e) => setBodyHtml(e.target.value)}
+            placeholder="Pegá HTML o tocá un template arriba"
+          />
+        )}
+
+        <div style={{ marginTop: 18, padding: "14px 16px", borderRadius: 10, background: dailyLimitReached ? "rgba(252,211,77,.10)" : "rgba(167,245,200,.08)", border: `1px solid ${dailyLimitReached ? "rgba(252,211,77,.3)" : "rgba(167,245,200,.2)"}`, fontSize: 13, color: "rgba(237,233,224,.85)" }}>
+          {dailyLimitReached ? (
+            <>⚠️ <strong>{audienceCount} destinatarios</strong> superan el límite del free tier de Resend (90/día). Solo se mandarán los primeros 90; el resto en otra campaña.</>
+          ) : (
+            <>📨 Se va a mandar a <strong>{audienceCount} {audienceCount === 1 ? "destinatario" : "destinatarios"}</strong>. Throttle: ~2s entre envíos (~{Math.ceil(audienceCount * 2 / 60)} min total).</>
+          )}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
+          <button style={styles.btn()} onClick={onClose} disabled={saving}>Cancelar</button>
+          <button
+            style={styles.btn(true)}
+            onClick={save}
+            disabled={saving || !name.trim() || !subject.trim() || !bodyHtml.trim()}
+          >
+            {saving ? "Guardando…" : "💾 Guardar borrador"}
+          </button>
+        </div>
+        <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)", textAlign: "right", marginTop: 6 }}>
+          Después del save tocá <strong>Enviar</strong> desde la lista para disparar.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CampaignDetailModal({ campaignId, onClose, onChanged }) {
+  const [campaign, setCampaign] = useState(null);
+  const [sends, setSends] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [acting, setActing] = useState("");
+
+  async function load() {
+    setLoading(true);
+    const r = await fetch(`${API}/api/admin/shop/campaigns/${campaignId}`, { headers: authHdr() });
+    const d = await r.json();
+    setCampaign(d.campaign || null);
+    setSends(d.sends || []);
+    setLoading(false);
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [campaignId]);
+
+  // Auto-refresh mientras está enviando
+  useEffect(() => {
+    if (campaign?.status !== "sending") return;
+    const t = setInterval(load, 3500);
+    return () => clearInterval(t);
+    // eslint-disable-next-line
+  }, [campaign?.status]);
+
+  async function doAction(action) {
+    if (action === "send" && !confirm(`Enviar campaña a los destinatarios del segmento '${campaign.segment}'?`)) return;
+    if (action === "cancel" && !confirm("Cancelar la campaña? Los emails ya enviados no se pueden recuperar.")) return;
+    if (action === "delete" && !confirm("Borrar borrador?")) return;
+    setActing(action);
+    let url = `${API}/api/admin/shop/campaigns/${campaignId}`;
+    let method = "POST";
+    if (action === "send") url += "/send";
+    else if (action === "cancel") url += "/cancel";
+    else if (action === "delete") method = "DELETE";
+    const r = await fetch(url, { method, headers: jsonHdr() });
+    setActing("");
+    if (r.ok) {
+      if (action === "delete") { onChanged?.(); onClose(); }
+      else { load(); onChanged?.(); }
+    } else {
+      const d = await r.json();
+      alert(d.error || "Error");
+    }
+  }
+
+  if (loading) return (
+    <div style={styles.modalBackdrop} onClick={onClose}>
+      <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>Cargando…</div>
+    </div>
+  );
+  if (!campaign) return null;
+
+  const meta = CAMPAIGN_STATUS_META[campaign.status] || CAMPAIGN_STATUS_META.draft;
+  const progress = campaign.total_count > 0
+    ? Math.round(((campaign.sent_count + campaign.failed_count) / campaign.total_count) * 100)
+    : 0;
+  const failedSends = sends.filter((s) => s.status === "failed").slice(0, 30);
+
+  return (
+    <div style={styles.modalBackdrop} onClick={onClose}>
+      <div
+        style={{ ...styles.modalCard, maxWidth: 760, maxHeight: "92vh", overflowY: "auto" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <h3 style={{ margin: 0, fontSize: 18 }}>{campaign.name}</h3>
+          <button style={styles.btn()} onClick={onClose}>✕</button>
+        </div>
+
+        <div style={{ ...styles.card, padding: 16, marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)" }}>Asunto</div>
+              <div style={{ fontSize: 14, marginTop: 4 }}>{campaign.subject}</div>
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 800, color: meta.color }}>
+              {meta.emoji} {meta.label}
+            </span>
+          </div>
+
+          {campaign.total_count > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6 }}>
+                <span>Progreso</span>
+                <span style={{ fontWeight: 700 }}>
+                  {campaign.sent_count} sent · {campaign.failed_count} fail · {campaign.total_count} total ({progress}%)
+                </span>
+              </div>
+              <div style={{ width: "100%", height: 8, background: "rgba(255,255,255,.06)", borderRadius: 999, overflow: "hidden" }}>
+                <div style={{ width: `${progress}%`, height: "100%", background: meta.color, transition: "width .4s" }} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+          {campaign.status === "draft" && (
+            <>
+              <button style={styles.btn(true)} onClick={() => doAction("send")} disabled={!!acting}>
+                {acting === "send" ? "Disparando…" : "📨 Enviar ahora"}
+              </button>
+              <button style={styles.btn(false, true)} onClick={() => doAction("delete")} disabled={!!acting}>
+                🗑️ Borrar
+              </button>
+            </>
+          )}
+          {campaign.status === "sending" && (
+            <button style={styles.btn(false, true)} onClick={() => doAction("cancel")} disabled={!!acting}>
+              {acting === "cancel" ? "Cancelando…" : "🛑 Cancelar envío"}
+            </button>
+          )}
+        </div>
+
+        {failedSends.length > 0 && (
+          <div style={styles.card}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>
+              ❌ Envíos fallidos ({failedSends.length})
+            </div>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Email</th>
+                  <th style={styles.th}>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                {failedSends.map((s) => (
+                  <tr key={s.id}>
+                    <td style={styles.td}>{s.email_snapshot}</td>
+                    <td style={styles.td}>
+                      <span style={{ fontSize: 11, color: "#fca5a5" }}>{s.error_message?.slice(0, 80) || "—"}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <details style={{ marginTop: 14 }}>
+          <summary style={{ cursor: "pointer", color: "rgba(237,233,224,.7)", fontSize: 12 }}>Ver HTML enviado</summary>
+          <pre style={{ marginTop: 10, padding: 12, background: "rgba(0,0,0,.4)", borderRadius: 6, fontSize: 11, color: "rgba(237,233,224,.7)", maxHeight: 280, overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+            {campaign.body_html}
+          </pre>
+        </details>
       </div>
     </div>
   );

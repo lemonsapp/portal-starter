@@ -15,10 +15,18 @@
 
 "use strict";
 
+const crypto = require("crypto");
 const db = require("../db");
 const cs = require("./configStore");
 
 const RESEND_API = "https://api.resend.com/emails";
+
+// Resend free tier: 100/día + 1 email/segundo. Throttle conservador:
+//   • 90 envíos/día por campaña (deja headroom para transaccionales)
+//   • 2000ms entre envíos (= 0.5/seg, sub-tier safe)
+// F4+: leer estos valores de app_config si el cliente paga tier superior.
+const CAMPAIGN_DAILY_LIMIT = 90;
+const CAMPAIGN_GAP_MS      = 2000;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -347,12 +355,255 @@ async function onOrderDispatched(order, items) {
   }).catch(() => {});
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// F4: Email campaigns (broadcast a base de customers opt-in)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Genera token HMAC firmado para una send específica. Permite unsubscribe
+ * + tracking sin exponer customer_id raw en URLs. Clave: MASTER_KEY del
+ * configStore (mismo secret para encrypt/decrypt de credenciales). Si no
+ * está seteada, fallback a un secret derivado de NODE_ENV — funciona en
+ * dev pero NO debería pasar a prod.
+ */
+function unsubscribeSecret() {
+  const k = process.env.MASTER_KEY;
+  if (k && /^[0-9a-fA-F]{64}$/.test(k)) return Buffer.from(k, "hex");
+  // Fallback: hash determinístico de NODE_ENV + APP_URL (estable por deploy
+  // pero único entre tenants). NO seguro para prod sin MASTER_KEY real.
+  return crypto.createHash("sha256").update(
+    `holistic-fallback-${process.env.NODE_ENV || "dev"}-${process.env.APP_URL || ""}`
+  ).digest();
+}
+
+function buildUnsubscribeToken({ campaignId, customerId, email }) {
+  const payload = `${campaignId}:${customerId || 0}:${email}`;
+  const hmac = crypto.createHmac("sha256", unsubscribeSecret())
+    .update(payload).digest("hex").slice(0, 16);
+  // Token = base64url(payload) + . + hmac. Self-contained: verificable sin DB.
+  const b64 = Buffer.from(payload).toString("base64url");
+  return `${b64}.${hmac}`;
+}
+
+function parseUnsubscribeToken(token) {
+  if (typeof token !== "string" || !token.includes(".")) return null;
+  const [b64, sig] = token.split(".");
+  let payload;
+  try { payload = Buffer.from(b64, "base64url").toString("utf8"); }
+  catch { return null; }
+  const expected = crypto.createHmac("sha256", unsubscribeSecret())
+    .update(payload).digest("hex").slice(0, 16);
+  // timing-safe compare
+  if (sig.length !== expected.length) return null;
+  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+  const [campaignId, customerId, ...emailParts] = payload.split(":");
+  return {
+    campaignId: parseInt(campaignId, 10),
+    customerId: parseInt(customerId, 10) || null,
+    email: emailParts.join(":"),
+  };
+}
+
+function appUrlSafe() {
+  return (process.env.APP_URL || "https://portal-starter.vercel.app").replace(/\/$/, "");
+}
+
+/**
+ * Inyecta footer con link de unsubscribe en el HTML de la campaña. Si el
+ * HTML ya tiene un placeholder {{UNSUB_URL}}, lo reemplaza in-place; si no,
+ * appendea un footer compliant antes del </body>.
+ */
+function injectUnsubFooter(html, unsubUrl) {
+  const footer = `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:24px;border-top:1px solid #e5e5e5;padding-top:16px;">
+      <tr><td style="font-family:-apple-system,'Segoe UI',Roboto,sans-serif;font-size:11px;line-height:1.5;color:#999;text-align:center;">
+        Recibís este email porque estás en la lista de clientes de <strong>Holistic Growshop</strong>.<br>
+        ¿No querés más? <a href="${unsubUrl}" style="color:#666;text-decoration:underline;">Darse de baja</a>.
+      </td></tr>
+    </table>
+  `;
+  if (html.includes("{{UNSUB_URL}}")) {
+    return html.replaceAll("{{UNSUB_URL}}", unsubUrl);
+  }
+  if (html.includes("</body>")) {
+    return html.replace("</body>", `${footer}</body>`);
+  }
+  return html + footer;
+}
+
+/**
+ * Envía una campaña a su segmento. Bloqueante pero non-fatal — corre
+ * en background (caller no espera). Throttle:
+ *   • CAMPAIGN_GAP_MS entre envíos (default 2000ms)
+ *   • CAMPAIGN_DAILY_LIMIT total (default 90, free Resend tier)
+ *
+ * Update progresivo de email_campaigns.sent_count + failed_count para que
+ * el admin vea el progreso live. email_sends queda con row por destinatario
+ * (audit + retry futuro).
+ */
+async function sendCampaign(campaignId) {
+  const { rows: cRows } = await db.query(`SELECT * FROM email_campaigns WHERE id = $1`, [campaignId]);
+  const camp = cRows[0];
+  if (!camp) { console.error(`[campaign] ${campaignId} no encontrada`); return; }
+  if (camp.status !== "draft" && camp.status !== "sending") {
+    console.error(`[campaign ${campaignId}] status ${camp.status} no permite envío`);
+    return;
+  }
+
+  // 1. Resolver segmento: snapshot de destinatarios.
+  let segmentQuery = `SELECT id, email, first_name FROM customers WHERE opted_in_marketing = TRUE`;
+  if (camp.segment === "all") {
+    segmentQuery = `SELECT id, email, first_name FROM customers`;
+  }
+  const { rows: recipients } = await db.query(segmentQuery + ` ORDER BY id`);
+
+  // Aplicar daily limit
+  const limit = Math.min(recipients.length, CAMPAIGN_DAILY_LIMIT);
+  const batch = recipients.slice(0, limit);
+
+  // 2. Marcar campaign como sending + total snapshot.
+  await db.query(
+    `UPDATE email_campaigns
+     SET status='sending', started_at=NOW(), total_count=$1, updated_at=NOW()
+     WHERE id=$2`,
+    [batch.length, campaignId]
+  );
+
+  // 3. Pre-crear email_sends rows con tokens. Permite cancel/resume + audit
+  //    aunque el server se reinicie a la mitad.
+  for (const r of batch) {
+    const token = buildUnsubscribeToken({ campaignId, customerId: r.id, email: r.email });
+    await db.query(
+      `INSERT INTO email_sends (campaign_id, customer_id, email_snapshot, status, unsubscribe_token)
+       VALUES ($1, $2, $3, 'pending', $4)`,
+      [campaignId, r.id, r.email, token]
+    );
+  }
+
+  // 4. Loop con throttle.
+  console.log(`[campaign ${campaignId}] empezando envío a ${batch.length} destinatarios`);
+  const cfg = await getResendConfig();
+  if (!cfg.apiKey || !cfg.from) {
+    console.error(`[campaign ${campaignId}] Resend no configurado — campaña marcada failed`);
+    await db.query(
+      `UPDATE email_campaigns SET status='failed', finished_at=NOW(), updated_at=NOW() WHERE id=$1`,
+      [campaignId]
+    );
+    return;
+  }
+
+  const { rows: sendRows } = await db.query(
+    `SELECT * FROM email_sends WHERE campaign_id=$1 AND status='pending' ORDER BY id`,
+    [campaignId]
+  );
+
+  let sentCount = 0, failedCount = 0;
+  for (const s of sendRows) {
+    // Verificar que la campaña no fue cancelada mid-flight.
+    const { rows: stRows } = await db.query(`SELECT status FROM email_campaigns WHERE id=$1`, [campaignId]);
+    if (stRows[0]?.status === "cancelled") {
+      console.log(`[campaign ${campaignId}] cancelada — interrumpiendo loop`);
+      break;
+    }
+
+    const unsubUrl = `${appUrlSafe()}/api/shop/unsubscribe?token=${encodeURIComponent(s.unsubscribe_token)}`;
+    const htmlFinal = injectUnsubFooter(camp.body_html || "", unsubUrl);
+
+    const result = await sendResendEmail({
+      to: s.email_snapshot,
+      subject: camp.subject,
+      html: htmlFinal,
+    });
+
+    if (result.ok) {
+      sentCount++;
+      await db.query(
+        `UPDATE email_sends SET status='sent', sent_at=NOW(), resend_message_id=$1 WHERE id=$2`,
+        [result.id || null, s.id]
+      );
+    } else {
+      failedCount++;
+      await db.query(
+        `UPDATE email_sends SET status='failed', error_message=$1 WHERE id=$2`,
+        [String(result.error || "unknown").slice(0, 500), s.id]
+      );
+    }
+
+    // Update counters cada N envíos para que el admin vea progreso live
+    if ((sentCount + failedCount) % 5 === 0 || sendRows.indexOf(s) === sendRows.length - 1) {
+      await db.query(
+        `UPDATE email_campaigns SET sent_count=$1, failed_count=$2, updated_at=NOW() WHERE id=$3`,
+        [sentCount, failedCount, campaignId]
+      );
+    }
+
+    // Throttle entre sends.
+    if (sendRows.indexOf(s) < sendRows.length - 1) {
+      await new Promise((r) => setTimeout(r, CAMPAIGN_GAP_MS));
+    }
+  }
+
+  // 5. Final update.
+  await db.query(
+    `UPDATE email_campaigns
+     SET status='sent', finished_at=NOW(),
+         sent_count=$1, failed_count=$2, updated_at=NOW()
+     WHERE id=$3 AND status != 'cancelled'`,
+    [sentCount, failedCount, campaignId]
+  );
+  console.log(`[campaign ${campaignId}] terminado: ${sentCount} sent, ${failedCount} failed`);
+}
+
+/**
+ * Marca un customer como unsubscribed via su token.
+ * Retorna { ok, email } | { ok: false, reason }.
+ */
+async function applyUnsubscribe(token) {
+  const parsed = parseUnsubscribeToken(token);
+  if (!parsed) return { ok: false, reason: "invalid_token" };
+
+  // Actualizar customer si existe
+  if (parsed.customerId) {
+    await db.query(
+      `UPDATE customers
+       SET opted_in_marketing = FALSE,
+           unsubscribed_at = COALESCE(unsubscribed_at, NOW()),
+           updated_at = NOW()
+       WHERE id = $1`,
+      [parsed.customerId]
+    );
+  } else {
+    // Fallback: match por email (caso pre-customers, raro)
+    await db.query(
+      `UPDATE customers
+       SET opted_in_marketing = FALSE,
+           unsubscribed_at = COALESCE(unsubscribed_at, NOW()),
+           updated_at = NOW()
+       WHERE LOWER(email) = LOWER($1)`,
+      [parsed.email]
+    );
+  }
+
+  // Marcar send específico como unsubscribed (audit)
+  await db.query(
+    `UPDATE email_sends SET status = 'unsubscribed' WHERE unsubscribe_token = $1 AND status = 'sent'`,
+    [token]
+  );
+
+  return { ok: true, email: parsed.email };
+}
+
 module.exports = {
   upsertCustomer,
   onOrderCreated,
   onOrderPaid,
   onOrderDispatched,
   notifyAdminInApp,
+  // F4 exports
+  sendCampaign,
+  applyUnsubscribe,
+  buildUnsubscribeToken,
+  parseUnsubscribeToken,
   // helpers exportados por si otro módulo los necesita
   sendResendEmail,
   formatARS,
