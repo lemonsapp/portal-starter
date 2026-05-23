@@ -214,21 +214,23 @@ export default function ShopCheckout() {
       }
 
       // El backend nos devuelve:
-      //   - init_point (URL de MP) si MP está configurado → redirect
-      //   - fallback_url (success page con order_id) si MP no está configurado
-      // En ambos casos guardamos el public_id en sessionStorage para que la
-      // success page pueda mostrarlo + clear cart cuando se monta.
+      //   • free: true → orden 100% off (paid directo, skip MP)
+      //   • init_point → URL de MP Checkout Pro → redirect
+      //   • ninguno → fallback manual (MP no configurado)
+      // En todos los casos guardamos el public_id en sessionStorage para
+      // que la success page pueda recuperarlo + clear cart al montarse.
       if (data.public_id) {
         sessionStorage.setItem("holistic.lastOrder", data.public_id);
+        if (data.free) sessionStorage.setItem("holistic.lastOrderFree", "1");
       }
       if (data.init_point) {
         // MercadoPago redirect (Checkout Pro)
         window.location.href = data.init_point;
         return;
       }
-      // Fallback: success directo (MP no configurado en este deploy)
+      // Free purchase OR manual fallback → success page directo
       clear();
-      navigate(`/shop/checkout/success?order=${encodeURIComponent(data.public_id || "")}`, { replace: true });
+      navigate(`/shop/checkout/success?order=${encodeURIComponent(data.public_id || "")}${data.free ? "&free=1" : ""}`, { replace: true });
     } catch (e) {
       console.error("checkout error", e);
       setErr("Error de conexión. Revisá tu internet e intentá de nuevo.");
@@ -427,8 +429,25 @@ export default function ShopCheckout() {
                 disabled={!isValid || submitting}
                 style={{ ...styles.cta, ...((!isValid || submitting) ? styles.ctaDisabled : {}) }}
               >
-                {submitting ? "Procesando…" : "Pagar con MercadoPago →"}
+                {submitting ? (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                    <span style={{
+                      width: 16, height: 16, borderRadius: "50%",
+                      border: "2px solid rgba(255,255,255,.3)",
+                      borderTopColor: "#fff",
+                      animation: "holistic-spin .8s linear infinite",
+                      display: "inline-block",
+                    }} />
+                    Procesando tu compra…
+                  </span>
+                ) : totalCents === 0 ? (
+                  "Finalizar compra GRATIS →"
+                ) : (
+                  "Pagar con MercadoPago →"
+                )}
               </button>
+              {/* Keyframes inline para el spinner — no afecta otros componentes */}
+              <style>{`@keyframes holistic-spin { to { transform: rotate(360deg); } }`}</style>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14, fontSize: 11, color: "rgba(237,233,224,.55)" }}>
                 <span>🔒 Pago seguro</span>

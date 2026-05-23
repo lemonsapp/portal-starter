@@ -343,6 +343,12 @@ function publicRouter() {
 
       const totalCents = Math.max(0, subtotalCents - discountCents + shippingCents);
 
+      // F5+: si el descuento cubre el 100% (total=0), la orden se marca
+      // directamente como pagada — no hay nada que cobrar via MP.
+      // Caso de uso: códigos 100% off (giveaways, comp tester, etc.)
+      const isFreeOrder = totalCents === 0;
+      const initialStatus = isFreeOrder ? "paid" : "pending_payment";
+
       // 2. Crear orden con public_id único.
       let publicId;
       let inserted;
@@ -353,10 +359,12 @@ function publicRouter() {
             `INSERT INTO orders
                (public_id, status, customer_email, customer_first_name, customer_last_name,
                 customer_phone, shipping_address, subtotal_cents, shipping_cents, total_cents,
-                promo_code, discount_cents)
-             VALUES ($1, 'pending_payment', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                promo_code, discount_cents,
+                paid_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+                     CASE WHEN $2 = 'paid' THEN NOW() ELSE NULL END)
              RETURNING *`,
-            [publicId,
+            [publicId, initialStatus,
              body.customer.email,
              body.customer.first_name,
              body.customer.last_name,
@@ -411,6 +419,20 @@ function publicRouter() {
       //    in-app target=admin. Non-blocking, fail-silent si Resend no
       //    está configurado.
       shopNotify.onOrderCreated(inserted, lineItems).catch(() => {});
+
+      // 5b. Free order (100% off): la orden ya está marcada paid
+      //     directamente al INSERT (sin pasar por MP). Disparar el flow
+      //     de "pago confirmado" — email + broadcast — y devolver al
+      //     frontend que vaya directo al success page.
+      if (isFreeOrder) {
+        shopNotify.onOrderPaid(inserted, lineItems).catch(() => {});
+        return res.json({
+          public_id: inserted.public_id,
+          init_point: null,
+          free: true,           // flag → frontend redirige a success directo
+          total_cents: 0,
+        });
+      }
 
       // 6. Crear preference en MercadoPago (con graceful fallback).
       const appUrl = getAppUrl(req);

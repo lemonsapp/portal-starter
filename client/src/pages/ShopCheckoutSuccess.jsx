@@ -1,140 +1,409 @@
 // client/src/pages/ShopCheckoutSuccess.jsx
 //
-// Página de retorno post-MercadoPago (o post-fallback manual). Limpia el
-// carrito y muestra el número de orden + estado real consultado al backend.
+// Página de retorno post-checkout (MP success, free purchase, o manual).
+// REWRITE 2026-05-23 con animación GSAP premium:
+//   • Checkmark SVG que se "dibuja" con stroke-dashoffset
+//   • Confetti mint burst expanding desde el centro
+//   • Headline chars-rise stagger
+//   • Sub-text fade-up sequenced
+//   • Order ID y CTAs slide-up al final
+//
+// Skill: gsap-core + gsap-timeline para la coreografía.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCart } from "../lib/useCart.js";
 import { useBranding } from "../lib/branding.js";
+import gsap from "gsap";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
-const styles = {
-  shell: {
-    minHeight: "100vh",
-    background: "var(--brand-bg, #080808)",
-    color: "var(--brand-text, #ede9e0)",
-    fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
-    padding: "80px 20px",
-    display: "grid", placeItems: "center",
-  },
-  card: {
-    maxWidth: 540, width: "100%",
-    background: "rgba(255,255,255,.03)",
-    border: "1px solid rgba(167,245,200,.25)",
-    borderRadius: 20, padding: "40px 32px",
-    textAlign: "center",
-    boxShadow: "0 0 80px rgba(167,245,200,.08)",
-  },
-  icon: { fontSize: 56, marginBottom: 14 },
-  h1: {
-    fontFamily: "'Gotham', sans-serif",
-    fontSize: "clamp(1.7rem, 3.2vw, 2.2rem)", fontWeight: 900,
-    margin: "0 0 10px", textTransform: "uppercase", letterSpacing: "-0.01em",
-  },
-  sub: { color: "rgba(237,233,224,.78)", fontSize: 15, lineHeight: 1.55, marginBottom: 22 },
-  orderBox: {
-    background: "rgba(255,255,255,.05)",
-    border: "1px dashed rgba(255,255,255,.18)",
-    borderRadius: 12, padding: "14px 18px",
-    margin: "0 auto 22px",
-    display: "inline-block", textAlign: "left",
-  },
-  orderLabel: { fontSize: 10, fontWeight: 800, letterSpacing: ".24em", textTransform: "uppercase", color: "rgba(237,233,224,.55)", marginBottom: 4 },
-  orderId: { fontSize: 22, fontWeight: 900, color: "var(--brand-primary, #A7F5C8)", letterSpacing: ".04em", fontFamily: "monospace" },
-  status: (kind) => ({
-    display: "inline-block",
-    padding: "4px 12px", marginTop: 8,
-    borderRadius: 999, fontSize: 11, fontWeight: 800,
-    letterSpacing: ".18em", textTransform: "uppercase",
-    background: kind === "paid" ? "rgba(167,245,200,.16)" : "rgba(252,211,77,.14)",
-    color: kind === "paid" ? "var(--brand-primary, #A7F5C8)" : "#fcd34d",
-  }),
-  btnRow: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 12 },
-  btn: {
-    padding: "12px 22px", borderRadius: 999,
-    background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
-    color: "#fff", textDecoration: "none",
-    fontFamily: "inherit", fontWeight: 800, fontSize: 13,
-    letterSpacing: ".06em", textTransform: "uppercase",
-  },
-  btnGhost: {
-    padding: "12px 22px", borderRadius: 999,
-    background: "transparent",
-    border: "1px solid rgba(255,255,255,.18)",
-    color: "rgba(237,233,224,.85)", textDecoration: "none",
-    fontFamily: "inherit", fontWeight: 700, fontSize: 13,
-    letterSpacing: ".06em", textTransform: "uppercase",
-  },
-};
-
 export default function ShopCheckoutSuccess() {
-  useBranding();
-  const [params] = useSearchParams();
-  const orderParam = params.get("order") || sessionStorage.getItem("holistic.lastOrder");
-  const isPending = params.get("pending") === "1";
-  const { clear } = useCart();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+    useBranding();
+    const [params] = useSearchParams();
+    const orderParam = params.get("order") || sessionStorage.getItem("holistic.lastOrder");
+    const isPending = params.get("pending") === "1";
+    const isFree    = params.get("free") === "1" || sessionStorage.getItem("holistic.lastOrderFree") === "1";
+    const { clear } = useCart();
+    const [order, setOrder] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  // Clear cart al montarse (la compra ya está confirmada por el backend
-  // si llegamos acá). Idempotente.
-  useEffect(() => { clear(); }, [clear]);
+    const rootRef        = useRef(null);
+    const checkRef       = useRef(null);
+    const haloRef        = useRef(null);
+    const confettiRef    = useRef(null);
+    const headlineRef    = useRef(null);
+    const subRef         = useRef(null);
+    const orderBoxRef    = useRef(null);
+    const ctaRowRef      = useRef(null);
 
-  useEffect(() => {
-    if (!orderParam) {
-      setLoading(false);
-      return;
-    }
-    fetch(`${API}/api/shop/orders/${encodeURIComponent(orderParam)}`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => setOrder(d?.order || null))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [orderParam]);
+    // Clear cart al montarse — idempotente. Limpia también flag free.
+    useEffect(() => {
+        clear();
+        sessionStorage.removeItem("holistic.lastOrderFree");
+    }, [clear]);
 
-  const status = order?.status;
-  const isPaid = status === "paid";
-  const isManual = status === "pending_payment";
+    // Fetch order detail
+    useEffect(() => {
+        if (!orderParam) { setLoading(false); return; }
+        fetch(`${API}/api/shop/orders/${encodeURIComponent(orderParam)}`)
+            .then((r) => r.ok ? r.json() : null)
+            .then((d) => setOrder(d?.order || null))
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, [orderParam]);
 
-  return (
-    <div style={styles.shell}>
-      <div style={styles.card}>
-        <div style={styles.icon}>{isPaid ? "✅" : isPending ? "⏳" : "📦"}</div>
-        <h1 style={styles.h1}>
-          {isPaid ? "¡Compra confirmada!" : isPending ? "Pago pendiente" : "Orden recibida"}
-        </h1>
-        <p style={styles.sub}>
-          {isPaid && "Recibimos tu pago. En las próximas horas te escribimos por WhatsApp con la fecha de envío."}
-          {isPending && "MercadoPago todavía está procesando el pago. Te avisamos por email cuando se confirme."}
-          {isManual && "Guardamos tu pedido. Te contactamos por WhatsApp para coordinar pago y envío."}
-          {!status && loading && "Consultando estado de tu orden…"}
-          {!status && !loading && "Te contactamos por WhatsApp para coordinar."}
-        </p>
+    // ── GSAP master timeline ──
+    useEffect(() => {
+        if (loading) return;
+        if (!rootRef.current) return;
 
-        {orderParam && (
-          <div style={styles.orderBox}>
-            <div style={styles.orderLabel}>Número de orden</div>
-            <div style={styles.orderId}>{orderParam}</div>
-            {status && (
-              <div style={styles.status(isPaid ? "paid" : "pending")}>
-                {isPaid ? "✓ Pagado" : isPending ? "⏳ Pendiente MP" : "📋 En revisión"}
-              </div>
-            )}
-          </div>
-        )}
+        const ctx = gsap.context(() => {
+            // Estados iniciales
+            gsap.set(haloRef.current, { scale: 0, opacity: 0 });
+            gsap.set(checkRef.current, { scale: 0.6, opacity: 0 });
+            gsap.set(headlineRef.current?.querySelectorAll("[data-success-char]") || [], {
+                yPercent: 110, opacity: 0, rotationX: -30, transformOrigin: "50% 100%",
+            });
+            gsap.set(subRef.current, { y: 24, opacity: 0 });
+            gsap.set(orderBoxRef.current, { y: 30, opacity: 0, scale: 0.92 });
+            gsap.set(ctaRowRef.current, { y: 24, opacity: 0 });
 
-        <div style={styles.btnRow}>
-          <Link to="/shop" style={styles.btn}>Seguir comprando</Link>
-          <Link to="/inicio" style={styles.btnGhost}>Volver al inicio</Link>
+            const tl = gsap.timeline({ delay: 0.1, defaults: { ease: "power3.out" } });
+
+            // 1) Halo burst — radial pulse desde el centro
+            tl.to(haloRef.current, {
+                scale: 1.2, opacity: 1,
+                duration: 0.6, ease: "expo.out",
+            }, 0);
+
+            // 2) Checkmark — pop + stroke draw (controlled via state hack)
+            tl.to(checkRef.current, {
+                scale: 1, opacity: 1,
+                duration: 0.7, ease: "back.out(2.5)",
+            }, 0.15);
+
+            // 3) Confetti — 20 partículas expanding desde el centro
+            const particles = confettiRef.current?.querySelectorAll("[data-confetti]") || [];
+            tl.to(particles, {
+                x: () => gsap.utils.random(-220, 220),
+                y: () => gsap.utils.random(-160, 80),
+                rotation: () => gsap.utils.random(-90, 90),
+                opacity: 0,
+                duration: 1.6, ease: "expo.out",
+                stagger: { amount: 0.15, from: "center" },
+            }, 0.35);
+
+            // 4) Headline chars-rise
+            const chars = headlineRef.current?.querySelectorAll("[data-success-char]") || [];
+            tl.to(chars, {
+                yPercent: 0, opacity: 1, rotationX: 0,
+                duration: 0.7, ease: "back.out(1.4)",
+                stagger: { amount: 0.5, from: "start" },
+            }, 0.45);
+
+            // 5) Sub-text fade-up
+            tl.to(subRef.current, {
+                y: 0, opacity: 1,
+                duration: 0.6,
+            }, 0.85);
+
+            // 6) Order box scale-in
+            tl.to(orderBoxRef.current, {
+                y: 0, opacity: 1, scale: 1,
+                duration: 0.65, ease: "back.out(1.6)",
+            }, 1.05);
+
+            // 7) CTAs row
+            tl.to(ctaRowRef.current, {
+                y: 0, opacity: 1,
+                duration: 0.5,
+            }, 1.25);
+
+            // 8) Halo idle pulse — yoyo después de toda la entrada
+            tl.to(haloRef.current, {
+                scale: 1.35, opacity: 0.7,
+                duration: 2.4, ease: "sine.inOut",
+                yoyo: true, repeat: -1,
+            }, 1.6);
+        }, rootRef);
+
+        return () => ctx.revert();
+    }, [loading]);
+
+    const status = order?.status;
+    const isPaid = status === "paid" || isFree;
+    const isManual = status === "pending_payment" && !isFree;
+
+    const headlineText = isFree
+        ? "¡Compra confirmada!"
+        : isPaid
+            ? "¡Compra confirmada!"
+            : isPending
+                ? "Pago pendiente"
+                : "Orden recibida";
+
+    const subText = isFree
+        ? "Tu pedido fue procesado con 100% de descuento. Vamos a despacharte el envío y te avisamos por email."
+        : isPaid
+            ? "Recibimos tu pago. En las próximas horas te escribimos por WhatsApp con la fecha de envío."
+            : isPending
+                ? "MercadoPago todavía está procesando el pago. Te avisamos por email cuando se confirme."
+                : isManual
+                    ? "Guardamos tu pedido. Te contactamos por WhatsApp para coordinar pago y envío."
+                    : "Te contactamos por WhatsApp para coordinar.";
+
+    return (
+        <div ref={rootRef} style={S.shell}>
+            <div style={S.card}>
+                {/* Halo radial mint */}
+                <div ref={haloRef} style={S.halo} aria-hidden="true" />
+
+                {/* Confetti container (absolute particles desde el centro) */}
+                <div ref={confettiRef} style={S.confettiWrap} aria-hidden="true">
+                    {Array.from({ length: 20 }).map((_, i) => (
+                        <span
+                            key={i}
+                            data-confetti
+                            style={{
+                                ...S.confettiParticle,
+                                background: ["#A7F5C8", "#25D366", "#2E8F6E", "#FFFFFF"][i % 4],
+                                width: 6 + (i % 3) * 2,
+                                height: 6 + (i % 3) * 2,
+                            }}
+                        />
+                    ))}
+                </div>
+
+                {/* Checkmark SVG */}
+                <div ref={checkRef} style={S.checkWrap}>
+                    {isFree && <div style={S.freeBadge}>🎉 GRATIS</div>}
+                    <svg viewBox="0 0 80 80" width="100" height="100" style={S.checkSvg}>
+                        <circle cx="40" cy="40" r="36"
+                            fill="none"
+                            stroke="rgba(167,245,200,0.4)"
+                            strokeWidth="2"
+                        />
+                        <circle cx="40" cy="40" r="32"
+                            fill="rgba(167,245,200,0.15)"
+                            stroke="var(--brand-primary, #A7F5C8)"
+                            strokeWidth="2.5"
+                        />
+                        <path d="M 26 42 L 36 52 L 56 30"
+                            fill="none"
+                            stroke="var(--brand-primary, #A7F5C8)"
+                            strokeWidth="4.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{
+                                filter: "drop-shadow(0 0 8px rgba(167,245,200,0.85))",
+                                strokeDasharray: 50,
+                                strokeDashoffset: 50,
+                                animation: "shop-success-draw .7s cubic-bezier(.22,1,.36,1) .35s forwards",
+                            }}
+                        />
+                    </svg>
+                </div>
+
+                {/* Headline */}
+                <h1 ref={headlineRef} style={S.headline}>
+                    {headlineText.split("").map((ch, i) => (
+                        <span key={i} data-success-char style={S.headlineChar}>
+                            {ch === " " ? " " : ch}
+                        </span>
+                    ))}
+                </h1>
+
+                {/* Sub */}
+                <p ref={subRef} style={S.sub}>{subText}</p>
+
+                {/* Order box */}
+                {orderParam && (
+                    <div ref={orderBoxRef} style={S.orderBox}>
+                        <div style={S.orderLabel}>Número de orden</div>
+                        <div style={S.orderId}>{orderParam}</div>
+                        {status && (
+                            <div style={S.statusBadge(isPaid ? "paid" : "pending")}>
+                                {isPaid ? "✓ Pagado" : isPending ? "⏳ Pendiente MP" : "📋 En revisión"}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* CTAs */}
+                <div ref={ctaRowRef} style={S.ctaRow}>
+                    <Link to="/shop" style={S.btn}>Seguir comprando</Link>
+                    <Link to="/inicio" style={S.btnGhost}>Volver al inicio</Link>
+                </div>
+
+                <p style={S.fineprint}>
+                    Cualquier consulta, escribinos por WhatsApp.
+                    Guardá tu número de orden para referencias futuras.
+                </p>
+            </div>
+
+            <style>{`
+                @keyframes shop-success-draw {
+                    to { stroke-dashoffset: 0; }
+                }
+            `}</style>
         </div>
-
-        <p style={{ marginTop: 22, fontSize: 12, color: "rgba(237,233,224,.5)" }}>
-          Cualquier consulta, escribinos a <strong>HolisticGrowShop</strong> por WhatsApp.
-          Guardá tu número de orden para referencias futuras.
-        </p>
-      </div>
-    </div>
-  );
+    );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Styles
+// ─────────────────────────────────────────────────────────────────────────────
+const S = {
+    shell: {
+        minHeight: "100vh",
+        background: "var(--brand-bg, #060606)",
+        color: "var(--brand-text, #ede9e0)",
+        fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
+        padding: "60px 20px",
+        display: "grid", placeItems: "center",
+        position: "relative", overflow: "hidden",
+    },
+    card: {
+        position: "relative",
+        maxWidth: 580, width: "100%",
+        padding: "60px 40px 48px",
+        background: "rgba(255,255,255,.03)",
+        border: "1px solid rgba(167,245,200,.22)",
+        borderRadius: 24,
+        textAlign: "center",
+        boxShadow: "0 30px 80px -20px rgba(0,0,0,0.6), 0 0 60px -20px rgba(167,245,200,0.18)",
+        backdropFilter: "blur(14px)",
+        overflow: "hidden",
+    },
+    halo: {
+        position: "absolute",
+        top: "20%", left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 420, height: 420,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(167,245,200,0.45) 0%, rgba(46,143,110,0.18) 30%, transparent 65%)",
+        filter: "blur(40px)",
+        pointerEvents: "none",
+        zIndex: 0,
+    },
+    confettiWrap: {
+        position: "absolute",
+        top: "20%", left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 0, height: 0,
+        pointerEvents: "none",
+        zIndex: 1,
+    },
+    confettiParticle: {
+        position: "absolute",
+        top: 0, left: 0,
+        borderRadius: "50%",
+        boxShadow: "0 0 12px currentColor",
+    },
+
+    checkWrap: {
+        position: "relative",
+        zIndex: 2,
+        display: "inline-block",
+        marginBottom: 24,
+    },
+    checkSvg: { display: "block" },
+    freeBadge: {
+        position: "absolute",
+        top: -10, right: -28,
+        padding: "5px 12px", borderRadius: 999,
+        background: "linear-gradient(135deg, #25D366, #2E8F6E)",
+        color: "#fff",
+        fontSize: 11, fontWeight: 900, letterSpacing: ".14em",
+        boxShadow: "0 8px 18px rgba(37,211,102,0.55)",
+        transform: "rotate(8deg)",
+        zIndex: 3,
+    },
+
+    headline: {
+        position: "relative", zIndex: 2,
+        margin: "0 0 14px",
+        fontFamily: "'Gotham', sans-serif",
+        fontSize: "clamp(1.7rem, 3.6vw, 2.4rem)",
+        fontWeight: 900,
+        textTransform: "uppercase",
+        letterSpacing: "-0.01em",
+        lineHeight: 1.1,
+        paddingBottom: "0.06em",
+    },
+    headlineChar: {
+        display: "inline-block",
+        willChange: "transform, opacity",
+    },
+
+    sub: {
+        position: "relative", zIndex: 2,
+        margin: "0 auto 28px",
+        maxWidth: 460,
+        color: "rgba(237,233,224,.78)",
+        fontSize: 15, lineHeight: 1.55,
+    },
+
+    orderBox: {
+        position: "relative", zIndex: 2,
+        display: "inline-block",
+        padding: "16px 22px",
+        margin: "0 auto 24px",
+        background: "rgba(255,255,255,.05)",
+        border: "1px dashed rgba(167,245,200,.3)",
+        borderRadius: 14,
+        textAlign: "left",
+    },
+    orderLabel: {
+        fontSize: 10, fontWeight: 800, letterSpacing: ".24em",
+        textTransform: "uppercase",
+        color: "rgba(237,233,224,.55)",
+        marginBottom: 6,
+    },
+    orderId: {
+        fontSize: 22, fontWeight: 900,
+        color: "var(--brand-primary, #A7F5C8)",
+        letterSpacing: ".04em",
+        fontFamily: "monospace",
+    },
+    statusBadge: (kind) => ({
+        display: "inline-block",
+        marginTop: 10,
+        padding: "4px 12px", borderRadius: 999,
+        fontSize: 10, fontWeight: 800, letterSpacing: ".18em",
+        textTransform: "uppercase",
+        background: kind === "paid" ? "rgba(167,245,200,.18)" : "rgba(252,211,77,.14)",
+        color: kind === "paid" ? "var(--brand-primary, #A7F5C8)" : "#fcd34d",
+    }),
+
+    ctaRow: {
+        position: "relative", zIndex: 2,
+        display: "flex", flexWrap: "wrap", gap: 10,
+        justifyContent: "center",
+        marginTop: 8,
+    },
+    btn: {
+        padding: "13px 24px", borderRadius: 999,
+        background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+        color: "#fff", textDecoration: "none",
+        fontFamily: "inherit", fontWeight: 800, fontSize: 13,
+        letterSpacing: ".06em", textTransform: "uppercase",
+        boxShadow: "0 14px 30px -8px rgba(46,143,110,.55)",
+    },
+    btnGhost: {
+        padding: "13px 24px", borderRadius: 999,
+        background: "transparent",
+        border: "1px solid rgba(255,255,255,.18)",
+        color: "rgba(237,233,224,.85)", textDecoration: "none",
+        fontFamily: "inherit", fontWeight: 700, fontSize: 13,
+        letterSpacing: ".06em", textTransform: "uppercase",
+    },
+
+    fineprint: {
+        position: "relative", zIndex: 2,
+        marginTop: 26,
+        fontSize: 12, color: "rgba(237,233,224,.45)",
+        lineHeight: 1.55,
+    },
+};

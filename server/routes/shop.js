@@ -655,10 +655,12 @@ async function migrate() {
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS promo_code TEXT`);
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_cents INT NOT NULL DEFAULT 0`);
 
-  // Seed de un código TEST para que el admin pueda probar el flow inmediato.
+  // Seed de códigos TEST para que el admin pueda probar el flow inmediato.
   await db.query(`
     INSERT INTO promo_codes (code, kind, value, max_uses, notes, active)
-    VALUES ('TEST10', 'percent', 10, NULL, 'Código de prueba seed — 10% off, ilimitado', TRUE)
+    VALUES
+      ('TEST10',  'percent', 10,  NULL, 'Código de prueba seed — 10% off, ilimitado', TRUE),
+      ('FULLOFF', 'percent', 100, NULL, 'Código test 100% off — compra gratis (skip MercadoPago, marca paid directo)', TRUE)
     ON CONFLICT (code) DO NOTHING
   `);
 }
