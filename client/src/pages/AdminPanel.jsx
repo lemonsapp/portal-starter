@@ -330,7 +330,7 @@ function BrandingTab() {
     { icon: "📱", title: "PWA install prompt",  desc: "Cuando un usuario instala el portal en su pantalla de inicio",         source: "name + short_name + logo + theme_color" },
     { icon: "🔗", title: "Link previews",       desc: "Cuando alguien comparte el link en WhatsApp/Twitter/Facebook/Discord", source: "name + slogan + logo (Open Graph + Twitter Cards)" },
     { icon: "🔐", title: "Prompt biométrico",   desc: "Cuando un usuario registra Touch ID / Face ID / Windows Hello",        source: "name (WebAuthn rpName)" },
-    { icon: "🎨", title: "Sidebar + Topbar",    desc: "Logo + nombre visibles dentro del portal logueado",                    source: "name + logo + colors" },
+    { icon: "🎨", title: "Barra de navegación",  desc: "Logo + nombre visibles dentro del portal logueado (TopNav)",            source: "name + logo + colors" },
     { icon: "📨", title: "Emails",              desc: "Bienvenida, reset password, verificación, broadcasts admin",            source: "name + logo + color_primary" },
     { icon: "🔔", title: "Alertas internas",    desc: "Notificaciones a Telegram cuando el portal explota o hay registros",   source: "name (APP_NAME)" },
     { icon: "🎨", title: "Tile color (Windows)",desc: "Color de fondo de la app instalada en Windows",                        source: "color_bg" },

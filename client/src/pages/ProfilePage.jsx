@@ -1,6 +1,4 @@
 import "./ProfilePage.css";
-import Topbar from "../components/Topbar.jsx";
-import Sidebar from "../components/Sidebar.jsx";
 import { Pop, FadeUp, Pulse, Jumbo, CountUp } from "../components/MotionPop.jsx";
 import StoryViewer from "../components/StoryViewer.jsx";
 import { AnimatePresence } from "framer-motion";
@@ -687,9 +685,9 @@ export default function ProfilePage() {
 
   return (
     <div style={{background:"#03040c",minHeight:"100vh"}}>
-      {targetUsername && <Topbar />}
+      {/* Nav global = <TopNav/> (montado en App). Topbar/Sidebar legacy
+          eliminados; el wrapper flex queda como contenedor full-width. */}
       <div style={{display:"flex"}}>
-        {getToken() && <Sidebar />}
         <div style={{flex:1,minWidth:0}}>
       <style>{`
         @keyframes badgeShimmer{0%{background-position:-300% center}100%{background-position:300% center}}

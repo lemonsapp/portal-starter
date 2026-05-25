@@ -27,6 +27,7 @@ const Icon = ({ name, size = 18 }) => {
         case "user":     return <svg {...p}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>;
         case "coins":    return <svg {...p}><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M3 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>;
         case "chat":     return <svg {...p}><path d="M4 6.5C4 5.7 4.7 5 5.5 5h13c.8 0 1.5.7 1.5 1.5v9c0 .8-.7 1.5-1.5 1.5H10l-4 3v-3H5.5c-.8 0-1.5-.7-1.5-1.5z"/></svg>;
+        case "bell":     return <svg {...p}><path d="M6 8a6 6 0 1 1 12 0c0 4 1.5 5 2 6H4c.5-1 2-2 2-6"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>;
         case "shop":     return <svg {...p}><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/></svg>;
         case "admin":    return <svg {...p}><path d="M12 3l8 3v5c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>;
         case "settings": return <svg {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9 1.7 1.7 0 0 0 4.3 7.2l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>;
@@ -63,6 +64,18 @@ const NAV_BY_ROLE = {
     ],
 };
 
+// Notificaciones — emoji por tipo (social) y formato de fecha es-AR.
+// Los anuncios (type "ann_*") muestran 📢; el resto cae a 🔔.
+const NOTIF_EMOJI = { follow: "👤", delivery: "📦", like: "❤️", comment: "💬" };
+function fmtNotifTime(iso) {
+    if (!iso) return "";
+    try {
+        return new Date(iso).toLocaleString("es-AR", {
+            day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+        });
+    } catch { return ""; }
+}
+
 // Rutas donde NO se renderiza el TopNav (login flow, setup).
 // El shop, /inicio, /perfil, /admin, /coins, /chat sí lo muestran.
 const HIDE_ON_PATHS = [
@@ -78,9 +91,13 @@ export default function TopNav() {
     const [me, setMe] = useState(null);
     const [balance, setBalance] = useState(null);
     const [unreadChat, setUnreadChat] = useState(0);
+    const [notifs, setNotifs] = useState([]);                 // notificaciones
+    const [unreadNotifs, setUnreadNotifs] = useState(0);
+    const [notifOpen, setNotifOpen] = useState(false);        // bell dropdown
     const [menuOpen, setMenuOpen] = useState(false);          // mobile drawer
     const [userMenuOpen, setUserMenuOpen] = useState(false);  // desktop dropdown
     const userMenuRef = useRef(null);
+    const notifRef = useRef(null);
 
     // Calcular si el nav debe ocultarse — necesitamos saberlo antes de
     // posibles returns prematuros para mantener el orden de hooks
@@ -105,16 +122,21 @@ export default function TopNav() {
                     .catch(() => {});
             })
             .catch(() => {});
-        // Unread chat
-        const checkUnread = async () => {
+        // Unread chat + notificaciones — un solo loop de polling (30s).
+        const refresh = async () => {
             try {
                 const r = await fetch(`${API}/api/chat/unread`, { headers: { Authorization: `Bearer ${token}` } });
                 const d = await r.json();
                 if (d.ok) setUnreadChat(d.total || 0);
             } catch {}
+            try {
+                const r = await fetch(`${API}/api/notifications`, { headers: { Authorization: `Bearer ${token}` } });
+                const d = await r.json();
+                if (d.ok) { setNotifs(d.notifications || []); setUnreadNotifs(d.unread || 0); }
+            } catch {}
         };
-        checkUnread();
-        const t = setInterval(checkUnread, 30000);
+        refresh();
+        const t = setInterval(refresh, 30000);
         return () => clearInterval(t);
     }, []);
 
@@ -122,6 +144,7 @@ export default function TopNav() {
     useEffect(() => {
         setMenuOpen(false);
         setUserMenuOpen(false);
+        setNotifOpen(false);
     }, [location.pathname]);
 
     useEffect(() => {
@@ -132,6 +155,41 @@ export default function TopNav() {
         document.addEventListener("mousedown", onClick);
         return () => document.removeEventListener("mousedown", onClick);
     }, [userMenuOpen]);
+
+    useEffect(() => {
+        if (!notifOpen) return;
+        const onClick = (e) => {
+            if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+        };
+        document.addEventListener("mousedown", onClick);
+        return () => document.removeEventListener("mousedown", onClick);
+    }, [notifOpen]);
+
+    // Marcar todas leídas (POST sin ids = todas) — optimista.
+    function markAllNotifsRead() {
+        setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+        setUnreadNotifs(0);
+        fetch(`${API}/api/notifications/read`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+        }).catch(() => {});
+    }
+
+    // Abrir una notificación: marca leída (optimista) y navega a su link.
+    function openNotif(n) {
+        setNotifOpen(false);
+        if (!n.read) {
+            setNotifs((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)));
+            setUnreadNotifs((u) => Math.max(0, u - 1));
+            fetch(`${API}/api/notifications/read`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ ids: [n.id] }),
+            }).catch(() => {});
+        }
+        if (n.link) navigate(n.link);
+    }
 
     const isAnon = !getToken();
     const role = me?.role || "client";
@@ -202,6 +260,72 @@ export default function TopNav() {
                                 <Icon name="coins" size={14} />
                                 <span style={S.balanceNum}>{balance}</span>
                             </Link>
+                        )}
+
+                        {/* Notificaciones (bell) — solo logueado */}
+                        {!isAnon && (
+                        <div ref={notifRef} style={S.notifWrap}>
+                            <button
+                                style={S.iconBtn}
+                                onClick={() => setNotifOpen((v) => !v)}
+                                aria-label="Notificaciones"
+                                aria-expanded={notifOpen}
+                            >
+                                <Icon name="bell" size={18} />
+                                {unreadNotifs > 0 && (
+                                    <span style={S.iconBadge} aria-label={`${unreadNotifs} sin leer`}>
+                                        {unreadNotifs > 9 ? "9+" : unreadNotifs}
+                                    </span>
+                                )}
+                            </button>
+                            {notifOpen && (
+                                <div style={S.notifMenu}>
+                                    <div style={S.notifHead}>
+                                        <span style={S.notifTitle}>Notificaciones</span>
+                                        {unreadNotifs > 0 && (
+                                            <button onClick={markAllNotifsRead} style={S.notifMarkAll}>
+                                                Marcar leído
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div style={S.notifList}>
+                                        {notifs.length === 0 && (
+                                            <div style={S.notifEmpty}>Sin notificaciones</div>
+                                        )}
+                                        {notifs.map((n) => {
+                                            const isAnn = typeof n.type === "string" && n.type.startsWith("ann_");
+                                            return (
+                                                <button
+                                                    key={n.id}
+                                                    onClick={() => openNotif(n)}
+                                                    style={{ ...S.notifItem, ...(n.read ? {} : S.notifItemUnread) }}
+                                                >
+                                                    <span style={S.notifAvatar}>
+                                                        {isAnn
+                                                            ? "📢"
+                                                            : n.actor_avatar
+                                                                ? <img src={n.actor_avatar} alt="" style={S.notifAvatarImg} />
+                                                                : (NOTIF_EMOJI[n.type] || "🔔")}
+                                                    </span>
+                                                    <span style={S.notifTextWrap}>
+                                                        {!isAnn && n.actor_name && (
+                                                            <span style={{ ...S.notifActor, color: n.actor_name_color || "var(--c-accent, #A7F5C8)" }}>
+                                                                {n.actor_name}{" "}
+                                                            </span>
+                                                        )}
+                                                        <span style={n.read ? S.notifTextRead : S.notifText}>
+                                                            {isAnn ? n.title : n.body}
+                                                        </span>
+                                                        <span style={S.notifTime}>{fmtNotifTime(n.created_at)}</span>
+                                                    </span>
+                                                    {!n.read && <span style={S.notifDot} aria-hidden="true" />}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         )}
 
                         {/* Anónimo: solo CTA "Iniciar sesión" + hamburger */}
@@ -406,6 +530,99 @@ const S = {
         letterSpacing: "0.04em",
     },
     balanceNum: { fontVariantNumeric: "tabular-nums" },
+
+    // Bell + notif dropdown
+    notifWrap: { position: "relative" },
+    iconBtn: {
+        position: "relative",
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        width: 38, height: 38,
+        borderRadius: 999,
+        background: "rgba(255, 255, 255, 0.04)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
+        color: "var(--brand-text, #ede9e0)",
+        cursor: "pointer",
+        transition: "background .25s ease",
+    },
+    iconBadge: {
+        position: "absolute",
+        top: -2, right: -2,
+        minWidth: 16, height: 16,
+        padding: "0 4px",
+        borderRadius: 999,
+        background: "#ef4444",
+        color: "#fff",
+        fontSize: 9, fontWeight: 800,
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+    },
+    notifMenu: {
+        position: "absolute",
+        top: "calc(100% + 8px)",
+        right: 0,
+        width: "min(360px, calc(100vw - 24px))",
+        background: "rgba(10, 10, 10, 0.96)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
+        borderRadius: 14,
+        boxShadow: "0 24px 60px -10px rgba(0, 0, 0, 0.7)",
+        zIndex: 300,
+        overflow: "hidden",
+    },
+    notifHead: {
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "12px 16px",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+    },
+    notifTitle: {
+        fontSize: 11, fontWeight: 800,
+        letterSpacing: "0.18em", textTransform: "uppercase",
+        color: "var(--brand-text, #ede9e0)",
+    },
+    notifMarkAll: {
+        background: "transparent", border: "none", cursor: "pointer",
+        color: "var(--brand-primary, #A7F5C8)",
+        fontFamily: "inherit", fontSize: 11, fontWeight: 700,
+        letterSpacing: "0.04em",
+    },
+    notifList: { maxHeight: 380, overflowY: "auto" },
+    notifEmpty: {
+        padding: "24px 16px", textAlign: "center",
+        fontSize: 12, color: "rgba(237, 233, 224, 0.5)",
+    },
+    notifItem: {
+        display: "flex", gap: 12, alignItems: "flex-start",
+        width: "100%", textAlign: "left",
+        padding: "12px 16px",
+        background: "transparent", border: "none",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+        cursor: "pointer", fontFamily: "inherit",
+    },
+    notifItemUnread: { background: "rgba(167, 245, 200, 0.06)" },
+    notifAvatar: {
+        flexShrink: 0, width: 34, height: 34,
+        borderRadius: "50%", overflow: "hidden",
+        background: "rgba(167, 245, 200, 0.10)",
+        border: "1px solid rgba(167, 245, 200, 0.20)",
+        display: "grid", placeItems: "center",
+        fontSize: 16,
+    },
+    notifAvatarImg: { width: "100%", height: "100%", objectFit: "cover" },
+    notifTextWrap: { flex: 1, minWidth: 0 },
+    notifActor: { fontSize: 13, fontWeight: 700 },
+    notifText: { fontSize: 13, color: "var(--brand-text, #ede9e0)", lineHeight: 1.45 },
+    notifTextRead: { fontSize: 13, color: "rgba(237, 233, 224, 0.55)", lineHeight: 1.45 },
+    notifTime: {
+        display: "block", marginTop: 5,
+        fontSize: 10, letterSpacing: "0.04em",
+        color: "rgba(237, 233, 224, 0.4)",
+    },
+    notifDot: {
+        flexShrink: 0, width: 7, height: 7, marginTop: 6,
+        borderRadius: "50%",
+        background: "var(--brand-primary, #A7F5C8)",
+        boxShadow: "0 0 6px var(--brand-primary, #A7F5C8)",
+    },
 
     userWrap: { position: "relative" },
     userBtn: {

@@ -2,8 +2,6 @@ import "./styles/staff-mobile.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { UserProvider } from "./context/UserContext.jsx";
 import { ToastProvider } from "./components/ToastReward.jsx";
-import Sidebar from "./components/Sidebar.jsx";
-import Topbar from "./components/Topbar.jsx";
 import TopNav from "./components/TopNav.jsx";
 import Footer from "./components/Footer.jsx";
 import PremiumFX from "./components/PremiumFX.jsx";
@@ -108,8 +106,9 @@ async function fetchMe() {
 // globalmente en App() (renderiza en cualquier ruta no-auth), así que acá
 // sólo armamos el wrapper de contenido + footer + onboarding.
 //
-// Legacy Sidebar.jsx + Topbar.jsx quedan en el repo por si hay que
-// rollback rápido — ya no se importan en el árbol de App.
+// Sidebar.jsx + Topbar.jsx legacy fueron eliminados: TopNav los reemplaza
+// en todas las rutas (incluido el bell de notificaciones, antes sólo en
+// Topbar). El historial git guarda la versión previa si hace falta rollback.
 function AppLayout({ children, me, refreshMe }) {
   usePresence(45000); // heartbeat global cada 45s mientras esté autenticado
   const location = useLocation();
