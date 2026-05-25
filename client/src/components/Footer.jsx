@@ -15,59 +15,60 @@ export default function Footer() {
             <style>{`
                 .h-ft {
                     margin-top: auto;
-                    border-top: 1px solid var(--h-line-1);
-                    background: var(--h-bg-0);
-                    color: var(--h-text-3);
+                    border-top: 1px solid var(--c-border, rgba(255,255,255,.06));
+                    background: var(--c-bg, #06070A);
+                    color: var(--c-text-3, rgba(245,242,235,.5));
                 }
                 .h-ft__inner {
                     max-width: 1280px;
                     margin: 0 auto;
-                    padding: var(--h-sp-7) var(--h-content-mx);
+                    padding: var(--sp-8, 32px) clamp(20px, 4vw, 40px);
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    gap: var(--h-sp-6);
+                    gap: var(--sp-6, 24px);
                     flex-wrap: wrap;
                 }
                 .h-ft__brand {
                     display: inline-flex;
                     align-items: center;
                     gap: 10px;
-                    color: var(--h-text-2);
+                    color: var(--c-text-2, rgba(245,242,235,.72));
                 }
                 .h-ft__dot {
                     width: 6px; height: 6px;
                     border-radius: 50%;
-                    background: var(--h-green);
-                    box-shadow: 0 0 8px var(--h-green-glow);
+                    background: var(--c-accent, #A7F5C8);
+                    box-shadow: 0 0 8px var(--c-accent-glow, rgba(167,245,200,.32));
                 }
                 .h-ft__name {
-                    font-family: var(--h-font-display);
+                    font-family: var(--f-display, 'Gotham', sans-serif);
+                    font-weight: 900;
                     font-size: 14px;
-                    letter-spacing: 3px;
+                    letter-spacing: 0.18em;
                     text-transform: uppercase;
                 }
                 .h-ft__nav {
                     display: inline-flex;
                     align-items: center;
-                    gap: var(--h-sp-5);
+                    gap: var(--sp-5, 20px);
                 }
                 .h-ft__link {
-                    font-family: var(--h-font-mono);
+                    font-family: var(--f-body, 'Gotham', sans-serif);
                     font-size: 11px;
-                    font-weight: 500;
-                    letter-spacing: 1.4px;
+                    font-weight: 600;
+                    letter-spacing: 0.16em;
                     text-transform: uppercase;
-                    color: var(--h-text-3);
+                    color: var(--c-text-3, rgba(245,242,235,.5));
                     text-decoration: none;
-                    transition: color var(--h-trans-fast);
+                    transition: color var(--dur-fast, 150ms) ease;
                 }
-                .h-ft__link:hover { color: var(--h-text-1); }
+                .h-ft__link:hover { color: var(--c-text, #F5F2EB); }
                 .h-ft__copy {
-                    font-family: var(--h-font-mono);
+                    font-family: var(--f-body, 'Gotham', sans-serif);
                     font-size: 10px;
-                    letter-spacing: 1px;
-                    color: var(--h-text-4);
+                    letter-spacing: 0.1em;
+                    color: var(--c-text-disabled, rgba(245,242,235,.3));
                     white-space: nowrap;
                 }
                 @media (max-width: 640px) {
