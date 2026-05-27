@@ -69,7 +69,7 @@ export default function Shop() {
   }
 
   return (
-    <div style={S.shell}>
+    <div className="theme-light" style={S.shell}>
       {/* Hero — eyebrow + display + sub + decorative line */}
       <header style={S.hero}>
         <div style={S.heroGlow} aria-hidden="true" />

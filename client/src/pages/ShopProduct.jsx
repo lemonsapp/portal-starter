@@ -62,7 +62,7 @@ export default function ShopProduct() {
 
   if (loading) {
     return (
-      <div style={S.shell}>
+      <div className="theme-light" style={S.shell}>
         <div style={S.container}>
           <div style={S.loading}>Cargando…</div>
         </div>
@@ -72,7 +72,7 @@ export default function ShopProduct() {
 
   if (err || !product) {
     return (
-      <div style={S.shell}>
+      <div className="theme-light" style={S.shell}>
         <div style={S.container}>
           <Link to="/shop" style={S.back}>← Volver al catálogo</Link>
           <div style={S.loading}>{err || "Producto no encontrado"}</div>
@@ -87,7 +87,7 @@ export default function ShopProduct() {
   const inStock = product.stock == null || product.stock > 0;
 
   return (
-    <div style={S.shell}>
+    <div className="theme-light" style={S.shell}>
       <div style={S.container}>
         <Link to="/shop" style={S.back}>← Volver al catálogo</Link>
 

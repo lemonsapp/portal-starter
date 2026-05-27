@@ -176,7 +176,7 @@ export default function ShopCheckoutSuccess() {
     ] : [];
 
     return (
-        <div ref={rootRef} style={S.shell}>
+        <div ref={rootRef} className="theme-light" style={S.shell}>
             <div style={S.card}>
                 {/* Halo radial mint */}
                 <div ref={haloRef} style={S.halo} aria-hidden="true" />

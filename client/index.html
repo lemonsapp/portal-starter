@@ -68,36 +68,36 @@
        quedan congelados acá para garantizar consistencia visual).
        ══════════════════════════════════════════════════════════════════════ */
     :root {
-      /* ── Surface palette (LIGHT THEME 2026-05-27 — prueba shop+portal en blanco) ── */
-      --c-bg:           #F7F6F1;     /* warm off-white */
-      --c-surface:      #FFFFFF;     /* card / panel */
-      --c-surface-2:    #F1EEE7;     /* elevated / muted surface */
-      --c-surface-3:    #E6E2D8;     /* hover / focused surface */
+      /* ── Surface palette (OLED-friendly) ── */
+      --c-bg:           #06070A;     /* deep near-black, slight cool tint */
+      --c-surface:      #0E1014;     /* card / panel */
+      --c-surface-2:    #161A20;     /* elevated card */
+      --c-surface-3:    #1F242C;     /* hover / focused surface */
 
-      /* ── Text scale (sobre claro) ── */
-      --c-text:         #15171C;     /* primary — near-black */
-      --c-text-rgb:     21, 23, 28;  /* para rgba(var(--c-text-rgb), α) con alpha arbitrario */
-      --c-text-2:       rgba(21, 23, 28, 0.70);
-      --c-text-3:       rgba(21, 23, 28, 0.50);
-      --c-text-disabled:rgba(21, 23, 28, 0.35);
+      /* ── Text scale (4.5:1+ contrast) ── */
+      --c-text:         #F5F2EB;     /* primary — warm off-white */
+      --c-text-rgb:     245, 242, 235; /* para rgba(var(--c-text-rgb), α) con alpha arbitrario */
+      --c-text-2:       rgba(245, 242, 235, 0.72);
+      --c-text-3:       rgba(245, 242, 235, 0.50);
+      --c-text-disabled:rgba(245, 242, 235, 0.30);
 
-      /* ── Brand accents (verde Holistic, deepened para contraste sobre blanco) ── */
-      --c-accent:       #1FA350;     /* verde primario */
-      --c-accent-rgb:   31, 163, 80;
-      --c-accent-2:     #1B8F4A;     /* CTA strong (texto blanco encima) */
-      --c-accent-soft:  rgba(31, 163, 80, 0.10);
-      --c-accent-glow:  rgba(31, 163, 80, 0.28);
+      /* ── Brand accents (mint Holistic) ── */
+      --c-accent:       #A7F5C8;     /* primary mint */
+      --c-accent-rgb:   167, 245, 200;
+      --c-accent-2:     #25D366;     /* CTA strong */
+      --c-accent-soft:  rgba(167, 245, 200, 0.10);
+      --c-accent-glow:  rgba(167, 245, 200, 0.32);
 
-      /* ── Borders (oscuros sobre claro) ── */
-      --c-border:       rgba(0, 0, 0, 0.08);
-      --c-border-2:     rgba(0, 0, 0, 0.12);
-      --c-border-3:     rgba(0, 0, 0, 0.18);
+      /* ── Borders ── */
+      --c-border:       rgba(255, 255, 255, 0.06);
+      --c-border-2:     rgba(255, 255, 255, 0.10);
+      --c-border-3:     rgba(255, 255, 255, 0.16);
 
-      /* ── Status (deepened para claro) ── */
-      --c-success:      #15803D;
-      --c-warning:      #B45309;
-      --c-danger:       #DC2626;
-      --c-info:         #2563EB;
+      /* ── Status ── */
+      --c-success:      #86EFAC;
+      --c-warning:      #FCD34D;
+      --c-danger:       #FCA5A5;
+      --c-info:         #93C5FD;
 
       /* ── Typography ── */
       --f-display:      'Gotham', system-ui, sans-serif;
@@ -114,9 +114,9 @@
       --r-1: 6px; --r-2: 10px; --r-3: 14px; --r-4: 18px; --r-5: 24px; --r-pill: 999px;
 
       /* ── Shadows ── */
-      --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.08);
-      --shadow-md:  0 8px 24px -6px rgba(0, 0, 0, 0.12);
-      --shadow-lg:  0 22px 60px -12px rgba(0, 0, 0, 0.18);
+      --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.35);
+      --shadow-md:  0 8px 24px -6px rgba(0, 0, 0, 0.5);
+      --shadow-lg:  0 22px 60px -12px rgba(0, 0, 0, 0.65);
       --shadow-glow:0 0 30px -6px var(--c-accent-glow);
 
       /* ── Motion ── */
@@ -155,7 +155,43 @@
       --legacy-orange:  var(--c-accent);
       --legacy-orange-hot: var(--c-accent-2);
 
+      color-scheme: dark;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       SCOPE LIGHT — SOLO LA TIENDA. El portal queda dark (:root de arriba).
+       Se aplica con class="theme-light" en el root de cada página del shop.
+       Los tokens --c-* se overridean acá; los alias legacy (--brand-*, etc.)
+       y todo var(--c-*) heredan automáticamente (custom props resuelven lazy).
+       ══════════════════════════════════════════════════════════════════════ */
+    .theme-light {
+      --c-bg:           #F7F6F1;
+      --c-surface:      #FFFFFF;
+      --c-surface-2:    #F1EEE7;
+      --c-surface-3:    #E6E2D8;
+      --c-text:         #15171C;
+      --c-text-rgb:     21, 23, 28;
+      --c-text-2:       rgba(21, 23, 28, 0.70);
+      --c-text-3:       rgba(21, 23, 28, 0.50);
+      --c-text-disabled:rgba(21, 23, 28, 0.35);
+      --c-accent:       #1FA350;
+      --c-accent-rgb:   31, 163, 80;
+      --c-accent-2:     #1B8F4A;
+      --c-accent-soft:  rgba(31, 163, 80, 0.10);
+      --c-accent-glow:  rgba(31, 163, 80, 0.28);
+      --c-border:       rgba(0, 0, 0, 0.08);
+      --c-border-2:     rgba(0, 0, 0, 0.12);
+      --c-border-3:     rgba(0, 0, 0, 0.18);
+      --c-success:      #15803D;
+      --c-warning:      #B45309;
+      --c-danger:       #DC2626;
+      --c-info:         #2563EB;
+      --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.08);
+      --shadow-md:  0 8px 24px -6px rgba(0, 0, 0, 0.12);
+      --shadow-lg:  0 22px 60px -12px rgba(0, 0, 0, 0.18);
       color-scheme: light;
+      background: var(--c-bg);
+      color: var(--c-text);
     }
 
     /* ── Reset + base typography ── */

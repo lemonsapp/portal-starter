@@ -239,7 +239,7 @@ export default function ShopCheckout() {
   }
 
   return (
-    <div style={styles.shell}>
+    <div className="theme-light" style={styles.shell}>
       <div style={styles.container}>
         <Link to="/shop" style={styles.back}>← Seguir comprando</Link>
         <h1 style={styles.h1}>Finalizar compra</h1>
