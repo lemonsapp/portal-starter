@@ -14,7 +14,7 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 const RARITY = {
-  common:    { label:"Común",      color:"#ede9e0", bg:"rgba(237,233,224,.08)", border:"rgba(237,233,224,.15)" },
+  common:    { label:"Común",      color:"var(--c-text)", bg:"rgba(var(--c-text-rgb),.08)", border:"rgba(var(--c-text-rgb),.15)" },
   rare:      { label:"Raro",       color:"#60a5fa", bg:"rgba(96,165,250,.08)",  border:"rgba(96,165,250,.25)"  },
   epic:      { label:"Épico",      color:"#a78bfa", bg:"rgba(167,139,250,.08)", border:"rgba(167,139,250,.25)" },
   legendary: { label:"Legendario", color:"var(--brand-primary)", bg:"rgba(var(--brand-primary-rgb),.08)",  border:"rgba(var(--brand-primary-rgb),.3)"   },
@@ -180,7 +180,7 @@ function ItemCard({ item, owned, equipped, onBuy, onEquip, loading, readOnly }) 
   const r = RARITY[item.rarity] || RARITY.common;
   const d = item.data || {};
   return (
-    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{ background:owned?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${owned?r.border:"rgba(237,233,224,.07)"}`,borderRadius:15,padding:"14px 13px",position:"relative",overflow:"hidden",transition:"all .25s",transform:hover?"translateY(-4px)":"none",boxShadow:hover?`0 14px 42px rgba(0,0,0,.45)`:owned?`0 0 20px ${r.border}22`:"none",opacity:owned?1:0.65 }}>
+    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{ background:owned?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${owned?r.border:"rgba(var(--c-text-rgb),.07)"}`,borderRadius:15,padding:"14px 13px",position:"relative",overflow:"hidden",transition:"all .25s",transform:hover?"translateY(-4px)":"none",boxShadow:hover?`0 14px 42px rgba(0,0,0,.45)`:owned?`0 0 20px ${r.border}22`:"none",opacity:owned?1:0.65 }}>
       {owned && <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${r.color},transparent)` }} />}
       <div style={{ position:"absolute",top:9,right:9,fontSize:7,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",padding:"2px 7px",borderRadius:100,background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
       <div style={{ fontSize:30,display:"block",margin:"6px 0 9px",textAlign:"center",animation:"float 3s ease-in-out infinite" }}>{d.emoji||item.emoji||"⭐"}</div>
@@ -210,7 +210,7 @@ function AchievementCard({ ach, unlocked, stats }) {
             : ach.key==="ach_veteran365"? Math.min(100, ((stats?.days_active||0)/365)*100)
             : null;
   return (
-    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{ background:unlocked?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${unlocked?r.border:"rgba(237,233,224,.06)"}`,padding:18,position:"relative",overflow:"hidden",transition:"all .35s cubic-bezier(.2,.8,.2,1)",transform:hover?"translateY(-6px) scale(1.015)":"none",boxShadow:hover?(unlocked?`0 24px 60px rgba(0,0,0,.5),0 0 0 1px ${r.color}40,0 0 32px ${r.color}26`:"0 18px 48px rgba(0,0,0,.5)"):"none",opacity:unlocked?1:.6 }}>
+    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{ background:unlocked?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${unlocked?r.border:"rgba(var(--c-text-rgb),.06)"}`,padding:18,position:"relative",overflow:"hidden",transition:"all .35s cubic-bezier(.2,.8,.2,1)",transform:hover?"translateY(-6px) scale(1.015)":"none",boxShadow:hover?(unlocked?`0 24px 60px rgba(0,0,0,.5),0 0 0 1px ${r.color}40,0 0 32px ${r.color}26`:"0 18px 48px rgba(0,0,0,.5)"):"none",opacity:unlocked?1:.6 }}>
       {unlocked&&<div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${r.color},${r.color}40,transparent)`,backgroundSize:"200% 100%",animation:hover?"shimmerBg 2s linear infinite":"none" }} />}
       {unlocked&&hover&&<div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse 60% 100% at 50% 100%,${r.color}14,transparent 70%)`,pointerEvents:"none"}}/>}
       <div style={{ position:"absolute",top:10,right:10,fontFamily:"'Gotham', monospace",fontSize:8,fontWeight:500,letterSpacing:"1.5px",textTransform:"uppercase",padding:"3px 8px",background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
@@ -854,7 +854,7 @@ export default function ProfilePage() {
                   <span style={{color:"rgba(var(--brand-primary-rgb),.45)"}}>&#34;</span>{bioText}<span style={{color:"rgba(var(--brand-primary-rgb),.45)"}}>&#34;</span>
                 </div>
               ):isOwn?(
-                <div style={{fontSize:11,color:"rgba(237,233,224,.18)",marginBottom:13,cursor:"pointer"}} onClick={()=>setEditBio(true)}>+ Agregá una bio...</div>
+                <div style={{fontSize:11,color:"rgba(var(--c-text-rgb),.18)",marginBottom:13,cursor:"pointer"}} onClick={()=>setEditBio(true)}>+ Agregá una bio...</div>
               ):null}
 
               {isOwn&&(
