@@ -141,9 +141,9 @@ function initComplementosIdeales() {
         const assembleTl = gsap.timeline({
             scrollTrigger: {
                 trigger: header,
-                start: "top 95%",
-                end:   "top 20%",
-                scrub: 0.8,           // chase más smooth
+                start: "top 90%",
+                end:   "top 45%",     // rango más corto → assemble más veloz (antes top 20%)
+                scrub: 0.4,           // menos lag (antes 0.8)
                 invalidateOnRefresh: true,
             },
         });
