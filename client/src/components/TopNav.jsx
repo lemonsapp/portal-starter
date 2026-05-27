@@ -787,12 +787,12 @@ if (typeof window !== "undefined" && !document.getElementById("topnav-responsive
     const styleEl = document.createElement("style");
     styleEl.id = "topnav-responsive-css";
     styleEl.textContent = `
-        .topnav-hamburger { display: none !important; }
+        /* Hamburguesa visible en celu Y web (acceso a internas vía drawer). */
+        .topnav-hamburger { display: inline-flex !important; }
         @media (max-width: 900px) {
             .topnav-nav { display: none !important; }
             .topnav-balance { display: none !important; }
             .topnav-username { display: none !important; }
-            .topnav-hamburger { display: inline-flex !important; }
         }
     `;
     document.head.appendChild(styleEl);
