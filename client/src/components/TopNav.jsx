@@ -219,30 +219,38 @@ export default function TopNav() {
         <>
             <header style={S.shell}>
                 <div style={S.inner}>
-                    {/* Brand */}
+                    {/* Brand — logo del landing (negro sobre barra blanca, tal cual la web) */}
                     <Link to="/inicio" style={S.brand} aria-label="Inicio">
-                        <span style={S.brandDot} />
-                        <span style={S.brandName}>HOLISTIC</span>
+                        <img src="/assets/logo.svg" alt="Holistic" style={S.logoImg} width="32" height="32" />
                     </Link>
 
-                    {/* Desktop nav */}
+                    {/* Desktop nav — links de texto estilo landing (underline mint en
+                        hover/active). "Tienda" usa la pill mint igual que la web. */}
                     <nav className="topnav-nav" style={S.nav} aria-label="Navegación principal">
                         {nav.map((item) => {
                             const active = location.pathname === item.path
                                 || (item.path !== "/inicio" && location.pathname.startsWith(item.path));
+                            const isShop = item.path === "/shop";
                             const showBadge = item.path === "/chat" && unreadChat > 0;
+
+                            // Tienda → pill mint con ícono carrito (idéntica al landing)
+                            if (isShop) {
+                                return (
+                                    <Link key={item.path} to={item.path} style={S.shopPill} className="topnav-shop-pill">
+                                        <span style={S.shopPillIcon}><Icon name="shop" size={14} /></span>
+                                        {item.label}
+                                    </Link>
+                                );
+                            }
+
                             return (
                                 <Link
                                     key={item.path}
                                     to={item.path}
-                                    style={{
-                                        ...S.navLink,
-                                        ...(active ? S.navLinkActive : {}),
-                                    }}
+                                    className={active ? "topnav-link topnav-link--active" : "topnav-link"}
+                                    style={S.navLink}
                                 >
-                                    <span style={S.navIcon}><Icon name={item.icon} /></span>
-                                    <span style={S.navLabel}>{item.label}</span>
-                                    {active && <span style={S.activeBar} aria-hidden="true" />}
+                                    {item.label}
                                     {showBadge && (
                                         <span style={S.unreadBadge} aria-label={`${unreadChat} mensajes sin leer`}>
                                             {unreadChat > 9 ? "9+" : unreadChat}
@@ -266,6 +274,7 @@ export default function TopNav() {
                         {!isAnon && (
                         <div ref={notifRef} style={S.notifWrap}>
                             <button
+                                className="topnav-icon"
                                 style={S.iconBtn}
                                 onClick={() => setNotifOpen((v) => !v)}
                                 aria-label="Notificaciones"
@@ -309,7 +318,7 @@ export default function TopNav() {
                                                     </span>
                                                     <span style={S.notifTextWrap}>
                                                         {!isAnn && n.actor_name && (
-                                                            <span style={{ ...S.notifActor, color: n.actor_name_color || "var(--c-accent, #A7F5C8)" }}>
+                                                            <span style={{ ...S.notifActor, color: n.actor_name_color || "#2E8F6E" }}>
                                                                 {n.actor_name}{" "}
                                                             </span>
                                                         )}
@@ -383,7 +392,7 @@ export default function TopNav() {
 
                         {/* Hamburger (mobile) */}
                         <button
-                            className="topnav-hamburger"
+                            className="topnav-hamburger topnav-icon"
                             style={S.hamburger}
                             onClick={() => setMenuOpen(true)}
                             aria-label="Abrir menú"
@@ -398,7 +407,7 @@ export default function TopNav() {
             <div style={S.mobileBackdrop(menuOpen)} onClick={() => setMenuOpen(false)} />
             <aside style={S.mobileDrawer(menuOpen)} aria-hidden={!menuOpen}>
                 <div style={S.mobileHeader}>
-                    <span style={S.brandName}>HOLISTIC</span>
+                    <img src="/assets/logo.svg" alt="Holistic" style={S.logoImg} width="30" height="30" />
                     <button style={S.mobileClose} onClick={() => setMenuOpen(false)} aria-label="Cerrar menú">
                         <Icon name="close" size={22} />
                     </button>
@@ -422,7 +431,7 @@ export default function TopNav() {
                         );
                     })}
                     <hr style={S.mobileDivider} />
-                    <button onClick={logout} style={{ ...S.mobileNavLink, color: "#fca5a5", background: "transparent", border: "none", textAlign: "left", width: "100%" }}>
+                    <button onClick={logout} style={{ ...S.mobileNavLink, color: "#dc2626", background: "transparent", border: "none", textAlign: "left", width: "100%" }}>
                         <Icon name="logout" size={20} /> Cerrar sesión
                     </button>
                 </nav>
@@ -437,76 +446,79 @@ export default function TopNav() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Styles — namespace S
 // ─────────────────────────────────────────────────────────────────────────────
+// Paleta del header del landing (replicada tal cual):
+//   barra #fff · texto #1a1a1a · acento WhatsApp #25d366 · hover icon bg #eee
+//   pill Tienda gradiente #25D366→#2E8F6E · ease landing
+const C = {
+    bar: "#ffffff",
+    border: "rgba(26,26,26,0.08)",
+    text: "#1a1a1a",
+    textSoft: "rgba(26,26,26,0.62)",
+    wa: "#25d366",
+    waDark: "#2E8F6E",
+    iconHover: "#eee",
+    ease: "cubic-bezier(.25,.46,.45,.94)",
+};
+
 const S = {
     shell: {
         position: "fixed", top: 0, left: 0, right: 0,
         zIndex: 200,
-        background: "rgba(6, 6, 6, 0.85)",
-        backdropFilter: "blur(16px) saturate(140%)",
-        WebkitBackdropFilter: "blur(16px) saturate(140%)",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+        background: C.bar,
+        borderBottom: `1px solid ${C.border}`,
+        boxShadow: "0 1px 12px rgba(0,0,0,0.04)",
+        color: C.text,
     },
     spacer: { height: 64 },
     inner: {
-        maxWidth: 1440, margin: "0 auto",
-        padding: "0 clamp(14px, 2vw, 28px)",
+        maxWidth: 1280, margin: "0 auto",
+        padding: "0 clamp(16px, 2vw, 28px)",
         height: 64,
         display: "flex", alignItems: "center", gap: 16,
     },
 
-    // Brand
+    // Brand — logo SVG (igual que el landing)
     brand: {
-        display: "inline-flex", alignItems: "center", gap: 10,
+        display: "inline-flex", alignItems: "center",
         textDecoration: "none", color: "inherit",
         flexShrink: 0,
     },
-    brandDot: {
-        width: 10, height: 10, borderRadius: "50%",
-        background: "var(--brand-primary, #A7F5C8)",
-        boxShadow: "0 0 12px var(--brand-primary, #A7F5C8)",
-    },
-    brandName: {
-        fontFamily: "var(--brand-font, 'Gotham', sans-serif)",
-        fontSize: 16, fontWeight: 900,
-        letterSpacing: "0.16em",
-        color: "var(--brand-text, #ede9e0)",
-    },
+    logoImg: { height: 32, width: "auto", display: "block" },
 
-    // Desktop nav
+    // Desktop nav — links de texto estilo web
     nav: {
-        display: "flex", alignItems: "center", gap: 4,
+        display: "flex", alignItems: "center", gap: 26,
         flex: 1,
         marginLeft: "clamp(20px, 4vw, 48px)",
     },
     navLink: {
         position: "relative",
-        display: "inline-flex", alignItems: "center", gap: 8,
-        padding: "10px 14px",
-        borderRadius: 10,
-        color: "rgba(237, 233, 224, 0.55)",
+        display: "inline-flex", alignItems: "center",
+        padding: "6px 0",
+        color: C.text,
         textDecoration: "none",
-        fontSize: 12, fontWeight: 700,
-        letterSpacing: "0.14em",
-        textTransform: "uppercase",
-        transition: "color .25s ease, background .25s ease",
+        fontSize: 13, fontWeight: 500,
+        letterSpacing: "0.01em",
+        transition: `color .25s ${C.ease}`,
     },
-    navLinkActive: {
-        color: "var(--brand-primary, #A7F5C8)",
-        background: "rgba(167, 245, 200, 0.08)",
-    },
-    navIcon: { display: "inline-flex" },
-    navLabel: {},
-    activeBar: {
-        position: "absolute",
-        bottom: -1, left: "50%",
-        transform: "translateX(-50%)",
-        width: "60%", height: 2,
-        background: "var(--brand-primary, #A7F5C8)",
+    // "Tienda" — pill mint destacada (idéntica a .header__link--shop)
+    shopPill: {
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "8px 16px",
         borderRadius: 999,
+        background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+        color: "#ffffff",
+        textDecoration: "none",
+        fontSize: 12, fontWeight: 800,
+        letterSpacing: "0.08em", textTransform: "uppercase",
+        boxShadow: "0 6px 18px -4px rgba(46,143,110,0.45), 0 0 0 1.5px rgba(167,245,200,0.5)",
+        transition: `transform .3s ${C.ease}, box-shadow .3s ${C.ease}`,
+        whiteSpace: "nowrap",
     },
+    shopPillIcon: { display: "inline-flex" },
     unreadBadge: {
         position: "absolute",
-        top: 4, right: 6,
+        top: -4, right: -10,
         minWidth: 16, height: 16,
         padding: "0 4px",
         borderRadius: 999,
@@ -522,9 +534,9 @@ const S = {
         display: "inline-flex", alignItems: "center", gap: 6,
         padding: "7px 12px",
         borderRadius: 999,
-        background: "rgba(167, 245, 200, 0.10)",
-        border: "1px solid rgba(167, 245, 200, 0.22)",
-        color: "var(--brand-primary, #A7F5C8)",
+        background: "rgba(37,211,102,0.10)",
+        border: "1px solid rgba(46,143,110,0.30)",
+        color: C.waDark,
         textDecoration: "none",
         fontSize: 12, fontWeight: 800,
         letterSpacing: "0.04em",
@@ -537,16 +549,16 @@ const S = {
         position: "relative",
         display: "inline-flex", alignItems: "center", justifyContent: "center",
         width: 38, height: 38,
-        borderRadius: 999,
-        background: "rgba(255, 255, 255, 0.04)",
-        border: "1px solid rgba(255, 255, 255, 0.08)",
-        color: "var(--brand-text, #ede9e0)",
+        borderRadius: "50%",
+        background: "transparent",
+        border: "none",
+        color: C.text,
         cursor: "pointer",
-        transition: "background .25s ease",
+        transition: `background .2s ${C.ease}, color .2s ${C.ease}`,
     },
     iconBadge: {
         position: "absolute",
-        top: -2, right: -2,
+        top: 0, right: 0,
         minWidth: 16, height: 16,
         padding: "0 4px",
         borderRadius: 999,
@@ -560,68 +572,65 @@ const S = {
         top: "calc(100% + 8px)",
         right: 0,
         width: "min(360px, calc(100vw - 24px))",
-        background: "rgba(10, 10, 10, 0.96)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        border: "1px solid rgba(255, 255, 255, 0.08)",
+        background: "#ffffff",
+        border: `1px solid ${C.border}`,
         borderRadius: 14,
-        boxShadow: "0 24px 60px -10px rgba(0, 0, 0, 0.7)",
+        boxShadow: "0 24px 60px -10px rgba(0,0,0,0.18)",
         zIndex: 300,
         overflow: "hidden",
     },
     notifHead: {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "12px 16px",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+        borderBottom: `1px solid ${C.border}`,
     },
     notifTitle: {
         fontSize: 11, fontWeight: 800,
         letterSpacing: "0.18em", textTransform: "uppercase",
-        color: "var(--brand-text, #ede9e0)",
+        color: C.text,
     },
     notifMarkAll: {
         background: "transparent", border: "none", cursor: "pointer",
-        color: "var(--brand-primary, #A7F5C8)",
+        color: C.waDark,
         fontFamily: "inherit", fontSize: 11, fontWeight: 700,
         letterSpacing: "0.04em",
     },
     notifList: { maxHeight: 380, overflowY: "auto" },
     notifEmpty: {
         padding: "24px 16px", textAlign: "center",
-        fontSize: 12, color: "rgba(237, 233, 224, 0.5)",
+        fontSize: 12, color: C.textSoft,
     },
     notifItem: {
         display: "flex", gap: 12, alignItems: "flex-start",
         width: "100%", textAlign: "left",
         padding: "12px 16px",
         background: "transparent", border: "none",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+        borderBottom: "1px solid rgba(26,26,26,0.05)",
         cursor: "pointer", fontFamily: "inherit",
     },
-    notifItemUnread: { background: "rgba(167, 245, 200, 0.06)" },
+    notifItemUnread: { background: "rgba(37,211,102,0.07)" },
     notifAvatar: {
         flexShrink: 0, width: 34, height: 34,
         borderRadius: "50%", overflow: "hidden",
-        background: "rgba(167, 245, 200, 0.10)",
-        border: "1px solid rgba(167, 245, 200, 0.20)",
+        background: "rgba(37,211,102,0.12)",
+        border: "1px solid rgba(46,143,110,0.25)",
         display: "grid", placeItems: "center",
         fontSize: 16,
     },
     notifAvatarImg: { width: "100%", height: "100%", objectFit: "cover" },
     notifTextWrap: { flex: 1, minWidth: 0 },
     notifActor: { fontSize: 13, fontWeight: 700 },
-    notifText: { fontSize: 13, color: "var(--brand-text, #ede9e0)", lineHeight: 1.45 },
-    notifTextRead: { fontSize: 13, color: "rgba(237, 233, 224, 0.55)", lineHeight: 1.45 },
+    notifText: { fontSize: 13, color: C.text, lineHeight: 1.45 },
+    notifTextRead: { fontSize: 13, color: C.textSoft, lineHeight: 1.45 },
     notifTime: {
         display: "block", marginTop: 5,
         fontSize: 10, letterSpacing: "0.04em",
-        color: "rgba(237, 233, 224, 0.4)",
+        color: "rgba(26,26,26,0.4)",
     },
     notifDot: {
         flexShrink: 0, width: 7, height: 7, marginTop: 6,
         borderRadius: "50%",
-        background: "var(--brand-primary, #A7F5C8)",
-        boxShadow: "0 0 6px var(--brand-primary, #A7F5C8)",
+        background: C.wa,
     },
 
     userWrap: { position: "relative" },
@@ -629,12 +638,12 @@ const S = {
         display: "inline-flex", alignItems: "center", gap: 8,
         padding: "5px 10px 5px 5px",
         borderRadius: 999,
-        background: "rgba(255, 255, 255, 0.04)",
-        border: "1px solid rgba(255, 255, 255, 0.08)",
-        color: "var(--brand-text, #ede9e0)",
+        background: "rgba(26,26,26,0.04)",
+        border: `1px solid ${C.border}`,
+        color: C.text,
         cursor: "pointer", fontFamily: "inherit",
         fontSize: 12, fontWeight: 700,
-        transition: "background .25s ease",
+        transition: `background .2s ${C.ease}`,
     },
     avatar: {
         width: 26, height: 26, borderRadius: "50%",
@@ -649,22 +658,21 @@ const S = {
         top: "calc(100% + 8px)",
         right: 0,
         minWidth: 240,
-        background: "rgba(10, 10, 10, 0.96)",
-        backdropFilter: "blur(16px)",
-        border: "1px solid rgba(255, 255, 255, 0.08)",
+        background: "#ffffff",
+        border: `1px solid ${C.border}`,
         borderRadius: 14,
         padding: 6,
-        boxShadow: "0 24px 60px -10px rgba(0, 0, 0, 0.7)",
+        boxShadow: "0 24px 60px -10px rgba(0,0,0,0.18)",
         zIndex: 300,
     },
     userMenuHead: {
         padding: "12px 14px 14px",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+        borderBottom: `1px solid ${C.border}`,
         marginBottom: 6,
     },
-    userMenuName: { fontSize: 14, fontWeight: 800, lineHeight: 1.2 },
+    userMenuName: { fontSize: 14, fontWeight: 800, lineHeight: 1.2, color: C.text },
     userMenuEmail: {
-        fontSize: 11, color: "rgba(237, 233, 224, 0.5)",
+        fontSize: 11, color: C.textSoft,
         marginTop: 4, wordBreak: "break-all",
     },
     roleBadge: {
@@ -672,8 +680,8 @@ const S = {
         marginTop: 8,
         padding: "3px 10px",
         borderRadius: 999,
-        background: "rgba(167, 245, 200, 0.12)",
-        color: "var(--brand-primary, #A7F5C8)",
+        background: "rgba(37,211,102,0.12)",
+        color: C.waDark,
         fontSize: 10, fontWeight: 800, letterSpacing: "0.18em",
         textTransform: "uppercase",
     },
@@ -681,14 +689,14 @@ const S = {
         display: "inline-flex", alignItems: "center", gap: 10,
         width: "100%", padding: "10px 14px",
         borderRadius: 10,
-        color: "rgba(237, 233, 224, 0.85)",
+        color: "rgba(26,26,26,0.82)",
         textDecoration: "none",
         fontFamily: "inherit", fontSize: 13, fontWeight: 600,
         cursor: "pointer", background: "transparent",
     },
     userMenuLogout: {
-        color: "#fca5a5",
-        borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+        color: "#dc2626",
+        borderTop: `1px solid ${C.border}`,
         marginTop: 6, paddingTop: 12,
     },
 
@@ -711,20 +719,20 @@ const S = {
     // Hamburger
     hamburger: {
         display: "none",  // shown only on mobile via inline-style media query below
-        width: 40, height: 40,
-        background: "rgba(255, 255, 255, 0.05)",
-        border: "1px solid rgba(255, 255, 255, 0.08)",
+        width: 42, height: 42,
+        background: "transparent",
+        border: "none",
         borderRadius: 10,
-        color: "var(--brand-text, #ede9e0)",
+        color: C.text,
         cursor: "pointer", placeItems: "center",
         alignItems: "center", justifyContent: "center",
     },
 
-    // Mobile drawer
+    // Mobile drawer (light, alineado a la barra blanca)
     mobileBackdrop: (open) => ({
         position: "fixed", inset: 0,
-        background: "rgba(0, 0, 0, 0.6)",
-        backdropFilter: "blur(4px)",
+        background: "rgba(26,26,26,0.35)",
+        backdropFilter: "blur(3px)",
         opacity: open ? 1 : 0,
         pointerEvents: open ? "auto" : "none",
         transition: "opacity .3s ease",
@@ -734,9 +742,9 @@ const S = {
         position: "fixed",
         top: 0, right: 0, bottom: 0,
         width: "min(320px, 88vw)",
-        background: "rgba(8, 8, 8, 0.98)",
-        backdropFilter: "blur(20px)",
-        borderLeft: "1px solid rgba(255, 255, 255, 0.06)",
+        background: "#ffffff",
+        borderLeft: `1px solid ${C.border}`,
+        boxShadow: "-14px 0 34px rgba(0,0,0,0.10)",
         transform: open ? "translateX(0)" : "translateX(100%)",
         transition: "transform .35s cubic-bezier(.2,.8,.2,1)",
         zIndex: 400,
@@ -746,10 +754,10 @@ const S = {
         height: 64,
         padding: "0 20px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+        borderBottom: `1px solid ${C.border}`,
     },
     mobileClose: {
-        background: "transparent", border: "none", color: "inherit",
+        background: "transparent", border: "none", color: C.text,
         padding: 8, cursor: "pointer",
     },
     mobileNav: {
@@ -762,7 +770,7 @@ const S = {
         display: "inline-flex", alignItems: "center", gap: 14,
         padding: "13px 16px",
         borderRadius: 12,
-        color: "rgba(237, 233, 224, 0.85)",
+        color: "rgba(26,26,26,0.82)",
         textDecoration: "none",
         fontFamily: "inherit",
         fontSize: 14, fontWeight: 700,
@@ -770,23 +778,36 @@ const S = {
         cursor: "pointer",
     },
     mobileNavLinkActive: {
-        color: "var(--brand-primary, #A7F5C8)",
-        background: "rgba(167, 245, 200, 0.10)",
+        color: C.waDark,
+        background: "rgba(37,211,102,0.10)",
     },
     mobileDivider: {
         border: "none",
-        borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+        borderTop: `1px solid ${C.border}`,
         margin: "10px 4px",
     },
 };
 
-// ── Estilos responsive inyectados una sola vez ──
-// Las clases topnav-* las uso como hooks (no en CSS-in-JS) para que la
-// media query las pueda flipear sin re-renders.
+// ── Estilos responsive + hover inyectados una sola vez ──
+// Las clases topnav-* las uso como hooks (no en CSS-in-JS) para que las media
+// queries y los :hover/::after las puedan manejar sin re-renders. El underline
+// mint en hover/active replica el .header__link de la web.
 if (typeof window !== "undefined" && !document.getElementById("topnav-responsive-css")) {
     const styleEl = document.createElement("style");
     styleEl.id = "topnav-responsive-css";
     styleEl.textContent = `
+        .topnav-link::after {
+            content: ""; position: absolute; left: 0; bottom: 0;
+            width: 0; height: 1px; background: #25d366;
+            transition: width .3s cubic-bezier(.25,.46,.45,.94);
+        }
+        .topnav-link:hover { color: #25d366; }
+        .topnav-link:hover::after { width: 100%; }
+        .topnav-link--active { color: #25d366; }
+        .topnav-link--active::after { width: 100%; }
+        .topnav-shop-pill:hover { transform: translateY(-2px);
+            box-shadow: 0 10px 28px -4px rgba(46,143,110,.62), 0 0 0 2px rgba(167,245,200,.7), 0 0 30px -6px rgba(167,245,200,.4); }
+        .topnav-icon:hover { background: #eee !important; color: #25d366 !important; }
         /* Hamburguesa visible en celu Y web (acceso a internas vía drawer). */
         .topnav-hamburger { display: inline-flex !important; }
         @media (max-width: 900px) {
