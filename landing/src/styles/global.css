@@ -296,6 +296,38 @@ button {
     gap: 26px;
 }
 
+/* ── Hamburguesa + menú mobile (la web no tenía nav en celu) ── */
+.header__burger {
+    display: inline-flex; flex-direction: column; justify-content: center;
+    gap: 5px; width: 42px; height: 42px; padding: 10px;
+    background: none; border: none; cursor: pointer; margin-left: 2px;
+}
+.header__burger span {
+    display: block; height: 2px; width: 22px; background: #1a1a1a;
+    border-radius: 2px; transition: transform .3s ease, opacity .2s ease;
+}
+.header__burger.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.header__burger.is-open span:nth-child(2) { opacity: 0; }
+.header__burger.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+@media (min-width: 960px) { .header__burger { display: none; } }
+
+.header__mobile {
+    position: fixed; left: 0; right: 0; top: 60px; z-index: 99;
+    background: #ffffff; border-bottom: 1px solid rgba(26, 26, 26, 0.08);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.10);
+    transform: translateY(-14px); opacity: 0; pointer-events: none;
+    transition: transform .28s cubic-bezier(.2, .8, .2, 1), opacity .26s ease;
+}
+.header__mobile[data-open="1"] { transform: translateY(0); opacity: 1; pointer-events: auto; }
+@media (min-width: 960px) { .header__mobile { display: none; } }
+.header__mobile-nav { display: flex; flex-direction: column; padding: 8px 20px 18px; }
+.header__mobile-link {
+    padding: 14px 4px; font-size: 16px; font-weight: 600; color: #1a1a1a;
+    text-decoration: none; border-bottom: 1px solid rgba(26, 26, 26, 0.06);
+}
+.header__mobile-link--shop { color: #1FA350; font-weight: 800; }
+.header__mobile-link--socios { color: #1FA350; font-weight: 800; border-bottom: none; margin-top: 8px; }
+
 .header__link {
     font-size: 13px;
     font-weight: 500;

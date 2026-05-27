@@ -76,8 +76,39 @@ const links = [
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/></svg>
                 <span class="header__badge" data-cart-badge style="display:none">0</span>
             </a>
+
+            {/* Hamburguesa — solo mobile (<960px). Abre el menú con los links. */}
+            <button class="header__burger" aria-label="Abrir menú" aria-expanded="false" data-burger>
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </div>
+
+    {/* Menú mobile (hamburguesa) — las opciones del topbar en celu. */}
+    <div class="header__mobile" data-mobile-nav aria-hidden="true">
+        <nav class="header__mobile-nav" aria-label="Navegación mobile">
+            {links.map(({ href, label, highlight }) => (
+                <a href={href} class={highlight ? "header__mobile-link header__mobile-link--shop" : "header__mobile-link"}>{label}</a>
+            ))}
+            <a href={CTAS.mi_cuenta} class="header__mobile-link header__mobile-link--socios">Portal Socios →</a>
+        </nav>
+    </div>
+
+    <script is:inline>
+      (function () {
+        var b = document.querySelector("[data-burger]");
+        var m = document.querySelector("[data-mobile-nav]");
+        if (!b || !m) return;
+        function set(open) {
+          m.dataset.open = open ? "1" : "";
+          m.setAttribute("aria-hidden", open ? "false" : "true");
+          b.setAttribute("aria-expanded", open ? "true" : "false");
+          b.classList.toggle("is-open", open);
+        }
+        b.addEventListener("click", function () { set(m.dataset.open !== "1"); });
+        m.addEventListener("click", function (e) { if (e.target.tagName === "A") set(false); });
+      })();
+    </script>
 
     <script>
         import "../scripts/socios-button-animations.js";
