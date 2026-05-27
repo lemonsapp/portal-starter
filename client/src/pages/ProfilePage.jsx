@@ -17,12 +17,12 @@ const RARITY = {
   common:    { label:"Común",      color:"#ede9e0", bg:"rgba(237,233,224,.08)", border:"rgba(237,233,224,.15)" },
   rare:      { label:"Raro",       color:"#60a5fa", bg:"rgba(96,165,250,.08)",  border:"rgba(96,165,250,.25)"  },
   epic:      { label:"Épico",      color:"#a78bfa", bg:"rgba(167,139,250,.08)", border:"rgba(167,139,250,.25)" },
-  legendary: { label:"Legendario", color:"var(--brand-primary, #f5e03a)", bg:"rgba(var(--brand-primary-rgb),.08)",  border:"rgba(var(--brand-primary-rgb),.3)"   },
+  legendary: { label:"Legendario", color:"var(--brand-primary)", bg:"rgba(var(--brand-primary-rgb),.08)",  border:"rgba(var(--brand-primary-rgb),.3)"   },
 };
 const LEVEL = {
   bronze: { label:"Bronce", color:"#CD7F32", bg:"rgba(205,127,50,.12)",   icon:"🥉" },
   silver: { label:"Plata",  color:"#C0C0C0", bg:"rgba(192,192,192,.12)", icon:"🥈" },
-  gold:   { label:"Oro",    color:"var(--brand-primary, #f5e03a)", bg:"rgba(var(--brand-primary-rgb),.12)",   icon:"🥇" },
+  gold:   { label:"Oro",    color:"var(--brand-primary)", bg:"rgba(var(--brand-primary-rgb),.12)",   icon:"🥇" },
 };
 // Sprint 11: achievements basados en stats sociales reales (posts/likes/
 // friends/days_active). Cada condition recibe (stats, totalCoinsEarned).
@@ -49,11 +49,11 @@ const BADGE_CONFIG = {
   },
   badge_creator: {
     label:"CREATOR", emoji:"🌿",
-    glowColor:"var(--brand-primary, #f5e03a)55", glowColor2:"var(--brand-primary, #f5e03a)11",
+    glowColor:"var(--brand-primary)55", glowColor2:"var(--brand-primary)11",
     holographic:true,
-    textGrad:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a),#ff8c00,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))",
+    textGrad:"linear-gradient(90deg,var(--brand-primary),var(--brand-primary),#ff8c00,var(--brand-primary),var(--brand-primary))",
     animDur:"2s", particles:true,
-    tt:{ name:"Creator", rarity:"✦ LEGENDARIO", desc:"Contribuidor activo de la comunidad. Crea contenido y ayuda a otros miembros de la comunidad.", footer:"Otorgado por el equipo del portal", nameColor:"var(--brand-primary, #f5e03a)", rarityColor:"var(--brand-primary, #f5e03a)", borderColor:"rgba(var(--brand-primary-rgb),.35)", iconBg:"rgba(var(--brand-primary-rgb),.15)", iconBorder:"rgba(var(--brand-primary-rgb),.3)" },
+    tt:{ name:"Creator", rarity:"✦ LEGENDARIO", desc:"Contribuidor activo de la comunidad. Crea contenido y ayuda a otros miembros de la comunidad.", footer:"Otorgado por el equipo del portal", nameColor:"var(--brand-primary)", rarityColor:"var(--brand-primary)", borderColor:"rgba(var(--brand-primary-rgb),.35)", iconBg:"rgba(var(--brand-primary-rgb),.15)", iconBorder:"rgba(var(--brand-primary-rgb),.3)" },
   },
   badge_legendary: {
     label:"LEGENDARIO", emoji:"✦",
@@ -81,7 +81,7 @@ const BADGE_CONFIG = {
   },
 };
 
-function PremiumBadge({ badgeKey, name, emoji, fallbackColor="var(--brand-primary, #f5e03a)" }) {
+function PremiumBadge({ badgeKey, name, emoji, fallbackColor="var(--brand-primary)" }) {
   const [hover, setHover] = useState(false);
   const [parts, setParts] = useState([]);
   const cfg = BADGE_CONFIG[badgeKey];
@@ -93,7 +93,7 @@ function PremiumBadge({ badgeKey, name, emoji, fallbackColor="var(--brand-primar
         const np = Array.from({length:3},(_,i)=>({
           id:Date.now()+i,
           x:15+Math.random()*70, y:15+Math.random()*70,
-          color:["var(--brand-primary, #f5e03a)","var(--brand-primary, #f5e03a)","var(--brand-accent, #ff5500)"][Math.floor(Math.random()*3)],
+          color:["var(--brand-primary)","var(--brand-primary)","var(--brand-accent)"][Math.floor(Math.random()*3)],
           tx:(Math.random()-.5)*50, ty:(Math.random()-.5)*50,
           sz:2+Math.random()*2.5, dl:Math.random()*.8,
         }));
@@ -128,7 +128,7 @@ function PremiumBadge({ badgeKey, name, emoji, fallbackColor="var(--brand-primar
       }}
     >
       {cfg.holographic && <>
-        <div style={{ position:"absolute",inset:-1.5,borderRadius:100,background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a))",backgroundSize:"300% 300%",animation:"holographic 2s linear infinite",zIndex:0 }} />
+        <div style={{ position:"absolute",inset:-1.5,borderRadius:100,background:"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent),var(--brand-primary))",backgroundSize:"300% 300%",animation:"holographic 2s linear infinite",zIndex:0 }} />
         <div style={{ position:"absolute",inset:1.5,borderRadius:100,background:"linear-gradient(135deg,rgba(20,12,2,.92),rgba(30,18,2,.92))",zIndex:1 }} />
       </>}
       {cfg.scanline && (
@@ -188,11 +188,11 @@ function ItemCard({ item, owned, equipped, onBuy, onEquip, loading, readOnly }) 
       {item.description && <div style={{ fontSize:9,color:"rgba(255,255,255,.3)",lineHeight:1.4,marginBottom:10 }}>{item.description}</div>}
       {item.type==="title"&&d.color&&<div style={{ fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:d.color,marginBottom:10 }}>— {item.name} —</div>}
       {!readOnly && (owned ? (
-        <button onClick={()=>onEquip(item)} style={{ width:"100%",height:28,fontSize:8,fontWeight:900,letterSpacing:"1px",textTransform:"uppercase",background:equipped?"rgba(var(--brand-accent-rgb),.12)":"rgba(255,255,255,.05)",border:`1px solid ${equipped?"rgba(var(--brand-accent-rgb),.28)":"rgba(255,255,255,.1)"}`,color:equipped?"var(--brand-accent, #ff8c2a)":"rgba(255,255,255,.45)",borderRadius:8,cursor:"pointer",transition:"all .2s" }}>
+        <button onClick={()=>onEquip(item)} style={{ width:"100%",height:28,fontSize:8,fontWeight:900,letterSpacing:"1px",textTransform:"uppercase",background:equipped?"rgba(var(--brand-accent-rgb),.12)":"rgba(255,255,255,.05)",border:`1px solid ${equipped?"rgba(var(--brand-accent-rgb),.28)":"rgba(255,255,255,.1)"}`,color:equipped?"var(--brand-accent)":"rgba(255,255,255,.45)",borderRadius:8,cursor:"pointer",transition:"all .2s" }}>
           {equipped?"Desequipar":"Equipar"}
         </button>
       ) : (
-        <button onClick={()=>onBuy(item)} disabled={loading===item.key} style={{ width:"100%",height:28,fontSize:8,fontWeight:900,letterSpacing:"1px",textTransform:"uppercase",background:item.cost_coins===0?"rgba(34,197,94,.1)":"var(--brand-primary, #f5e03a)",border:"none",color:item.cost_coins===0?"#22c55e":"#04060d",borderRadius:8,cursor:"pointer",opacity:loading===item.key?.6:1 }}>
+        <button onClick={()=>onBuy(item)} disabled={loading===item.key} style={{ width:"100%",height:28,fontSize:8,fontWeight:900,letterSpacing:"1px",textTransform:"uppercase",background:item.cost_coins===0?"rgba(34,197,94,.1)":"var(--brand-primary)",border:"none",color:item.cost_coins===0?"#22c55e":"#04060d",borderRadius:8,cursor:"pointer",opacity:loading===item.key?.6:1 }}>
           {loading===item.key?"...":item.cost_coins===0?"🎁 Gratis":"🪙 "+item.cost_coins.toLocaleString()}
         </button>
       ))}
@@ -265,7 +265,7 @@ function PrivacyToggle({ label, desc, icon, iconBg, iconBorder, value, onChange 
       <div style={{ display:"flex",alignItems:"center",gap:10,flexShrink:0 }}>
         <span style={{ fontSize:9,fontWeight:800,letterSpacing:"1px",textTransform:"uppercase",color:value?"#22c55e":"rgba(255,255,255,.25)" }}>{value?"Visible":"Oculto"}</span>
         <div onClick={e=>{e.stopPropagation();onChange();}} style={{ width:46,height:24,borderRadius:100,position:"relative",cursor:"pointer",flexShrink:0,background:value?"rgba(var(--brand-primary-rgb),.22)":"rgba(255,255,255,.09)",border:`1px solid ${value?"rgba(var(--brand-primary-rgb),.38)":"rgba(255,255,255,.12)"}`,transition:"all .3s" }}>
-          <div style={{ position:"absolute",top:3,borderRadius:"50%",width:16,height:16,left:value?23:3,background:value?"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))":"rgba(255,255,255,.35)",boxShadow:value?"0 0 10px rgba(var(--brand-primary-rgb),.5)":"none",transition:"all .3s cubic-bezier(.34,1.56,.64,1)" }} />
+          <div style={{ position:"absolute",top:3,borderRadius:"50%",width:16,height:16,left:value?23:3,background:value?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))":"rgba(255,255,255,.35)",boxShadow:value?"0 0 10px rgba(var(--brand-primary-rgb),.5)":"none",transition:"all .3s cubic-bezier(.34,1.56,.64,1)" }} />
         </div>
       </div>
     </div>
@@ -312,14 +312,14 @@ function PostCard({ post, onDelete, isOwn }) {
     } catch(e) {}
     setSavingComment(false);
   }
-  const TC = { text:{bg:"rgba(255,255,255,.06)",border:"rgba(255,255,255,.1)",color:"rgba(255,255,255,.5)",label:"📝 POST"}, loot:{bg:"rgba(var(--brand-primary-rgb),.1)",border:"rgba(var(--brand-primary-rgb),.25)",color:"#fde047",label:"✦ LOOT"}, logro:{bg:"rgba(var(--brand-primary-rgb),.1)",border:"rgba(var(--brand-primary-rgb),.25)",color:"var(--brand-primary, #f5e03a)",label:"🏆 LOGRO"}, envio:{bg:"rgba(96,165,250,.1)",border:"rgba(96,165,250,.25)",color:"#93c5fd",label:"📦 ENVÍO"} };
+  const TC = { text:{bg:"rgba(255,255,255,.06)",border:"rgba(255,255,255,.1)",color:"rgba(255,255,255,.5)",label:"📝 POST"}, loot:{bg:"rgba(var(--brand-primary-rgb),.1)",border:"rgba(var(--brand-primary-rgb),.25)",color:"#fde047",label:"✦ LOOT"}, logro:{bg:"rgba(var(--brand-primary-rgb),.1)",border:"rgba(var(--brand-primary-rgb),.25)",color:"var(--brand-primary)",label:"🏆 LOGRO"}, envio:{bg:"rgba(96,165,250,.1)",border:"rgba(96,165,250,.25)",color:"#93c5fd",label:"📦 ENVÍO"} };
   const tc = TC[post.type]||TC.text;
   return (
     <div style={{ background:"rgba(255,255,255,.025)",border:"1px solid rgba(255,255,255,.07)",borderRadius:18,padding:18,position:"relative",overflow:"hidden",transition:"all .25s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.04)";e.currentTarget.style.borderColor="rgba(255,255,255,.12)";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.025)";e.currentTarget.style.borderColor="rgba(255,255,255,.07)";}}>
       <div style={{ display:"flex",alignItems:"center",gap:11,marginBottom:11 }}>
         <div style={{ width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#1a0820,#0a1825)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,border:"1.5px solid rgba(var(--brand-primary-rgb),.22)",flexShrink:0 }}>🪙</div>
         <div>
-          <div style={{ fontSize:13,fontWeight:800,background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{post.author||post.author_name||"ANON"}</div>
+          <div style={{ fontSize:13,fontWeight:800,background:"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{post.author||post.author_name||"ANON"}</div>
           <div style={{ fontSize:9,color:"rgba(255,255,255,.25)",marginTop:1 }}>{post.time||"ahora"} · {post.category||"Texto"}</div>
         </div>
         <div style={{ marginLeft:"auto",padding:"3px 9px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color }}>{tc.label}</div>
@@ -331,7 +331,7 @@ function PostCard({ post, onDelete, isOwn }) {
           <div>
             <div style={{ fontSize:13,fontWeight:800,color:"#fde047",marginBottom:2 }}>{post.lootItem.name}</div>
             <div style={{ fontSize:10,color:"rgba(255,255,255,.4)" }}>{post.lootItem.desc}</div>
-            {post.lootItem.rarity&&<div style={{ fontSize:7,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--brand-primary, #f5e03a)",marginTop:4,background:"rgba(var(--brand-primary-rgb),.1)",border:"1px solid rgba(var(--brand-primary-rgb),.25)",borderRadius:100,padding:"2px 8px",display:"inline-block" }}>{post.lootItem.rarity}</div>}
+            {post.lootItem.rarity&&<div style={{ fontSize:7,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",color:"var(--brand-primary)",marginTop:4,background:"rgba(var(--brand-primary-rgb),.1)",border:"1px solid rgba(var(--brand-primary-rgb),.25)",borderRadius:100,padding:"2px 8px",display:"inline-block" }}>{post.lootItem.rarity}</div>}
           </div>
         </div>
       )}
@@ -368,7 +368,7 @@ function PostCard({ post, onDelete, isOwn }) {
                   ...(c.name_grad_from&&c.name_grad_to ? {
                     background:`linear-gradient(90deg,${c.name_grad_from},${c.name_grad_to})`,
                     WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"
-                  } : {color:c.name_color||"var(--brand-primary, #f5e03a)"}),
+                  } : {color:c.name_color||"var(--brand-primary)"}),
                   textShadow:c.name_glow>0&&c.name_glow_color?`0 0 ${c.name_glow*2}px ${c.name_glow_color},0 0 ${c.name_glow*4}px ${c.name_glow_color}99`:"none"
                 }}>{c.author_name||"Usuario"}</div>
                 <div style={{fontSize:12,color:"rgba(255,255,255,.7)",lineHeight:1.5}}>{c.body}</div>
@@ -379,7 +379,7 @@ function PostCard({ post, onDelete, isOwn }) {
           {getTok() && (
             <div style={{display:"flex",gap:8,marginTop:8}}>
               <input value={commentInput} onChange={e=>setCommentInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submitComment()} placeholder="Escribí un comentario..." style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:10,color:"#e2e8f0",fontFamily:"inherit",fontSize:12,padding:"8px 12px",outline:"none"}}/>
-              <button onClick={submitComment} disabled={savingComment} style={{height:36,padding:"0 14px",borderRadius:10,border:"none",background:"var(--lemon,var(--brand-primary, #f5e03a))",color:"#000",fontWeight:800,fontSize:12,cursor:"pointer",opacity:savingComment?.6:1}}>
+              <button onClick={submitComment} disabled={savingComment} style={{height:36,padding:"0 14px",borderRadius:10,border:"none",background:"var(--lemon,var(--brand-primary))",color:"#000",fontWeight:800,fontSize:12,cursor:"pointer",opacity:savingComment?.6:1}}>
                 {savingComment?"...":"→"}
               </button>
             </div>
@@ -449,7 +449,7 @@ export default function ProfilePage() {
   const [usernameMsg, setUsernameMsg] = useState("");
   const getHdrs = () => ({Authorization:"Bearer "+getToken()});
 
-  const showToast = (text,color="var(--brand-primary, #f5e03a)") => { setToast({text,color}); setTimeout(()=>setToast(null),3500); };
+  const showToast = (text,color="var(--brand-primary)") => { setToast({text,color}); setTimeout(()=>setToast(null),3500); };
   const uidRef = useRef(null);
 
   const loadPosts = async (uid) => {
@@ -529,7 +529,7 @@ export default function ProfilePage() {
 
 
   async function handleBuy(item) {
-    const d=item.data||{}; if(d.grantOnly){showToast("Solo puede ser otorgada por el equipo","var(--brand-accent, #ff5500)");return;}
+    const d=item.data||{}; if(d.grantOnly){showToast("Solo puede ser otorgada por el equipo","var(--brand-accent)");return;}
     if(item.cost_coins>0&&!confirm(`Gastar ${item.cost_coins} Coins en ${item.name}?`))return;
     setBuying(item.key);
     try { const res=await fetch(API+"/profile/buy",{method:"POST",headers:{...getHdrs(),"Content-Type":"application/json"},body:JSON.stringify({item_key:item.key})}); const data=await res.json(); if(!res.ok)setMsg(data.error||"Error"); else{showToast("🎉 "+item.name+" desbloqueado!");await load();reloadCtx&&reloadCtx();} } catch{setMsg("Error de red");}
@@ -541,7 +541,7 @@ export default function ProfilePage() {
     if(item.type==="avatar")e2.avatar_key=item.key;
     if(item.type==="frame") e2.frame_key=e2.frame_key===item.key?null:item.key;
     if(item.type==="title") e2.title_key=e2.title_key===item.key?null:item.key;
-    if(item.type==="badge"){const idx=e2.badges.indexOf(item.key);if(idx>=0)e2.badges=e2.badges.filter(b=>b!==item.key);else if(e2.badges.length<4)e2.badges=[...e2.badges,item.key];else{showToast("Máximo 4 insignias","var(--brand-accent, #ff5500)");return;}}
+    if(item.type==="badge"){const idx=e2.badges.indexOf(item.key);if(idx>=0)e2.badges=e2.badges.filter(b=>b!==item.key);else if(e2.badges.length<4)e2.badges=[...e2.badges,item.key];else{showToast("Máximo 4 insignias","var(--brand-accent)");return;}}
     setEquip(e2);
   }
 
@@ -700,9 +700,9 @@ export default function ProfilePage() {
         @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
         @keyframes iconPop{0%,100%{transform:scale(1)}50%{transform:scale(1.15) rotate(-4deg)}}
         @keyframes heartBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
-        @keyframes progressGlow{0%,100%{box-shadow:0 0 8px var(--brand-primary, #f5e03a)44}50%{box-shadow:0 0 18px var(--brand-primary, #f5e03a)88}}
+        @keyframes progressGlow{0%,100%{box-shadow:0 0 8px var(--brand-primary)44}50%{box-shadow:0 0 18px var(--brand-primary)88}}
         @keyframes borderSpin{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-        @keyframes glowPulse{0%,100%{box-shadow:0 0 20px var(--brand-primary, #f5e03a)33}50%{box-shadow:0 0 40px var(--brand-primary, #f5e03a)66}}
+        @keyframes glowPulse{0%,100%{box-shadow:0 0 20px var(--brand-primary)33}50%{box-shadow:0 0 40px var(--brand-primary)66}}
         @keyframes shimmerBg{0%{background-position:-600px 0}100%{background-position:600px 0}}
         @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         @keyframes toastIn{0%{transform:translateX(-50%) translateY(20px) scale(.9);opacity:0}100%{transform:translateX(-50%) translateY(0) scale(1);opacity:1}}
@@ -749,30 +749,30 @@ export default function ProfilePage() {
             {/* BANNER PREMIUM */}
             <div className="pf-banner" style={{height:300,borderRadius:"24px 24px 0 0",overflow:"hidden",position:"relative"}}>
               {profile?.profile?.banner_effect&&profile.profile.banner_effect!=="none"?(
-                <BannerCanvas effect={profile.profile.banner_effect} color1={profile.profile.banner_color1||"var(--brand-primary, #f5e03a)"} color2={profile.profile.banner_color2||"var(--brand-accent, #ff5500)"} height={300}/>
+                <BannerCanvas effect={profile.profile.banner_effect} color1={profile.profile.banner_color1||"var(--brand-primary)"} color2={profile.profile.banner_color2||"var(--brand-accent)"} height={300}/>
               ):(
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,#040110,#0a0820,#120605)",backgroundSize:"400% 400%",animation:"holographic 8s ease infinite"}}>
-                  <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 30% 50%,var(--brand-primary, #f5e03a)18 0%,transparent 60%)"}}/>
+                  <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 30% 50%,var(--brand-primary)18 0%,transparent 60%)"}}/>
                   <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 70% 30%,#8b5cf618 0%,transparent 60%)"}}/>
                   <img src="/icons/icon.svg" alt="" style={{position:"absolute",right:-30,top:-30,width:340,height:340,opacity:.04,filter:"invert(1)",pointerEvents:"none",userSelect:"none"}}/>
                 </div>
               )}
               {/* Editorial bar top */}
-              <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a))",backgroundSize:"200% 100%",animation:"borderSpin 4s linear infinite",zIndex:3}}/>
+              <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--brand-primary),var(--brand-accent),var(--brand-primary))",backgroundSize:"200% 100%",animation:"borderSpin 4s linear infinite",zIndex:3}}/>
               {/* Grid sutil */}
               <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px)",backgroundSize:"56px 56px",pointerEvents:"none",zIndex:1}}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(3,4,12,.4) 0%,transparent 30%,rgba(3,4,12,.4) 60%,rgba(3,4,12,.98) 100%)",zIndex:2}}/>
               {/* Eyebrow + watermark name */}
               <div className="pf-banner-eyebrow" style={{position:"absolute",top:24,left:28,zIndex:4}}>
-                <div style={{fontFamily:"'Gotham', monospace",fontSize:10,letterSpacing:"3.5px",textTransform:"uppercase",color:"var(--brand-accent, #ff5500)",display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
-                  <span style={{width:28,height:1,background:"var(--brand-accent, #ff5500)",display:"inline-block"}}/>
+                <div style={{fontFamily:"'Gotham', monospace",fontSize:10,letterSpacing:"3.5px",textTransform:"uppercase",color:"var(--brand-accent)",display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
+                  <span style={{width:28,height:1,background:"var(--brand-accent)",display:"inline-block"}}/>
                   {isOwn?"Tu perfil":"Perfil"}{profile?.user?.role==="admin"?" · admin":profile?.user?.role==="operator"?" · operador":""}
                 </div>
                 <div className="pf-banner-eyebrow-name" style={{fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:"clamp(48px,6.4vw,76px)",lineHeight:.92,letterSpacing:"-0.04em",color:"rgba(240,236,227,.18)",textShadow:"0 4px 24px rgba(0,0,0,.5)",userSelect:"none"}}>
                   @{username||(profile?.user?.name||"").toUpperCase().replace(/\s+/g,"")}
                 </div>
               </div>
-              {isOwn&&<button onClick={()=>setPanel("studio")} className="pf-banner-edit" style={{position:"absolute",top:24,right:24,zIndex:4,background:"rgba(2,3,7,.7)",backdropFilter:"blur(18px)",border:"1px solid rgba(var(--brand-primary-rgb),.25)",color:"var(--brand-primary, #f5e03a)",fontFamily:"'Gotham', sans-serif",fontSize:11,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",padding:"10px 18px",cursor:"pointer",transition:"all .25s",display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(var(--brand-primary-rgb),.12)";e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.boxShadow="0 12px 32px rgba(var(--brand-primary-rgb),.18)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(2,3,7,.7)";e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=""}}>🎨 <span className="pf-banner-edit-text">Editar banner</span></button>}
+              {isOwn&&<button onClick={()=>setPanel("studio")} className="pf-banner-edit" style={{position:"absolute",top:24,right:24,zIndex:4,background:"rgba(2,3,7,.7)",backdropFilter:"blur(18px)",border:"1px solid rgba(var(--brand-primary-rgb),.25)",color:"var(--brand-primary)",fontFamily:"'Gotham', sans-serif",fontSize:11,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",padding:"10px 18px",cursor:"pointer",transition:"all .25s",display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(var(--brand-primary-rgb),.12)";e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.boxShadow="0 12px 32px rgba(var(--brand-primary-rgb),.18)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(2,3,7,.7)";e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=""}}>🎨 <span className="pf-banner-edit-text">Editar banner</span></button>}
             </div>
 
             {/* HERO */}
@@ -782,17 +782,17 @@ export default function ProfilePage() {
                 <div className="pf-avatar-wrap" style={{position:"relative",display:"inline-block",marginTop:-66,zIndex:10,cursor:storyGroup?"pointer":"default"}}
                   onClick={()=>{ if(storyGroup) setShowStories(true); }}
                   title={storyGroup?"Ver historias":""}>
-                  <div style={{position:"absolute",inset:-22,borderRadius:"50%",background:"radial-gradient(circle,var(--brand-primary, #f5e03a)30 0%,transparent 70%)",animation:"glowPulse 3s ease-in-out infinite",pointerEvents:"none"}}/>
+                  <div style={{position:"absolute",inset:-22,borderRadius:"50%",background:"radial-gradient(circle,var(--brand-primary)30 0%,transparent 70%)",animation:"glowPulse 3s ease-in-out infinite",pointerEvents:"none"}}/>
                   {/* Ring conic-gradient si tiene stories activas (estilo IG) */}
                   {storyGroup ? (
                     <div style={{position:"absolute",inset:-6,borderRadius:"50%",padding:3,background:storyGroup.all_viewed
                       ? "rgba(255,255,255,.15)"
-                      : "conic-gradient(from 0deg,#a78bfa,#ec4899,var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a),#a78bfa)",
+                      : "conic-gradient(from 0deg,#a78bfa,#ec4899,var(--brand-accent),var(--brand-primary),#a78bfa)",
                       animation:storyGroup.all_viewed?"none":"borderSpin 4s linear infinite",backgroundSize:"100%"}}>
                       <div style={{width:"100%",height:"100%",borderRadius:"50%",background:"#03040c"}}/>
                     </div>
                   ) : (
-                    <div style={{position:"absolute",inset:-6,borderRadius:"50%",padding:3,background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))",backgroundSize:"300% 300%",animation:"borderSpin 3.5s ease infinite"}}>
+                    <div style={{position:"absolute",inset:-6,borderRadius:"50%",padding:3,background:"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent),var(--brand-primary),var(--brand-primary))",backgroundSize:"300% 300%",animation:"borderSpin 3.5s ease infinite"}}>
                       <div style={{width:"100%",height:"100%",borderRadius:"50%",background:"#03040c"}}/>
                     </div>
                   )}
@@ -822,8 +822,8 @@ export default function ProfilePage() {
                   </label>}
                 </div>
                 {isOwn&&<div className="pf-actions-row" style={{display:"flex",gap:8,paddingBottom:2}}>
-                  <Pop as="button" onClick={()=>setEditBio(b=>!b)} style={{height:36,padding:"0 17px",borderRadius:11,fontSize:10,fontWeight:800,letterSpacing:".5px",cursor:"pointer",background:editBio?"rgba(var(--brand-accent-rgb),.1)":"rgba(255,255,255,.05)",border:`1px solid ${editBio?"rgba(var(--brand-accent-rgb),.28)":"rgba(255,255,255,.1)"}`,color:editBio?"var(--brand-accent, #ff8c2a)":"rgba(255,255,255,.5)",display:"flex",alignItems:"center",gap:6}}>✏️ {editBio?"Cancelar":"Editar bio"}</Pop>
-                  <Pop as="button" onClick={handleSave} disabled={saving} hoverScale={1.04} style={{height:36,padding:"0 20px",borderRadius:11,fontSize:10,fontWeight:800,letterSpacing:".5px",cursor:saving?"not-allowed":"pointer",background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a) 55%,#ff8c00)",border:"none",color:"#000",boxShadow:"0 4px 18px rgba(var(--brand-primary-rgb),.42)",display:"flex",alignItems:"center",gap:6}}>✦ {saving?"Guardando...":"Guardar perfil"}</Pop>
+                  <Pop as="button" onClick={()=>setEditBio(b=>!b)} style={{height:36,padding:"0 17px",borderRadius:11,fontSize:10,fontWeight:800,letterSpacing:".5px",cursor:"pointer",background:editBio?"rgba(var(--brand-accent-rgb),.1)":"rgba(255,255,255,.05)",border:`1px solid ${editBio?"rgba(var(--brand-accent-rgb),.28)":"rgba(255,255,255,.1)"}`,color:editBio?"var(--brand-accent)":"rgba(255,255,255,.5)",display:"flex",alignItems:"center",gap:6}}>✏️ {editBio?"Cancelar":"Editar bio"}</Pop>
+                  <Pop as="button" onClick={handleSave} disabled={saving} hoverScale={1.04} style={{height:36,padding:"0 20px",borderRadius:11,fontSize:10,fontWeight:800,letterSpacing:".5px",cursor:saving?"not-allowed":"pointer",background:"linear-gradient(135deg,var(--brand-primary),var(--brand-primary) 55%,#ff8c00)",border:"none",color:"#000",boxShadow:"0 4px 18px rgba(var(--brand-primary-rgb),.42)",display:"flex",alignItems:"center",gap:6}}>✦ {saving?"Guardando...":"Guardar perfil"}</Pop>
                 </div>}
               </div>
 
@@ -837,7 +837,7 @@ export default function ProfilePage() {
                 <span style={{fontSize:10,color:"rgba(255,255,255,.2)"}}>#{profile?.user?.client_number}</span>
                 {equip.title_key && allItems.find(i=>i.key===equip.title_key) && (()=>{
                   const ti=allItems.find(i=>i.key===equip.title_key); const td=ti.data||{};
-                  return <span style={{fontSize:10,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",color:td.color||"var(--brand-primary, #f5e03a)",background:`${td.color||"var(--brand-primary, #f5e03a)"}15`,border:`1px solid ${td.color||"var(--brand-primary, #f5e03a)"}30`,padding:"2px 10px",borderRadius:100}}>— {ti.name} —</span>;
+                  return <span style={{fontSize:10,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",color:td.color||"var(--brand-primary)",background:`${td.color||"var(--brand-primary)"}15`,border:`1px solid ${td.color||"var(--brand-primary)"}30`,padding:"2px 10px",borderRadius:100}}>— {ti.name} —</span>;
                 })()}
               </div>
 
@@ -845,7 +845,7 @@ export default function ProfilePage() {
                 <div style={{marginBottom:13}}>
                   <textarea value={bioText} onChange={e=>setBioText(e.target.value)} placeholder="Contá algo sobre vos..." maxLength={160} rows={2} autoFocus style={{width:"100%",maxWidth:500,background:"rgba(255,255,255,.05)",border:"1px solid rgba(var(--brand-primary-rgb),.28)",borderRadius:11,color:"#fff",fontFamily:"inherit",fontSize:12,padding:"10px 13px",outline:"none",resize:"none",lineHeight:1.65,display:"block",marginBottom:7}}/>
                   <div style={{display:"flex",gap:7}}>
-                    <button onClick={()=>{showToast("✓ Bio guardada","#22c55e");setEditBio(false);}} style={{padding:"6px 14px",background:"rgba(var(--brand-primary-rgb),.14)",border:"1px solid rgba(var(--brand-primary-rgb),.28)",borderRadius:8,color:"var(--brand-primary, #f5e03a)",fontSize:9,fontWeight:900,letterSpacing:"1px",cursor:"pointer"}}>Guardar →</button>
+                    <button onClick={()=>{showToast("✓ Bio guardada","#22c55e");setEditBio(false);}} style={{padding:"6px 14px",background:"rgba(var(--brand-primary-rgb),.14)",border:"1px solid rgba(var(--brand-primary-rgb),.28)",borderRadius:8,color:"var(--brand-primary)",fontSize:9,fontWeight:900,letterSpacing:"1px",cursor:"pointer"}}>Guardar →</button>
                     <button onClick={()=>setEditBio(false)} style={{padding:"6px 13px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:8,color:"rgba(255,255,255,.35)",fontSize:9,fontWeight:900,letterSpacing:"1px",cursor:"pointer"}}>Cancelar</button>
                   </div>
                 </div>
@@ -862,7 +862,7 @@ export default function ProfilePage() {
                   <div style={{display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:10,padding:"6px 12px"}}>
                     <span style={{color:"rgba(255,255,255,.3)",fontSize:13}}>@</span>
                     <input value={usernameInput} onChange={e=>setUsernameInput(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,""))} placeholder="tu_username" maxLength={30} style={{background:"none",border:"none",color:"#e2e8f0",fontFamily:"inherit",fontSize:13,fontWeight:700,outline:"none",width:140}} onKeyDown={e=>e.key==="Enter"&&saveUsername()}/>
-                    {usernameInput!==username&&<button onClick={saveUsername} disabled={savingUsername} style={{background:"rgba(var(--brand-primary-rgb),.15)",border:"1px solid rgba(var(--brand-primary-rgb),.3)",borderRadius:7,color:"var(--brand-primary, #f5e03a)",fontSize:10,fontWeight:900,padding:"3px 10px",cursor:"pointer"}}>{savingUsername?"...":"Guardar"}</button>}
+                    {usernameInput!==username&&<button onClick={saveUsername} disabled={savingUsername} style={{background:"rgba(var(--brand-primary-rgb),.15)",border:"1px solid rgba(var(--brand-primary-rgb),.3)",borderRadius:7,color:"var(--brand-primary)",fontSize:10,fontWeight:900,padding:"3px 10px",cursor:"pointer"}}>{savingUsername?"...":"Guardar"}</button>}
                   </div>
                   <PhoneEditor profile={profile} showToast={showToast}/>
                   {username&&<a href={"/perfil/"+username} target="_blank" style={{fontSize:10,color:"rgba(255,255,255,.3)",textDecoration:"none",fontWeight:700}}>/perfil/{username} ↗</a>}
@@ -876,8 +876,8 @@ export default function ProfilePage() {
                     const bd=b.data||{};
                     if(BADGE_CONFIG[bk])return <PremiumBadge key={bk} badgeKey={bk} name={b.name} emoji={b.emoji}/>;
                     const effect=bd.animated?(bd.effect||"glow"):null;
-                    if(effect)return <BadgePreview key={bk} effect={effect} color={bd.color||"var(--brand-primary, #f5e03a)"} emoji={b.emoji} text={b.name} size="small"/>;
-                    return <div key={bk} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 12px",borderRadius:100,background:`${bd.color||"var(--brand-primary, #f5e03a)"}15`,border:`1px solid ${bd.color||"var(--brand-primary, #f5e03a)"}30`,color:bd.color||"var(--brand-primary, #f5e03a)",fontSize:9,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase"}}>{b.emoji} {b.name}</div>;
+                    if(effect)return <BadgePreview key={bk} effect={effect} color={bd.color||"var(--brand-primary)"} emoji={b.emoji} text={b.name} size="small"/>;
+                    return <div key={bk} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 12px",borderRadius:100,background:`${bd.color||"var(--brand-primary)"}15`,border:`1px solid ${bd.color||"var(--brand-primary)"}30`,color:bd.color||"var(--brand-primary)",fontSize:9,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase"}}>{b.emoji} {b.name}</div>;
                   })}
                 </div>
               )}
@@ -889,7 +889,7 @@ export default function ProfilePage() {
                   <span style={{fontSize:20,filter:"drop-shadow(0 0 8px rgba(var(--brand-primary-rgb),.5))",position:"relative",zIndex:1}}>🪙</span>
                   <div style={{position:"relative",zIndex:1}}>
                     <div style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(var(--brand-primary-rgb),.5)",lineHeight:1}}>Coins</div>
-                    <CountUp value={profile?.coins?.balance||0} style={{fontFamily:"'Gotham', sans-serif",fontSize:24,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1.1,marginTop:2,display:"block"}}>{(profile?.coins?.balance||0).toLocaleString()}</CountUp>
+                    <CountUp value={profile?.coins?.balance||0} style={{fontFamily:"'Gotham', sans-serif",fontSize:24,letterSpacing:"1px",color:"var(--brand-primary)",lineHeight:1.1,marginTop:2,display:"block"}}>{(profile?.coins?.balance||0).toLocaleString()}</CountUp>
                   </div>
                 </div>
                 {/* Level progress (oculto para staff) */}
@@ -900,22 +900,22 @@ export default function ProfilePage() {
                     <span style={{fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:level==="gold"?"#22c55e":"rgba(255,255,255,.25)"}}>{level==="gold"?"MAX ✓":level==="silver"?"60%":"30%"}</span>
                   </div>
                   <div style={{height:5,background:"rgba(255,255,255,.05)",borderRadius:0,overflow:"hidden",position:"relative",border:"1px solid rgba(255,255,255,.04)"}}>
-                    <div style={{height:"100%",width:level==="gold"?"100%":level==="silver"?"60%":"30%",background:`linear-gradient(90deg,${lc.color},${lc.color}cc,var(--brand-accent, #ff5500))`,backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",boxShadow:`0 0 10px ${lc.color}66`}}/>
+                    <div style={{height:"100%",width:level==="gold"?"100%":level==="silver"?"60%":"30%",background:`linear-gradient(90deg,${lc.color},${lc.color}cc,var(--brand-accent))`,backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",boxShadow:`0 0 10px ${lc.color}66`}}/>
                   </div>
                 </div>
                 )}
                 {/* Follow stats premium */}
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 14px",borderLeft:"1px solid rgba(255,255,255,.06)",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                    <span style={{fontFamily:"'Gotham', sans-serif",fontSize:22,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1}}>{followData.followers}</span>
+                    <span style={{fontFamily:"'Gotham', sans-serif",fontSize:22,letterSpacing:"1px",color:"var(--brand-primary)",lineHeight:1}}>{followData.followers}</span>
                     <span style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginTop:2}}>seguidores</span>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 14px",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                    <span style={{fontFamily:"'Gotham', sans-serif",fontSize:22,letterSpacing:"1px",color:"var(--brand-primary, #f5e03a)",lineHeight:1}}>{followData.following}</span>
+                    <span style={{fontFamily:"'Gotham', sans-serif",fontSize:22,letterSpacing:"1px",color:"var(--brand-primary)",lineHeight:1}}>{followData.following}</span>
                     <span style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginTop:2}}>siguiendo</span>
                   </div>
                   {!isOwn && getToken() && (
-                    <button onClick={toggleFollow} disabled={followLoading} style={{height:38,padding:"0 22px",border:followData.isFollowing?"1px solid rgba(var(--brand-primary-rgb),.25)":"none",cursor:followLoading?"not-allowed":"pointer",fontFamily:"'Gotham', sans-serif",fontWeight:800,fontSize:12,letterSpacing:"2px",textTransform:"uppercase",background:followData.isFollowing?"transparent":"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #fff7a0))",color:followData.isFollowing?"var(--brand-primary, #f5e03a)":"#000",transition:"all .25s",opacity:followLoading?.6:1,boxShadow:followData.isFollowing?"none":"0 8px 24px rgba(var(--brand-primary-rgb),.25)"}}>
+                    <button onClick={toggleFollow} disabled={followLoading} style={{height:38,padding:"0 22px",border:followData.isFollowing?"1px solid rgba(var(--brand-primary-rgb),.25)":"none",cursor:followLoading?"not-allowed":"pointer",fontFamily:"'Gotham', sans-serif",fontWeight:800,fontSize:12,letterSpacing:"2px",textTransform:"uppercase",background:followData.isFollowing?"transparent":"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))",color:followData.isFollowing?"var(--brand-primary)":"#000",transition:"all .25s",opacity:followLoading?.6:1,boxShadow:followData.isFollowing?"none":"0 8px 24px rgba(var(--brand-primary-rgb),.25)"}}>
                       {followLoading?"...":followData.isFollowing?"✓ Siguiendo":"+ Seguir"}
                     </button>
                   )}
@@ -928,10 +928,10 @@ export default function ProfilePage() {
               {[
                 // Sprint 11: stats sociales reales (privacy.envios reusado para
                 // posts/likes/friends; el flag es generico "actividad publica").
-                {ico:"📰",lbl:"Posts",         v:String(stats.posts||0),         c:"var(--brand-primary, #f5e03a)", hide:privacyLoaded&&!privacy.envios},
+                {ico:"📰",lbl:"Posts",         v:String(stats.posts||0),         c:"var(--brand-primary)", hide:privacyLoaded&&!privacy.envios},
                 {ico:"❤️",lbl:"Likes recibidos",v:String(stats.likes||0),         c:"#ef4444", hide:privacyLoaded&&!privacy.envios},
                 {ico:"👥",lbl:"Amigos",        v:String(stats.friends||0),       c:"#60a5fa", hide:privacyLoaded&&!privacy.envios},
-                {ico:"🪙",lbl:"Coins ganados", v:coinsTotal.toLocaleString(),    c:"var(--brand-primary, #f5e03a)", hide:privacyLoaded&&!privacy.coins},
+                {ico:"🪙",lbl:"Coins ganados", v:coinsTotal.toLocaleString(),    c:"var(--brand-primary)", hide:privacyLoaded&&!privacy.coins},
               ].map((s,i)=>(
                 <div key={i} className="pf-stat-card" style={{padding:"22px 22px",borderRight:i<3?"1px solid rgba(255,255,255,.05)":"none",cursor:"pointer",position:"relative",overflow:"hidden",transition:"all .35s",animation:`slideUp .55s cubic-bezier(.2,.8,.2,1) ${i*70}ms both`}} onMouseEnter={e=>!s.hide&&(e.currentTarget.style.background=`${s.c}06`)} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                   <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,${s.c},transparent)`,opacity:.4}}/>
@@ -957,9 +957,9 @@ export default function ProfilePage() {
                         <textarea value={postInput} onChange={e=>setPostInput(e.target.value)} maxLength={280} placeholder="Compartí algo con la comunidad..." style={{flex:1,background:"none",border:"none",color:"#e2e8f0",fontFamily:"inherit",fontSize:13,lineHeight:1.6,resize:"none",outline:"none",minHeight:60}}/>
                       </div>
                       <div style={{display:"flex",alignItems:"center",gap:8,paddingTop:10,borderTop:"1px solid rgba(255,255,255,.06)"}}>
-                        {["📷","🎬","😊"].map(ic=><div key={ic} style={{width:32,height:32,borderRadius:9,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,cursor:"pointer"}} onClick={()=>showToast("Próximamente","var(--brand-primary, #f5e03a)")}>{ic}</div>)}
+                        {["📷","🎬","😊"].map(ic=><div key={ic} style={{width:32,height:32,borderRadius:9,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,cursor:"pointer"}} onClick={()=>showToast("Próximamente","var(--brand-primary)")}>{ic}</div>)}
                         <span style={{fontSize:9,color:"rgba(255,255,255,.2)",marginLeft:4}}>{postInput.length}/280</span>
-                        <button onClick={publishPost} style={{marginLeft:"auto",height:34,padding:"0 20px",background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))",border:"none",borderRadius:10,color:"#000",fontSize:10,fontWeight:900,cursor:"pointer",boxShadow:"0 4px 16px rgba(var(--brand-primary-rgb),.38)"}}>Publicar →</button>
+                        <button onClick={publishPost} style={{marginLeft:"auto",height:34,padding:"0 20px",background:"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))",border:"none",borderRadius:10,color:"#000",fontSize:10,fontWeight:900,cursor:"pointer",boxShadow:"0 4px 16px rgba(var(--brand-primary-rgb),.38)"}}>Publicar →</button>
                       </div>
                     </div>
                   )}
@@ -978,7 +978,7 @@ export default function ProfilePage() {
               {panel==="perfil"&&(
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
                   <div>
-                    <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:10}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent, #ff5500),transparent)"}}/>Avatar</div>
+                    <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:10}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>Avatar</div>
                     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:22}}>
                       {allItems.filter(i=>i.type==="avatar"&&owned.includes(i.key)).map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={equip.avatar_key===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                     </div>
@@ -987,7 +987,7 @@ export default function ProfilePage() {
                     {["frame","title","badge"].map(type=>{
                       const its=allItems.filter(i=>i.type===type&&owned.includes(i.key)); if(!its.length)return null;
                       return <div key={type} style={{marginBottom:20}}>
-                        <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent, #ff5500),transparent)"}}/>{type==="frame"?"Marcos":type==="title"?"Títulos":"Insignias"}{type==="badge"&&<span style={{color:"rgba(255,255,255,.2)",fontSize:7}}>({equip.badges?.length||0}/4)</span>}</div>
+                        <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>{type==="frame"?"Marcos":type==="title"?"Títulos":"Insignias"}{type==="badge"&&<span style={{color:"rgba(255,255,255,.2)",fontSize:7}}>({equip.badges?.length||0}/4)</span>}</div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
                           {its.map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={type==="badge"?(equip.badges?.includes(item.key)):equip[type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                         </div>
@@ -1001,7 +1001,7 @@ export default function ProfilePage() {
                 <div>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
                     <span style={{fontSize:9,color:"rgba(255,255,255,.25)",fontWeight:900,letterSpacing:"2px"}}>{unlockedAchs.length} DE {ACHIEVEMENTS.length} · {achPct}%</span>
-                    <div style={{width:180,height:4,background:"rgba(255,255,255,.07)",borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",width:`${achPct}%`,background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))",boxShadow:"0 0 10px var(--brand-primary, #f5e03a)55",transition:"width 1.5s ease"}}/></div>
+                    <div style={{width:180,height:4,background:"rgba(255,255,255,.07)",borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",width:`${achPct}%`,background:"linear-gradient(90deg,var(--brand-primary),var(--brand-primary))",boxShadow:"0 0 10px var(--brand-primary)55",transition:"width 1.5s ease"}}/></div>
                   </div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(162px,1fr))",gap:10}}>
                     {ACHIEVEMENTS.map(ach=><AchievementCard key={ach.key} ach={ach} unlocked={unlockedAchs.some(a=>a.key===ach.key)} stats={stats}/>)}
@@ -1013,7 +1013,7 @@ export default function ProfilePage() {
                       {[{type:"avatar",label:"Avatares",icon:"🧑"},{type:"frame",label:"Marcos",icon:"🖼"},{type:"title",label:"Títulos",icon:"📛"},{type:"badge",label:"Insignias",icon:"⚡"}].map(({type,label,icon})=>{
                         const its=allItems.filter(i=>i.type===type&&owned.includes(i.key)); if(!its.length)return null;
                         return <div key={type} style={{marginBottom:20}}>
-                          <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent, #ff5500),transparent)"}}/>{icon} {label} <span style={{color:"rgba(255,255,255,.18)",fontSize:7}}>({its.length})</span></div>
+                          <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>{icon} {label} <span style={{color:"rgba(255,255,255,.18)",fontSize:7}}>({its.length})</span></div>
                           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:9}}>
                             {its.map(item=><ItemCard key={item.key} item={item} owned equipped={type==="badge"?(equip.badges?.includes(item.key)):equip[type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                           </div>
@@ -1030,7 +1030,7 @@ export default function ProfilePage() {
                   <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:22,padding:"4px 6px",background:"rgba(255,255,255,.025)",border:"1px solid rgba(var(--brand-primary-rgb),.08)",width:"fit-content"}}>
                     {PERSONALIZE_SUBTABS.map(t=>{
                       const on=subPanel===t.id;
-                      return <button key={t.id} onClick={()=>setSubPanel(t.id)} style={{display:"inline-flex",alignItems:"center",gap:7,padding:"10px 18px",cursor:"pointer",border:"none",fontFamily:"'Gotham', sans-serif",fontSize:11,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",background:on?"var(--brand-primary, #f5e03a)":"transparent",color:on?"#000":"rgba(240,236,227,.45)",transition:"all .25s"}}>
+                      return <button key={t.id} onClick={()=>setSubPanel(t.id)} style={{display:"inline-flex",alignItems:"center",gap:7,padding:"10px 18px",cursor:"pointer",border:"none",fontFamily:"'Gotham', sans-serif",fontSize:11,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",background:on?"var(--brand-primary)":"transparent",color:on?"#000":"rgba(240,236,227,.45)",transition:"all .25s"}}>
                         <span style={{fontSize:14}}>{t.icon}</span>{t.label}
                       </button>;
                     })}
@@ -1038,7 +1038,7 @@ export default function ProfilePage() {
                   {subPanel==="perfil"&&(
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
                       <div>
-                        <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:10}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent, #ff5500),transparent)"}}/>Avatar</div>
+                        <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:10}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>Avatar</div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:22}}>
                           {allItems.filter(i=>i.type==="avatar"&&owned.includes(i.key)).map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={equip.avatar_key===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                         </div>
@@ -1047,7 +1047,7 @@ export default function ProfilePage() {
                         {["frame","title","badge"].map(type=>{
                           const its=allItems.filter(i=>i.type===type&&owned.includes(i.key)); if(!its.length)return null;
                           return <div key={type} style={{marginBottom:20}}>
-                            <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent, #ff5500),transparent)"}}/>{type==="frame"?"Marcos":type==="title"?"Títulos":"Insignias"}{type==="badge"&&<span style={{color:"rgba(255,255,255,.2)",fontSize:7}}>({equip.badges?.length||0}/4)</span>}</div>
+                            <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>{type==="frame"?"Marcos":type==="title"?"Títulos":"Insignias"}{type==="badge"&&<span style={{color:"rgba(255,255,255,.2)",fontSize:7}}>({equip.badges?.length||0}/4)</span>}</div>
                             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
                               {its.map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={type==="badge"?(equip.badges?.includes(item.key)):equip[type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                             </div>
@@ -1088,7 +1088,7 @@ export default function ProfilePage() {
                     <div>
                       <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:20,alignItems:"center"}}>
                         {[["all","⭐ Todo"],["avatar","🧑 Avatares"],["frame","🖼 Marcos"],["title","📛 Títulos"],["badge","⚡ Insignias"]].map(([v,l])=>(
-                          <button key={v} onClick={()=>setTypeFilter(v)} style={{padding:"7px 16px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"2px",textTransform:"uppercase",cursor:"pointer",transition:"all .22s",border:typeFilter===v?"none":"1px solid rgba(255,255,255,.08)",background:typeFilter===v?"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))":"rgba(255,255,255,.03)",color:typeFilter===v?"#000":"rgba(255,255,255,.35)",boxShadow:typeFilter===v?"0 4px 18px rgba(var(--brand-primary-rgb),.35)":"none"}}>{l}</button>
+                          <button key={v} onClick={()=>setTypeFilter(v)} style={{padding:"7px 16px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"2px",textTransform:"uppercase",cursor:"pointer",transition:"all .22s",border:typeFilter===v?"none":"1px solid rgba(255,255,255,.08)",background:typeFilter===v?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))":"rgba(255,255,255,.03)",color:typeFilter===v?"#000":"rgba(255,255,255,.35)",boxShadow:typeFilter===v?"0 4px 18px rgba(var(--brand-primary-rgb),.35)":"none"}}>{l}</button>
                         ))}
                         <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700}}>🪙 {(profile?.coins?.balance||0).toLocaleString()} disp.</span>
                       </div>
@@ -1104,7 +1104,7 @@ export default function ProfilePage() {
                 <div>
                   <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:20,alignItems:"center"}}>
                     {[["all","⭐ Todo"],["avatar","🧑 Avatares"],["frame","🖼 Marcos"],["title","📛 Títulos"],["badge","⚡ Insignias"]].map(([v,l])=>(
-                      <button key={v} onClick={()=>setTypeFilter(v)} style={{padding:"7px 16px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"2px",textTransform:"uppercase",cursor:"pointer",transition:"all .22s",border:typeFilter===v?"none":"1px solid rgba(255,255,255,.08)",background:typeFilter===v?"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))":"rgba(255,255,255,.03)",color:typeFilter===v?"#000":"rgba(255,255,255,.35)",boxShadow:typeFilter===v?"0 4px 18px rgba(var(--brand-primary-rgb),.35)":"none"}}>{l}</button>
+                      <button key={v} onClick={()=>setTypeFilter(v)} style={{padding:"7px 16px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"2px",textTransform:"uppercase",cursor:"pointer",transition:"all .22s",border:typeFilter===v?"none":"1px solid rgba(255,255,255,.08)",background:typeFilter===v?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))":"rgba(255,255,255,.03)",color:typeFilter===v?"#000":"rgba(255,255,255,.35)",boxShadow:typeFilter===v?"0 4px 18px rgba(var(--brand-primary-rgb),.35)":"none"}}>{l}</button>
                     ))}
                     <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700}}>🪙 {(profile?.coins?.balance||0).toLocaleString()} disp.</span>
                   </div>
@@ -1148,7 +1148,7 @@ export default function ProfilePage() {
                   {[{type:"avatar",label:"Avatares",icon:"🧑"},{type:"frame",label:"Marcos",icon:"🖼"},{type:"title",label:"Títulos",icon:"📛"},{type:"badge",label:"Insignias",icon:"⚡"}].map(({type,label,icon})=>{
                     const its=allItems.filter(i=>i.type===type&&owned.includes(i.key)); if(!its.length)return null;
                     return <div key={type} style={{marginBottom:24}}>
-                      <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent, #ff5500),transparent)"}}/>{icon} {label} <span style={{color:"rgba(255,255,255,.18)",fontSize:7}}>({its.length})</span></div>
+                      <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>{icon} {label} <span style={{color:"rgba(255,255,255,.18)",fontSize:7}}>({its.length})</span></div>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:9}}>
                         {its.map(item=><ItemCard key={item.key} item={item} owned equipped={type==="badge"?(equip.badges?.includes(item.key)):equip[type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                       </div>
@@ -1166,20 +1166,20 @@ export default function ProfilePage() {
                       <div style={{width:40,height:40,borderRadius:12,background:"rgba(var(--brand-primary-rgb),.1)",border:"1px solid rgba(var(--brand-primary-rgb),.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>🔐</div>
                       <div><div style={{fontSize:13,fontWeight:800,color:"#e2e8f0"}}>Visibilidad del perfil</div><div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:2}}>Controlá qué ven los demás cuando visitan tu perfil</div></div>
                     </div>
-                    <PrivacyToggle label="Mis envíos" desc="Cantidad de envíos totales, entregados y monto USD importado" icon="📦" iconBg="rgba(96,165,250,.1)" iconBorder="rgba(96,165,250,.18)" value={privacy.envios} onChange={async()=>{const v=!privacy.envios;setPrivacy(p=>({...p,envios:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_envios:v})});}catch(e){console.error(e);}}}/>
-                    <PrivacyToggle label="Coins" desc="Balance actual y total de coins ganados" icon="🪙" iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.coins} onChange={async()=>{const v=!privacy.coins;setPrivacy(p=>({...p,coins:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_coins:v})});}catch(e){console.error(e);}}}/>
-                    <PrivacyToggle label="Logros" desc="Insignias desbloqueadas y progreso de achievements" icon="🏆" iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.logros} onChange={async()=>{const v=!privacy.logros;setPrivacy(p=>({...p,logros:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_logros:v})});}catch(e){console.error(e);}}}/>
-                    <PrivacyToggle label="Posts" desc="Feed de publicaciones y actividad reciente" icon="📝" iconBg="rgba(167,139,250,.1)" iconBorder="rgba(167,139,250,.18)" value={privacy.posts} onChange={async()=>{const v=!privacy.posts;setPrivacy(p=>({...p,posts:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_posts:v})});}catch(e){console.error(e);}}}/>
-                    <PrivacyToggle label="Lista de amigos" desc="Quién puede ver tus conexiones y amigos" icon="👥" iconBg="rgba(34,197,94,.1)" iconBorder="rgba(34,197,94,.18)" value={privacy.amigos} onChange={async()=>{const v=!privacy.amigos;setPrivacy(p=>({...p,amigos:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary, #f5e03a)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_amigos:v})});}catch(e){console.error(e);}}}/>
+                    <PrivacyToggle label="Mis envíos" desc="Cantidad de envíos totales, entregados y monto USD importado" icon="📦" iconBg="rgba(96,165,250,.1)" iconBorder="rgba(96,165,250,.18)" value={privacy.envios} onChange={async()=>{const v=!privacy.envios;setPrivacy(p=>({...p,envios:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_envios:v})});}catch(e){console.error(e);}}}/>
+                    <PrivacyToggle label="Coins" desc="Balance actual y total de coins ganados" icon="🪙" iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.coins} onChange={async()=>{const v=!privacy.coins;setPrivacy(p=>({...p,coins:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_coins:v})});}catch(e){console.error(e);}}}/>
+                    <PrivacyToggle label="Logros" desc="Insignias desbloqueadas y progreso de achievements" icon="🏆" iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.logros} onChange={async()=>{const v=!privacy.logros;setPrivacy(p=>({...p,logros:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_logros:v})});}catch(e){console.error(e);}}}/>
+                    <PrivacyToggle label="Posts" desc="Feed de publicaciones y actividad reciente" icon="📝" iconBg="rgba(167,139,250,.1)" iconBorder="rgba(167,139,250,.18)" value={privacy.posts} onChange={async()=>{const v=!privacy.posts;setPrivacy(p=>({...p,posts:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_posts:v})});}catch(e){console.error(e);}}}/>
+                    <PrivacyToggle label="Lista de amigos" desc="Quién puede ver tus conexiones y amigos" icon="👥" iconBg="rgba(34,197,94,.1)" iconBorder="rgba(34,197,94,.18)" value={privacy.amigos} onChange={async()=>{const v=!privacy.amigos;setPrivacy(p=>({...p,amigos:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_amigos:v})});}catch(e){console.error(e);}}}/>
                   </div>
                   <div style={{padding:"13px 18px",background:"rgba(var(--brand-primary-rgb),.06)",border:"1px solid rgba(var(--brand-primary-rgb),.15)",borderRadius:14,fontSize:11,color:"rgba(255,255,255,.42)",lineHeight:1.6}}>
-                    💡 Los cambios se aplican <span style={{color:"var(--brand-primary, #f5e03a)",fontWeight:800}}>inmediatamente</span>. Los datos ocultos solo los ves vos.
+                    💡 Los cambios se aplican <span style={{color:"var(--brand-primary)",fontWeight:800}}>inmediatamente</span>. Los datos ocultos solo los ves vos.
                   </div>
                   <ConnectedDevicesPanel />
                 </div>
               )}
 
-              {msg&&<div style={{marginTop:16,padding:"11px 16px",borderRadius:10,background:"rgba(var(--brand-accent-rgb),.1)",border:"1px solid rgba(var(--brand-accent-rgb),.25)",color:"var(--brand-accent, #ff8c2a)",fontSize:13,fontWeight:700}}>{msg}</div>}
+              {msg&&<div style={{marginTop:16,padding:"11px 16px",borderRadius:10,background:"rgba(var(--brand-accent-rgb),.1)",border:"1px solid rgba(var(--brand-accent-rgb),.25)",color:"var(--brand-accent)",fontSize:13,fontWeight:700}}>{msg}</div>}
             </div>
           </div>
 
@@ -1193,11 +1193,11 @@ export default function ProfilePage() {
               <Pop key={item.id} onClick={()=>setPanel(item.id)} className="pf-dock-item" hoverScale={1.02} style={{borderRadius:14,overflow:"hidden",cursor:"pointer",border:panel===item.id?"1px solid rgba(var(--brand-primary-rgb),.22)":"1px solid rgba(255,255,255,.07)",background:panel===item.id?"rgba(var(--brand-primary-rgb),.08)":"rgba(255,255,255,.04)",position:"relative"}}
                 onMouseEnter={e=>{if(panel!==item.id){e.currentTarget.style.background="rgba(var(--brand-primary-rgb),.05)";e.currentTarget.style.borderColor="rgba(var(--brand-primary-rgb),.15)";}}} onMouseLeave={e=>{if(panel!==item.id){e.currentTarget.style.background="rgba(255,255,255,.04)";e.currentTarget.style.borderColor="rgba(255,255,255,.07)";}}}
               >
-                {panel===item.id&&<div style={{position:"absolute",left:0,top:0,bottom:0,width:3,background:"linear-gradient(180deg,var(--brand-primary, #f5e03a),var(--brand-primary, #f5e03a))",borderRadius:"0 2px 2px 0"}}/>}
+                {panel===item.id&&<div style={{position:"absolute",left:0,top:0,bottom:0,width:3,background:"linear-gradient(180deg,var(--brand-primary),var(--brand-primary))",borderRadius:"0 2px 2px 0"}}/>}
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:13,minHeight:48,whiteSpace:"nowrap",overflow:"hidden"}}>
-                  <span style={{fontSize:18,flexShrink:0,width:22,textAlign:"center",filter:panel===item.id?"drop-shadow(0 0 6px var(--brand-primary, #f5e03a))":undefined}}>{item.icon}</span>
-                  <span style={{fontSize:10,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",color:panel===item.id?"var(--brand-primary, #f5e03a)":"rgba(255,255,255,.45)",opacity:dockOpen?1:0,transform:dockOpen?"translateX(0)":"translateX(-8px)",transition:"all .25s",pointerEvents:"none",flex:1}}>{item.label}</span>
-                  {item.badge&&dockOpen&&<span style={{fontSize:9,fontWeight:900,background:"rgba(var(--brand-primary-rgb),.15)",border:"1px solid rgba(var(--brand-primary-rgb),.25)",borderRadius:100,padding:"1px 7px",color:"var(--brand-primary, #f5e03a)",flexShrink:0,opacity:dockOpen?1:0,transition:"all .25s .1s"}}>{item.badge}</span>}
+                  <span style={{fontSize:18,flexShrink:0,width:22,textAlign:"center",filter:panel===item.id?"drop-shadow(0 0 6px var(--brand-primary))":undefined}}>{item.icon}</span>
+                  <span style={{fontSize:10,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",color:panel===item.id?"var(--brand-primary)":"rgba(255,255,255,.45)",opacity:dockOpen?1:0,transform:dockOpen?"translateX(0)":"translateX(-8px)",transition:"all .25s",pointerEvents:"none",flex:1}}>{item.label}</span>
+                  {item.badge&&dockOpen&&<span style={{fontSize:9,fontWeight:900,background:"rgba(var(--brand-primary-rgb),.15)",border:"1px solid rgba(var(--brand-primary-rgb),.25)",borderRadius:100,padding:"1px 7px",color:"var(--brand-primary)",flexShrink:0,opacity:dockOpen?1:0,transition:"all .25s .1s"}}>{item.badge}</span>}
                 </div>
               </Pop>
             ))}

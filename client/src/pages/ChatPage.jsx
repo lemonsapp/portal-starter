@@ -11,7 +11,7 @@ const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("
 // Metadata visual para salas. La sala "general" (default seed) está acá;
 // salas custom que cree el admin caen en el fallback `{accent:"#c8f53a", icon: room.icon || "💬"}`.
 const ROOM_META = {
-  "general": { accent: "var(--brand-primary, #c8f53a)", icon: "💬" },
+  "general": { accent: "var(--brand-primary)", icon: "💬" },
 };
 
 const ICONS = { gold: "🥇", diamond: "💎", crown: "👑" };
@@ -663,7 +663,7 @@ function PowersInline({ token }) {
             : <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>{p.cost} 🪙</span>}
         </div>
       ))}
-      <a href="/coins" style={{ display:"block", textAlign:"center", padding:"12px", background:"linear-gradient(135deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))", color:"#000", borderRadius:12, fontWeight:900, fontSize:14, textDecoration:"none", marginTop:8 }}>
+      <a href="/coins" style={{ display:"block", textAlign:"center", padding:"12px", background:"linear-gradient(135deg,var(--brand-primary),var(--brand-accent))", color:"#000", borderRadius:12, fontWeight:900, fontSize:14, textDecoration:"none", marginTop:8 }}>
         🪙 Ver tienda de Coins
       </a>
     </div>
@@ -1126,7 +1126,7 @@ export default function ChatPage() {
           <div onClick={()=>enterRoom("general")}
             style={{ display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,cursor:"pointer",background:activeRoom?.slug==="general"?"rgba(var(--brand-primary-rgb),0.08)":"transparent",border:activeRoom?.slug==="general"?"1px solid rgba(var(--brand-primary-rgb),0.15)":"1px solid transparent",marginBottom:3 }}>
             <span style={{ fontSize:14 }}>💬</span>
-            <span style={{ fontSize:11,fontWeight:700,color:activeRoom?.slug==="general"?"var(--brand-primary, #c8f53a)":"#64748b" }}>Sala general</span>
+            <span style={{ fontSize:11,fontWeight:700,color:activeRoom?.slug==="general"?"var(--brand-primary)":"#64748b" }}>Sala general</span>
           </div>
           {/* Salas premium */}
           {premiumRooms.map(room=>{
