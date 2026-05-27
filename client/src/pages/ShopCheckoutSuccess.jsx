@@ -274,6 +274,20 @@ export default function ShopCheckoutSuccess() {
                     </div>
                 )}
 
+                {/* Tracking de envío — visible cuando el pedido fue despachado */}
+                {order?.tracking_number && (
+                    <div style={{ marginTop: 18, background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: "var(--r-3,14px)", padding: "20px", textAlign: "center" }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--c-accent-2)", marginBottom: 8 }}>
+                            🚚 Tu envío está en camino
+                        </div>
+                        <div style={{ fontSize: 13, color: "var(--c-text-2)" }}>Seguimiento{order.carrier_label ? ` · ${order.carrier_label}` : ""}</div>
+                        <div style={{ fontFamily: "monospace", fontSize: 19, fontWeight: 900, color: "var(--c-text)", margin: "6px 0 14px", letterSpacing: ".02em" }}>{order.tracking_number}</div>
+                        {order.tracking_url
+                            ? <a href={order.tracking_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "var(--c-accent-2)", color: "#fff", textDecoration: "none", fontWeight: 800, fontSize: 14, padding: "12px 28px", borderRadius: "var(--r-pill,999px)" }}>Seguir mi envío →</a>
+                            : <div style={{ fontSize: 13, color: "var(--c-text-2)" }}>Coordinamos la entrega con vos por WhatsApp.</div>}
+                    </div>
+                )}
+
                 {/* CTAs */}
                 <div ref={ctaRowRef} style={S.ctaRow}>
                     <Link to="/shop" style={S.btn}>Seguir comprando</Link>

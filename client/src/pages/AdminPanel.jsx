@@ -1032,12 +1032,15 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [savingStatus, setSavingStatus] = useState("");
+  const [carrier, setCarrier] = useState("");
+  const [trackingNum, setTrackingNum] = useState("");
 
   async function load() {
     setLoading(true);
     const r = await fetch(`${API}/api/admin/shop/orders/${orderId}`, { headers: authHdr() });
     const d = await r.json();
     setOrder(d.order || null);
+    if (d.order) { setCarrier(d.order.carrier || ""); setTrackingNum(d.order.tracking_number || ""); }
     setLoading(false);
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [orderId]);
@@ -1055,6 +1058,21 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
     } else {
       alert("Error al cambiar estado");
     }
+    setSavingStatus("");
+  }
+
+  // Despachar (o actualizar tracking): guarda carrier + nº de seguimiento. El
+  // server dispara el email "Seguir mi envío" al socio en la transición a
+  // dispatched (no re-envía si ya estaba despachado y solo se edita el nº).
+  async function saveDispatch() {
+    if (!carrier) { alert("Elegí un correo de envío."); return; }
+    setSavingStatus("dispatched");
+    const r = await fetch(`${API}/api/admin/shop/orders/${orderId}/status`, {
+      method: "POST", headers: jsonHdr(),
+      body: JSON.stringify({ status: "dispatched", carrier, tracking_number: trackingNum.trim() || null }),
+    });
+    if (r.ok) { await load(); onChanged?.(); }
+    else alert("Error al guardar el envío");
     setSavingStatus("");
   }
 
@@ -1108,6 +1126,39 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
                 Flujo típico: Pendiente → Pagado → Despachado → Completado.
               </div>
             </div>
+
+            {/* Tracking de envío — visible desde que el pedido está pagado */}
+            {["paid", "dispatched", "completed"].includes(order.status) && (
+              <div style={{ ...styles.card, marginBottom: 16, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>
+                  🚚 Envío / Tracking
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  <select value={carrier} onChange={(e) => setCarrier(e.target.value)}
+                    style={{ flex: "1 1 150px", padding: "9px 12px", borderRadius: 8, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", color: "rgba(237,233,224,.9)", fontFamily: "inherit", fontSize: 13 }}>
+                    <option value="">Elegir correo…</option>
+                    <option value="andreani">Andreani</option>
+                    <option value="correo_argentino">Correo Argentino</option>
+                    <option value="via_cargo">Vía Cargo</option>
+                    <option value="propio">Envío propio</option>
+                  </select>
+                  <input value={trackingNum} onChange={(e) => setTrackingNum(e.target.value)} placeholder="N° de seguimiento"
+                    style={{ flex: "2 1 200px", padding: "9px 12px", borderRadius: 8, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", color: "rgba(237,233,224,.9)", fontFamily: "inherit", fontSize: 13 }} />
+                  <button onClick={saveDispatch} disabled={!!savingStatus}
+                    style={{ padding: "9px 16px", fontSize: 12, fontWeight: 800, borderRadius: 8, border: "none", background: "#25D366", color: "#fff", cursor: "pointer", fontFamily: "inherit", opacity: savingStatus ? 0.6 : 1, whiteSpace: "nowrap" }}>
+                    {order.status === "dispatched" ? "Actualizar envío" : "Despachar y notificar"}
+                  </button>
+                </div>
+                {order.tracking_url && (
+                  <div style={{ fontSize: 12, color: "rgba(237,233,224,.6)", marginTop: 10 }}>
+                    Link de seguimiento: <a href={order.tracking_url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--brand-primary, #A7F5C8)" }}>{order.tracking_url}</a>
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 8 }}>
+                  Al despachar, el socio recibe un email con el botón “Seguir mi envío”.
+                </div>
+              </div>
+            )}
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {/* Cliente */}

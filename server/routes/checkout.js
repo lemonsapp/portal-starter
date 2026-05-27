@@ -111,6 +111,10 @@ function serializeOrder(order, items = []) {
     paid_at: order.paid_at,
     dispatched_at: order.dispatched_at,
     completed_at: order.completed_at,
+    carrier: order.carrier || null,
+    carrier_label: order.carrier ? shopNotify.carrierLabel(order.carrier) : null,
+    tracking_number: order.tracking_number || null,
+    tracking_url: shopNotify.trackingUrl(order.carrier, order.tracking_number),
     admin_notes: order.admin_notes,
     created_at: order.created_at,
     updated_at: order.updated_at,
@@ -741,6 +745,8 @@ function adminRouter({ authRequired, requireRole }) {
       const body = z.object({
         status: z.enum(["pending_payment", "paid", "dispatched", "completed", "cancelled", "failed"]),
         admin_notes: z.string().max(2000).optional().nullable(),
+        carrier: z.enum(["andreani", "correo_argentino", "via_cargo", "propio"]).optional().nullable(),
+        tracking_number: z.string().max(120).optional().nullable(),
       }).parse(req.body);
 
       const sets = ["status = $1", "updated_at = NOW()"];
@@ -751,6 +757,15 @@ function adminRouter({ authRequired, requireRole }) {
       if (body.admin_notes !== undefined) {
         params.push(body.admin_notes);
         sets.push(`admin_notes = $${params.length}`);
+      }
+      // Tracking de envío — el admin elige carrier + nº al despachar.
+      if (body.carrier !== undefined) {
+        params.push(body.carrier);
+        sets.push(`carrier = $${params.length}`);
+      }
+      if (body.tracking_number !== undefined) {
+        params.push(body.tracking_number);
+        sets.push(`tracking_number = $${params.length}`);
       }
       params.push(id);
       const prevStatusRes = await db.query(`SELECT status FROM orders WHERE id = $1`, [id]);

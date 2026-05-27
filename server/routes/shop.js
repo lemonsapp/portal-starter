@@ -505,6 +505,11 @@ async function migrate() {
   await db.query(`CREATE INDEX IF NOT EXISTS idx_orders_mp_preference  ON orders(mp_preference_id) WHERE mp_preference_id IS NOT NULL`);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_orders_mp_payment     ON orders(mp_payment_id) WHERE mp_payment_id IS NOT NULL`);
 
+  // Tracking de envío (idempotente): carrier elegido por el admin al despachar
+  // + número de seguimiento. carrier ∈ andreani | correo_argentino | via_cargo | propio.
+  await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier         TEXT`);
+  await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number TEXT`);
+
   await db.query(`
     CREATE TABLE IF NOT EXISTS order_items (
       id                  SERIAL PRIMARY KEY,

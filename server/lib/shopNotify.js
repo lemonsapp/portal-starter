@@ -106,6 +106,24 @@ const BRAND_COLOR = "#A7F5C8";
 const BRAND_DARK  = "#0a0a0a";
 const BRAND_CTA   = "#25D366";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Correos de envío — label + builder de URL de seguimiento por carrier.
+// Las URLs son best-effort (los correos cambian sus trackers); editá acá si
+// alguno deja de funcionar. "propio" no tiene tracker → coordinación por WA.
+// ─────────────────────────────────────────────────────────────────────────────
+const CARRIERS = {
+  andreani:         { label: "Andreani",         url: (n) => `https://www.andreani.com/#!/informacionEnvio/${encodeURIComponent(n)}` },
+  correo_argentino: { label: "Correo Argentino", url: (n) => `https://www.correoargentino.com.ar/formularios/e-commerce?id=${encodeURIComponent(n)}` },
+  via_cargo:        { label: "Vía Cargo",        url: (n) => `https://www.viacargo.com.ar/seguimiento?guia=${encodeURIComponent(n)}` },
+  propio:           { label: "Envío propio",     url: () => null },
+};
+const CARRIER_KEYS = Object.keys(CARRIERS);
+function carrierLabel(c) { return (c && CARRIERS[c]?.label) || "Correo"; }
+function trackingUrl(carrier, n) {
+  const c = carrier && CARRIERS[carrier];
+  return c && n ? c.url(n) : null;
+}
+
 function emailShell({ heading, intro, body, footer }) {
   return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -203,12 +221,24 @@ function emailOrderPaid(order, items) {
 }
 
 function emailOrderDispatched(order, items) {
+  const carrier = carrierLabel(order.carrier);
+  const tn = order.tracking_number;
+  const url = trackingUrl(order.carrier, tn);
   const intro = `<strong>${esc(order.customer_first_name)}</strong>, tu pedido <strong>${esc(order.public_id)}</strong> ya salió.`;
+  const trackingBlock = tn ? `
+    <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:12px;padding:18px 20px;margin:8px 0 18px;text-align:center;">
+      <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#1d4ed8;font-weight:700;margin-bottom:6px;">Seguimiento · ${esc(carrier)}</div>
+      <div style="font-family:monospace;font-size:20px;font-weight:900;color:${BRAND_DARK};letter-spacing:.03em;">${esc(tn)}</div>
+      ${url
+        ? `<a href="${esc(url)}" style="display:inline-block;margin-top:14px;background:${BRAND_CTA};color:#fff;text-decoration:none;font-weight:800;font-size:15px;padding:13px 28px;border-radius:999px;">🚚 Seguir mi envío →</a>`
+        : `<div style="margin-top:10px;font-size:13px;color:#666;">Coordinamos la entrega con vos por WhatsApp.</div>`}
+    </div>` : "";
   const body = `
     <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:14px 18px;margin:8px 0 16px;text-align:center;">
       <div style="font-size:28px;line-height:1;margin-bottom:4px;">🚚</div>
-      <div style="font-size:14px;font-weight:600;color:#1d4ed8;">Envío en camino</div>
+      <div style="font-size:14px;font-weight:600;color:#1d4ed8;">Envío en camino${order.carrier ? ` · ${esc(carrier)}` : ""}</div>
     </div>
+    ${trackingBlock}
     <p style="margin:0 0 14px;font-size:15px;line-height:1.55;">Llega en las próximas 24-48 hs hábiles. Te contactamos por WhatsApp si necesitamos coordinar la entrega.</p>
     ${renderAddress(order.shipping_address)}
   `;
@@ -607,4 +637,9 @@ module.exports = {
   // helpers exportados por si otro módulo los necesita
   sendResendEmail,
   formatARS,
+  // Carriers / tracking
+  CARRIERS,
+  CARRIER_KEYS,
+  carrierLabel,
+  trackingUrl,
 };
