@@ -63,7 +63,7 @@ export default function VerifyEmail() {
         .vf-title .ok{color:#22c55e}
         .vf-title .err{color:var(--brand-accent, #ff5500)}
 
-        .vf-msg{font-size:15px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:24px;max-width:420px;margin-left:auto;margin-right:auto}
+        .vf-msg{font-size:15px;font-weight:400;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:24px;max-width:420px;margin-left:auto;margin-right:auto}
 
         .vf-coins{display:inline-flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(var(--brand-primary-rgb),.06);border:1px solid rgba(var(--brand-primary-rgb),.22);font-family:'Gotham', monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);margin-bottom:30px}
         .vf-coins b{font-family:'Gotham', sans-serif;font-size:22px;letter-spacing:1px;font-weight:400}

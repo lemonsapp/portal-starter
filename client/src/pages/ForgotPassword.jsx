@@ -58,7 +58,7 @@ export default function ForgotPassword() {
         .fp-eyebrow::before{content:'';width:28px;height:1px;background:var(--brand-accent, #ff5500)}
         .fp-pitch h2{font-family:'Gotham', sans-serif;font-size:clamp(60px,8vw,120px);line-height:.84;letter-spacing:-2px;margin:0;color:#f0ece3}
         .fp-pitch .yl{color:var(--brand-primary, #f5e03a)}
-        .fp-pitch-sub{font-size:14px;font-weight:300;color:rgba(240,236,227,.5);line-height:1.85;max-width:380px;margin-top:24px}
+        .fp-pitch-sub{font-size:14px;font-weight:400;color:rgba(240,236,227,.5);line-height:1.85;max-width:380px;margin-top:24px}
 
         .fp-right{position:relative;display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:#020307}
         .fp-num{position:absolute;top:14px;right:14px;font-family:'Gotham', sans-serif;font-size:90px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.05);pointer-events:none;user-select:none}
@@ -68,7 +68,7 @@ export default function ForgotPassword() {
         .fp-form-eyebrow::before{content:'';width:28px;height:1px;background:var(--brand-accent, #ff5500)}
         .fp-form-title{font-family:'Gotham', sans-serif;font-size:clamp(48px,6vw,72px);line-height:.9;letter-spacing:-1px;color:#f0ece3;margin-bottom:8px}
         .fp-form-title em{font-style:normal;color:var(--brand-primary, #f5e03a)}
-        .fp-form-desc{font-size:14px;font-weight:300;color:rgba(240,236,227,.5);line-height:1.7;margin-bottom:32px}
+        .fp-form-desc{font-size:14px;font-weight:400;color:rgba(240,236,227,.5);line-height:1.7;margin-bottom:32px}
 
         .fp-field{margin-bottom:18px}
         .fp-field label{display:block;font-family:'Gotham', monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(240,236,227,.4);margin-bottom:10px}
@@ -93,7 +93,7 @@ export default function ForgotPassword() {
         @keyframes fpPulse{0%,100%{box-shadow:0 0 0 0 rgba(var(--brand-primary-rgb),.25)}50%{box-shadow:0 0 0 16px rgba(var(--brand-primary-rgb),0)}}
         .fp-success-title{font-family:'Gotham', sans-serif;font-size:56px;line-height:.92;letter-spacing:-.5px;margin-bottom:14px}
         .fp-success-title em{font-style:normal;color:var(--brand-primary, #f5e03a)}
-        .fp-success-desc{font-size:14px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:18px}
+        .fp-success-desc{font-size:14px;font-weight:400;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:18px}
         .fp-success-desc b{color:var(--brand-primary, #f5e03a);font-weight:600}
         .fp-tip{padding:14px 18px;background:rgba(var(--brand-primary-rgb),.04);border:1px solid rgba(var(--brand-primary-rgb),.15);font-family:'Gotham', monospace;font-size:11px;letter-spacing:1px;color:rgba(240,236,227,.55);margin-bottom:24px;text-align:left}
         .fp-tip b{color:var(--brand-primary, #f5e03a);font-weight:500;letter-spacing:1.5px}

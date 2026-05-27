@@ -73,7 +73,7 @@ export default function ResetPassword() {
         .rp-eyebrow::before{content:'';width:28px;height:1px;background:var(--brand-accent, #ff5500)}
         .rp-title{font-family:'Gotham', sans-serif;font-size:clamp(48px,6vw,72px);line-height:.9;letter-spacing:-1px;color:#f0ece3;margin-bottom:8px}
         .rp-title em{font-style:normal;color:var(--brand-primary, #f5e03a)}
-        .rp-desc{font-size:14px;font-weight:300;color:rgba(240,236,227,.5);line-height:1.7;margin-bottom:30px}
+        .rp-desc{font-size:14px;font-weight:400;color:rgba(240,236,227,.5);line-height:1.7;margin-bottom:30px}
         .rp-desc b{color:#f0ece3;font-weight:600}
 
         .rp-field{margin-bottom:18px}
@@ -114,7 +114,7 @@ export default function ResetPassword() {
 
         .rp-success-title{font-family:'Gotham', sans-serif;font-size:54px;line-height:.92;letter-spacing:-.5px;text-align:center;margin-bottom:14px}
         .rp-success-title em{font-style:normal;color:#22c55e}
-        .rp-success-desc{font-size:14px;font-weight:300;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:24px;text-align:center}
+        .rp-success-desc{font-size:14px;font-weight:400;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:24px;text-align:center}
 
         .rp-right{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px;background:linear-gradient(135deg,#07090f 0%,#020307 70%)}
         .rp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
@@ -127,9 +127,9 @@ export default function ResetPassword() {
         .rp-logo .y{color:var(--brand-primary, #f5e03a)}
         .rp-pitch h2{font-family:'Gotham', sans-serif;font-size:clamp(60px,8vw,120px);line-height:.84;letter-spacing:-2px;margin:0;color:#f0ece3}
         .rp-pitch .yl{color:var(--brand-primary, #f5e03a)}
-        .rp-pitch-sub{font-size:14px;font-weight:300;color:rgba(240,236,227,.5);line-height:1.85;max-width:360px;margin-top:24px}
+        .rp-pitch-sub{font-size:14px;font-weight:400;color:rgba(240,236,227,.5);line-height:1.85;max-width:360px;margin-top:24px}
         .rp-tips{display:flex;flex-direction:column;gap:10px}
-        .rp-tip{display:flex;align-items:center;gap:14px;font-size:13px;color:rgba(240,236,227,.55);font-weight:300}
+        .rp-tip{display:flex;align-items:center;gap:14px;font-size:13px;color:rgba(240,236,227,.55);font-weight:400}
         .rp-tip b{font-family:'Gotham', monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--brand-primary, #f5e03a);font-weight:400;min-width:54px}
         .rp-tip-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--brand-primary-rgb),.25),rgba(var(--brand-primary-rgb),0))}
 

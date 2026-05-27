@@ -76,7 +76,7 @@ export default function Shop() {
         <div style={S.heroInner}>
           <div style={S.eyebrow}>
             <span style={S.eyebrowDot} />
-            CATÁLOGO HOLISTIC
+            Fertilizantes superiores para cultivo
             <span style={S.eyebrowDot} />
           </div>
           <h1 style={S.display}>
