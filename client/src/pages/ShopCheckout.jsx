@@ -23,15 +23,15 @@ const PROVINCIAS_AR = [
 const styles = {
   shell: {
     minHeight: "100vh",
-    background: "var(--brand-bg, #080808)",
-    color: "var(--brand-text, #ede9e0)",
+    background: "var(--brand-bg, var(--c-bg))",
+    color: "var(--brand-text, var(--c-text))",
     fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
     padding: "32px 20px 80px",
   },
   container: { maxWidth: 1140, margin: "0 auto" },
   back: {
     display: "inline-flex", alignItems: "center", gap: 8,
-    color: "rgba(237,233,224,.7)", textDecoration: "none",
+    color: "rgba(var(--c-text-rgb),.7)", textDecoration: "none",
     fontSize: 13, fontWeight: 600, marginBottom: 24,
   },
   h1: {
@@ -39,7 +39,7 @@ const styles = {
     fontSize: "clamp(2rem, 4vw, 2.6rem)", fontWeight: 900,
     margin: "0 0 8px", letterSpacing: "-0.02em", textTransform: "uppercase",
   },
-  sub: { color: "rgba(237,233,224,.65)", marginBottom: 28, fontSize: 14 },
+  sub: { color: "rgba(var(--c-text-rgb),.65)", marginBottom: 28, fontSize: 14 },
   layout: {
     display: "grid",
     gridTemplateColumns: "1.4fr 1fr",
@@ -55,16 +55,16 @@ const styles = {
   },
   sectionH: {
     fontSize: 12, fontWeight: 800, letterSpacing: ".24em",
-    textTransform: "uppercase", color: "var(--brand-primary, #A7F5C8)",
+    textTransform: "uppercase", color: "var(--brand-primary, var(--c-accent))",
     margin: "0 0 14px",
   },
   grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
   grid3: { display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 12 },
-  label: { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(237,233,224,.55)", marginBottom: 6 },
+  label: { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(var(--c-text-rgb),.55)", marginBottom: 6 },
   input: {
     width: "100%", padding: "11px 13px", fontSize: 14,
     background: "rgba(255,255,255,.04)",
-    border: "1px solid rgba(255,255,255,.1)",
+    border: "1px solid var(--c-border-2)",
     borderRadius: 8, color: "inherit", fontFamily: "inherit",
     boxSizing: "border-box",
   },
@@ -72,7 +72,7 @@ const styles = {
   err: {
     padding: 10, marginBottom: 14, borderRadius: 8,
     background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.35)",
-    color: "#fca5a5", fontSize: 13,
+    color: "var(--c-danger)", fontSize: 13,
   },
   summaryHead: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
   summaryRow: {
@@ -84,18 +84,18 @@ const styles = {
   summaryImg: { width: 48, height: 48, objectFit: "contain", borderRadius: 6, background: "rgba(255,255,255,.04)", padding: 4 },
   totals: { marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.12)" },
   totalLine: { display: "flex", justifyContent: "space-between", fontSize: 14, marginBottom: 6 },
-  totalGrand: { fontSize: 22, fontWeight: 900, color: "var(--brand-primary, #A7F5C8)" },
+  totalGrand: { fontSize: 22, fontWeight: 900, color: "var(--brand-primary, var(--c-accent))" },
   cta: {
     width: "100%", padding: "16px 22px", marginTop: 18,
     borderRadius: 999, border: "none",
-    background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+    background: "linear-gradient(135deg, var(--c-accent-2) 0%, #2E8F6E 100%)",
     color: "#fff", fontFamily: "inherit",
     fontWeight: 900, fontSize: 14, letterSpacing: ".06em", textTransform: "uppercase",
     cursor: "pointer",
     boxShadow: "0 14px 30px -8px rgba(46,143,110,.55)",
   },
   ctaDisabled: {
-    background: "rgba(255,255,255,.06)", color: "rgba(237,233,224,.4)",
+    background: "var(--c-border)", color: "rgba(var(--c-text-rgb),.4)",
     cursor: "not-allowed", boxShadow: "none",
   },
 };
@@ -316,20 +316,20 @@ export default function ShopCheckout() {
             <div style={styles.card}>
               <div style={styles.summaryHead}>
                 <h3 style={styles.sectionH}>Tu pedido</h3>
-                <Link to="/shop" style={{ fontSize: 11, color: "rgba(237,233,224,.6)" }}>Editar</Link>
+                <Link to="/shop" style={{ fontSize: 11, color: "rgba(var(--c-text-rgb),.6)" }}>Editar</Link>
               </div>
 
               {items.map((i) => (
                 <div key={i.id} style={styles.summaryRow}>
                   {i.primary_image
                     ? <img src={i.primary_image} alt="" style={styles.summaryImg} />
-                    : <div style={{ ...styles.summaryImg, background: "rgba(255,255,255,.06)" }} />
+                    : <div style={{ ...styles.summaryImg, background: "var(--c-border)" }} />
                   }
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600 }}>{i.name}</div>
-                    <div style={{ fontSize: 11, color: "rgba(237,233,224,.55)" }}>Cantidad: {i.quantity}</div>
+                    <div style={{ fontSize: 11, color: "rgba(var(--c-text-rgb),.55)" }}>Cantidad: {i.quantity}</div>
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--brand-primary, #A7F5C8)" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--brand-primary, var(--c-accent))" }}>
                     {formatARS(i.price_cents * i.quantity)}
                   </div>
                 </div>
@@ -337,19 +337,19 @@ export default function ShopCheckout() {
 
               <div style={styles.totals}>
                 <div style={styles.totalLine}>
-                  <span style={{ color: "rgba(237,233,224,.65)" }}>Subtotal</span>
+                  <span style={{ color: "rgba(var(--c-text-rgb),.65)" }}>Subtotal</span>
                   <span style={{ fontWeight: 600 }}>{formatARS(subtotalCents)}</span>
                 </div>
                 <div style={styles.totalLine}>
-                  <span style={{ color: "rgba(237,233,224,.65)" }}>Envío</span>
+                  <span style={{ color: "rgba(var(--c-text-rgb),.65)" }}>Envío</span>
                   <span style={{ fontWeight: 600 }}>A coordinar</span>
                 </div>
                 {promoApplied && (
                   <div style={styles.totalLine}>
-                    <span style={{ color: "var(--brand-primary, #A7F5C8)" }}>
+                    <span style={{ color: "var(--brand-primary, var(--c-accent))" }}>
                       🎟️ {promoApplied.code}
                     </span>
-                    <span style={{ fontWeight: 600, color: "var(--brand-primary, #A7F5C8)" }}>
+                    <span style={{ fontWeight: 600, color: "var(--brand-primary, var(--c-accent))" }}>
                       −{promoApplied.discount_formatted}
                     </span>
                   </div>
@@ -361,10 +361,10 @@ export default function ShopCheckout() {
               </div>
 
               {/* ── Campo de código promocional ── */}
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.06)" }}>
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--c-border)" }}>
                 {!promoApplied ? (
                   <>
-                    <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.55)", marginBottom: 6, display: "block" }}>
+                    <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(var(--c-text-rgb),.55)", marginBottom: 6, display: "block" }}>
                       🎟️ Código promocional
                     </label>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -377,7 +377,7 @@ export default function ShopCheckout() {
                         style={{
                           flex: 1, padding: "10px 12px", fontSize: 13,
                           background: "rgba(255,255,255,.04)",
-                          border: "1px solid rgba(255,255,255,.1)",
+                          border: "1px solid var(--c-border-2)",
                           borderRadius: 8, color: "inherit", fontFamily: "inherit",
                           letterSpacing: ".06em", textTransform: "uppercase",
                         }}
@@ -388,8 +388,8 @@ export default function ShopCheckout() {
                         disabled={promoChecking || !promoInput.trim()}
                         style={{
                           padding: "10px 16px", borderRadius: 8, border: "none",
-                          background: "rgba(167,245,200,.12)",
-                          color: "var(--brand-primary, #A7F5C8)",
+                          background: "rgba(var(--c-accent-rgb),.12)",
+                          color: "var(--brand-primary, var(--c-accent))",
                           fontFamily: "inherit", fontWeight: 700, fontSize: 12,
                           letterSpacing: ".08em", textTransform: "uppercase",
                           cursor: promoChecking || !promoInput.trim() ? "not-allowed" : "pointer",
@@ -402,13 +402,13 @@ export default function ShopCheckout() {
                   </>
                 ) : (
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 12, color: "var(--brand-primary, #A7F5C8)", fontWeight: 700 }}>
+                    <span style={{ fontSize: 12, color: "var(--brand-primary, var(--c-accent))", fontWeight: 700 }}>
                       ✓ {promoApplied.code} aplicado
                     </span>
                     <button
                       type="button"
                       onClick={clearPromo}
-                      style={{ background: "transparent", border: "none", color: "rgba(237,233,224,.55)", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}
+                      style={{ background: "transparent", border: "none", color: "rgba(var(--c-text-rgb),.55)", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}
                     >
                       Quitar
                     </button>
@@ -417,7 +417,7 @@ export default function ShopCheckout() {
                 {promoMsg && (
                   <div style={{
                     marginTop: 8, fontSize: 11,
-                    color: promoMsg.type === "ok" ? "var(--brand-primary, #A7F5C8)" : "#fca5a5",
+                    color: promoMsg.type === "ok" ? "var(--brand-primary, var(--c-accent))" : "var(--c-danger)",
                   }}>
                     {promoMsg.text}
                   </div>
@@ -449,7 +449,7 @@ export default function ShopCheckout() {
               {/* Keyframes inline para el spinner — no afecta otros componentes */}
               <style>{`@keyframes holistic-spin { to { transform: rotate(360deg); } }`}</style>
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14, fontSize: 11, color: "rgba(237,233,224,.55)" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14, fontSize: 11, color: "rgba(var(--c-text-rgb),.55)" }}>
                 <span>🔒 Pago seguro</span>
                 <span>💳 Tarjetas + efectivo</span>
                 <span>📦 Envío 48 hs</span>

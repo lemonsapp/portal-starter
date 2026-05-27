@@ -189,7 +189,7 @@ export default function ShopCheckoutSuccess() {
                             data-confetti
                             style={{
                                 ...S.confettiParticle,
-                                background: ["#A7F5C8", "#25D366", "#2E8F6E", "#FFFFFF"][i % 4],
+                                background: ["var(--c-accent)", "var(--c-accent-2)", "#2E8F6E", "#FFFFFF"][i % 4],
                                 width: 6 + (i % 3) * 2,
                                 height: 6 + (i % 3) * 2,
                             }}
@@ -203,22 +203,22 @@ export default function ShopCheckoutSuccess() {
                     <svg viewBox="0 0 80 80" width="100" height="100" style={S.checkSvg}>
                         <circle cx="40" cy="40" r="36"
                             fill="none"
-                            stroke="rgba(167,245,200,0.4)"
+                            stroke="rgba(var(--c-accent-rgb),0.4)"
                             strokeWidth="2"
                         />
                         <circle cx="40" cy="40" r="32"
-                            fill="rgba(167,245,200,0.15)"
-                            stroke="var(--brand-primary, #A7F5C8)"
+                            fill="rgba(var(--c-accent-rgb),0.15)"
+                            stroke="var(--brand-primary, var(--c-accent))"
                             strokeWidth="2.5"
                         />
                         <path d="M 26 42 L 36 52 L 56 30"
                             fill="none"
-                            stroke="var(--brand-primary, #A7F5C8)"
+                            stroke="var(--brand-primary, var(--c-accent))"
                             strokeWidth="4.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             style={{
-                                filter: "drop-shadow(0 0 8px rgba(167,245,200,0.85))",
+                                filter: "drop-shadow(0 0 8px rgba(var(--c-accent-rgb),0.85))",
                                 strokeDasharray: 50,
                                 strokeDashoffset: 50,
                                 animation: "shop-success-draw .7s cubic-bezier(.22,1,.36,1) .35s forwards",
@@ -301,8 +301,8 @@ export default function ShopCheckoutSuccess() {
 const S = {
     shell: {
         minHeight: "100vh",
-        background: "var(--brand-bg, #060606)",
-        color: "var(--brand-text, #ede9e0)",
+        background: "var(--brand-bg, var(--c-bg))",
+        color: "var(--brand-text, var(--c-text))",
         fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
         padding: "60px 20px",
         display: "grid", placeItems: "center",
@@ -313,10 +313,10 @@ const S = {
         maxWidth: 580, width: "100%",
         padding: "60px 40px 48px",
         background: "rgba(255,255,255,.03)",
-        border: "1px solid rgba(167,245,200,.22)",
+        border: "1px solid rgba(var(--c-accent-rgb),.22)",
         borderRadius: 24,
         textAlign: "center",
-        boxShadow: "0 30px 80px -20px rgba(0,0,0,0.6), 0 0 60px -20px rgba(167,245,200,0.18)",
+        boxShadow: "0 30px 80px -20px rgba(0,0,0,0.6), 0 0 60px -20px rgba(var(--c-accent-rgb),0.18)",
         backdropFilter: "blur(14px)",
         overflow: "hidden",
     },
@@ -326,7 +326,7 @@ const S = {
         transform: "translate(-50%, -50%)",
         width: 420, height: 420,
         borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(167,245,200,0.45) 0%, rgba(46,143,110,0.18) 30%, transparent 65%)",
+        background: "radial-gradient(circle, rgba(var(--c-accent-rgb),0.45) 0%, rgba(46,143,110,0.18) 30%, transparent 65%)",
         filter: "blur(40px)",
         pointerEvents: "none",
         zIndex: 0,
@@ -357,7 +357,7 @@ const S = {
         position: "absolute",
         top: -10, right: -28,
         padding: "5px 12px", borderRadius: 999,
-        background: "linear-gradient(135deg, #25D366, #2E8F6E)",
+        background: "linear-gradient(135deg, var(--c-accent-2), #2E8F6E)",
         color: "#fff",
         fontSize: 11, fontWeight: 900, letterSpacing: ".14em",
         boxShadow: "0 8px 18px rgba(37,211,102,0.55)",
@@ -385,7 +385,7 @@ const S = {
         position: "relative", zIndex: 2,
         margin: "0 auto 28px",
         maxWidth: 460,
-        color: "rgba(237,233,224,.78)",
+        color: "rgba(var(--c-text-rgb),.78)",
         fontSize: 15, lineHeight: 1.55,
     },
 
@@ -412,21 +412,21 @@ const S = {
         display: "grid", placeItems: "center",
         fontSize: 16,
         background: done
-            ? "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)"
+            ? "linear-gradient(135deg, var(--c-accent-2) 0%, #2E8F6E 100%)"
             : active
-                ? "rgba(167,245,200,0.16)"
+                ? "rgba(var(--c-accent-rgb),0.16)"
                 : "rgba(255,255,255,0.05)",
         border: done
-            ? "1px solid rgba(167,245,200,0.5)"
+            ? "1px solid rgba(var(--c-accent-rgb),0.5)"
             : active
-                ? "1px solid rgba(167,245,200,0.4)"
-                : "1px solid rgba(255,255,255,0.10)",
-        color: done ? "#07130c" : active ? "var(--brand-primary, #A7F5C8)" : "rgba(237,233,224,0.55)",
+                ? "1px solid rgba(var(--c-accent-rgb),0.4)"
+                : "1px solid var(--c-border-2)",
+        color: done ? "#07130c" : active ? "var(--brand-primary, var(--c-accent))" : "rgba(var(--c-text-rgb),0.55)",
         fontWeight: 900,
         boxShadow: done
             ? "0 6px 16px -4px rgba(46,143,110,0.45)"
             : active
-                ? "0 0 0 4px rgba(167,245,200,0.10)"
+                ? "0 0 0 4px rgba(var(--c-accent-rgb),0.10)"
                 : "none",
         flexShrink: 0,
         position: "relative",
@@ -436,13 +436,13 @@ const S = {
     flowTitle: (done, active) => ({
         fontSize: 14,
         fontWeight: done || active ? 800 : 700,
-        color: done || active ? "var(--brand-text, #ede9e0)" : "rgba(237,233,224,0.7)",
+        color: done || active ? "var(--brand-text, var(--c-text))" : "rgba(var(--c-text-rgb),0.7)",
         letterSpacing: "0.01em",
         marginBottom: 3,
     }),
     flowDesc: {
         fontSize: 13,
-        color: "rgba(237,233,224,0.62)",
+        color: "rgba(var(--c-text-rgb),0.62)",
         lineHeight: 1.5,
     },
     flowConnector: (done) => ({
@@ -452,7 +452,7 @@ const S = {
         bottom: -12,
         width: 2,
         background: done
-            ? "linear-gradient(180deg, rgba(46,143,110,0.55), rgba(167,245,200,0.22))"
+            ? "linear-gradient(180deg, rgba(46,143,110,0.55), rgba(var(--c-accent-rgb),0.22))"
             : "rgba(255,255,255,0.08)",
         zIndex: 0,
     }),
@@ -463,19 +463,19 @@ const S = {
         padding: "16px 22px",
         margin: "0 auto 24px",
         background: "rgba(255,255,255,.05)",
-        border: "1px dashed rgba(167,245,200,.3)",
+        border: "1px dashed rgba(var(--c-accent-rgb),.3)",
         borderRadius: 14,
         textAlign: "left",
     },
     orderLabel: {
         fontSize: 10, fontWeight: 800, letterSpacing: ".24em",
         textTransform: "uppercase",
-        color: "rgba(237,233,224,.55)",
+        color: "rgba(var(--c-text-rgb),.55)",
         marginBottom: 6,
     },
     orderId: {
         fontSize: 22, fontWeight: 900,
-        color: "var(--brand-primary, #A7F5C8)",
+        color: "var(--brand-primary, var(--c-accent))",
         letterSpacing: ".04em",
         fontFamily: "monospace",
     },
@@ -485,8 +485,8 @@ const S = {
         padding: "4px 12px", borderRadius: 999,
         fontSize: 10, fontWeight: 800, letterSpacing: ".18em",
         textTransform: "uppercase",
-        background: kind === "paid" ? "rgba(167,245,200,.18)" : "rgba(252,211,77,.14)",
-        color: kind === "paid" ? "var(--brand-primary, #A7F5C8)" : "#fcd34d",
+        background: kind === "paid" ? "rgba(var(--c-accent-rgb),.18)" : "rgba(252,211,77,.14)",
+        color: kind === "paid" ? "var(--brand-primary, var(--c-accent))" : "var(--c-warning)",
     }),
 
     ctaRow: {
@@ -497,7 +497,7 @@ const S = {
     },
     btn: {
         padding: "13px 24px", borderRadius: 999,
-        background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+        background: "linear-gradient(135deg, var(--c-accent-2) 0%, #2E8F6E 100%)",
         color: "#fff", textDecoration: "none",
         fontFamily: "inherit", fontWeight: 800, fontSize: 13,
         letterSpacing: ".06em", textTransform: "uppercase",
@@ -507,7 +507,7 @@ const S = {
         padding: "13px 24px", borderRadius: 999,
         background: "transparent",
         border: "1px solid rgba(255,255,255,.18)",
-        color: "rgba(237,233,224,.85)", textDecoration: "none",
+        color: "rgba(var(--c-text-rgb),.85)", textDecoration: "none",
         fontFamily: "inherit", fontWeight: 700, fontSize: 13,
         letterSpacing: ".06em", textTransform: "uppercase",
     },
@@ -515,7 +515,7 @@ const S = {
     fineprint: {
         position: "relative", zIndex: 2,
         marginTop: 26,
-        fontSize: 12, color: "rgba(237,233,224,.45)",
+        fontSize: 12, color: "rgba(var(--c-text-rgb),.45)",
         lineHeight: 1.55,
     },
 };

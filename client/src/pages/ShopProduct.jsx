@@ -265,8 +265,8 @@ export default function ShopProduct() {
 const S = {
   shell: {
     minHeight: "100vh",
-    background: "var(--brand-bg, #060606)",
-    color: "var(--brand-text, #ede9e0)",
+    background: "var(--brand-bg, var(--c-bg))",
+    color: "var(--brand-text, var(--c-text))",
     fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
     padding: "32px 24px 100px",
   },
@@ -274,14 +274,14 @@ const S = {
 
   back: {
     display: "inline-flex", alignItems: "center", gap: 8,
-    color: "rgba(237,233,224,.7)", textDecoration: "none",
+    color: "rgba(var(--c-text-rgb),.7)", textDecoration: "none",
     fontSize: 12, fontWeight: 700, letterSpacing: ".06em",
     marginBottom: 36, textTransform: "uppercase",
   },
 
   loading: {
     padding: "120px 20px", textAlign: "center",
-    color: "rgba(237,233,224,.5)", fontSize: 14,
+    color: "rgba(var(--c-text-rgb),.5)", fontSize: 14,
   },
 
   layout: {
@@ -296,7 +296,7 @@ const S = {
   mainImgWrap: {
     position: "relative",
     width: "100%", aspectRatio: "1 / 1",
-    background: "linear-gradient(135deg, rgba(167,245,200,.05), rgba(46,143,110,.08))",
+    background: "linear-gradient(135deg, rgba(var(--c-accent-rgb),.05), rgba(46,143,110,.08))",
     borderRadius: 22,
     border: "1px solid rgba(255,255,255,.05)",
     overflow: "hidden",
@@ -310,8 +310,8 @@ const S = {
   featuredBadge: {
     position: "absolute", top: 18, right: 18,
     padding: "6px 14px", borderRadius: 999,
-    background: "rgba(167,245,200,.20)",
-    color: "var(--brand-primary, #A7F5C8)",
+    background: "rgba(var(--c-accent-rgb),.20)",
+    color: "var(--brand-primary, var(--c-accent))",
     fontSize: 10, fontWeight: 800, letterSpacing: ".2em",
     textTransform: "uppercase", backdropFilter: "blur(8px)",
   },
@@ -320,7 +320,7 @@ const S = {
     width: 76, height: 76, padding: 8,
     borderRadius: 12, cursor: "pointer",
     background: "rgba(255,255,255,.04)",
-    border: active ? "2px solid var(--brand-primary, #A7F5C8)" : "1px solid rgba(255,255,255,.08)",
+    border: active ? "2px solid var(--brand-primary, var(--c-accent))" : "1px solid rgba(255,255,255,.08)",
     overflow: "hidden",
     transition: "border-color .25s ease",
   }),
@@ -331,14 +331,14 @@ const S = {
   cat: {
     display: "inline-flex", alignItems: "center", gap: 10,
     fontSize: 11, fontWeight: 700, letterSpacing: ".3em",
-    color: "var(--brand-primary, #A7F5C8)",
+    color: "var(--brand-primary, var(--c-accent))",
     marginBottom: 4,
   },
   catDot: {
     display: "inline-block",
     width: 5, height: 5, borderRadius: "50%",
-    background: "var(--brand-primary, #A7F5C8)",
-    boxShadow: "0 0 8px var(--brand-primary, #A7F5C8)",
+    background: "var(--brand-primary, var(--c-accent))",
+    boxShadow: "0 0 8px var(--brand-primary, var(--c-accent))",
   },
   name: {
     margin: 0,
@@ -355,7 +355,7 @@ const S = {
     fontStyle: "italic", fontWeight: 400,
     fontSize: "clamp(1rem, 1.3vw, 1.2rem)",
     lineHeight: 1.45,
-    color: "rgba(237,233,224,.78)",
+    color: "rgba(var(--c-text-rgb),.78)",
   },
 
   priceRow: {
@@ -366,21 +366,21 @@ const S = {
     fontFamily: "'Gotham', sans-serif",
     fontSize: "clamp(2rem, 3.4vw, 2.8rem)",
     fontWeight: 900,
-    color: "var(--brand-primary, #A7F5C8)",
+    color: "var(--brand-primary, var(--c-accent))",
     letterSpacing: "-0.01em",
   },
-  sku: { fontSize: 11, color: "rgba(237,233,224,.4)", fontFamily: "monospace" },
+  sku: { fontSize: 11, color: "rgba(var(--c-text-rgb),.4)", fontFamily: "monospace" },
 
   stockRow: { marginTop: -4 },
   stockOk: {
     display: "inline-flex", alignItems: "center", gap: 8,
-    fontSize: 13, color: "rgba(167,245,200,.95)", fontWeight: 600,
+    fontSize: 13, color: "rgba(var(--c-accent-rgb),.95)", fontWeight: 600,
   },
   stockOkDot: {
     display: "inline-block",
     width: 8, height: 8, borderRadius: "50%",
-    background: "var(--brand-primary, #A7F5C8)",
-    boxShadow: "0 0 8px var(--brand-primary, #A7F5C8)",
+    background: "var(--brand-primary, var(--c-accent))",
+    boxShadow: "0 0 8px var(--brand-primary, var(--c-accent))",
   },
   stockOut: { fontSize: 13, color: "rgba(252,165,165,.85)", fontWeight: 600 },
 
@@ -390,7 +390,7 @@ const S = {
   },
   qtyLabel: {
     fontSize: 11, fontWeight: 700, letterSpacing: ".2em",
-    textTransform: "uppercase", color: "rgba(237,233,224,.55)",
+    textTransform: "uppercase", color: "rgba(var(--c-text-rgb),.55)",
   },
   qtyControls: { display: "inline-flex", alignItems: "center", gap: 4 },
   qtyBtn: {
@@ -410,24 +410,24 @@ const S = {
     gap: 14, padding: "18px 32px",
     marginTop: 8,
     borderRadius: 999, border: "none",
-    background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+    background: "linear-gradient(135deg, var(--c-accent-2) 0%, #2E8F6E 100%)",
     color: "#fff",
     fontFamily: "inherit", fontSize: 14, fontWeight: 900,
     letterSpacing: ".1em", textTransform: "uppercase",
     cursor: "pointer",
-    boxShadow: "0 18px 36px -10px rgba(46,143,110,.6), 0 0 0 1px rgba(167,245,200,.25)",
+    boxShadow: "0 18px 36px -10px rgba(46,143,110,.6), 0 0 0 1px rgba(var(--c-accent-rgb),.25)",
     transition: "transform .25s ease, box-shadow .25s ease",
   },
   ctaDisabled: {
-    background: "rgba(255,255,255,.06)", color: "rgba(237,233,224,.4)",
+    background: "var(--c-border)", color: "rgba(var(--c-text-rgb),.4)",
     boxShadow: "none", cursor: "not-allowed",
   },
 
   toast: {
     padding: "11px 16px", borderRadius: 10,
-    background: "rgba(167,245,200,.10)",
-    border: "1px solid rgba(167,245,200,.3)",
-    color: "var(--brand-primary, #A7F5C8)",
+    background: "rgba(var(--c-accent-rgb),.10)",
+    border: "1px solid rgba(var(--c-accent-rgb),.3)",
+    color: "var(--brand-primary, var(--c-accent))",
     fontSize: 13, fontWeight: 600,
   },
 
@@ -435,14 +435,14 @@ const S = {
     display: "flex", flexWrap: "wrap", gap: 10,
     marginTop: 14,
     paddingTop: 18,
-    borderTop: "1px solid rgba(255,255,255,.06)",
+    borderTop: "1px solid var(--c-border)",
   },
   trustItem: {
     display: "inline-flex", alignItems: "center", gap: 6,
     padding: "7px 13px", borderRadius: 999,
     background: "rgba(255,255,255,.03)",
-    border: "1px solid rgba(255,255,255,.06)",
-    fontSize: 11, color: "rgba(237,233,224,.75)", fontWeight: 600,
+    border: "1px solid var(--c-border)",
+    fontSize: 11, color: "rgba(var(--c-text-rgb),.75)", fontWeight: 600,
   },
 
   // ── Editorial sections ──
@@ -458,7 +458,7 @@ const S = {
     fontFamily: "'Fraunces', Georgia, serif",
     fontStyle: "italic", fontWeight: 400,
     textTransform: "none",
-    color: "var(--brand-primary, #A7F5C8)",
+    color: "var(--brand-primary, var(--c-accent))",
     letterSpacing: "-0.005em",
   },
 
@@ -467,7 +467,7 @@ const S = {
     margin: 0,
     fontSize: "clamp(1rem, 1.2vw, 1.15rem)",
     lineHeight: 1.7,
-    color: "rgba(237,233,224,.8)",
+    color: "rgba(var(--c-text-rgb),.8)",
     maxWidth: 720,
     whiteSpace: "pre-line",
   },
@@ -479,23 +479,23 @@ const S = {
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
     gap: 0,
     maxWidth: 920,
-    border: "1px solid rgba(255,255,255,.06)",
+    border: "1px solid var(--c-border)",
     borderRadius: 14,
     overflow: "hidden",
   },
   metaRow: {
     padding: "16px 20px",
-    borderRight: "1px solid rgba(255,255,255,.06)",
-    borderBottom: "1px solid rgba(255,255,255,.06)",
+    borderRight: "1px solid var(--c-border)",
+    borderBottom: "1px solid var(--c-border)",
     display: "flex", flexDirection: "column", gap: 4,
   },
   metaKey: {
     fontSize: 10, fontWeight: 800, letterSpacing: ".22em",
-    textTransform: "uppercase", color: "rgba(237,233,224,.45)",
+    textTransform: "uppercase", color: "rgba(var(--c-text-rgb),.45)",
   },
   metaVal: {
     margin: 0,
-    fontSize: 14, fontWeight: 600, color: "rgba(237,233,224,.9)",
+    fontSize: 14, fontWeight: 600, color: "rgba(var(--c-text-rgb),.9)",
   },
 
   // ── Related ──
@@ -508,7 +508,7 @@ const S = {
   relatedCard: {
     display: "flex", flexDirection: "column",
     textDecoration: "none", color: "inherit",
-    border: "1px solid rgba(255,255,255,.06)",
+    border: "1px solid var(--c-border)",
     borderRadius: 14, overflow: "hidden",
     background: "rgba(255,255,255,.025)",
     transition: "transform .3s ease, border-color .3s ease",
@@ -516,13 +516,13 @@ const S = {
   relatedImgWrap: {
     width: "100%", aspectRatio: "1 / 1",
     padding: "16%",
-    background: "linear-gradient(135deg, rgba(167,245,200,.03), rgba(46,143,110,.05))",
+    background: "linear-gradient(135deg, rgba(var(--c-accent-rgb),.03), rgba(46,143,110,.05))",
     display: "grid", placeItems: "center",
   },
   relatedImg: { width: "100%", height: "100%", objectFit: "contain" },
   relatedBody: { padding: "14px 16px 18px", display: "flex", flexDirection: "column", gap: 6 },
   relatedName: { fontSize: 13, fontWeight: 700, lineHeight: 1.3, letterSpacing: "-0.005em" },
-  relatedPrice: { fontSize: 14, fontWeight: 800, color: "var(--brand-primary, #A7F5C8)" },
+  relatedPrice: { fontSize: 14, fontWeight: 800, color: "var(--brand-primary, var(--c-accent))" },
 };
 
 // Responsive: stack en mobile (<=900px)

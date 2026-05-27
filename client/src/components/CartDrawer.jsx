@@ -18,7 +18,7 @@ const styles = {
     width: 60,
     height: 60,
     borderRadius: "50%",
-    background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+    background: "linear-gradient(135deg, var(--c-accent-2) 0%, #2E8F6E 100%)",
     color: "#fff",
     border: "none",
     cursor: "pointer",
@@ -33,7 +33,7 @@ const styles = {
     position: "absolute",
     top: -6, right: -6,
     minWidth: 22, height: 22, padding: "0 6px",
-    background: "#fff", color: "#1a1a1a",
+    background: "#fff", color: "var(--c-surface-2)",
     borderRadius: 999,
     fontSize: 11, fontWeight: 900,
     display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -52,8 +52,8 @@ const styles = {
     position: "fixed",
     top: 0, right: 0, bottom: 0,
     width: "min(420px, 92vw)",
-    background: "var(--brand-bg, #0a0a0a)",
-    color: "var(--brand-text, #ede9e0)",
+    background: "var(--brand-bg, var(--c-bg))",
+    color: "var(--brand-text, var(--c-text))",
     fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
     transform: open ? "translateX(0)" : "translateX(100%)",
     transition: "transform .35s cubic-bezier(.2,.8,.2,1)",
@@ -71,7 +71,7 @@ const styles = {
     textTransform: "uppercase", letterSpacing: ".06em",
   },
   closeBtn: {
-    background: "rgba(255,255,255,.06)", border: "none",
+    background: "var(--c-border)", border: "none",
     color: "inherit", padding: "6px 12px", borderRadius: 6,
     cursor: "pointer", fontFamily: "inherit", fontSize: 18,
   },
@@ -80,13 +80,13 @@ const styles = {
   },
   empty: {
     padding: "40px 0", textAlign: "center",
-    color: "rgba(237,233,224,.55)", fontSize: 14, lineHeight: 1.6,
+    color: "rgba(var(--c-text-rgb),.55)", fontSize: 14, lineHeight: 1.6,
   },
   row: {
     display: "grid",
     gridTemplateColumns: "64px 1fr auto",
     gap: 12, padding: "12px 0",
-    borderBottom: "1px solid rgba(255,255,255,.06)",
+    borderBottom: "1px solid var(--c-border)",
     alignItems: "center",
   },
   rowImg: {
@@ -95,7 +95,7 @@ const styles = {
     padding: 6,
   },
   rowName: { fontWeight: 600, fontSize: 14, lineHeight: 1.3, marginBottom: 4 },
-  rowPrice: { fontSize: 13, color: "var(--brand-primary, #A7F5C8)", fontWeight: 700 },
+  rowPrice: { fontSize: 13, color: "var(--brand-primary, var(--c-accent))", fontWeight: 700 },
   qty: {
     display: "inline-flex", alignItems: "center", gap: 6,
     marginTop: 6,
@@ -122,17 +122,17 @@ const styles = {
     display: "flex", justifyContent: "space-between", alignItems: "baseline",
     fontSize: 14,
   },
-  totalVal: { fontSize: 22, fontWeight: 900, color: "var(--brand-primary, #A7F5C8)" },
+  totalVal: { fontSize: 22, fontWeight: 900, color: "var(--brand-primary, var(--c-accent))" },
   ctaCheckout: {
     padding: "14px 22px", borderRadius: 999, border: "none",
-    background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+    background: "linear-gradient(135deg, var(--c-accent-2) 0%, #2E8F6E 100%)",
     color: "#fff", fontFamily: "inherit", fontWeight: 900,
     fontSize: 14, letterSpacing: ".06em", textTransform: "uppercase",
     cursor: "pointer",
     boxShadow: "0 14px 30px -8px rgba(46,143,110,.55)",
   },
   ctaCheckoutDisabled: {
-    background: "rgba(255,255,255,.06)", color: "rgba(237,233,224,.4)",
+    background: "var(--c-border)", color: "rgba(var(--c-text-rgb),.4)",
     cursor: "not-allowed", boxShadow: "none",
   },
 };
@@ -200,14 +200,14 @@ export default function CartDrawer() {
           {items.length === 0 ? (
             <div style={styles.empty}>
               Tu carrito está vacío.<br />
-              Sumá productos desde el <a href="/shop" style={{ color: "var(--brand-primary, #A7F5C8)" }}>catálogo</a>.
+              Sumá productos desde el <a href="/shop" style={{ color: "var(--brand-primary, var(--c-accent))" }}>catálogo</a>.
             </div>
           ) : (
             items.map((i) => (
               <div key={i.id} style={styles.row}>
                 {i.primary_image
                   ? <img src={i.primary_image} alt={i.name} style={styles.rowImg} />
-                  : <div style={{ ...styles.rowImg, background: "rgba(255,255,255,.06)" }} />
+                  : <div style={{ ...styles.rowImg, background: "var(--c-border)" }} />
                 }
                 <div>
                   <div style={styles.rowName}>{i.name}</div>
@@ -228,10 +228,10 @@ export default function CartDrawer() {
 
         <footer style={styles.drawerFoot}>
           <div style={styles.totalRow}>
-            <span style={{ color: "rgba(237,233,224,.65)" }}>Subtotal</span>
+            <span style={{ color: "rgba(var(--c-text-rgb),.65)" }}>Subtotal</span>
             <span style={styles.totalVal}>{formatARS(subtotalCents)}</span>
           </div>
-          <div style={{ fontSize: 12, color: "rgba(237,233,224,.5)", marginTop: -4 }}>
+          <div style={{ fontSize: 12, color: "rgba(var(--c-text-rgb),.5)", marginTop: -4 }}>
             El envío se calcula en el checkout.
           </div>
           <button

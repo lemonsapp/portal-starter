@@ -9,8 +9,8 @@ import { useBranding } from "../lib/branding.js";
 const styles = {
   shell: {
     minHeight: "100vh",
-    background: "var(--brand-bg, #080808)",
-    color: "var(--brand-text, #ede9e0)",
+    background: "var(--brand-bg, var(--c-bg))",
+    color: "var(--brand-text, var(--c-text))",
     fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
     padding: "80px 20px",
     display: "grid", placeItems: "center",
@@ -28,11 +28,11 @@ const styles = {
     fontSize: "clamp(1.7rem, 3.2vw, 2.2rem)", fontWeight: 900,
     margin: "0 0 10px", textTransform: "uppercase",
   },
-  sub: { color: "rgba(237,233,224,.78)", fontSize: 15, lineHeight: 1.55, marginBottom: 22 },
+  sub: { color: "rgba(var(--c-text-rgb),.78)", fontSize: 15, lineHeight: 1.55, marginBottom: 22 },
   btnRow: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 8 },
   btn: {
     padding: "12px 22px", borderRadius: 999,
-    background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+    background: "linear-gradient(135deg, var(--c-accent-2) 0%, #2E8F6E 100%)",
     color: "#fff", textDecoration: "none",
     fontFamily: "inherit", fontWeight: 800, fontSize: 13,
     letterSpacing: ".06em", textTransform: "uppercase",
@@ -41,7 +41,7 @@ const styles = {
     padding: "12px 22px", borderRadius: 999,
     background: "transparent",
     border: "1px solid rgba(255,255,255,.18)",
-    color: "rgba(237,233,224,.85)", textDecoration: "none",
+    color: "rgba(var(--c-text-rgb),.85)", textDecoration: "none",
     fontFamily: "inherit", fontWeight: 700, fontSize: 13,
     letterSpacing: ".06em", textTransform: "uppercase",
   },
@@ -62,7 +62,7 @@ export default function ShopCheckoutFailure() {
           carrito — podés intentarlo de nuevo cuando quieras.
         </p>
         {orderParam && (
-          <p style={{ fontSize: 12, color: "rgba(237,233,224,.55)", marginBottom: 16 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--c-text-rgb),.55)", marginBottom: 16 }}>
             Referencia: <code style={{ fontFamily: "monospace" }}>{orderParam}</code>
           </p>
         )}
