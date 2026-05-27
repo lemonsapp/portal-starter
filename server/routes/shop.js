@@ -403,10 +403,10 @@ async function migrate() {
       ('race-4-micro-magnesio-250ml',     '/img/productos/linea-race/250ml/race-4-celeste.png',         'Race 4 Micro+Mg 250ml'),
       -- Race 500ml
       ('race-1-vegetativo-500ml',         '/img/productos/linea-race/500ml/race-1-verde-500ml.png',     'Race 1 Vegetativo 500ml'),
-      ('race-2-floracion-part-a-500ml',   '/img/productos/linea-race/500ml/race-2-part-a-500ml.png',    'Race 2 Floración Part A 500ml'),
-      ('race-2-floracion-part-b-500ml',   '/img/productos/linea-race/500ml/race-2-part-b-500ml.png',    'Race 2 Floración Part B 500ml'),
-      ('race-3-pk-rosa-500ml',            '/img/productos/linea-race/500ml/race-3-rosa-500ml.png',      'Race 3 PK 500ml'),
-      ('race-4-micro-magnesio-500ml',     '/img/productos/linea-race/500ml/race-4-celeste-500ml.png',   'Race 4 Micro+Mg 500ml'),
+      ('race-2-floracion-part-a-500ml',   '/img/productos/linea-race/500ml/race-2-celeste-500ml.png',   'Race 2 Calcio + Nitrógeno (celeste) 500ml'),
+      ('race-2-floracion-part-b-500ml',   '/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png', 'Race 3 PK 2ª parte (violeta) 500ml'),
+      ('race-3-pk-rosa-500ml',            '/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png', 'Race 3 PK 1ª parte (violeta) 500ml'),
+      ('race-4-micro-magnesio-500ml',     '/img/productos/linea-race/500ml/race-4-rosa-500ml.png',      'Race 4 Micro + Magnesio (rosa) 500ml'),
       -- Elite 500ml + 1L
       ('elite-parte-1-500ml',             '/img/productos/linea-elite/500gr/parte-1-lateral.png',       'Elite Parte 1 500ml'),
       ('elite-parte-1-1l',                '/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png',   'Elite Parte 1 1L'),
