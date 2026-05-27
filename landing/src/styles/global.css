@@ -3760,7 +3760,7 @@ html.is-loading body {
 .ease-of-use {
     position: relative;
     width: 100%;
-    height: 600vh;       /* 3 paneles × 200vh de scroll — tiempo cómodo de lectura */
+    height: 300vh;       /* 3 paneles × 100vh de scroll — ágil (antes 200vh/panel, demasiado scroll) */
     color: #1a1a1a;
 }
 

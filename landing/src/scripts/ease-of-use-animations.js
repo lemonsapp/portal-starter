@@ -144,7 +144,7 @@ function initEaseOfUse() {
                 trigger: root,
                 start: "top top",
                 end: "bottom bottom",
-                scrub: 1.2,
+                scrub: 0.6,
                 invalidateOnRefresh: true,
                 refreshPriority: -2,
                 onUpdate: (self) => {
