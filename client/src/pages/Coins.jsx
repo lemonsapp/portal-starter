@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useToast } from "../components/ToastReward.jsx";
 import { Pop, FadeUp, Pulse, Jumbo, CountUp } from "../components/MotionPop.jsx";
 import { motion, AnimatePresence } from "framer-motion";
+import BuyCTA from "../components/BuyCTA.jsx";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -784,6 +785,10 @@ export default function Coins() {
         {/* CONTENIDO */}
         <div style={{ flex:1,overflowY:"auto",padding:"28px 32px 48px" }}>
 
+          <div style={{ marginBottom:24 }}>
+            <BuyCTA variant="inline" label="COMPRAR" />
+          </div>
+
           {/* HERO EDITORIAL */}
           <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"32px 36px",marginBottom:28,overflow:"hidden",display:"block" }}>
             <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--lemon),var(--orange),transparent)" }}/>
@@ -835,6 +840,10 @@ export default function Coins() {
           {tab==="misiones" && <Missions onClaim={c=>{ setBalance(b=>b+c); spawn(14); }} />}
           {tab==="ranking"  && <Ranking />}
           {tab==="regalar"  && <Gift balance={balance} onGift={a=>setBalance(b=>b-a)} />}
+
+          <div style={{ marginTop:36 }}>
+            <BuyCTA variant="banner" label="Comprar fertilizantes" sublabel="Línea Elite, Pro y Race · Envío en 48 hs · Pagás seguro" />
+          </div>
         </div>
       </div>
     </>

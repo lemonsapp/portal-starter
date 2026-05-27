@@ -1,6 +1,7 @@
 import "./ProfilePage.css";
 import { Pop, FadeUp, Pulse, Jumbo, CountUp } from "../components/MotionPop.jsx";
 import StoryViewer from "../components/StoryViewer.jsx";
+import BuyCTA from "../components/BuyCTA.jsx";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useParams } from "react-router-dom";
@@ -689,6 +690,9 @@ export default function ProfilePage() {
           eliminados; el wrapper flex queda como contenedor full-width. */}
       <div style={{display:"flex"}}>
         <div style={{flex:1,minWidth:0}}>
+      <div style={{maxWidth:1060,margin:"0 auto",padding:"16px 16px 0"}}>
+        <BuyCTA variant="inline" label="COMPRAR" />
+      </div>
       <style>{`
         @keyframes badgeShimmer{0%{background-position:-300% center}100%{background-position:300% center}}
         @keyframes badgeBreathe{0%,100%{box-shadow:0 0 12px var(--gc),0 0 30px var(--gc2,transparent)}50%{box-shadow:0 0 24px var(--gc),0 0 60px var(--gc2,transparent)}}
@@ -1204,6 +1208,10 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+          <div style={{maxWidth:1060,margin:"36px auto 0",padding:"0 16px"}}>
+            <BuyCTA variant="banner" label="Comprar fertilizantes" sublabel="Línea Elite, Pro y Race · Envío en 48 hs · Pagás seguro" />
+          </div>
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { buildNameStyle } from "../utils/nameStyles.js";
 import { io } from "socket.io-client";
 import { BannerCanvas } from "./ProfileStudio.jsx";
 import { Pop, Jumbo } from "../components/MotionPop.jsx";
+import BuyCTA from "../components/BuyCTA.jsx";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -999,6 +1000,11 @@ export default function ChatPage() {
     `}</style>
     <div style={{ height:"calc(100vh - 64px)", background:"#06070a", display:"flex", justifyContent:"center", padding: isMobile ? "0" : "16px" }}>
       <div style={{ width:"100%", maxWidth:1200, display:"flex", height:"100%", borderRadius: isMobile ? 0 : 16, overflow:"hidden", border: isMobile ? "none" : "1px solid #161a20", flexDirection:"column" }}>
+
+      {/* CTA COMPRAR — barra superior del chat */}
+      <div style={{ padding:"10px 14px", borderBottom:"1px solid #161a20", flexShrink:0, display:"flex", justifyContent:"center", background:"#0e1014" }}>
+        <BuyCTA variant="inline" label="COMPRAR" />
+      </div>
 
       {/* ── MOBILE NAV TABS ── */}
       {isMobile && (

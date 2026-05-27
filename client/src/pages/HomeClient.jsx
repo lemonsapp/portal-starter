@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext.jsx";
 import FriendsPanel from "../components/FriendsPanel.jsx";
 import Stories from "../components/Stories.jsx";
+import BuyCTA from "../components/BuyCTA.jsx";
 import { useFeatureFlag } from "../lib/branding.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -445,6 +446,9 @@ export default function HomeClient() {
               </div>
             </div>
           )}
+          <div style={{ marginTop: 22 }}>
+            <BuyCTA variant="inline" label="COMPRAR" />
+          </div>
         </header>
 
         {/* PINNED */}
@@ -531,6 +535,14 @@ export default function HomeClient() {
             </div>
           </div>
         )}
+
+        <div style={{ marginTop: 28 }}>
+          <BuyCTA
+            variant="banner"
+            label="Comprar fertilizantes"
+            sublabel="Línea Elite, Pro y Race · Envío en 48 hs · Pagás seguro"
+          />
+        </div>
 
       </div>
     </div>
