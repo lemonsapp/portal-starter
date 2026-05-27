@@ -105,7 +105,7 @@ function initRaceFormatsShowcase() {
         });
 
         // Rail underline: traslada al tab activo.
-        // El rail tiene width: 25% (1/total) del contenedor, así que
+        // El rail tiene width: 20% (1/total) del contenedor, así que
         // moverlo `activeIdx * 100` del propio elemento (xPercent) lo
         // alinea exactamente con el tab activo.
         if (railFill) {
