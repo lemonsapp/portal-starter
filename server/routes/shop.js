@@ -145,12 +145,12 @@ async function migrate() {
     INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
     SELECT p.id, v.url, v.alt, v.sort, v.is_primary
     FROM (VALUES
-      ('linea-race',     '/img/productos/linea-race/500ml/race-1-verde-500ml.png',                'Race 1 vegetativo 500ml',         0, TRUE),
-      ('linea-race',     '/img/productos/linea-race/500ml/race-3-rosa-500ml.png',                 'Race 3 PK rosa 500ml',            1, FALSE),
-      ('linea-elite',    '/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png',              'Elite Parte 1 1L',                0, TRUE),
-      ('linea-elite',    '/img/productos/linea-elite/1l/juntos-1l.png',                           'Elite Parte 1 + Parte 2 1L',      1, FALSE),
-      ('linea-pro',      '/img/productos/linea-pro/1kg/flora-1kg-1.png',                          'Pro Flora 1kg',                   0, TRUE),
-      ('linea-pro',      '/img/productos/linea-pro/1kg/vegetativo-1kg-1.png',                     'Pro Vegetativo 1kg',              1, FALSE),
+      ('linea-race',     '/img/productos/linea-race/500ml/race-unificado.png',                    'Línea Race completa — todos los potes',   0, TRUE),
+      ('linea-race',     '/img/productos/linea-race/500ml/race-1-verde-500ml.png',                'Race 1 verde 500ml',              1, FALSE),
+      ('linea-elite',    '/img/productos/linea-elite/elite-unificado.png',                        'Línea Elite completa — Part 1 + Part 2',  0, TRUE),
+      ('linea-elite',    '/img/productos/linea-elite/elite-part-1.png',                           'Elite Parte 1',                   1, FALSE),
+      ('linea-pro',      '/img/productos/linea-pro/1kg/pro-unificado.png',                        'Línea Pro completa — 4 etapas',   0, TRUE),
+      ('linea-pro',      '/img/productos/linea-pro/1kg/pro-vegetativo.png',                       'Pro Vegetativo 1kg',              1, FALSE),
       ('bio-estimulante','/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png','Bio Estimulante perspectiva',     0, TRUE),
       ('cloner',         '/assets/productos/cloner2.png',                                         'Cloner gel enraizante',           0, TRUE),
       ('day-0',          '/img/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png',      'Day-0 finalizador',               0, TRUE)
