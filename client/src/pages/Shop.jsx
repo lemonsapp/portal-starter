@@ -305,11 +305,11 @@ const S = {
 
   filters: {
     position: "sticky", top: 0, zIndex: "var(--z-sticky)",
-    background: "rgba(6,7,10,0.92)",
+    background: "var(--c-accent)",
     backdropFilter: "blur(14px)",
     margin: "0 -24px",
     padding: "18px 24px",
-    borderBottom: "1px solid var(--c-border)",
+    borderBottom: "none",
     display: "flex", flexWrap: "wrap", gap: 16,
     alignItems: "center", justifyContent: "space-between",
   },
@@ -317,9 +317,9 @@ const S = {
   pill: (active) => ({
     padding: "9px 18px",
     borderRadius: "var(--r-pill)",
-    border: active ? "1px solid var(--c-accent)" : "1px solid var(--c-border-2)",
-    background: active ? "var(--c-accent-soft)" : "transparent",
-    color: active ? "var(--c-accent)" : "rgba(var(--c-text-rgb), .7)",
+    border: active ? "1px solid #fff" : "1px solid rgba(255,255,255,.45)",
+    background: active ? "#fff" : "transparent",
+    color: active ? "var(--c-accent)" : "rgba(255,255,255,.92)",
     fontSize: 12, fontWeight: 700, letterSpacing: ".06em",
     cursor: "pointer", fontFamily: "inherit",
     transition: "all var(--dur-base) var(--ease-out)",
@@ -328,15 +328,15 @@ const S = {
   searchWrap: {
     display: "inline-flex", alignItems: "center", gap: 8,
     padding: "9px 14px",
-    border: "1px solid var(--c-border-2)",
+    border: "1px solid rgba(255,255,255,.45)",
     borderRadius: "var(--r-pill)",
-    background: "rgba(255,255,255,.03)",
-    color: "rgba(var(--c-text-rgb), .55)",
+    background: "rgba(255,255,255,.15)",
+    color: "rgba(255,255,255,.9)",
     minWidth: 200,
   },
   searchInput: {
     background: "transparent", border: "none", outline: "none",
-    color: "var(--c-text)",
+    color: "#fff",
     fontFamily: "inherit", fontSize: 13, flex: 1,
   },
 
