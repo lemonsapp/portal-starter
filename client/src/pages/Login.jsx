@@ -600,6 +600,9 @@ export default function Login() {
           <div className="lg-register">
             ¿No tenés cuenta? <a onClick={() => navigate("/register")}>Registrate con tu código</a>
           </div>
+          <div className="lg-register">
+            ¿Solo querés comprar? <a onClick={() => navigate("/shop")}>Ir a la tienda →</a>
+          </div>
         </div>
       </div>
 

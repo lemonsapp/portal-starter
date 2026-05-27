@@ -104,6 +104,8 @@ export default function ShopCheckout() {
   useBranding();
   const navigate = useNavigate();
   const { items, subtotalCents, clear } = useCart();
+  // Guest checkout: comprar sin loguear. Si no hay sesión, recomendamos registro.
+  const isGuest = typeof window !== "undefined" && !localStorage.getItem("token") && !sessionStorage.getItem("token");
 
   const [form, setForm] = useState({
     email: "", firstName: "", lastName: "", phone: "",
@@ -244,6 +246,17 @@ export default function ShopCheckout() {
         <Link to="/shop" style={styles.back}>← Seguir comprando</Link>
         <h1 style={styles.h1}>Finalizar compra</h1>
         <p style={styles.sub}>Completá tus datos de contacto y envío. El pago se procesa por MercadoPago — aceptamos tarjetas y efectivo.</p>
+
+        {isGuest && (
+          <div style={{ display:"flex", alignItems:"center", gap:14, flexWrap:"wrap", padding:"14px 18px", marginBottom:20, borderRadius:"var(--r-3,14px)", background:"var(--c-accent-soft)", border:"1px solid var(--c-border-2)" }}>
+            <span style={{ fontSize:22 }} aria-hidden="true">💚</span>
+            <div style={{ flex:1, minWidth:200 }}>
+              <div style={{ fontWeight:800, fontSize:14, color:"var(--c-text)" }}>Comprás como invitado — recibís todo por email igual</div>
+              <div style={{ fontSize:13, color:"var(--c-text-2)", marginTop:2, lineHeight:1.5 }}>Te recomendamos crear tu cuenta: seguís tus pedidos, sumás coins y la próxima comprás más rápido.</div>
+            </div>
+            <Link to="/register" style={{ flexShrink:0, padding:"10px 20px", borderRadius:"var(--r-pill,999px)", background:"var(--c-accent)", color:"#fff", fontWeight:800, fontSize:13, textDecoration:"none", whiteSpace:"nowrap" }}>Registrarme →</Link>
+          </div>
+        )}
 
         {err && <div style={styles.err}>{err}</div>}
 
