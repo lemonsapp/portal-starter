@@ -212,6 +212,8 @@ export const productDetails = {
             kicker: "LÍNEA RACE",
             headline: "Sistema completo de fertilizantes\npara cultivo indoor y outdoor.",
             claim: "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cinco fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
+            ctaPrimary:   { label: "COMPRAR RACE",        href: "/shop?categoria=race" },
+            ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#2E8F6E",
             colorSoft: "#C7F0DD",
             // Hero CINEMATOGRÁFICO: video MP4 full-bleed como fondo. La
@@ -267,7 +269,7 @@ export const productDetails = {
                 title: "Race 4 — Micro + Magnesio.",
                 body: "Microelementos (Fe, Zn, B, Mn, Cu, Mo) que activan enzimas, fotosíntesis y división celular. Magnesio: núcleo de la clorofila — energía y desarrollo de hojas, raíces y flores.",
                 image: "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
-                color: "#EC407A",
+                color: "#F472B6",
                 stat: "05",
             },
         ],
@@ -332,7 +334,7 @@ export const productDetails = {
                 name: "RACE 4",
                 size: "Micro + Magnesio",
                 image: "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
-                color: "#EC407A",
+                color: "#F472B6",
                 tagline: "Micro + Magnesio.",
                 description:
                     "Microelementos (Fe, Zn, B, Mn, Cu, Mo) y magnesio: activan enzimas, fotosíntesis y división celular.",
