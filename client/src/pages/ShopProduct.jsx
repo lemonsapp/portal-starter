@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
+import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -85,6 +86,9 @@ export default function ShopProduct() {
     ? product.images
     : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
   const inStock = product.stock == null || product.stock > 0;
+  // Info de la web (landing) por línea, para armar las secciones de la interna.
+  const _lk = lineKeyFor(product);
+  const details = _lk ? lineDetails[_lk] : null;
 
   return (
     <div className="theme-light" style={S.shell}>
@@ -211,6 +215,45 @@ export default function ShopProduct() {
               <span style={S.sectionHeadingItalic}>el producto</span>
             </h2>
             <p style={S.longDesc}>{product.long_description}</p>
+          </section>
+        )}
+
+        {/* Beneficios — reusa los highlights de la web por línea */}
+        {details && details.benefits.length > 0 && (
+          <section style={S.longDescSection}>
+            <h2 style={S.sectionHeading}>
+              <span>Por qué </span>
+              <span style={S.sectionHeadingItalic}>elegirlo</span>
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 16, marginTop: 20 }}>
+              {details.benefits.map((b, i) => (
+                <div key={i} style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: "var(--r-3,14px)", padding: "18px 20px" }}>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: "var(--c-text)", marginBottom: 7, letterSpacing: "-0.01em" }}>{b.title}</div>
+                  <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--c-text-2)" }}>{b.body}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Características clave — reusa los features de la web por línea */}
+        {details && details.features.length > 0 && (
+          <section style={S.metaSection}>
+            <h2 style={S.sectionHeading}>
+              <span>Características </span>
+              <span style={S.sectionHeadingItalic}>clave</span>
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: 16, marginTop: 20 }}>
+              {details.features.map((f, i) => (
+                <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 18, color: "var(--c-accent)", flexShrink: 0, lineHeight: 1.4 }}>{f.emoji || "◆"}</span>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: "var(--c-text)", marginBottom: 3 }}>{f.title}</div>
+                    <div style={{ fontSize: 13, lineHeight: 1.55, color: "var(--c-text-2)" }}>{f.body}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 
