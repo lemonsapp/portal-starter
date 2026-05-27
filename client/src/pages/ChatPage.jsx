@@ -9,9 +9,11 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
 // Metadata visual para salas. La sala "general" (default seed) está acá;
-// salas custom que cree el admin caen en el fallback `{accent:"#c8f53a", icon: room.icon || "💬"}`.
+// salas custom que cree el admin caen en el fallback `{accent:"#a7f5c8", icon: room.icon || "💬"}`.
 const ROOM_META = {
-  "general": { accent: "var(--brand-primary)", icon: "💬" },
+  // accent en hex (no var) porque se usa en patrones de append de alpha hex
+  // (`accent+"22"`, `${accent}55`) que requieren un color hex literal.
+  "general": { accent: "#a7f5c8", icon: "💬" },
 };
 
 const ICONS = { gold: "🥇", diamond: "💎", crown: "👑" };
@@ -91,7 +93,7 @@ function getPawn(user) {
   if (user.chat_role === "owner" || user.chat_role === "main_owner")
     return { ico: "👑", c: "#fbbf24", lbl: "OWNER" };
   if (user.chat_role === "mod")      return { ico: "🛡️", c: "#60a5fa", lbl: "MOD" };
-  return { ico: "🪙", c: "#c8f53a", lbl: "MEMBER" };
+  return { ico: "🪙", c: "#a7f5c8", lbl: "MEMBER" };
 }
 
 // ── Sound ping (Web Audio, sin asset externo) ────────────────────────────────
@@ -119,7 +121,7 @@ function formatTime(ts) {
 }
 
 
-function Avatar({ name, size=30, color="#c8f53a", glow, avatarKey, avatarUrl }) {
+function Avatar({ name, size=30, color="#a7f5c8", glow, avatarKey, avatarUrl }) {
   const emoji = avatarKey ? AVATAR_EMOJIS[avatarKey] : null;
   const initials = (name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
   if (avatarUrl) {
@@ -198,7 +200,7 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
   }
 
   const friendship = friends.find(f => f.other_id === user.user_id);
-  const nameColor = user.name_color || (["admin","operator"].includes(user.user_role) ? "#ef4444" : "#c8f53a");
+  const nameColor = user.name_color || (["admin","operator"].includes(user.user_role) ? "#ef4444" : "#a7f5c8");
   const level = profile?.user?.level || "bronze";
   const bannerGrad = level==="gold"
     ? "linear-gradient(135deg,rgba(var(--brand-primary-rgb),.3),rgba(var(--brand-accent-rgb),.2))"
@@ -221,7 +223,7 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
 
   return (
     <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center" }} onClick={onClose}>
-      <div className="xc-pmodal" style={{ background:"#04060d",border:"1px solid rgba(237,233,224,.08)",borderRadius:20,width:"min(460px,95vw)",maxHeight:"90vh",overflowY:"auto",boxShadow:"0 30px 80px rgba(0,0,0,.9)" }} onClick={e=>e.stopPropagation()}>
+      <div className="xc-pmodal" style={{ background:"#06070a",border:"1px solid rgba(237,233,224,.08)",borderRadius:20,width:"min(460px,95vw)",maxHeight:"90vh",overflowY:"auto",boxShadow:"0 30px 80px rgba(0,0,0,.9)" }} onClick={e=>e.stopPropagation()}>
         {/* Banner */}
         <div style={{ height:110,position:"relative",borderRadius:"20px 20px 0 0",overflow:"hidden" }}>
           {profile?.profile?.banner_effect && profile.profile.banner_effect !== "none" ? (
@@ -236,15 +238,15 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
               <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(237,233,224,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(237,233,224,.015) 1px,transparent 1px)",backgroundSize:"40px 40px" }} />
             </div>
           )}
-          <button onClick={onClose} style={{ position:"absolute",top:10,right:10,zIndex:2,background:"rgba(0,0,0,.5)",border:"none",color:"#94a3b8",cursor:"pointer",fontSize:16,borderRadius:8,padding:"4px 10px" }}>✕</button>
+          <button onClick={onClose} style={{ position:"absolute",top:10,right:10,zIndex:2,background:"rgba(0,0,0,.5)",border:"none",color:"#a8a49b",cursor:"pointer",fontSize:16,borderRadius:8,padding:"4px 10px" }}>✕</button>
         </div>
         {/* Info */}
-        <div style={{ background:"#0b0f1e",padding:"0 22px 20px" }}>
+        <div style={{ background:"#0e1014",padding:"0 22px 20px" }}>
           <div style={{ display:"flex",alignItems:"flex-end",justifyContent:"space-between",marginTop:-38,marginBottom:14 }}>
             <div style={{ position:"relative" }}>
               <Avatar name={user.user_name} size={76} color={nameColor} glow={!!user.name_glow} avatarKey={profile?.profile?.avatar_key} avatarUrl={profile?.profile?.avatar_url} />
               {isOwn && (
-                <label style={{ position:"absolute",bottom:0,right:0,background:"#c8f53a",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",border:"2px solid #04060d",fontSize:12 }}>
+                <label style={{ position:"absolute",bottom:0,right:0,background:"#a7f5c8",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",border:"2px solid #06070a",fontSize:12 }}>
                   📷
                   <input type="file" accept="image/*" style={{ display:"none" }} onChange={async(e)=>{
                     const file = e.target.files[0];
@@ -273,7 +275,7 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                   }
                   setTab(id);
                 }}
-                  style={{ background:tab===id?"rgba(200,245,58,.12)":"transparent",border:`1px solid ${tab===id?"rgba(200,245,58,.3)":"rgba(237,233,224,.08)"}`,borderRadius:8,padding:"5px 12px",color:tab===id?"#c8f53a":"rgba(237,233,224,.4)",fontSize:11,cursor:"pointer",fontWeight:700 }}
+                  style={{ background:tab===id?"rgba(167,245,200,.12)":"transparent",border:`1px solid ${tab===id?"rgba(167,245,200,.3)":"rgba(237,233,224,.08)"}`,borderRadius:8,padding:"5px 12px",color:tab===id?"#a7f5c8":"rgba(237,233,224,.4)",fontSize:11,cursor:"pointer",fontWeight:700 }}
                   title={!isOwn && id==="info" ? "Ver perfil completo" : ""}>
                   {label}{!isOwn && id==="info" ? " ↗" : ""}
                 </button>
@@ -281,22 +283,22 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
             </div>
           </div>
           <UserName user={user} size={18} />
-          {user.nickname && <div style={{ fontSize:12,color:user.nick_color||"#475569",marginTop:3,textShadow:user.nick_glow?`0 0 ${user.nick_glow}px ${user.nick_color||"#475569"}`:"none" }}>{user.nickname}</div>}
+          {user.nickname && <div style={{ fontSize:12,color:user.nick_color||"#6e6b64",marginTop:3,textShadow:user.nick_glow?`0 0 ${user.nick_glow}px ${user.nick_color||"#6e6b64"}`:"none" }}>{user.nickname}</div>}
           <div style={{ display:"flex",alignItems:"center",gap:8,marginTop:6,flexWrap:"wrap" }}>
             <div style={{ width:7,height:7,borderRadius:"50%",background:"#22c55e" }} />
             <span style={{ color:"#22c55e",fontSize:11 }}>Online</span>
-            <span style={{ color:"#1e293b" }}>·</span>
-            <span style={{ color:"#334155",fontSize:11 }}>#{user.client_number}</span>
+            <span style={{ color:"#161a20" }}>·</span>
+            <span style={{ color:"#3a3833",fontSize:11 }}>#{user.client_number}</span>
           </div>
           {/* Followers / Following */}
           <div style={{ display:"flex",alignItems:"center",gap:14,marginTop:10 }}>
             <div style={{ fontSize:13 }}>
               <strong style={{ color:"#fff" }}>{followStats.followers}</strong>
-              <span style={{ color:"#475569",marginLeft:5 }}>seguidores</span>
+              <span style={{ color:"#6e6b64",marginLeft:5 }}>seguidores</span>
             </div>
             <div style={{ fontSize:13 }}>
               <strong style={{ color:"#fff" }}>{followStats.following}</strong>
-              <span style={{ color:"#475569",marginLeft:5 }}>seguidos</span>
+              <span style={{ color:"#6e6b64",marginLeft:5 }}>seguidos</span>
             </div>
             {!isOwn && (
               <button onClick={toggleFollow}
@@ -308,28 +310,28 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
         </div>
         {/* Stats */}
         {profile && (
-          <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,padding:"0 22px 16px",background:"#0b0f1e" }}>
+          <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,padding:"0 22px 16px",background:"#0e1014" }}>
             {/* Sprint 11: stats sociales reales (posts/amigos/coins). */}
             {[{label:"Posts",value:profile.stats?.posts||0},{label:"Amigos",value:profile.stats?.friends||0},{label:"🪙 Coins",value:profile.coins?.balance||0}].map(s=>(
               <div key={s.label} style={{ background:"rgba(255,255,255,.04)",borderRadius:10,padding:"10px 12px",textAlign:"center" }}>
-                <div style={{ fontWeight:900,fontSize:18,color:"#f1f5f9" }}>{s.value}</div>
-                <div style={{ fontSize:10,color:"#334155",marginTop:2 }}>{s.label}</div>
+                <div style={{ fontWeight:900,fontSize:18,color:"#f5f2eb" }}>{s.value}</div>
+                <div style={{ fontSize:10,color:"#3a3833",marginTop:2 }}>{s.label}</div>
               </div>
             ))}
           </div>
         )}
         {/* TAB INFO */}
         {tab==="info" && (
-          <div style={{ padding:"0 22px 20px",background:"#0b0f1e",display:"flex",flexDirection:"column",gap:8 }}>
-            {profile?.profile?.bio && <div style={{ background:"rgba(255,255,255,.03)",borderRadius:10,padding:12,fontSize:13,color:"#94a3b8",lineHeight:1.5 }}>{profile.profile.bio}</div>}
+          <div style={{ padding:"0 22px 20px",background:"#0e1014",display:"flex",flexDirection:"column",gap:8 }}>
+            {profile?.profile?.bio && <div style={{ background:"rgba(255,255,255,.03)",borderRadius:10,padding:12,fontSize:13,color:"#a8a49b",lineHeight:1.5 }}>{profile.profile.bio}</div>}
             {isOwn ? (
-              <div style={{ textAlign:"center",color:"#334155",fontSize:12,padding:8 }}>
-                Este sos vos 👋 · <span style={{ color:"#c8f53a",cursor:"pointer" }} onClick={()=>setTab("powers")}>Ir a Powers →</span>
+              <div style={{ textAlign:"center",color:"#3a3833",fontSize:12,padding:8 }}>
+                Este sos vos 👋 · <span style={{ color:"#a7f5c8",cursor:"pointer" }} onClick={()=>setTab("powers")}>Ir a Powers →</span>
               </div>
             ) : (
               <>
                 {friendship?.status==="accepted" ? (
-                  <button onClick={()=>onPrivateChat(user)} style={{ background:"#c8f53a18",border:"1px solid #c8f53a33",borderRadius:8,padding:"10px",color:"#c8f53a",fontSize:13,cursor:"pointer",fontWeight:700 }}>💬 Mensaje privado</button>
+                  <button onClick={()=>onPrivateChat(user)} style={{ background:"#a7f5c818",border:"1px solid #a7f5c833",borderRadius:8,padding:"10px",color:"#a7f5c8",fontSize:13,cursor:"pointer",fontWeight:700 }}>💬 Mensaje privado</button>
                 ) : friendship?.status==="pending" ? (
                   <div style={{ display:"flex",gap:8 }}>
                     <button onClick={()=>onAccept(user)} style={{ flex:1,background:"#22c55e18",border:"1px solid #22c55e33",borderRadius:8,padding:"10px",color:"#22c55e",fontSize:13,cursor:"pointer",fontWeight:700 }}>✓ Aceptar</button>
@@ -337,14 +339,14 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                   </div>
                 ) : (
                   <button onClick={handleAddFriend} disabled={addingFriend}
-                    style={{ background:addingFriend?"#0f172a":"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"10px",color:"#60a5fa",fontSize:13,cursor:addingFriend?"wait":"pointer",fontWeight:700,opacity:addingFriend?.6:1 }}>
+                    style={{ background:addingFriend?"#161a20":"#161a20",border:"1px solid #3a3833",borderRadius:8,padding:"10px",color:"#60a5fa",fontSize:13,cursor:addingFriend?"wait":"pointer",fontWeight:700,opacity:addingFriend?.6:1 }}>
                     {addingFriend ? "Enviando..." : "➕ Agregar amigo"}
                   </button>
                 )}
                 {isAdmin && (
                   <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:4 }}>
-                    <button onClick={()=>{onAssignRole(user,"moderator");onClose();}} style={{ background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"9px",color:"#60a5fa",fontSize:12,cursor:"pointer",fontWeight:700 }}>⚡ Dar MOD</button>
-                    <button onClick={()=>{onAssignRole(user,"member");onClose();}} style={{ background:"#1e293b",border:"1px solid #334155",borderRadius:8,padding:"9px",color:"#64748b",fontSize:12,cursor:"pointer",fontWeight:700 }}>👤 Quitar MOD</button>
+                    <button onClick={()=>{onAssignRole(user,"moderator");onClose();}} style={{ background:"#161a20",border:"1px solid #3a3833",borderRadius:8,padding:"9px",color:"#60a5fa",fontSize:12,cursor:"pointer",fontWeight:700 }}>⚡ Dar MOD</button>
+                    <button onClick={()=>{onAssignRole(user,"member");onClose();}} style={{ background:"#161a20",border:"1px solid #3a3833",borderRadius:8,padding:"9px",color:"#8e8b84",fontSize:12,cursor:"pointer",fontWeight:700 }}>👤 Quitar MOD</button>
                     <button onClick={()=>{onKick(user);onClose();}} style={{ background:"#ef444412",border:"1px solid #ef444430",borderRadius:8,padding:"9px",color:"#ef4444",fontSize:12,cursor:"pointer",fontWeight:700,gridColumn:"span 2" }}>🚫 Kickear</button>
                   </div>
                 )}
@@ -354,20 +356,20 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
         )}
         {/* TAB POWERS */}
         {tab==="powers" && isOwn && (
-          <div style={{ padding:"0 22px 20px",background:"#0b0f1e",display:"flex",flexDirection:"column",gap:8 }}>
+          <div style={{ padding:"0 22px 20px",background:"#0e1014",display:"flex",flexDirection:"column",gap:8 }}>
             {saveMsg && <div style={{ background:saveMsg.ok?"#22c55e15":"#ef444415",border:`1px solid ${saveMsg.ok?"#22c55e30":"#ef444430"}`,borderRadius:8,padding:"8px 12px",color:saveMsg.ok?"#22c55e":"#ef4444",fontSize:12,marginBottom:4 }}>{saveMsg.text}</div>}
 
-            {cfg === null && <div style={{ textAlign:"center",color:"#334155",padding:20,fontSize:12 }}>Cargando configuración...</div>}
+            {cfg === null && <div style={{ textAlign:"center",color:"#3a3833",padding:20,fontSize:12 }}>Cargando configuración...</div>}
             {cfg !== null && <>
 
             {/* Vista previa en vivo */}
             <div style={{ background:"rgba(255,255,255,.03)",borderRadius:10,padding:"10px 14px",marginBottom:4,display:"flex",alignItems:"center",gap:10 }}>
-              <div style={{ fontSize:11,color:"#334155" }}>Vista previa:</div>
-              <span style={{ fontWeight:800, fontSize:14, ...(cfg.name_grad_from&&cfg.name_grad_to ? {background:`linear-gradient(90deg,${cfg.name_grad_from},${cfg.name_grad_to})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"} : {color:cfg.name_color||"#c8f53a",textShadow:cfg.name_glow?`0 0 ${cfg.name_glow}px ${cfg.name_glow_color||cfg.name_color||"#c8f53a"}`:"none"}) }}>
+              <div style={{ fontSize:11,color:"#3a3833" }}>Vista previa:</div>
+              <span style={{ fontWeight:800, fontSize:14, ...(cfg.name_grad_from&&cfg.name_grad_to ? {background:`linear-gradient(90deg,${cfg.name_grad_from},${cfg.name_grad_to})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"} : {color:cfg.name_color||"#a7f5c8",textShadow:cfg.name_glow?`0 0 ${cfg.name_glow}px ${cfg.name_glow_color||cfg.name_color||"#a7f5c8"}`:"none"}) }}>
                 {cfg.icon_slug&&ICONS[cfg.icon_slug]&&<span style={{marginRight:3}}>{ICONS[cfg.icon_slug]}</span>}
                 🪙 {currentUser?.name}
               </span>
-              {cfg.nickname && <span style={{ fontSize:11,color:cfg.nick_color||"#64748b",textShadow:cfg.nick_glow?`0 0 ${cfg.nick_glow}px ${cfg.nick_color||"#64748b"}`:"none" }}>{cfg.nickname}</span>}
+              {cfg.nickname && <span style={{ fontSize:11,color:cfg.nick_color||"#8e8b84",textShadow:cfg.nick_glow?`0 0 ${cfg.nick_glow}px ${cfg.nick_color||"#8e8b84"}`:"none" }}>{cfg.nickname}</span>}
             </div>
 
             {/* Powers como cards clickeables */}
@@ -376,9 +378,9 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                 slug:"namecolor", icon:"🎨", label:"Name Color", desc:"Color del nombre",
                 content: (
                   <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
-                    <input type="color" value={cfg.name_color||"#c8f53a"} onChange={e=>setCfg(c=>({...c,name_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #1e293b",background:"none",cursor:"pointer",padding:2 }} />
-                    <input type="text" value={cfg.name_color||"#c8f53a"} onChange={e=>setCfg(c=>({...c,name_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#1e293b",border:"1px solid #334155",borderRadius:8,color:"#e2e8f0",fontSize:12,padding:"6px 10px",outline:"none" }} />
-                    <span style={{ color:cfg.name_color||"#c8f53a",fontWeight:800,fontSize:14 }}>Preview</span>
+                    <input type="color" value={cfg.name_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
+                    <input type="text" value={cfg.name_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:12,padding:"6px 10px",outline:"none" }} />
+                    <span style={{ color:cfg.name_color||"#a7f5c8",fontWeight:800,fontSize:14 }}>Preview</span>
                   </div>
                 )
               },
@@ -387,13 +389,13 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                 content: (
                   <div style={{ marginTop:10 }}>
                     <div style={{ display:"flex",gap:8,alignItems:"center",marginBottom:8 }}>
-                      <input type="color" value={cfg.name_glow_color||"#c8f53a"} onChange={e=>setCfg(c=>({...c,name_glow_color:e.target.value}))} style={{ width:36,height:36,borderRadius:8,border:"2px solid #1e293b",background:"none",cursor:"pointer",padding:2 }} />
-                      <span style={{ color:cfg.name_glow_color||"#c8f53a",textShadow:`0 0 ${cfg.name_glow||8}px ${cfg.name_glow_color||"#c8f53a"}`,fontWeight:800,fontSize:14 }}>Glow preview</span>
+                      <input type="color" value={cfg.name_glow_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_glow_color:e.target.value}))} style={{ width:36,height:36,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
+                      <span style={{ color:cfg.name_glow_color||"#a7f5c8",textShadow:`0 0 ${cfg.name_glow||8}px ${cfg.name_glow_color||"#a7f5c8"}`,fontWeight:800,fontSize:14 }}>Glow preview</span>
                     </div>
                     <div style={{ display:"flex",alignItems:"center",gap:8 }}>
-                      <span style={{ color:"#475569",fontSize:11,minWidth:70 }}>Intensidad</span>
+                      <span style={{ color:"#6e6b64",fontSize:11,minWidth:70 }}>Intensidad</span>
                       <input type="range" min={0} max={20} value={cfg.name_glow||0} onChange={e=>setCfg(c=>({...c,name_glow:Number(e.target.value)}))} style={{ flex:1 }} />
-                      <span style={{ color:"#c8f53a",fontSize:12,minWidth:20,textAlign:"right" }}>{cfg.name_glow||0}</span>
+                      <span style={{ color:"#a7f5c8",fontSize:12,minWidth:20,textAlign:"right" }}>{cfg.name_glow||0}</span>
                     </div>
                   </div>
                 )
@@ -402,10 +404,10 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                 slug:"namegrad", icon:"🌈", label:"Name Gradient", desc:"Gradiente de 2 colores en tu nombre",
                 content: (
                   <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
-                    <input type="color" value={cfg.name_grad_from||"#c8f53a"} onChange={e=>setCfg(c=>({...c,name_grad_from:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #1e293b",background:"none",cursor:"pointer",padding:2 }} />
-                    <span style={{ color:"#334155",fontSize:18 }}>→</span>
-                    <input type="color" value={cfg.name_grad_to||"#60a5fa"} onChange={e=>setCfg(c=>({...c,name_grad_to:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #1e293b",background:"none",cursor:"pointer",padding:2 }} />
-                    <span style={{ background:`linear-gradient(90deg,${cfg.name_grad_from||"#c8f53a"},${cfg.name_grad_to||"#60a5fa"})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",fontWeight:800,fontSize:14 }}>Preview</span>
+                    <input type="color" value={cfg.name_grad_from||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_grad_from:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
+                    <span style={{ color:"#3a3833",fontSize:18 }}>→</span>
+                    <input type="color" value={cfg.name_grad_to||"#60a5fa"} onChange={e=>setCfg(c=>({...c,name_grad_to:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
+                    <span style={{ background:`linear-gradient(90deg,${cfg.name_grad_from||"#a7f5c8"},${cfg.name_grad_to||"#60a5fa"})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",fontWeight:800,fontSize:14 }}>Preview</span>
                   </div>
                 )
               },
@@ -413,8 +415,8 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                 slug:"nickname", icon:"📝", label:"Nickname", desc:"Texto de status debajo del nombre",
                 content: (
                   <div style={{ marginTop:10 }}>
-                    <input type="text" value={cfg.nickname||""} onChange={e=>setCfg(c=>({...c,nickname:e.target.value}))} maxLength={40} placeholder="Tu status..." style={{ width:"100%",background:"#1e293b",border:"1px solid #334155",borderRadius:8,color:"#e2e8f0",fontSize:13,padding:"8px 12px",outline:"none",boxSizing:"border-box" }} />
-                    <div style={{ fontSize:11,color:"#334155",marginTop:6 }}>Vista: <span style={{ color:cfg.nick_color||"#64748b" }}>{cfg.nickname||"tu status"}</span></div>
+                    <input type="text" value={cfg.nickname||""} onChange={e=>setCfg(c=>({...c,nickname:e.target.value}))} maxLength={40} placeholder="Tu status..." style={{ width:"100%",background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:13,padding:"8px 12px",outline:"none",boxSizing:"border-box" }} />
+                    <div style={{ fontSize:11,color:"#3a3833",marginTop:6 }}>Vista: <span style={{ color:cfg.nick_color||"#8e8b84" }}>{cfg.nickname||"tu status"}</span></div>
                   </div>
                 )
               },
@@ -422,8 +424,8 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                 slug:"nickcolor", icon:"🎨", label:"Nick Color", desc:"Color del texto de status",
                 content: (
                   <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
-                    <input type="color" value={cfg.nick_color||"#ffd500"} onChange={e=>setCfg(c=>({...c,nick_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #1e293b",background:"none",cursor:"pointer",padding:2 }} />
-                    <input type="text" value={cfg.nick_color||"#ffd500"} onChange={e=>setCfg(c=>({...c,nick_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#1e293b",border:"1px solid #334155",borderRadius:8,color:"#e2e8f0",fontSize:12,padding:"6px 10px",outline:"none" }} />
+                    <input type="color" value={cfg.nick_color||"#ffd500"} onChange={e=>setCfg(c=>({...c,nick_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
+                    <input type="text" value={cfg.nick_color||"#ffd500"} onChange={e=>setCfg(c=>({...c,nick_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:12,padding:"6px 10px",outline:"none" }} />
                     <span style={{ color:cfg.nick_color||"#ffd500",fontWeight:700,fontSize:14 }}>{cfg.nickname||"Preview"}</span>
                   </div>
                 )
@@ -433,19 +435,19 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                 content: (
                   <div style={{ marginTop:10, display:"flex", flexDirection:"column", gap:10 }}>
                     <div style={{ padding:"10px 12px",background:"rgba(255,255,255,.03)",borderRadius:8,textAlign:"center" }}>
-                      <span style={{ color:cfg.nick_color||"#ffffff", fontSize:15, fontWeight:700, textShadow:`0 0 ${Number(cfg.nick_glow)||8}px ${cfg.nick_glow_color||"#c8f53a"}` }}>
+                      <span style={{ color:cfg.nick_color||"#ffffff", fontSize:15, fontWeight:700, textShadow:`0 0 ${Number(cfg.nick_glow)||8}px ${cfg.nick_glow_color||"#a7f5c8"}` }}>
                         {cfg.nickname||"Glow preview"}
                       </span>
                     </div>
                     <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                      <input type="color" value={cfg.nick_glow_color||"#c8f53a"} onChange={e=>setCfg(c=>({...c,nick_glow_color:e.target.value}))} style={{ width:36,height:36,borderRadius:8,border:"2px solid #1e293b",background:"none",cursor:"pointer",padding:2,flexShrink:0 }} />
-                      <input type="text" value={cfg.nick_glow_color||"#c8f53a"} onChange={e=>setCfg(c=>({...c,nick_glow_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#1e293b",border:"1px solid #334155",borderRadius:8,color:"#e2e8f0",fontSize:12,padding:"6px 10px",outline:"none" }} />
-                      <span style={{ color:"#475569",fontSize:11 }}>Color del glow</span>
+                      <input type="color" value={cfg.nick_glow_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,nick_glow_color:e.target.value}))} style={{ width:36,height:36,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2,flexShrink:0 }} />
+                      <input type="text" value={cfg.nick_glow_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,nick_glow_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:12,padding:"6px 10px",outline:"none" }} />
+                      <span style={{ color:"#6e6b64",fontSize:11 }}>Color del glow</span>
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <span style={{ color:"#475569",fontSize:11,minWidth:70,flexShrink:0 }}>Intensidad</span>
+                      <span style={{ color:"#6e6b64",fontSize:11,minWidth:70,flexShrink:0 }}>Intensidad</span>
                       <input type="range" min={0} max={20} value={Number(cfg.nick_glow)||0} onChange={e=>setCfg(c=>({...c,nick_glow:Number(e.target.value)}))} style={{ flex:1 }} />
-                      <span style={{ color:"#c8f53a",fontSize:12,minWidth:24,textAlign:"right",fontWeight:700 }}>{Number(cfg.nick_glow)||0}</span>
+                      <span style={{ color:"#a7f5c8",fontSize:12,minWidth:24,textAlign:"right",fontWeight:700 }}>{Number(cfg.nick_glow)||0}</span>
                     </div>
                   </div>
                 )
@@ -456,15 +458,15 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                   <div style={{ display:"flex",gap:8,marginTop:10,flexWrap:"wrap" }}>
                     {[{slug:"gold",icon:"🥇",label:"Gold"},{slug:"diamond",icon:"💎",label:"Diamond"},{slug:"crown",icon:"👑",label:"Crown"}].filter(i=>has(i.slug)).map(i=>(
                       <button key={i.slug} onClick={()=>setCfg(c=>({...c,icon_slug:c.icon_slug===i.slug?null:i.slug}))}
-                        style={{ background:cfg.icon_slug===i.slug?"rgba(200,245,58,.15)":"rgba(255,255,255,.03)",border:`2px solid ${cfg.icon_slug===i.slug?"#c8f53a":"rgba(237,233,224,.08)"}`,borderRadius:12,padding:"10px 16px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4 }}>
+                        style={{ background:cfg.icon_slug===i.slug?"rgba(167,245,200,.15)":"rgba(255,255,255,.03)",border:`2px solid ${cfg.icon_slug===i.slug?"#a7f5c8":"rgba(237,233,224,.08)"}`,borderRadius:12,padding:"10px 16px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4 }}>
                         <span style={{ fontSize:28 }}>{i.icon}</span>
-                        <span style={{ fontSize:10,color:cfg.icon_slug===i.slug?"#c8f53a":"#475569",fontWeight:700 }}>{i.label}</span>
+                        <span style={{ fontSize:10,color:cfg.icon_slug===i.slug?"#a7f5c8":"#6e6b64",fontWeight:700 }}>{i.label}</span>
                       </button>
                     ))}
                     <button onClick={()=>setCfg(c=>({...c,icon_slug:null}))}
                       style={{ background:"rgba(255,255,255,.03)",border:"2px solid rgba(237,233,224,.06)",borderRadius:12,padding:"10px 16px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4 }}>
                       <span style={{ fontSize:28 }}>⊘</span>
-                      <span style={{ fontSize:10,color:"#334155",fontWeight:700 }}>Ninguno</span>
+                      <span style={{ fontSize:10,color:"#3a3833",fontWeight:700 }}>Ninguno</span>
                     </button>
                   </div>
                 )
@@ -474,14 +476,14 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
             ))}
 
             {!has("namecolor")&&!has("nameglow")&&!has("nickname")&&!has("gold") && (
-              <div style={{ textAlign:"center",padding:24,color:"#334155" }}>
+              <div style={{ textAlign:"center",padding:24,color:"#3a3833" }}>
                 <div style={{ fontSize:32,marginBottom:8 }}>⚡</div>
                 <div style={{ fontSize:12 }}>Comprá Powers en la tienda del chat</div>
               </div>
             )}
             {(has("namecolor")||has("nameglow")||has("nickname")||has("gold")) && (
               <button onClick={save} disabled={saving}
-                style={{ background:"#c8f53a",color:"#000",border:"none",borderRadius:10,padding:"12px",fontWeight:800,cursor:"pointer",fontSize:14,opacity:saving?0.6:1,marginTop:4 }}>
+                style={{ background:"#a7f5c8",color:"#000",border:"none",borderRadius:10,padding:"12px",fontWeight:800,cursor:"pointer",fontSize:14,opacity:saving?0.6:1,marginTop:4 }}>
                 {saving?"Guardando...":"💾 Guardar cambios"}
               </button>
             )}
@@ -497,17 +499,17 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
 function PowerAccordion({ power }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ background:"rgba(255,255,255,.03)", border:`1px solid ${open?"rgba(200,245,58,.2)":"rgba(237,233,224,.06)"}`, borderRadius:12, overflow:"hidden", transition:"all .2s" }}>
+    <div style={{ background:"rgba(255,255,255,.03)", border:`1px solid ${open?"rgba(167,245,200,.2)":"rgba(237,233,224,.06)"}`, borderRadius:12, overflow:"hidden", transition:"all .2s" }}>
       <div onClick={()=>setOpen(v=>!v)}
         style={{ display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer" }}>
-        <div style={{ width:40,height:40,borderRadius:10,background:"rgba(200,245,58,.08)",border:"1px solid rgba(200,245,58,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0 }}>
+        <div style={{ width:40,height:40,borderRadius:10,background:"rgba(167,245,200,.08)",border:"1px solid rgba(167,245,200,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0 }}>
           {power.icon}
         </div>
         <div style={{ flex:1 }}>
-          <div style={{ fontWeight:700,color:"#e2e8f0",fontSize:13 }}>{power.label}</div>
-          <div style={{ color:"#334155",fontSize:11,marginTop:1 }}>{power.desc}</div>
+          <div style={{ fontWeight:700,color:"#f5f2eb",fontSize:13 }}>{power.label}</div>
+          <div style={{ color:"#3a3833",fontSize:11,marginTop:1 }}>{power.desc}</div>
         </div>
-        <div style={{ color:open?"#c8f53a":"#334155",fontSize:16,transition:"transform .2s",transform:open?"rotate(180deg)":"none" }}>▾</div>
+        <div style={{ color:open?"#a7f5c8":"#3a3833",fontSize:16,transition:"transform .2s",transform:open?"rotate(180deg)":"none" }}>▾</div>
       </div>
       {open && (
         <div style={{ padding:"0 14px 14px",borderTop:"1px solid rgba(237,233,224,.04)" }}>
@@ -557,13 +559,13 @@ function PrivateChatPanel({ targetUser, currentUser, socket, token, onClose }) {
     setInput("");
   }
 
-  const nameColor = targetUser.name_color || "#c8f53a";
+  const nameColor = targetUser.name_color || "#a7f5c8";
 
   return (
-    <div style={{ background:"#04060d", border:"1px solid rgba(237,233,224,0.1)", borderRadius:20, width:"100%", maxWidth:480, height:"70vh", display:"flex", flexDirection:"column", overflow:"hidden" }}
+    <div style={{ background:"#06070a", border:"1px solid rgba(237,233,224,0.1)", borderRadius:20, width:"100%", maxWidth:480, height:"70vh", display:"flex", flexDirection:"column", overflow:"hidden" }}
       onClick={e => e.stopPropagation()}>
       {/* Header */}
-      <div style={{ padding:"14px 18px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:10, background:"#08101e" }}>
+      <div style={{ padding:"14px 18px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", gap:10, background:"#0e1014" }}>
         <button onClick={goToProfile} title={`Ver perfil de ${targetUser.user_name}`}
           style={{ background:"transparent", border:"none", padding:0, cursor:"pointer", flexShrink:0 }}>
           <Avatar name={targetUser.user_name} size={32} color={nameColor} avatarUrl={targetUser.avatar_url} />
@@ -592,22 +594,22 @@ function PrivateChatPanel({ targetUser, currentUser, socket, token, onClose }) {
           return (
             <div key={i} style={{ display:"flex", justifyContent: isOwn ? "flex-end" : "flex-start", marginBottom:8 }}>
               <div style={{ maxWidth:"75%", padding: hasQuote ? "6px 6px 8px" : "8px 14px", borderRadius: isOwn ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                background: isOwn ? "rgba(200,245,58,0.15)" : "rgba(255,255,255,0.06)",
-                border: isOwn ? "1px solid rgba(200,245,58,0.2)" : "1px solid rgba(255,255,255,0.08)" }}>
+                background: isOwn ? "rgba(167,245,200,0.15)" : "rgba(255,255,255,0.06)",
+                border: isOwn ? "1px solid rgba(167,245,200,0.2)" : "1px solid rgba(255,255,255,0.08)" }}>
                 {hasQuote && (
-                  <div style={{ display:"flex", gap:8, alignItems:"stretch", padding:6, marginBottom:6, background:"rgba(0,0,0,0.35)", borderLeft:"3px solid #c8f53a", borderRadius:8 }}>
+                  <div style={{ display:"flex", gap:8, alignItems:"stretch", padding:6, marginBottom:6, background:"rgba(0,0,0,0.35)", borderLeft:"3px solid #a7f5c8", borderRadius:8 }}>
                     {m.reply_story_image_url ? (
                       <img src={m.reply_story_image_url} alt="story" style={{ width:42, height:56, objectFit:"cover", borderRadius:4, flexShrink:0 }} />
                     ) : (
-                      <div style={{ width:42, height:56, borderRadius:4, background:"linear-gradient(135deg,#c8f53a33,#a78bfa33)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>📷</div>
+                      <div style={{ width:42, height:56, borderRadius:4, background:"linear-gradient(135deg,#a7f5c833,#a78bfa33)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>📷</div>
                     )}
                     <div style={{ display:"flex", flexDirection:"column", justifyContent:"center", minWidth:0, flex:1 }}>
-                      <span style={{ fontFamily:"'Gotham', monospace", fontSize:9, color:"#c8f53a", letterSpacing:1.2, textTransform:"uppercase", fontWeight:700, lineHeight:1.3 }}>↩ {replyLabel}</span>
+                      <span style={{ fontFamily:"'Gotham', monospace", fontSize:9, color:"#a7f5c8", letterSpacing:1.2, textTransform:"uppercase", fontWeight:700, lineHeight:1.3 }}>↩ {replyLabel}</span>
                       <span style={{ fontFamily:"'Gotham', monospace", fontSize:10, color:"rgba(255,255,255,.55)", lineHeight:1.3, marginTop:2 }}>tu historia · 24h</span>
                     </div>
                   </div>
                 )}
-                <div style={{ fontSize:13, color: isOwn ? "#c8f53a" : "#e2e8f0", lineHeight:1.4, wordBreak:"break-word", padding: hasQuote ? "0 6px" : 0 }}>{m.message}</div>
+                <div style={{ fontSize:13, color: isOwn ? "#a7f5c8" : "#f5f2eb", lineHeight:1.4, wordBreak:"break-word", padding: hasQuote ? "0 6px" : 0 }}>{m.message}</div>
                 <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)", marginTop:4, textAlign:"right", padding: hasQuote ? "0 6px" : 0 }}>
                   {new Date(m.created_at).toLocaleTimeString("es-AR", { hour:"2-digit", minute:"2-digit" })}
                 </div>
@@ -619,14 +621,14 @@ function PrivateChatPanel({ targetUser, currentUser, socket, token, onClose }) {
       </div>
 
       {/* Input */}
-      <div style={{ padding:"10px 12px", borderTop:"1px solid rgba(255,255,255,0.06)", background:"#08101e" }}>
-        <div style={{ display:"flex", gap:8, alignItems:"center", background:"#0d1424", border:"1px solid rgba(200,245,58,0.15)", borderRadius:10, padding:"4px 4px 4px 12px" }}>
+      <div style={{ padding:"10px 12px", borderTop:"1px solid rgba(255,255,255,0.06)", background:"#0e1014" }}>
+        <div style={{ display:"flex", gap:8, alignItems:"center", background:"#161a20", border:"1px solid rgba(167,245,200,0.15)", borderRadius:10, padding:"4px 4px 4px 12px" }}>
           <input value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }}}
             placeholder="Escribí un mensaje..." maxLength={500}
-            style={{ flex:1, background:"none", border:"none", color:"#e2e8f0", fontSize:13, outline:"none", padding:"6px 0" }} />
+            style={{ flex:1, background:"none", border:"none", color:"#f5f2eb", fontSize:13, outline:"none", padding:"6px 0" }} />
           <button onClick={send} disabled={!input.trim()}
-            style={{ background:input.trim()?"#c8f53a":"#1a2540", color:input.trim()?"#000":"#334155", border:"none", borderRadius:8, padding:"8px 16px", fontWeight:800, cursor:input.trim()?"pointer":"default", fontSize:13, transition:"all .15s", flexShrink:0 }}>→</button>
+            style={{ background:input.trim()?"#a7f5c8":"#1f242c", color:input.trim()?"#000":"#3a3833", border:"none", borderRadius:8, padding:"8px 16px", fontWeight:800, cursor:input.trim()?"pointer":"default", fontSize:13, transition:"all .15s", flexShrink:0 }}>→</button>
         </div>
       </div>
     </div>
@@ -650,16 +652,16 @@ function PowersInline({ token }) {
 
   return (
     <div style={{ padding:"16px", display:"flex", flexDirection:"column", gap:10 }}>
-      <div style={{ fontSize:13, fontWeight:800, color:"#c8f53a", marginBottom:8 }}>⚡ Powers</div>
+      <div style={{ fontSize:13, fontWeight:800, color:"#a7f5c8", marginBottom:8 }}>⚡ Powers</div>
       {powers.length === 0 && <div style={{ color:"rgba(255,255,255,0.3)", fontSize:13, textAlign:"center", padding:20 }}>No tenés powers todavía. Comprá en la tienda de Coins!</div>}
       {powers.map(p => (
-        <div key={p.slug} style={{ padding:"12px 16px", background: p.owned ? "rgba(200,245,58,0.08)" : "rgba(255,255,255,0.03)", border:`1px solid ${p.owned ? "rgba(200,245,58,0.2)" : "rgba(255,255,255,0.06)"}`, borderRadius:12, display:"flex", alignItems:"center", gap:12 }}>
+        <div key={p.slug} style={{ padding:"12px 16px", background: p.owned ? "rgba(167,245,200,0.08)" : "rgba(255,255,255,0.03)", border:`1px solid ${p.owned ? "rgba(167,245,200,0.2)" : "rgba(255,255,255,0.06)"}`, borderRadius:12, display:"flex", alignItems:"center", gap:12 }}>
           <span style={{ fontSize:24 }}>{p.icon || "⚡"}</span>
           <div style={{ flex:1 }}>
-            <div style={{ fontWeight:700, fontSize:13, color: p.owned ? "#c8f53a" : "rgba(255,255,255,0.5)" }}>{p.name}</div>
+            <div style={{ fontWeight:700, fontSize:13, color: p.owned ? "#a7f5c8" : "rgba(255,255,255,0.5)" }}>{p.name}</div>
             <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>{p.description}</div>
           </div>
-          {p.owned ? <span style={{ fontSize:11, fontWeight:800, color:"#c8f53a", background:"rgba(200,245,58,0.1)", padding:"3px 10px", borderRadius:20 }}>✓ ACTIVO</span>
+          {p.owned ? <span style={{ fontSize:11, fontWeight:800, color:"#a7f5c8", background:"rgba(167,245,200,0.1)", padding:"3px 10px", borderRadius:20 }}>✓ ACTIVO</span>
             : <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>{p.cost} 🪙</span>}
         </div>
       ))}
@@ -676,19 +678,19 @@ function SmilePicker({ accent, customEmojis, onPickSmile, onPickCustom, onClose 
   // Si no hay customs todavía, forzar tab smiles
   useEffect(()=>{ if(customEmojis.length===0 && tab==="custom") setTab("smiles"); },[customEmojis.length, tab]);
   return (
-    <div className="xat-panel" style={{ background:"#070c18",borderTop:"1px solid #0d1424",padding:"10px 12px",maxHeight:220,overflowY:"auto" }}>
+    <div className="xat-panel" style={{ background:"#0e1014",borderTop:"1px solid #161a20",padding:"10px 12px",maxHeight:220,overflowY:"auto" }}>
       <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,gap:8 }}>
         <div style={{ display:"flex",gap:4 }}>
           <button onClick={()=>setTab("smiles")}
-            style={{ background:tab==="smiles"?accent+"22":"transparent",border:`1px solid ${tab==="smiles"?accent+"55":"transparent"}`,color:tab==="smiles"?accent:"#475569",padding:"4px 10px",fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:700,cursor:"pointer",borderRadius:5,textTransform:"uppercase" }}>
+            style={{ background:tab==="smiles"?accent+"22":"transparent",border:`1px solid ${tab==="smiles"?accent+"55":"transparent"}`,color:tab==="smiles"?accent:"#6e6b64",padding:"4px 10px",fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:700,cursor:"pointer",borderRadius:5,textTransform:"uppercase" }}>
             😊 Smiles
           </button>
           <button onClick={()=>setTab("custom")} disabled={customEmojis.length===0}
-            style={{ background:tab==="custom"?accent+"22":"transparent",border:`1px solid ${tab==="custom"?accent+"55":"transparent"}`,color:customEmojis.length===0?"#1e293b":tab==="custom"?accent:"#475569",padding:"4px 10px",fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:700,cursor:customEmojis.length===0?"not-allowed":"pointer",borderRadius:5,textTransform:"uppercase" }}>
+            style={{ background:tab==="custom"?accent+"22":"transparent",border:`1px solid ${tab==="custom"?accent+"55":"transparent"}`,color:customEmojis.length===0?"#161a20":tab==="custom"?accent:"#6e6b64",padding:"4px 10px",fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"1.5px",fontWeight:700,cursor:customEmojis.length===0?"not-allowed":"pointer",borderRadius:5,textTransform:"uppercase" }}>
             🪙 Custom · {customEmojis.length}
           </button>
         </div>
-        <button onClick={onClose} style={{ background:"none",border:"none",color:"#475569",cursor:"pointer",fontSize:12 }}>✕</button>
+        <button onClick={onClose} style={{ background:"none",border:"none",color:"#6e6b64",cursor:"pointer",fontSize:12 }}>✕</button>
       </div>
       {tab==="smiles" ? (
         <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(48px,1fr))",gap:4 }}>
@@ -697,7 +699,7 @@ function SmilePicker({ accent, customEmojis, onPickSmile, onPickCustom, onClose 
               hoverScale={1.18}
               style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"6px 4px",background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.05)",cursor:"pointer",borderRadius:6 }}>
               <span style={{ fontSize:20,lineHeight:1 }}>{s.c}</span>
-              <span style={{ fontFamily:"'Gotham', monospace",fontSize:7,color:"#475569",letterSpacing:".5px" }}>{s.k}</span>
+              <span style={{ fontFamily:"'Gotham', monospace",fontSize:7,color:"#6e6b64",letterSpacing:".5px" }}>{s.k}</span>
             </Pop>
           ))}
         </div>
@@ -708,7 +710,7 @@ function SmilePicker({ accent, customEmojis, onPickSmile, onPickCustom, onClose 
               hoverScale={1.18}
               style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 4px",background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.05)",cursor:"pointer",borderRadius:6 }}>
               <img src={e.url} alt={e.key} style={{ width:30,height:30,objectFit:"contain",imageRendering:"auto" }}/>
-              <span style={{ fontFamily:"'Gotham', monospace",fontSize:7,color:"#475569",letterSpacing:".3px",textOverflow:"ellipsis",overflow:"hidden",whiteSpace:"nowrap",maxWidth:"100%" }}>:{e.key}:</span>
+              <span style={{ fontFamily:"'Gotham', monospace",fontSize:7,color:"#6e6b64",letterSpacing:".3px",textOverflow:"ellipsis",overflow:"hidden",whiteSpace:"nowrap",maxWidth:"100%" }}>:{e.key}:</span>
             </Pop>
           ))}
         </div>
@@ -719,7 +721,7 @@ function SmilePicker({ accent, customEmojis, onPickSmile, onPickCustom, onClose 
 
 function Message({ msg, currentUserId, isAdmin, onDelete, onClick, customEmojis }) {
   const isOwn = msg.user_id===currentUserId;
-  const avatarColor = msg.name_color||(["admin","operator"].includes(msg.user_role)?"#ef4444":"#c8f53a");
+  const avatarColor = msg.name_color||(["admin","operator"].includes(msg.user_role)?"#ef4444":"#a7f5c8");
   const pawn = getPawn(msg);
   const text = replaceSmiles(msg.message || "");
   const rich = renderRich(text, customEmojis);
@@ -727,9 +729,9 @@ function Message({ msg, currentUserId, isAdmin, onDelete, onClick, customEmojis 
   // Detect if message is JUST one or a few emoji → render bigger ("jumbomoji" — xat vibe)
   const isShort = text && text.replace(/[\s‍]/g, '').length <= 6 && /^\p{Extended_Pictographic}+$/u.test(text.replace(/\s/g,''));
   return (
-    <div className="xat-msg" style={{ display:"flex",gap:8,padding:"4px 10px",background:isOwn?"rgba(200,245,58,0.02)":"transparent",borderLeft:isOwn?"2px solid rgba(200,245,58,0.08)":"2px solid transparent" }}
+    <div className="xat-msg" style={{ display:"flex",gap:8,padding:"4px 10px",background:isOwn?"rgba(167,245,200,0.02)":"transparent",borderLeft:isOwn?"2px solid rgba(167,245,200,0.08)":"2px solid transparent" }}
       onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.018)"}
-      onMouseLeave={e=>e.currentTarget.style.background=isOwn?"rgba(200,245,58,0.02)":"transparent"}
+      onMouseLeave={e=>e.currentTarget.style.background=isOwn?"rgba(167,245,200,0.02)":"transparent"}
     >
       <div onClick={()=>onClick(msg)} style={{ cursor:"pointer",paddingTop:2,flexShrink:0,position:"relative" }}>
         <Avatar name={msg.user_name} size={26} color={avatarColor} glow={!!msg.name_glow} avatarUrl={msg.avatar_url} />
@@ -738,11 +740,11 @@ function Message({ msg, currentUserId, isAdmin, onDelete, onClick, customEmojis 
       <div style={{ flex:1,minWidth:0 }}>
         <div style={{ display:"flex",alignItems:"center",gap:5,flexWrap:"wrap" }}>
           <span onClick={()=>onClick(msg)} style={{ cursor:"pointer" }}><UserName user={msg} size={12} /></span>
-          {msg.nickname&&<span style={{ fontSize:10,color:msg.nick_color||"#334155",textShadow:msg.nick_glow?`0 0 ${msg.nick_glow}px ${msg.nick_color||"#334155"}`:"none" }}>· {msg.nickname}</span>}
-          <span style={{ color:"#334155",fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"1px" }}>{formatTime(msg.created_at)}</span>
+          {msg.nickname&&<span style={{ fontSize:10,color:msg.nick_color||"#3a3833",textShadow:msg.nick_glow?`0 0 ${msg.nick_glow}px ${msg.nick_color||"#3a3833"}`:"none" }}>· {msg.nickname}</span>}
+          <span style={{ color:"#3a3833",fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"1px" }}>{formatTime(msg.created_at)}</span>
           {isAdmin&&<button onClick={()=>onDelete(msg.id)} style={{ background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:10,opacity:0.3,padding:0 }} onMouseEnter={e=>e.target.style.opacity=1} onMouseLeave={e=>e.target.style.opacity=0.3}>✕</button>}
         </div>
-        <div style={{ color:"#cbd5e1",fontSize:isShort?28:13,lineHeight:1.45,wordBreak:"break-word",marginTop:1,letterSpacing:isShort?"2px":0 }}>
+        <div style={{ color:"#d6d1c6",fontSize:isShort?28:13,lineHeight:1.45,wordBreak:"break-word",marginTop:1,letterSpacing:isShort?"2px":0 }}>
           {hasCustom ? <span>{rich}</span> : (isShort ? <Jumbo>{text}</Jumbo> : text)}
         </div>
       </div>
@@ -750,7 +752,7 @@ function Message({ msg, currentUserId, isAdmin, onDelete, onClick, customEmojis 
   );
 }
 
-function SystemMessage({ icon = "👋", text, accent = "#c8f53a" }) {
+function SystemMessage({ icon = "👋", text, accent = "#a7f5c8" }) {
   return (
     <div className="xat-sys" style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"10px 14px",margin:"6px 14px",background:`${accent}08`,border:`1px solid ${accent}20`,fontFamily:"'Gotham', monospace",fontSize:10,letterSpacing:"2px",textTransform:"uppercase",color:accent }}>
       <span style={{ fontSize:14 }}>{icon}</span>{text}
@@ -787,7 +789,7 @@ export default function ChatPage() {
   const isAdmin = ["admin","operator"].includes(currentUser?.role);
 
   // Sala activa accent color
-  const accent = activeRoom ? (ROOM_META[activeRoom.slug]?.accent || "#c8f53a") : "#c8f53a";
+  const accent = activeRoom ? (ROOM_META[activeRoom.slug]?.accent || "#a7f5c8") : "#a7f5c8";
 
   useEffect(()=>{
     fetch(`${API}/auth/me`,{headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json()).then(d=>setCurrentUser(d.user)).catch(()=>{});
@@ -974,7 +976,7 @@ export default function ChatPage() {
       .xat-smile-btn{transition:transform .15s,background .15s}
       .xat-smile-btn:hover{transform:scale(1.18) translateY(-2px);background:rgba(var(--brand-primary-rgb),.1)!important}
       .xat-icon-btn{transition:all .2s;cursor:pointer;display:flex;align-items:center;justify-content:center;border:1px solid transparent}
-      .xat-icon-btn:hover{background:rgba(var(--brand-primary-rgb),.08)!important;border-color:rgba(var(--brand-primary-rgb),.2)!important;color:#c8f53a!important}
+      .xat-icon-btn:hover{background:rgba(var(--brand-primary-rgb),.08)!important;border-color:rgba(var(--brand-primary-rgb),.2)!important;color:#a7f5c8!important}
       .xat-welcome{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;animation:xatWelIn .5s cubic-bezier(.34,1.56,.64,1) both,xatWelOut .4s ease 4s forwards}
       @keyframes xatWelIn{from{opacity:0;transform:translateX(-50%) translateY(-12px) scale(.9)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
       @keyframes xatWelOut{to{opacity:0;transform:translateX(-50%) translateY(-8px) scale(.95)}}
@@ -995,17 +997,17 @@ export default function ChatPage() {
       }
       .xc-pmodal{max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
     `}</style>
-    <div style={{ height:"calc(100vh - 64px)", background:"#060d1a", display:"flex", justifyContent:"center", padding: isMobile ? "0" : "16px" }}>
-      <div style={{ width:"100%", maxWidth:1200, display:"flex", height:"100%", borderRadius: isMobile ? 0 : 16, overflow:"hidden", border: isMobile ? "none" : "1px solid #0d1424", flexDirection:"column" }}>
+    <div style={{ height:"calc(100vh - 64px)", background:"#06070a", display:"flex", justifyContent:"center", padding: isMobile ? "0" : "16px" }}>
+      <div style={{ width:"100%", maxWidth:1200, display:"flex", height:"100%", borderRadius: isMobile ? 0 : 16, overflow:"hidden", border: isMobile ? "none" : "1px solid #161a20", flexDirection:"column" }}>
 
       {/* ── MOBILE NAV TABS ── */}
       {isMobile && (
-        <div style={{ display:"flex", background:"#08101e", borderBottom:"1px solid #0d1424", flexShrink:0 }}>
+        <div style={{ display:"flex", background:"#0e1014", borderBottom:"1px solid #161a20", flexShrink:0 }}>
           {[["rooms","🏠 Salas"],["chat","💬 Chat"],["users","👥 Users"]].map(([v,l]) => (
             <button key={v} onClick={()=>setMobileView(v)}
               style={{ flex:1, padding:"12px 4px", border:"none", cursor:"pointer", fontSize:12, fontWeight:800,
                 background: mobileView===v ? `${accent}18` : "transparent",
-                color: mobileView===v ? accent : "#334155",
+                color: mobileView===v ? accent : "#3a3833",
                 borderBottom: mobileView===v ? `2px solid ${accent}` : "2px solid transparent" }}>
               {l}
             </button>
@@ -1026,12 +1028,12 @@ export default function ChatPage() {
       <div style={{ flex:1, display:isMobile&&mobileView!=="chat"?"none":"flex", flexDirection:"column", overflow:"hidden", minWidth:0 }}>
 
         {/* Header sala activa — editorial */}
-        <div className="xc-header" style={{ padding:"14px 18px", borderBottom:`1px solid ${accent}15`, display:"flex", alignItems:"center", gap:14, flexShrink:0, background:"linear-gradient(135deg,#08101e 0%,#04060d 100%)", position:"relative", overflow:"hidden" }}>
+        <div className="xc-header" style={{ padding:"14px 18px", borderBottom:`1px solid ${accent}15`, display:"flex", alignItems:"center", gap:14, flexShrink:0, background:"linear-gradient(135deg,#0e1014 0%,#06070a 100%)", position:"relative", overflow:"hidden" }}>
           <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,${accent},transparent)` }}/>
           <span className="xc-room-icon" style={{ fontSize:22, filter:`drop-shadow(0 0 10px ${accent}66)` }}>{activeRoom ? ROOM_META[activeRoom.slug]?.icon : "🪙"}</span>
           <div style={{ display:"flex", flexDirection:"column", lineHeight:1 }}>
             <div className="xc-header-eye" style={{ fontFamily:"'Gotham', monospace", fontSize:9, letterSpacing:"2.5px", textTransform:"uppercase", color:"rgba(var(--brand-primary-rgb),.4)", marginBottom:4 }}>Sala activa</div>
-            <div className="xc-room-name" style={{ fontFamily:"'Gotham', sans-serif", fontSize:22, letterSpacing:"3px", color:"#f0ece3", textTransform:"uppercase" }}>{activeRoom?.name || "Cargando…"}</div>
+            <div className="xc-room-name" style={{ fontFamily:"'Gotham', sans-serif", fontSize:22, letterSpacing:"3px", color:"#f5f2eb", textTransform:"uppercase" }}>{activeRoom?.name || "Cargando…"}</div>
           </div>
           <div className="xc-online-badge" style={{ display:"inline-flex", alignItems:"center", gap:6, marginLeft:8, padding:"4px 10px", background:"rgba(34,197,94,.06)", border:"1px solid rgba(34,197,94,.2)", fontFamily:"'Gotham', monospace", fontSize:9, letterSpacing:"2px", color:"#22c55e" }}>
             <span style={{ width:6,height:6,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 8px #22c55e" }}/>
@@ -1059,7 +1061,7 @@ export default function ChatPage() {
                 <span style={{ fontSize:18,filter:`drop-shadow(0 0 8px ${accent})` }}>{ROOM_META[activeRoom.slug]?.icon||"🪙"}</span>
                 <div>
                   <div style={{ fontFamily:"'Gotham', monospace",fontSize:9,letterSpacing:"2px",color:accent,textTransform:"uppercase" }}>Bienvenido a</div>
-                  <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:18,letterSpacing:"3px",color:"#f0ece3",textTransform:"uppercase",lineHeight:1 }}>{activeRoom.name}</div>
+                  <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:18,letterSpacing:"3px",color:"#f5f2eb",textTransform:"uppercase",lineHeight:1 }}>{activeRoom.name}</div>
                 </div>
               </div>
             </div>
@@ -1067,12 +1069,12 @@ export default function ChatPage() {
           {showPowers ? (
             <PowersInline token={token} />
           ) : loading ? (
-            <div style={{ textAlign:"center",color:"#1e293b",marginTop:40,fontSize:13 }}>Cargando...</div>
+            <div style={{ textAlign:"center",color:"#161a20",marginTop:40,fontSize:13 }}>Cargando...</div>
           ) : messages.length===0 ? (
             <div style={{ textAlign:"center",marginTop:60 }}>
               <div style={{ fontSize:40,marginBottom:8 }}>{ROOM_META[activeRoom?.slug]?.icon||"🪙"}</div>
-              <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:24,letterSpacing:"4px",color:"#475569",marginBottom:6 }}>SILENCIO ABSOLUTO</div>
-              <div style={{ fontFamily:"'Gotham', monospace",fontSize:10,color:"#1e293b",letterSpacing:"2px",textTransform:"uppercase" }}>Sé el primero · Tipeá :) (L) (fire)</div>
+              <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:24,letterSpacing:"4px",color:"#6e6b64",marginBottom:6 }}>SILENCIO ABSOLUTO</div>
+              <div style={{ fontFamily:"'Gotham', monospace",fontSize:10,color:"#161a20",letterSpacing:"2px",textTransform:"uppercase" }}>Sé el primero · Tipeá :) (L) (fire)</div>
             </div>
           ) : (<>
             <SystemMessage icon="🚪" text={`ESTÁS EN ${activeRoom?.name||"el chat"} · sé respetuoso`} accent={accent} />
@@ -1096,20 +1098,20 @@ export default function ChatPage() {
 
         {/* Input */}
         {!showPowers && (
-          <div style={{ padding:"10px 12px",borderTop:`1px solid #0d1424`,flexShrink:0,background:"#08101e" }}>
-            <div style={{ display:"flex",gap:6,alignItems:"center",background:"#0d1424",border:`1px solid ${showSmiles?accent+"55":accent+"18"}`,borderRadius:10,padding:"4px 4px 4px 6px",transition:"border-color .25s" }}>
+          <div style={{ padding:"10px 12px",borderTop:`1px solid #161a20`,flexShrink:0,background:"#0e1014" }}>
+            <div style={{ display:"flex",gap:6,alignItems:"center",background:"#161a20",border:`1px solid ${showSmiles?accent+"55":accent+"18"}`,borderRadius:10,padding:"4px 4px 4px 6px",transition:"border-color .25s" }}>
               <button onClick={()=>setShowSmiles(v=>!v)} title="Smiles" className="xat-icon-btn"
-                style={{ width:34,height:34,borderRadius:8,background:showSmiles?`${accent}18`:"transparent",border:"none",color:showSmiles?accent:"#94a3b8",fontSize:18,flexShrink:0 }}>
+                style={{ width:34,height:34,borderRadius:8,background:showSmiles?`${accent}18`:"transparent",border:"none",color:showSmiles?accent:"#a8a49b",fontSize:18,flexShrink:0 }}>
                 😊
               </button>
               <input ref={inputRef} value={input} onChange={e=>setInput(e.target.value)}
                 onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}}
                 placeholder={`Escribí en ${activeRoom?.name||"el chat"}...`} maxLength={1000}
-                style={{ flex:1,background:"none",border:"none",color:"#e2e8f0",fontSize:13.5,outline:"none",padding:"6px 4px" }} />
+                style={{ flex:1,background:"none",border:"none",color:"#f5f2eb",fontSize:13.5,outline:"none",padding:"6px 4px" }} />
               <Pop as="button" onClick={sendMessage} disabled={!input.trim()}
-                style={{ background:input.trim()?accent:"#1a2540",color:input.trim()?"#000":"#334155",border:"none",borderRadius:8,padding:"8px 16px",fontWeight:800,cursor:input.trim()?"pointer":"default",fontSize:13,flexShrink:0 }}>→</Pop>
+                style={{ background:input.trim()?accent:"#1f242c",color:input.trim()?"#000":"#3a3833",border:"none",borderRadius:8,padding:"8px 16px",fontWeight:800,cursor:input.trim()?"pointer":"default",fontSize:13,flexShrink:0 }}>→</Pop>
             </div>
-            <div className="xc-hints" style={{ marginTop:6,fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"1.5px",color:"#334155",textTransform:"uppercase",display:"flex",gap:10,flexWrap:"wrap" }}>
+            <div className="xc-hints" style={{ marginTop:6,fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"1.5px",color:"#3a3833",textTransform:"uppercase",display:"flex",gap:10,flexWrap:"wrap" }}>
               <span>:) → 😊</span><span>(L) → 🪙</span><span>(fire) → 🔥</span><span>{`<3 → ❤️`}</span><span>(crown) → 👑</span>
             </div>
           </div>
@@ -1117,20 +1119,20 @@ export default function ChatPage() {
       </div>
 
       {/* ── PANEL DERECHO ────────────────────────────────────────────────────── */}
-      <div style={{ width:isMobile?"100%":200, borderLeft:isMobile?"none":"1px solid #0d1424", display:isMobile&&mobileView==="chat"?"none":"flex", flexDirection:"column",background:"#070c18",flexShrink:0 }}>
+      <div style={{ width:isMobile?"100%":200, borderLeft:isMobile?"none":"1px solid #161a20", display:isMobile&&mobileView==="chat"?"none":"flex", flexDirection:"column",background:"#0e1014",flexShrink:0 }}>
 
         {/* Salas premium */}
-        <div style={{ borderBottom:"1px solid #0d1424",padding:"8px 6px" }}>
-          <div style={{ fontSize:9,color:"#1e293b",fontWeight:700,letterSpacing:1,textTransform:"uppercase",padding:"0 6px 6px" }}>Salas</div>
+        <div style={{ borderBottom:"1px solid #161a20",padding:"8px 6px" }}>
+          <div style={{ fontSize:9,color:"#161a20",fontWeight:700,letterSpacing:1,textTransform:"uppercase",padding:"0 6px 6px" }}>Salas</div>
           {/* Sala principal */}
           <div onClick={()=>enterRoom("general")}
             style={{ display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,cursor:"pointer",background:activeRoom?.slug==="general"?"rgba(var(--brand-primary-rgb),0.08)":"transparent",border:activeRoom?.slug==="general"?"1px solid rgba(var(--brand-primary-rgb),0.15)":"1px solid transparent",marginBottom:3 }}>
             <span style={{ fontSize:14 }}>💬</span>
-            <span style={{ fontSize:11,fontWeight:700,color:activeRoom?.slug==="general"?"var(--brand-primary)":"#64748b" }}>Sala general</span>
+            <span style={{ fontSize:11,fontWeight:700,color:activeRoom?.slug==="general"?"var(--brand-primary)":"#8e8b84" }}>Sala general</span>
           </div>
           {/* Salas premium */}
           {premiumRooms.map(room=>{
-            const meta = ROOM_META[room.slug]||{accent:"#c8f53a",icon:"💬"};
+            const meta = ROOM_META[room.slug]||{accent:"#a7f5c8",icon:"💬"};
             const isActive = activeRoom?.slug===room.slug;
             const hasAccess = room.has_access || room.coins_required===0;
             return (
@@ -1139,10 +1141,10 @@ export default function ChatPage() {
                 style={{ display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:7,cursor:"pointer",background:isActive?`${meta.accent}15`:"transparent",border:isActive?`1px solid ${meta.accent}25`:"1px solid transparent",marginBottom:3,opacity:hasAccess?1:0.6 }}>
                 <span style={{ fontSize:14 }}>{meta.icon}</span>
                 <div style={{ flex:1,minWidth:0 }}>
-                  <div style={{ fontSize:11,fontWeight:700,color:isActive?meta.accent:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{room.name}</div>
-                  {!hasAccess && <div style={{ fontSize:9,color:"#334155" }}>🔒 {room.coins_required} 🪙</div>}
+                  <div style={{ fontSize:11,fontWeight:700,color:isActive?meta.accent:"#6e6b64",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{room.name}</div>
+                  {!hasAccess && <div style={{ fontSize:9,color:"#3a3833" }}>🔒 {room.coins_required} 🪙</div>}
                 </div>
-                {joining===room.id && <span style={{ fontSize:9,color:"#334155" }}>...</span>}
+                {joining===room.id && <span style={{ fontSize:9,color:"#3a3833" }}>...</span>}
               </div>
             );
           })}
@@ -1150,15 +1152,15 @@ export default function ChatPage() {
 
         {/* Amigos */}
         {friends.filter(f=>f.status==="accepted").length>0 && (
-          <div style={{ borderBottom:"1px solid #0d1424",padding:"8px 6px" }}>
-            <div style={{ fontSize:9,color:"#1e293b",fontWeight:700,letterSpacing:1,textTransform:"uppercase",padding:"0 6px 6px" }}>Amigos</div>
+          <div style={{ borderBottom:"1px solid #161a20",padding:"8px 6px" }}>
+            <div style={{ fontSize:9,color:"#161a20",fontWeight:700,letterSpacing:1,textTransform:"uppercase",padding:"0 6px 6px" }}>Amigos</div>
             {friends.filter(f=>f.status==="accepted").map(f=>(
               <div key={f.other_id} onClick={()=>setPrivateChat({user_id:f.other_id,user_name:f.other_name,name_color:f.name_color,nickname:f.nickname})}
                 style={{ display:"flex",alignItems:"center",gap:6,padding:"4px 8px",borderRadius:7,cursor:"pointer" }}
-                onMouseEnter={e=>e.currentTarget.style.background="#0f172a"}
+                onMouseEnter={e=>e.currentTarget.style.background="#161a20"}
                 onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <Avatar name={f.other_name} size={20} color={f.name_color||"#c8f53a"} />
-                <span style={{ fontSize:11,color:f.name_color||"#64748b",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1 }}>{f.other_name}</span>
+                <Avatar name={f.other_name} size={20} color={f.name_color||"#a7f5c8"} />
+                <span style={{ fontSize:11,color:f.name_color||"#8e8b84",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1 }}>{f.other_name}</span>
                 <span style={{ fontSize:9 }}>💬</span>
               </div>
             ))}
@@ -1167,11 +1169,11 @@ export default function ChatPage() {
 
         {/* Solicitudes pendientes */}
         {pendingFriends.length>0 && (
-          <div style={{ borderBottom:"1px solid #0d1424",padding:"8px 6px" }}>
+          <div style={{ borderBottom:"1px solid #161a20",padding:"8px 6px" }}>
             <div style={{ fontSize:9,color:"#f59e0b",fontWeight:700,letterSpacing:1,textTransform:"uppercase",padding:"0 6px 6px" }}>🔔 Solicitudes</div>
             {pendingFriends.map(f=>(
               <div key={f.other_id} style={{ padding:"4px 8px",marginBottom:4 }}>
-                <div style={{ fontSize:11,color:"#e2e8f0",fontWeight:700,marginBottom:4 }}>{f.other_name}</div>
+                <div style={{ fontSize:11,color:"#f5f2eb",fontWeight:700,marginBottom:4 }}>{f.other_name}</div>
                 <div style={{ display:"flex",gap:4 }}>
                   <button onClick={()=>acceptFriend({user_id:f.other_id,user_name:f.other_name})} style={{ flex:1,background:"#22c55e18",border:"1px solid #22c55e33",borderRadius:5,padding:"3px",color:"#22c55e",fontSize:10,cursor:"pointer",fontWeight:700 }}>✓</button>
                   <button onClick={()=>rejectFriend({user_id:f.other_id})} style={{ flex:1,background:"#ef444418",border:"1px solid #ef444433",borderRadius:5,padding:"3px",color:"#ef4444",fontSize:10,cursor:"pointer",fontWeight:700 }}>✕</button>
@@ -1183,31 +1185,31 @@ export default function ChatPage() {
 
         {/* Usuarios online */}
         <div style={{ flex:1,overflowY:"auto",padding:"8px 6px" }}>
-          <div style={{ fontSize:9,color:"#1e293b",fontWeight:700,letterSpacing:1,textTransform:"uppercase",padding:"0 6px 6px" }}>Online — {onlineUsers.length}</div>
+          <div style={{ fontSize:9,color:"#161a20",fontWeight:700,letterSpacing:1,textTransform:"uppercase",padding:"0 6px 6px" }}>Online — {onlineUsers.length}</div>
           {onlineUsers.map(u=>{
             const isOwn=u.user_id===currentUser?.id;
             const isStaff=["admin","operator"].includes(u.user_role);
-            const avatarColor=u.name_color||(isStaff?"#ef4444":"#c8f53a");
+            const avatarColor=u.name_color||(isStaff?"#ef4444":"#a7f5c8");
             const pawn=getPawn(u);
             return (
               <div key={u.user_id} onClick={()=>handleUserClick(u)}
-                style={{ display:"flex",alignItems:"center",gap:6,padding:"4px 8px",borderRadius:7,cursor:"pointer",background:isOwn?"rgba(200,245,58,0.05)":"transparent" }}
-                onMouseEnter={e=>e.currentTarget.style.background=isOwn?"rgba(200,245,58,0.08)":"#0f172a"}
-                onMouseLeave={e=>e.currentTarget.style.background=isOwn?"rgba(200,245,58,0.05)":"transparent"}>
+                style={{ display:"flex",alignItems:"center",gap:6,padding:"4px 8px",borderRadius:7,cursor:"pointer",background:isOwn?"rgba(167,245,200,0.05)":"transparent" }}
+                onMouseEnter={e=>e.currentTarget.style.background=isOwn?"rgba(167,245,200,0.08)":"#161a20"}
+                onMouseLeave={e=>e.currentTarget.style.background=isOwn?"rgba(167,245,200,0.05)":"transparent"}>
                 <div style={{ position:"relative" }}>
                   <Avatar name={u.user_name} size={24} color={avatarColor} glow={!!u.name_glow} avatarKey={u.avatar_key} avatarUrl={u.avatar_url} />
-                  <div style={{ position:"absolute",bottom:-1,right:-1,width:6,height:6,borderRadius:"50%",background:"#22c55e",border:"1.5px solid #070c18" }} />
+                  <div style={{ position:"absolute",bottom:-1,right:-1,width:6,height:6,borderRadius:"50%",background:"#22c55e",border:"1.5px solid #0e1014" }} />
                   {pawn && <span title={pawn.lbl} style={{ position:"absolute",top:-3,left:-4,fontSize:9,filter:`drop-shadow(0 0 3px ${pawn.c})`,pointerEvents:"none" }}>{pawn.ico}</span>}
                 </div>
                 <div style={{ flex:1,minWidth:0 }}>
                   <div style={{ overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}><UserName user={u} size={10} /></div>
-                  {u.nickname && <div style={{ fontSize:9,color:u.nick_color||"#334155",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textShadow:u.nick_glow?`0 0 ${u.nick_glow}px ${u.nick_color||"#334155"}`:"none" }}>{u.nickname}</div>}
+                  {u.nickname && <div style={{ fontSize:9,color:u.nick_color||"#3a3833",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textShadow:u.nick_glow?`0 0 ${u.nick_glow}px ${u.nick_color||"#3a3833"}`:"none" }}>{u.nickname}</div>}
                 </div>
-                {isOwn && <span style={{ fontSize:8,color:"#c8f53a",opacity:0.4 }}>vos</span>}
+                {isOwn && <span style={{ fontSize:8,color:"#a7f5c8",opacity:0.4 }}>vos</span>}
               </div>
             );
           })}
-          {onlineUsers.length===0 && <div style={{ padding:"4px 10px",color:"#1a2540",fontSize:11 }}>Nadie online</div>}
+          {onlineUsers.length===0 && <div style={{ padding:"4px 10px",color:"#1f242c",fontSize:11 }}>Nadie online</div>}
         </div>
       </div>
       </div>
