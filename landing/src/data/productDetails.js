@@ -48,7 +48,7 @@ export const productDetails = {
                 kicker: "FULL-CYCLE",
                 title: "Para ciclos completos de cultivo.",
                 body: "Vegetativo, preflora, floración, finalizado. La misma fórmula con dosis ajustada por etapa. Menos productos para comprar, menos chances de equivocarse al dosar.",
-                image: "/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png",
+                image: "/img/productos/linea-elite/elite-part-1.png",
                 color: "#E5D9B8",
                 stat: "02",
             },
@@ -56,7 +56,7 @@ export const productDetails = {
                 kicker: "SUSTRATO & HIDRO",
                 title: "Adaptable a cada sistema.",
                 body: "Coco, perlita, lana de roca, NFT, DWC, turba y sustratos compuestos. Los nutrientes son 100% biodisponibles: la planta los absorbe directamente sin depender de la microbiología del sustrato.",
-                image: "/img/productos/linea-elite/500gr/parte-2-perspectiva-1l.png",
+                image: "/img/productos/linea-elite/elite-part-2.png",
                 color: "#B8923A",
                 stat: "03",
             },
@@ -87,9 +87,9 @@ export const productDetails = {
         // intermedias (5L) y grandes industriales (10L y 20L apilados).
         // Las imágenes "apiladas" comunican volumen y nivel pro.
         formats: [
-            { name: "250 ML",   size: "250ml",  image: "/img/productos/linea-elite/1l/juntos-1l.png" },
-            { name: "500 ML",   size: "500ml",  image: "/img/productos/linea-elite/500gr/parte-2-perspectiva-1l.png" },
-            { name: "1 LITRO",  size: "1L",     image: "/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png" },
+            { name: "250 ML",   size: "250ml",  image: "/img/productos/linea-elite/elite-unificado.png" },
+            { name: "500 ML",   size: "500ml",  image: "/img/productos/linea-elite/elite-part-2.png" },
+            { name: "1 LITRO",  size: "1L",     image: "/img/productos/linea-elite/elite-part-1.png" },
             { name: "5 LITROS", size: "5L",     image: "/img/productos/elite-max/a-5-lts-perspectiva-1.png" },
             { name: "10 LITROS",size: "10L",    image: "/img/productos/elite-max/10-litros-apilados.png" },
             { name: "20 LITROS",size: "20L",    image: "/img/productos/elite-max/20-litros-apilados.png" },
