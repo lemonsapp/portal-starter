@@ -10,7 +10,7 @@
 //
 // Skill: gsap-core + gsap-timeline para la coreografía.
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCart } from "../lib/useCart.js";
 import { useBranding } from "../lib/branding.js";
@@ -176,7 +176,7 @@ export default function ShopCheckoutSuccess() {
     ] : [];
 
     return (
-        <div ref={rootRef} className="theme-light" style={S.shell}>
+        <div ref={rootRef} style={S.shell}>
             <div style={S.card}>
                 {/* Halo radial mint */}
                 <div ref={haloRef} style={S.halo} aria-hidden="true" />
@@ -229,10 +229,19 @@ export default function ShopCheckoutSuccess() {
 
                 {/* Headline */}
                 <h1 ref={headlineRef} style={S.headline}>
-                    {headlineText.split("").map((ch, i) => (
-                        <span key={i} data-success-char style={S.headlineChar}>
-                            {ch === " " ? " " : ch}
-                        </span>
+                    {/* split por PALABRAS (cada una nowrap) → el salto de línea
+                        cae solo entre palabras, nunca a mitad de una (antes cada
+                        char era inline-block y cortaba "CO MPRA"). Los chars siguen
+                        siendo spans [data-success-char] para la animación GSAP. */}
+                    {headlineText.split(" ").map((word, wi, arr) => (
+                        <Fragment key={wi}>
+                            <span style={S.headlineWord}>
+                                {word.split("").map((ch, ci) => (
+                                    <span key={ci} data-success-char style={S.headlineChar}>{ch}</span>
+                                ))}
+                            </span>
+                            {wi < arr.length - 1 ? " " : null}
+                        </Fragment>
                     ))}
                 </h1>
 
@@ -383,12 +392,17 @@ const S = {
         position: "relative", zIndex: 2,
         margin: "0 0 14px",
         fontFamily: "'Gotham', sans-serif",
-        fontSize: "clamp(1.7rem, 3.6vw, 2.4rem)",
+        fontSize: "clamp(1.35rem, 2.8vw, 1.95rem)",
         fontWeight: 900,
         textTransform: "uppercase",
         letterSpacing: "-0.01em",
-        lineHeight: 1.1,
+        lineHeight: 1.12,
         paddingBottom: "0.06em",
+    },
+    // Cada palabra es un bloque nowrap → el wrap cae solo en los espacios.
+    headlineWord: {
+        display: "inline-block",
+        whiteSpace: "nowrap",
     },
     headlineChar: {
         display: "inline-block",

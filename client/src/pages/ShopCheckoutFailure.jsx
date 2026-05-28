@@ -53,7 +53,7 @@ export default function ShopCheckoutFailure() {
   const orderParam = params.get("order");
 
   return (
-    <div className="theme-light" style={styles.shell}>
+    <div style={styles.shell}>
       <div style={styles.card}>
         <div style={styles.icon}>⚠️</div>
         <h1 style={styles.h1}>El pago no se completó</h1>
