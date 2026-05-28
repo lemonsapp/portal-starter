@@ -37,6 +37,17 @@ const styles = {
     border: "none", borderBottom: active ? "2px solid var(--brand-primary, #3B82F6)" : "2px solid transparent",
     fontFamily: "inherit", marginBottom: -1,
   }),
+  // Sub-pestañas (Tienda → Productos/Pedidos/Feed · Config → Branding/Ajustes).
+  // Estilo pill para diferenciarlas visualmente de las top-level (underline).
+  subtabs: { display: "flex", gap: 8, marginBottom: 18, flexWrap: "wrap" },
+  subtab: (active) => ({
+    padding: "7px 15px", borderRadius: 999, cursor: "pointer",
+    fontSize: 12, fontWeight: 700, letterSpacing: 0.3,
+    color: active ? "#fff" : "rgba(237,233,224,.6)",
+    background: active ? "var(--brand-primary, #3B82F6)" : "rgba(255,255,255,.05)",
+    border: `1px solid ${active ? "transparent" : "rgba(255,255,255,.1)"}`,
+    fontFamily: "inherit",
+  }),
   card: {
     padding: 20, marginBottom: 16,
     background: "rgba(255,255,255,.02)",
@@ -68,40 +79,79 @@ const styles = {
   modalCard: { background: "#0e0f15", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, padding: 24, width: "100%", maxWidth: 420 },
 };
 
+// Estructura de pestañas del admin. TIENDA y CONFIGURACIÓN agrupan sub-pestañas;
+// el resto abre su componente directo. Los *Tab son function declarations
+// (hoisted), así que se pueden referenciar acá aunque se definan más abajo.
+const ADMIN_NAV = [
+  {
+    key: "tienda", label: "🛒 Tienda",
+    subs: [
+      { key: "products", label: "Productos", Comp: ProductsTab },
+      { key: "orders",   label: "Pedidos",   Comp: OrdersTab },
+      { key: "feed",     label: "Feed",      Comp: FeedTab },
+    ],
+  },
+  { key: "coins",     label: "🪙 Coins",        Comp: CoinsTab },
+  { key: "clientes",  label: "👥 Clientes",     Comp: CustomersTab },
+  { key: "campaigns", label: "📧 Campañas",     Comp: CampaignsTab },
+  { key: "promos",    label: "🎟️ Códigos",      Comp: PromoCodesTab },
+  {
+    key: "config", label: "⚙️ Configuración",
+    subs: [
+      { key: "branding", label: "Branding", Comp: BrandingTab },
+      { key: "settings", label: "Ajustes",  Comp: SettingsTab },
+    ],
+  },
+];
+
 export default function AdminPanel() {
-  const [tab, setTab] = useState("coins");
+  const [tabKey, setTabKey] = useState("tienda");
+  const [subKey, setSubKey] = useState("products");
+
+  const tab = ADMIN_NAV.find((t) => t.key === tabKey) || ADMIN_NAV[0];
+
+  // Al cambiar de pestaña top: si agrupa sub-tabs, caemos a la primera.
+  function selectTab(t) {
+    setTabKey(t.key);
+    if (t.subs) setSubKey(t.subs[0].key);
+  }
+
+  // Componente activo: sub-tab seleccionado si el top agrupa, si no el directo.
+  const activeSub = tab.subs ? (tab.subs.find((s) => s.key === subKey) || tab.subs[0]) : null;
+  const ActiveComp = activeSub ? activeSub.Comp : tab.Comp;
+
   return (
     <div style={styles.shell}>
       <div style={styles.container}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h1 style={styles.h1}>Panel admin</h1>
-            <div style={styles.sub}>Gestionar coins, feed y configuración del portal.</div>
+            <div style={styles.sub}>Tienda, coins, clientes, campañas, códigos y configuración del portal.</div>
           </div>
           <Link to="/inicio" style={{ ...styles.btn(), textDecoration: "none", display: "inline-block" }}>← Volver al inicio</Link>
         </div>
 
+        {/* Pestañas top-level */}
         <div style={styles.tabs}>
-          <button style={styles.tab(tab === "coins")}    onClick={() => setTab("coins")}>🪙 Coins</button>
-          <button style={styles.tab(tab === "feed")}     onClick={() => setTab("feed")}>📰 Feed</button>
-          <button style={styles.tab(tab === "products")} onClick={() => setTab("products")}>🛒 Productos</button>
-          <button style={styles.tab(tab === "orders")}    onClick={() => setTab("orders")}>📦 Pedidos</button>
-          <button style={styles.tab(tab === "customers")} onClick={() => setTab("customers")}>👥 Clientes</button>
-          <button style={styles.tab(tab === "campaigns")} onClick={() => setTab("campaigns")}>📧 Campañas</button>
-          <button style={styles.tab(tab === "promos")}    onClick={() => setTab("promos")}>🎟️ Códigos</button>
-          <button style={styles.tab(tab === "branding")}  onClick={() => setTab("branding")}>🎨 Branding</button>
-          <button style={styles.tab(tab === "settings")}  onClick={() => setTab("settings")}>⚙️ Configuración</button>
+          {ADMIN_NAV.map((t) => (
+            <button key={t.key} style={styles.tab(tabKey === t.key)} onClick={() => selectTab(t)}>
+              {t.label}
+            </button>
+          ))}
         </div>
 
-        {tab === "coins"     && <CoinsTab />}
-        {tab === "feed"      && <FeedTab />}
-        {tab === "products"  && <ProductsTab />}
-        {tab === "orders"    && <OrdersTab />}
-        {tab === "customers" && <CustomersTab />}
-        {tab === "campaigns" && <CampaignsTab />}
-        {tab === "promos"    && <PromoCodesTab />}
-        {tab === "branding"  && <BrandingTab />}
-        {tab === "settings"  && <SettingsTab />}
+        {/* Sub-pestañas (solo cuando el top-level agrupa) */}
+        {tab.subs && (
+          <div style={styles.subtabs}>
+            {tab.subs.map((s) => (
+              <button key={s.key} style={styles.subtab(subKey === s.key)} onClick={() => setSubKey(s.key)}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <ActiveComp />
       </div>
     </div>
   );
