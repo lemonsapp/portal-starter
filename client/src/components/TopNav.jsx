@@ -224,32 +224,23 @@ export default function TopNav() {
                         <img src="/assets/logo.svg" alt="Holistic" style={S.logoImg} width="32" height="32" />
                     </Link>
 
-                    {/* Desktop nav — links de texto estilo landing (underline mint en
-                        hover/active). "Tienda" usa la pill mint igual que la web. */}
+                    {/* Desktop nav — TODOS los links son pills mint iguales a la de
+                        Tienda (idénticas a .header__link--shop de la web). La página
+                        activa lleva un anillo blanco interior para distinguirla. */}
                     <nav className="topnav-nav" style={S.nav} aria-label="Navegación principal">
                         {nav.map((item) => {
                             const active = location.pathname === item.path
                                 || (item.path !== "/inicio" && location.pathname.startsWith(item.path));
-                            const isShop = item.path === "/shop";
                             const showBadge = item.path === "/chat" && unreadChat > 0;
-
-                            // Tienda → pill mint con ícono carrito (idéntica al landing)
-                            if (isShop) {
-                                return (
-                                    <Link key={item.path} to={item.path} style={S.shopPill} className="topnav-shop-pill">
-                                        <span style={S.shopPillIcon}><Icon name="shop" size={14} /></span>
-                                        {item.label}
-                                    </Link>
-                                );
-                            }
-
                             return (
                                 <Link
                                     key={item.path}
                                     to={item.path}
-                                    className={active ? "topnav-link topnav-link--active" : "topnav-link"}
-                                    style={S.navLink}
+                                    style={S.pill}
+                                    className={active ? "topnav-pill topnav-pill--active" : "topnav-pill"}
+                                    aria-current={active ? "page" : undefined}
                                 >
+                                    <span style={S.pillIcon}><Icon name={item.icon} size={14} /></span>
                                     {item.label}
                                     {showBadge && (
                                         <span style={S.unreadBadge} aria-label={`${unreadChat} mensajes sin leer`}>
@@ -485,24 +476,17 @@ const S = {
     },
     logoImg: { height: 32, width: "auto", display: "block" },
 
-    // Desktop nav — links de texto estilo web
+    // Desktop nav — fila de pills mint
     nav: {
-        display: "flex", alignItems: "center", gap: 26,
+        display: "flex", alignItems: "center", gap: 10,
         flex: 1,
-        marginLeft: "clamp(20px, 4vw, 48px)",
+        marginLeft: "clamp(20px, 3vw, 40px)",
     },
-    navLink: {
+    // Pill mint (idéntica a .header__link--shop de la web). Todos los links
+    // del nav la usan; la variante activa (.topnav-pill--active) agrega un
+    // anillo blanco interior — ver CSS inyectado abajo.
+    pill: {
         position: "relative",
-        display: "inline-flex", alignItems: "center",
-        padding: "6px 0",
-        color: C.text,
-        textDecoration: "none",
-        fontSize: 13, fontWeight: 500,
-        letterSpacing: "0.01em",
-        transition: `color .25s ${C.ease}`,
-    },
-    // "Tienda" — pill mint destacada (idéntica a .header__link--shop)
-    shopPill: {
         display: "inline-flex", alignItems: "center", gap: 6,
         padding: "8px 16px",
         borderRadius: 999,
@@ -515,10 +499,10 @@ const S = {
         transition: `transform .3s ${C.ease}, box-shadow .3s ${C.ease}`,
         whiteSpace: "nowrap",
     },
-    shopPillIcon: { display: "inline-flex" },
+    pillIcon: { display: "inline-flex" },
     unreadBadge: {
         position: "absolute",
-        top: -4, right: -10,
+        top: -5, right: -5,
         minWidth: 16, height: 16,
         padding: "0 4px",
         borderRadius: 999,
@@ -796,21 +780,20 @@ if (typeof window !== "undefined" && !document.getElementById("topnav-responsive
     const styleEl = document.createElement("style");
     styleEl.id = "topnav-responsive-css";
     styleEl.textContent = `
-        .topnav-link::after {
-            content: ""; position: absolute; left: 0; bottom: 0;
-            width: 0; height: 1px; background: #25d366;
-            transition: width .3s cubic-bezier(.25,.46,.45,.94);
-        }
-        .topnav-link:hover { color: #25d366; }
-        .topnav-link:hover::after { width: 100%; }
-        .topnav-link--active { color: #25d366; }
-        .topnav-link--active::after { width: 100%; }
-        .topnav-shop-pill:hover { transform: translateY(-2px);
+        .topnav-pill:hover { transform: translateY(-2px);
             box-shadow: 0 10px 28px -4px rgba(46,143,110,.62), 0 0 0 2px rgba(167,245,200,.7), 0 0 30px -6px rgba(167,245,200,.4); }
+        /* Página activa: anillo blanco interior + glow, mismo verde que el resto. */
+        .topnav-pill--active {
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,.65),
+                        0 6px 18px -4px rgba(46,143,110,.55),
+                        0 0 0 1.5px rgba(167,245,200,.6) !important;
+        }
         .topnav-icon:hover { background: #eee !important; color: #25d366 !important; }
         /* Hamburguesa visible en celu Y web (acceso a internas vía drawer). */
         .topnav-hamburger { display: inline-flex !important; }
-        @media (max-width: 900px) {
+        /* Bump 900→1024: la fila de pills es más ancha que los links de texto;
+           en tablet conviene caer al drawer antes de que se aprieten. */
+        @media (max-width: 1024px) {
             .topnav-nav { display: none !important; }
             .topnav-balance { display: none !important; }
             .topnav-username { display: none !important; }
