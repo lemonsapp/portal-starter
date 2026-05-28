@@ -39,28 +39,21 @@ const Icon = ({ name, size = 18 }) => {
     }
 };
 
-// Nav config por rol
+// Nav config por rol. Base común INICIO · TIENDA · COINS · CHAT; el admin suma
+// ADMIN al final (acceso al panel de pedidos y todo). Perfil y Config no van en
+// la barra — viven en el menú de usuario (avatar) para no saturar de pills.
+const NAV_BASE = [
+    { path: "/inicio",  label: "Inicio", icon: "home" },
+    { path: "/shop",    label: "Tienda", icon: "shop" },
+    { path: "/coins",   label: "Coins",  icon: "coins" },
+    { path: "/chat",    label: "Chat",   icon: "chat" },
+];
 const NAV_BY_ROLE = {
-    client: [
-        { path: "/inicio",  label: "Inicio", icon: "home" },
-        { path: "/shop",    label: "Tienda", icon: "shop" },
-        { path: "/perfil",  label: "Perfil", icon: "user" },
-        { path: "/coins",   label: "Coins",  icon: "coins" },
-        { path: "/chat",    label: "Chat",   icon: "chat" },
-    ],
-    operator: [
-        { path: "/inicio",  label: "Inicio", icon: "home" },
-        { path: "/shop",    label: "Tienda", icon: "shop" },
-        { path: "/coins",   label: "Coins",  icon: "coins" },
-        { path: "/chat",    label: "Chat",   icon: "chat" },
-    ],
+    client:   NAV_BASE,
+    operator: NAV_BASE,
     admin: [
-        { path: "/inicio",      label: "Inicio", icon: "home" },
-        { path: "/shop",        label: "Tienda", icon: "shop" },
-        { path: "/admin",       label: "Admin",  icon: "admin" },
-        { path: "/coins",       label: "Coins",  icon: "coins" },
-        { path: "/chat",        label: "Chat",   icon: "chat" },
-        { path: "/admin/setup", label: "Config", icon: "settings" },
+        ...NAV_BASE,
+        { path: "/admin", label: "Admin", icon: "admin" },
     ],
 };
 
@@ -368,6 +361,11 @@ export default function TopNav() {
                                     {role === "admin" && (
                                         <Link to="/admin" style={S.userMenuItem}>
                                             <Icon name="admin" size={16} /> Panel admin
+                                        </Link>
+                                    )}
+                                    {role === "admin" && (
+                                        <Link to="/admin/setup" style={S.userMenuItem}>
+                                            <Icon name="settings" size={16} /> Configuración
                                         </Link>
                                     )}
                                     <button
