@@ -39,8 +39,7 @@ export const productDetails = {
                 kicker: "DISEÑO DUAL",
                 title: "Dos botellas, un sistema completo.",
                 body: "Parte 1: aporta NPK y calcio. Parte 2: aporta magnesio y micro. Aplicadas juntas en cada riego dan al cultivo todo lo que se necesita en su justa proporción — sin antagonismos químicos.",
-                image: "/video/internas/linea-elite/highlight-01.mp4",
-                mediaType: "video",
+                image: "/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png",
                 color: "#C9A34E",
                 stat: "01",
             },
@@ -48,7 +47,7 @@ export const productDetails = {
                 kicker: "FULL-CYCLE",
                 title: "Para ciclos completos de cultivo.",
                 body: "Vegetativo, preflora, floración, finalizado. La misma fórmula con dosis ajustada por etapa. Menos productos para comprar, menos chances de equivocarse al dosar.",
-                image: "/img/productos/linea-elite/elite-part-1.png",
+                image: "/ultimos-cambios/POTE-LINEA-ELITE-DOBLE.png",
                 color: "#E5D9B8",
                 stat: "02",
             },
@@ -56,7 +55,7 @@ export const productDetails = {
                 kicker: "SUSTRATO & HIDRO",
                 title: "Adaptable a cada sistema.",
                 body: "Coco, perlita, lana de roca, NFT, DWC, turba y sustratos compuestos. Los nutrientes son 100% biodisponibles: la planta los absorbe directamente sin depender de la microbiología del sustrato.",
-                image: "/img/productos/linea-elite/elite-part-2.png",
+                image: "/ultimos-cambios/POTE-DOBLE-5LT.png",
                 color: "#B8923A",
                 stat: "03",
             },
@@ -64,7 +63,7 @@ export const productDetails = {
                 kicker: "PUREZA",
                 title: "Nutrición concentrada.",
                 body: "Materias primas superiores. Cada lote pasa control de pureza, EC y pH antes de envasarse. Trazabilidad completa.",
-                image: "/img/productos/elite-max/10-litros-apilados.png",
+                image: "/ultimos-cambios/POTE-20LT.png",
                 color: "#D4B856",
                 stat: "04",
             },
@@ -99,7 +98,10 @@ export const productDetails = {
             body: "Elite es el corazón del catálogo. Combiná con Race para acelerar floración, con Bio Estimulante en el arranque, con Day-0 para el cierre. Un solo equipo técnico atrás de todos los productos.",
             chips: ["+ Bio Estimulante", "+ Race", "+ Day-0"],
         },
-        pullquote: "Lo que separa una cosecha buena de una excelente está en el fertilizante que elegís. Línea Elite no deja márgenes de error.",
+        // Pullquote removido por pedido del cliente — antes decía
+        // "Lo que separa una cosecha buena...". ProductDeepDive omite
+        // la sección entera (texto + imagen decorativa) cuando es falsy.
+        pullquote: "",
         techSpecs: [
             { label: "Composición",      value: "Parte 1: aporta NPK y calcio · Parte 2: aporta magnesio y micro" },
             { label: "Forma",             value: "Líquido concentrado" },
@@ -250,7 +252,7 @@ export const productDetails = {
             },
             {
                 kicker: "3A",
-                title: "Race 3 — 1ª parte PK.",
+                title: "Race 3 (PK de crecimiento y maduración).",
                 body: "Son 2 partes PK de crecimiento y maduración. Activan la translocación de azúcares y agrandan flores en el pico productivo del ciclo.",
                 image: "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
                 color: "#8E24AA",
@@ -258,7 +260,7 @@ export const productDetails = {
             },
             {
                 kicker: "3B",
-                title: "Race 3 — 2ª parte PK.",
+                title: "Race 3 (PK de crecimiento y maduración).",
                 body: "Son 2 partes PK de crecimiento y maduración. Aplicadas en secuencia, sostienen el desarrollo de flores densas hasta el cierre del ciclo.",
                 image: "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
                 color: "#8E24AA",
@@ -313,7 +315,7 @@ export const productDetails = {
                     "Paredes celulares fuertes, más raíces y brotes, y mayor resistencia ante plagas y sequías.",
             },
             {
-                name: "RACE 3 · 1ª",
+                name: "RACE 3 - A",
                 size: "Crecimiento y Maduración",
                 image: "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
                 color: "#8E24AA",
@@ -322,7 +324,7 @@ export const productDetails = {
                     "Primera de las 2 partes PK. Activa la translocación de azúcares y agranda flores en el pico productivo.",
             },
             {
-                name: "RACE 3 · 2ª",
+                name: "RACE 3 - B",
                 size: "Crecimiento y Maduración",
                 image: "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
                 color: "#8E24AA",
@@ -345,12 +347,16 @@ export const productDetails = {
             body: "Race es la línea más enfocada en performance. Combinable con Elite (sustrato inerte) o Pro (hidrosoluble) según preferencia. Day-0 al final, siempre.",
             chips: ["+ Elite", "+ Pro", "+ Day-0"],
         },
-        pullquote: "La velocidad sin control es ruido. Race es el fertilizante indoor que te da las dos cosas: velocidad y precisión.",
+        // Pullquote removido por pedido del cliente — antes decía
+        // "La velocidad sin control es ruido...". El componente
+        // ProductDeepDive omite la sección entera cuando pullquote es
+        // falsy, así que vaciarlo elimina también la imagen decorativa.
+        pullquote: "",
         techSpecs: [
             { label: "Composición",     value: "Race 1 NPK · Race 2 Ca + N · Race 3 PK (1ª y 2ª parte) · Race 4 Micro + Magnesio" },
             { label: "Forma",            value: "Líquido concentrado" },
-            { label: "Dosis típica",     value: "1.0 – 1.5 ml/L" },
-            { label: "Compatibilidad",   value: "Sustratos inertes, coco, hidro, tierra premium · Indoor y outdoor" },
+            { label: "Dosis típica",     value: "0,5ml – 4ml" },
+            { label: "Compatibilidad",   value: "Sustratos inertes, sustratos compuestos, coco, lana de roca, hidro, tierra — indoor y outdoor." },
             { label: "Conservación",     value: "Bajo techo, 5–25°C, 24 meses" },
             { label: "Presentaciones",   value: "250 ml · 500 ml" },
             { label: "Variantes",        value: "5 fertilizantes para el ciclo completo" },

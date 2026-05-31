@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ProductDeepDive from "../components/ProductDeepDive.astro";
-import RaceCinematic from "../components/RaceCinematic.astro";
 import VineDivider from "../components/VineDivider.astro";
 import FinalCTA from "../components/FinalCTA.astro";
 import { capitulos } from "../data/capitulos.js";
@@ -14,11 +13,10 @@ export function getStaticPaths() {
 }
 
 const { cap } = Astro.props;
-// RaceCinematic monta marquee de iconos + grid de motion videos para
-// /linea-race. AHORA va ARRIBA al inicio de la interna (antes del
-// ProductDeepDive) por pedido del cliente — los videos de impacto/motor
-// son lo primero que el visitor ve. RaceAddScrub completamente removido.
-const showRaceCinematic = cap.slug === "linea-race";
+// RaceCinematic (marquee de iconos + grid de 4 motion videos al final
+// de /linea-race) removido por pedido del cliente. El componente sigue
+// existiendo en components/ por si se reactiva más adelante, pero ya
+// no se monta en ninguna interna.
 
 // Divider hacia FinalCTA — ornamento alusivo al producto.
 const ORNAMENT_BY_SLUG = {
@@ -43,11 +41,6 @@ const canonical = `/${cap.slug}`;
          + pullquote + tech specs. El hero es el "primer video principal"
          de la interna. -->
     <ProductDeepDive cap={cap} />
-
-    <!-- /linea-race: marquee + motion videos grid van DESPUÉS del hero
-         del ProductDeepDive. Pedido del cliente: que se vea PRIMERO el
-         hero video (main) y después la grilla de videos motion. -->
-    {showRaceCinematic && <RaceCinematic />}
 
     <VineDivider variant={dv.variant} from={cap.bgColor} to="#FFFFFF" />
 

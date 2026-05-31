@@ -510,20 +510,26 @@ const PARTICLE_COUNT = 22;
         text-align: center;
         min-height: 8em;
     }
+    /* Panels apilados absolutos: el OUTGOING se desvanece rápido y SIN
+       delay; el INCOMING entra DESPUÉS (delay 0.28s) para que nunca se
+       pisen dos textos a la vez al cambiar de tab. */
     .rfs__caption-panel {
         position: absolute;
         inset: 0;
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(12px);
         pointer-events: none;
         transition:
-            opacity 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
-            transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+            opacity 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+            transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
     .rfs__caption-panel.is-active {
         opacity: 1;
         transform: translateY(0);
         pointer-events: auto;
+        transition:
+            opacity 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) 0.28s,
+            transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) 0.28s;
     }
     .rfs__caption-tagline {
         margin: 0 0 0.6rem;
