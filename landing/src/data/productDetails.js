@@ -128,17 +128,15 @@ export const productDetails = {
             },
             heroBackground: true,
         },
-        // Highlights de Pro: paleta coral/salmón. Primer highlight usa
-        // el video MP4 oficial del cliente como media (mediaType:video).
-        // Los demás muestran las 4 etapas (Enraizante, Vegetativo,
-        // Preflora, Flora) en su gramaje 1kg.
+        // Highlights de Pro: paleta coral/salmón. Renders nuevos
+        // (zip 2026-05-31) que muestran cada etapa del ciclo
+        // (Enraizante, Vegetativo, Preflora, Floración).
         highlights: [
             {
                 kicker: "FÓRMULA POR ETAPA",
                 title: "Una para cada momento.",
                 body: "Enraizante, Vegetativo, Preflora y Flora. Cada una desarrollada para el perfil nutricional exacto que la planta necesita en esa fase.",
-                image: "/video/holistic-pro.mp4",
-                mediaType: "video",
+                image: "/ultimos-cambios/VEGETATIVO-ENRRAIZANTE.png",
                 color: "#F5948A",
                 stat: "01",
             },
@@ -146,7 +144,7 @@ export const productDetails = {
                 kicker: "FORMATO SÓLIDO",
                 title: "Sin agua, sin alcohol, sin conservantes.",
                 body: "100% materia activa. El fertilizante sólido no pierde potencia con el calor ni con el tiempo: 36 meses de vida útil garantizados.",
-                image: "/img/productos/linea-pro/1kg/pro-vegetativo.png",
+                image: "/ultimos-cambios/vegetativo-vege2.png",
                 color: "#FFB39B",
                 stat: "02",
             },
@@ -154,7 +152,7 @@ export const productDetails = {
                 kicker: "DOSIS EXACTA",
                 title: "Al gramo.",
                 body: "Balanceá tu reservorio con precisión de laboratorio. Misma cucharita, misma EC, mismo resultado.",
-                image: "/img/productos/linea-pro/1kg/pro-flora.png",
+                image: "/ultimos-cambios/VEGETATIVO-PREFLORA.png",
                 color: "#E87C70",
                 stat: "03",
             },
@@ -162,7 +160,7 @@ export const productDetails = {
                 kicker: "ECONÓMICO",
                 title: "Más cosechas por kilo.",
                 body: "Más concentrado que líquidos: menor costo por dosis y menor logística (1 kg sólido = ~5 L líquido).",
-                image: "/img/productos/linea-pro/1kg/pro-enraizante.png",
+                image: "/ultimos-cambios/VEGETATIVO-FLORACION.png",
                 color: "#FF8A7A",
                 stat: "04",
             },
@@ -197,9 +195,12 @@ export const productDetails = {
             body: "Pro es la opción técnica del cultivador que mide. Mezclable con Bio Estimulante en arranque y con Day-0 al cierre.",
             chips: ["+ Bio Estimulante", "+ Day-0"],
         },
-        pullquote: "Si lo podés pesar, lo podés repetir. Con Línea Pro, cada cultivo indoor es mejor que el anterior.",
+        // Pullquote removido por pedido del cliente — antes decía
+        // "Si lo podés pesar, lo podés repetir...". ProductDeepDive
+        // omite la sección entera (texto + imagen) cuando es falsy.
+        pullquote: "",
         techSpecs: [
-            { label: "Composición",     value: "NPK + Ca-Mg-Micro etapa-ajustado" },
+            { label: "Composición",     value: "NPK + Mg + S + micronutrientes" },
             { label: "Forma",            value: "Sólido cristalino hidrosoluble" },
             { label: "Solubilidad",      value: "100% en agua >18°C" },
             { label: "Dosis",            value: "0.5 – 1.5 g/L según etapa" },
@@ -439,7 +440,11 @@ export const productDetails = {
             body: "Aplicalo en arranque, antes de cualquier otro producto. Activa raíces y defensas para que el resto del catálogo trabaje sobre una planta sana y receptiva.",
             chips: ["+ Cloner", "+ Elite", "+ Pro"],
         },
-        pullquote: "La diferencia entre un cultivo indoor bueno y uno excelente arranca por la raíz. El Bio Estimulante es el primer paso.",
+        // Pullquote removido por pedido del cliente — antes decía
+        // "La diferencia entre un cultivo indoor bueno y uno excelente
+        // arranca por la raíz...". ProductDeepDive omite la sección
+        // entera (texto + imagen decorativa) cuando es falsy.
+        pullquote: "",
         techSpecs: [
             { label: "Composición",     value: "Microorganismos benéficos + metabolitos secundarios" },
             { label: "Forma",            value: "Líquido orgánico" },

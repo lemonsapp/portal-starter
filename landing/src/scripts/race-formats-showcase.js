@@ -118,12 +118,53 @@ function initRaceFormatsShowcase() {
             });
         }
 
-        // Caption panels.
-        captionPanels.forEach((p, i) => {
-            const isAct = i === activeIdx;
-            p.classList.toggle("is-active", isAct);
-            p.setAttribute("aria-hidden", isAct ? "false" : "true");
-        });
+        // Caption panels — orquestados con GSAP para evitar overlap.
+        //
+        // El bug anterior: el revealTl deja inline styles (opacity:1,
+        // y:0) sobre captionPanels[0]. Esas inline styles tienen mayor
+        // especificidad que cualquier regla CSS, así que al sacarle la
+        // clase `is-active` la transición CSS para fade-out no se
+        // ejecuta. Resultado: caption vieja sigue visible mientras la
+        // nueva entra → ambos textos se pisan.
+        //
+        // Fix: GSAP maneja el cross-fade explícitamente. Outgoing fade
+        // out rápido sin delay, incoming entra recién cuando la otra
+        // se desvaneció por completo.
+        const prevPanel = captionPanels[prevIdx];
+        const nextPanel = captionPanels[activeIdx];
+        if (prevPanel && nextPanel && prevPanel !== nextPanel) {
+            gsap.killTweensOf([prevPanel, nextPanel]);
+            gsap.timeline()
+                .to(prevPanel, {
+                    opacity: 0,
+                    y: -8,
+                    duration: 0.28,
+                    ease: "power2.in",
+                    onComplete: () => {
+                        prevPanel.classList.remove("is-active");
+                        prevPanel.setAttribute("aria-hidden", "true");
+                    },
+                }, 0)
+                .fromTo(nextPanel,
+                    { opacity: 0, y: 12 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.45,
+                        ease: "power2.out",
+                        onStart: () => {
+                            nextPanel.classList.add("is-active");
+                            nextPanel.setAttribute("aria-hidden", "false");
+                        },
+                    },
+                    0.30
+                );
+        } else if (nextPanel) {
+            // Caso force inicial (prev === next): solo asegurar la clase
+            // sin animar (el revealTl ya se encarga de mostrarlo).
+            nextPanel.classList.add("is-active");
+            nextPanel.setAttribute("aria-hidden", "false");
+        }
 
         // HUD counter.
         if (hudNum) hudNum.textContent = String(activeIdx + 1).padStart(2, "0");
