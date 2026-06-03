@@ -12,6 +12,28 @@ import { useCart } from "../lib/useCart.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
+// Fallback: convierte un producto plano en la forma "familia" que espera ShopCard
+// (cuando el server no devuelve familias agrupadas). 1 variante = quick-add directo.
+function toFamily(p) {
+  return {
+    group: null,
+    slug: p.slug,
+    name: p.name,
+    short_description: p.short_description,
+    category: p.category,
+    meta: p.meta,
+    featured: p.featured,
+    primary_image: p.primary_image,
+    from_price_formatted: p.price_formatted,
+    variant_count: 1,
+    variants: [{
+      id: p.id, slug: p.slug, label: p.name,
+      price_cents: p.price_cents, price_formatted: p.price_formatted,
+      stock: p.stock, primary_image: p.primary_image,
+    }],
+  };
+}
+
 export default function Shop() {
   useBranding();
   const { addItem } = useCart();
@@ -34,9 +56,20 @@ export default function Shop() {
           setLoading(false);
           return;
         }
-        const pd = await pr.json();
-        const cd = await cr.json();
-        setFamilies(pd.families || []);
+        const pd = pr.ok ? await pr.json() : {};
+        const cd = cr.ok ? await cr.json() : {};
+        // Resiliente: usa families si el server las devuelve; si no (server viejo
+        // sin soporte grouped, o respuesta {products}), arma familias en el cliente.
+        let fams = pd.families;
+        if (!fams || !fams.length) {
+          let products = pd.products;
+          if (!products) {
+            const pr2 = await fetch(`${API}/api/shop/products?limit=200`);
+            products = pr2.ok ? (await pr2.json()).products : [];
+          }
+          fams = (products || []).map(toFamily);
+        }
+        setFamilies(fams || []);
         setCategories(cd.categories || []);
       } catch (e) {
         setErr("No se pudo cargar el catálogo. Refrescá la página.");
