@@ -535,4 +535,119 @@ router.post("/manual-credit", authRequired, requireRole(["operator", "admin"]), 
   }
 });
 
+// ── ADMIN: catálogo de canjes (CRUD point_rewards) ───────────────────────────
+router.post("/admin/rewards", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  try {
+    const { slug, kind, label, description, cost_points, discount_pct, market_value_cents, stock, active, sort_order } = req.body;
+    if (!slug || !["descuento", "premio"].includes(kind) || !label || !(cost_points > 0)) {
+      return res.status(400).json({ error: "Faltan datos (slug, kind, label, cost_points>0)" });
+    }
+    const q = await db.query(
+      `INSERT INTO point_rewards (slug, kind, label, description, cost_points, discount_pct, market_value_cents, stock, active, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,COALESCE($9,TRUE),COALESCE($10,0)) RETURNING *`,
+      [String(slug).trim().toLowerCase(), kind, label, description || null, Math.floor(cost_points),
+       discount_pct || null, market_value_cents || null, stock === "" || stock == null ? null : Math.floor(stock),
+       active, sort_order]
+    );
+    res.json({ reward: q.rows[0] });
+  } catch (e) {
+    console.error("REWARD CREATE ERROR:", e);
+    res.status(500).json({ error: e.code === "23505" ? "Ya existe un canje con ese slug" : e.message });
+  }
+});
+
+router.put("/admin/rewards/:id", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  try {
+    const { label, description, cost_points, discount_pct, market_value_cents, stock, active, sort_order } = req.body;
+    const q = await db.query(
+      `UPDATE point_rewards SET
+         label = COALESCE($1, label),
+         description = COALESCE($2, description),
+         cost_points = COALESCE($3, cost_points),
+         discount_pct = $4,
+         market_value_cents = $5,
+         stock = $6,
+         active = COALESCE($7, active),
+         sort_order = COALESCE($8, sort_order)
+       WHERE id = $9 RETURNING *`,
+      [label ?? null, description ?? null, cost_points ?? null,
+       discount_pct === undefined ? null : discount_pct,
+       market_value_cents === undefined ? null : market_value_cents,
+       stock === undefined ? null : (stock === "" ? null : stock),
+       active ?? null, sort_order ?? null, req.params.id]
+    );
+    if (!q.rows[0]) return res.status(404).json({ error: "Canje no encontrado" });
+    res.json({ reward: q.rows[0] });
+  } catch (e) {
+    console.error("REWARD UPDATE ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.delete("/admin/rewards/:id", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  try {
+    await db.query(`DELETE FROM point_rewards WHERE id=$1`, [req.params.id]);
+    res.json({ success: true });
+  } catch (e) {
+    console.error("REWARD DELETE ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── ADMIN: cola de canjes (point_redemptions) ────────────────────────────────
+router.get("/admin/redemptions", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  try {
+    const params = [];
+    let where = "";
+    if (req.query.status) { params.push(req.query.status); where = `WHERE pr.status = $1`; }
+    const q = await db.query(
+      `SELECT pr.*, u.name AS user_name, u.email AS user_email, u.customer_code
+       FROM point_redemptions pr JOIN users u ON u.id = pr.user_id
+       ${where} ORDER BY pr.created_at DESC LIMIT 200`,
+      params
+    );
+    res.json({ redemptions: q.rows });
+  } catch (e) {
+    console.error("REDEMPTIONS LIST ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.patch("/admin/redemptions/:id", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!["fulfilled", "cancelled"].includes(status)) return res.status(400).json({ error: "Estado inválido" });
+    const rq = await db.query(`SELECT * FROM point_redemptions WHERE id=$1`, [req.params.id]);
+    const rd = rq.rows[0];
+    if (!rd) return res.status(404).json({ error: "Canje no encontrado" });
+
+    if (status === "cancelled" && rd.status !== "cancelled") {
+      // Devolver puntos + stock + desactivar cupón.
+      await db.query(`UPDATE coins SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2`, [rd.cost_points, rd.user_id]);
+      await db.query(
+        `INSERT INTO coin_transactions (user_id, type, amount, reason, operador)
+         VALUES ($1, 'correccion', $2, $3, $4)`,
+        [rd.user_id, rd.cost_points, `Cancelación de canje: ${rd.label || rd.reward_slug}`, req.user.email || "admin"]
+      );
+      if (rd.kind === "premio") {
+        await db.query(`UPDATE point_rewards SET stock = stock + 1 WHERE slug = $1 AND stock IS NOT NULL`, [rd.reward_slug]);
+      }
+      if (rd.coupon_code) {
+        await db.query(`UPDATE promo_codes SET active = FALSE WHERE code = $1`, [rd.coupon_code]);
+      }
+    }
+
+    await db.query(
+      `UPDATE point_redemptions SET status = $1,
+         fulfilled_at = CASE WHEN $1 = 'fulfilled' THEN NOW() ELSE fulfilled_at END
+       WHERE id = $2`,
+      [status, req.params.id]
+    );
+    res.json({ success: true });
+  } catch (e) {
+    console.error("REDEMPTION PATCH ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

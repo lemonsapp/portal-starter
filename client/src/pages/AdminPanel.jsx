@@ -94,8 +94,10 @@ const ADMIN_NAV = [
   {
     key: "puntos", label: "💎 Puntos",
     subs: [
-      { key: "manual",  label: "Carga manual", Comp: PuntosManualTab },
-      { key: "ranking", label: "Ranking",      Comp: CoinsTab },
+      { key: "manual",   label: "Carga manual", Comp: PuntosManualTab },
+      { key: "catalogo", label: "Catálogo",     Comp: RewardsCatalogTab },
+      { key: "canjes",   label: "Canjes",       Comp: RedemptionsTab },
+      { key: "ranking",  label: "Ranking",      Comp: CoinsTab },
     ],
   },
   { key: "clientes",  label: "👥 Clientes",     Comp: CustomersTab },
@@ -295,6 +297,188 @@ function PuntosManualTab() {
         <div style={{ ...styles.card, borderColor: "rgba(34,197,94,.4)", background: "rgba(34,197,94,.06)" }}>
           ✓ Acreditados <b>+{result.points_credited} pts</b> a <b>{result.user.name}</b>. Nuevo saldo: <b>{result.new_balance} pts</b>.
         </div>
+      )}
+    </div>
+  );
+}
+
+// ── Tab: Puntos → Catálogo de canjes (CRUD point_rewards) ────────────────────
+function RewardRow({ rw, onSaved, onDeleted }) {
+  const [cost, setCost] = useState(rw.cost_points);
+  const [stock, setStock] = useState(rw.stock ?? "");
+  const [active, setActive] = useState(rw.active);
+  const [pct, setPct] = useState(rw.discount_pct ?? "");
+  const [val, setVal] = useState(rw.market_value_cents != null ? Math.round(rw.market_value_cents / 100) : "");
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    const body = {
+      cost_points: Number(cost), active,
+      stock: stock === "" ? "" : Number(stock),
+      discount_pct: rw.kind === "descuento" ? (pct === "" ? null : Number(pct)) : null,
+      market_value_cents: rw.kind === "premio" ? (val === "" ? null : Math.round(Number(val) * 100)) : null,
+    };
+    const r = await fetch(`${API}/coins/admin/rewards/${rw.id}`, { method: "PUT", headers: jsonHdr(), body: JSON.stringify(body) });
+    if (r.ok) onSaved?.();
+    setSaving(false);
+  }
+  async function del() {
+    if (!confirm(`Eliminar "${rw.label}"?`)) return;
+    const r = await fetch(`${API}/coins/admin/rewards/${rw.id}`, { method: "DELETE", headers: authHdr() });
+    if (r.ok) onDeleted?.();
+  }
+
+  return (
+    <tr>
+      <td style={styles.td}>
+        <div style={{ fontWeight: 700 }}>{rw.label}</div>
+        <div style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>{rw.slug} · {rw.kind}</div>
+      </td>
+      <td style={styles.td}><input style={{ ...styles.input, width: 80 }} type="number" value={cost} onChange={e => setCost(e.target.value)} /></td>
+      <td style={styles.td}>
+        {rw.kind === "descuento"
+          ? <input style={{ ...styles.input, width: 70 }} type="number" value={pct} onChange={e => setPct(e.target.value)} placeholder="%" />
+          : <input style={{ ...styles.input, width: 100 }} type="number" value={val} onChange={e => setVal(e.target.value)} placeholder="$ valor" />}
+      </td>
+      <td style={styles.td}><input style={{ ...styles.input, width: 70 }} type="number" value={stock} onChange={e => setStock(e.target.value)} placeholder="∞" /></td>
+      <td style={styles.td}><input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} /></td>
+      <td style={styles.td}>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button style={styles.btn(true)} onClick={save} disabled={saving}>{saving ? "…" : "Guardar"}</button>
+          <button style={styles.btn(false, true)} onClick={del}>✕</button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function RewardsCatalogTab() {
+  const [rewards, setRewards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [nuevo, setNuevo] = useState(null); // form abierto
+
+  function load() {
+    setLoading(true);
+    fetch(`${API}/coins/rewards?all=1`, { headers: authHdr() })
+      .then(r => r.json()).then(d => { setRewards(d.rewards || []); setLoading(false); }).catch(() => setLoading(false));
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+
+  async function create() {
+    const body = {
+      slug: nuevo.slug, kind: nuevo.kind, label: nuevo.label,
+      description: nuevo.description, cost_points: Number(nuevo.cost_points),
+      discount_pct: nuevo.kind === "descuento" ? Number(nuevo.discount_pct) : null,
+      market_value_cents: nuevo.kind === "premio" && nuevo.market_value ? Math.round(Number(nuevo.market_value) * 100) : null,
+      stock: nuevo.stock === "" || nuevo.stock == null ? null : Number(nuevo.stock),
+      active: true, sort_order: Number(nuevo.sort_order) || 0,
+    };
+    const r = await fetch(`${API}/coins/admin/rewards`, { method: "POST", headers: jsonHdr(), body: JSON.stringify(body) });
+    const d = await r.json();
+    if (r.ok) { setNuevo(null); load(); } else alert(d.error || "Error");
+  }
+
+  if (loading) return <div style={{ color: "rgba(237,233,224,.5)", padding: 20 }}>Cargando…</div>;
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <p style={{ margin: 0, fontSize: 13, color: "rgba(237,233,224,.55)" }}>Catálogo de canjes — editá costo en puntos, stock y disponibilidad.</p>
+        <button style={styles.btn(true)} onClick={() => setNuevo(nuevo ? null : { kind: "descuento", stock: "" })}>{nuevo ? "Cancelar" : "+ Nuevo canje"}</button>
+      </div>
+
+      {nuevo && (
+        <div style={styles.card}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+            <div><label style={styles.label}>Slug</label><input style={styles.input} value={nuevo.slug || ""} onChange={e => setNuevo({ ...nuevo, slug: e.target.value })} placeholder="disc-50 / premio-x" /></div>
+            <div><label style={styles.label}>Tipo</label>
+              <select style={styles.input} value={nuevo.kind} onChange={e => setNuevo({ ...nuevo, kind: e.target.value })}>
+                <option value="descuento">Descuento</option><option value="premio">Premio</option>
+              </select>
+            </div>
+            <div><label style={styles.label}>Label</label><input style={styles.input} value={nuevo.label || ""} onChange={e => setNuevo({ ...nuevo, label: e.target.value })} /></div>
+            <div><label style={styles.label}>Costo (pts)</label><input style={styles.input} type="number" value={nuevo.cost_points || ""} onChange={e => setNuevo({ ...nuevo, cost_points: e.target.value })} /></div>
+            {nuevo.kind === "descuento"
+              ? <div><label style={styles.label}>% off</label><input style={styles.input} type="number" value={nuevo.discount_pct || ""} onChange={e => setNuevo({ ...nuevo, discount_pct: e.target.value })} /></div>
+              : <div><label style={styles.label}>Valor ($)</label><input style={styles.input} type="number" value={nuevo.market_value || ""} onChange={e => setNuevo({ ...nuevo, market_value: e.target.value })} /></div>}
+            <div><label style={styles.label}>Stock (∞ vacío)</label><input style={styles.input} type="number" value={nuevo.stock || ""} onChange={e => setNuevo({ ...nuevo, stock: e.target.value })} /></div>
+          </div>
+          <button style={{ ...styles.btn(true), marginTop: 12 }} onClick={create}>Crear canje</button>
+        </div>
+      )}
+
+      <table style={styles.table}>
+        <thead><tr>
+          <th style={styles.th}>Canje</th><th style={styles.th}>Costo</th>
+          <th style={styles.th}>% / Valor</th><th style={styles.th}>Stock</th>
+          <th style={styles.th}>Activo</th><th style={styles.th}>Acciones</th>
+        </tr></thead>
+        <tbody>{rewards.map(rw => <RewardRow key={rw.id} rw={rw} onSaved={load} onDeleted={load} />)}</tbody>
+      </table>
+    </div>
+  );
+}
+
+// ── Tab: Puntos → Canjes (cola point_redemptions) ────────────────────────────
+function RedemptionsTab() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("pending");
+
+  function load() {
+    setLoading(true);
+    const url = `${API}/coins/admin/redemptions${filter !== "all" ? `?status=${filter}` : ""}`;
+    fetch(url, { headers: authHdr() }).then(r => r.json()).then(d => { setRows(d.redemptions || []); setLoading(false); }).catch(() => setLoading(false));
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [filter]);
+
+  async function act(id, status) {
+    const r = await fetch(`${API}/coins/admin/redemptions/${id}`, { method: "PATCH", headers: jsonHdr(), body: JSON.stringify({ status }) });
+    if (r.ok) load();
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        {[["pending", "Pendientes"], ["fulfilled", "Despachados"], ["cancelled", "Cancelados"], ["all", "Todos"]].map(([k, l]) => (
+          <button key={k} style={styles.subtab(filter === k)} onClick={() => setFilter(k)}>{l}</button>
+        ))}
+      </div>
+      {loading ? <div style={{ color: "rgba(237,233,224,.5)", padding: 20 }}>Cargando…</div> : rows.length === 0 ? (
+        <div style={{ color: "rgba(237,233,224,.4)", padding: 20 }}>Sin canjes en este filtro.</div>
+      ) : (
+        <table style={styles.table}>
+          <thead><tr>
+            <th style={styles.th}>Cliente</th><th style={styles.th}>Canje</th><th style={styles.th}>Pts</th>
+            <th style={styles.th}>Cupón</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th>
+          </tr></thead>
+          <tbody>
+            {rows.map(r => (
+              <tr key={r.id}>
+                <td style={styles.td}>
+                  <div style={{ fontWeight: 700 }}>{r.user_name}</div>
+                  <div style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>{r.customer_code}</div>
+                </td>
+                <td style={styles.td}>{r.label || r.reward_slug}<div style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>{r.kind}</div></td>
+                <td style={styles.td}>{r.cost_points}</td>
+                <td style={styles.td}>{r.coupon_code ? <code style={{ fontSize: 12, color: "var(--brand-primary, #3B82F6)" }}>{r.coupon_code}</code> : "—"}</td>
+                <td style={styles.td}>{r.status}</td>
+                <td style={styles.td}>
+                  {r.status === "pending" && (
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button style={styles.btn(true)} onClick={() => act(r.id, "fulfilled")}>Despachado</button>
+                      <button style={styles.btn(false, true)} onClick={() => { if (confirm("Cancelar y devolver puntos?")) act(r.id, "cancelled"); }}>Cancelar</button>
+                    </div>
+                  )}
+                  {r.status === "fulfilled" && (
+                    <button style={styles.btn(false, true)} onClick={() => { if (confirm("Cancelar y devolver puntos?")) act(r.id, "cancelled"); }}>Cancelar</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
