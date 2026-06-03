@@ -141,6 +141,24 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
             </div>
         )}
 
+        {heroBackground && !heroVideo && heroBanner && (
+            <div class="pdd__hero-fullimg" aria-hidden="true">
+                <img
+                    class="pdd__hero-fullimg-el"
+                    src={heroBanner.src}
+                    width={heroBanner.w}
+                    height={heroBanner.h}
+                    alt=""
+                    loading="eager"
+                    fetchpriority="high"
+                    decoding="async"
+                />
+                <!-- Scrim para legibilidad del texto blanco sobre el banner
+                     (3 de 4 banners tienen fondo claro → tinte oscuro). -->
+                <div class="pdd__hero-fullimg-scrim"></div>
+            </div>
+        )}
+
         {!heroBackground && (
             <div class="pdd__hero-bg" aria-hidden="true">
                 <span class="pdd__hero-glow" data-pdd-hero-glow></span>
@@ -148,21 +166,6 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
         )}
 
         <div class="pdd__hero-inner">
-            {heroBanner && (
-                <figure class="pdd__hero-banner" data-pdd-hero-banner>
-                    <img
-                        class="pdd__hero-banner-img"
-                        src={heroBanner.src}
-                        width={heroBanner.w}
-                        height={heroBanner.h}
-                        alt={`${cap.nombreCorto || ""} ${cap.nombreDestacado}`.trim()}
-                        loading="eager"
-                        fetchpriority="high"
-                        decoding="async"
-                    />
-                </figure>
-            )}
-
             <p class="pdd__hero-kicker" data-pdd-kicker>
                 <span class="pdd__hero-dot" aria-hidden="true"></span>
                 <span>{d.hero.kicker}</span>
@@ -196,8 +199,8 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
                 </div>
             )}
 
-            {/* Stage al costado sólo en modo NO-fullbleed y NO-banner */}
-            {!heroBackground && !heroBanner && (
+            {/* Stage al costado sólo en modo NO-fullbleed */}
+            {!heroBackground && (
                 <div
                     class:list={["pdd__hero-stage", heroVideo && "pdd__hero-stage--video"]}
                     data-pdd-hero-stage

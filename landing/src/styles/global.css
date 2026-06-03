@@ -5336,36 +5336,40 @@ html.is-loading body {
 }
 
 /* ============================================================
-   HERO BANNER — imagen del slider full HD como hero limpio.
-   Imagen entera arriba (sin scrim, sin recorte) + texto/CTAs
-   debajo, centrado sobre el gradient claro. Activado por
-   .pdd__hero--banner. Reemplaza al video full-bleed en
-   Race/Pro/Bio/Day-0.
+   HERO BANNER — imagen del slider full HD como FONDO full-bleed
+   del hero (cubre toda la sección hasta los CTAs). El texto/CTAs
+   van encima con scrim. Reemplaza al video en Race/Pro/Bio/Day-0.
+   Reusa el inner blanco centrado de .pdd__hero--bg.
    ============================================================ */
-.pdd__hero--banner {
-    /* Menos padding-top: la imagen ya aporta presencia arriba. */
-    padding-top: clamp(110px, 15vh, 170px);
-}
-.pdd__hero-banner {
-    margin: 0 0 clamp(8px, 1.5vh, 18px);
-    width: min(560px, 86vw);
-    border-radius: 24px;
+.pdd__hero-fullimg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     overflow: hidden;
-    background: #fff;
-    box-shadow:
-        0 2px 0 rgba(0, 0, 0, 0.02),
-        0 34px 70px -34px color-mix(in srgb, var(--pdd-color, #c9a34e) 45%, rgba(0, 0, 0, 0.55));
 }
-.pdd__hero-banner-img {
-    display: block;
+.pdd__hero-fullimg-el {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: auto; /* aspect-ratio intrínseco (attrs width/height) → sin CLS */
+    height: 100%;
+    object-fit: cover; /* el banner cubre todo el hero (producto centrado) */
+    object-position: center;
 }
-@media (max-width: 640px) {
-    .pdd__hero-banner {
-        width: 100%;
-        border-radius: 18px;
-    }
+/* Scrim: 3 de 4 banners tienen fondo claro → tinte oscuro parejo +
+   refuerzo arriba/abajo para que el texto blanco siempre se lea. */
+.pdd__hero-fullimg-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 50% 50%,
+            rgba(0, 0, 0, 0.32) 0%,
+            rgba(0, 0, 0, 0.5) 100%),
+        linear-gradient(180deg,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(0, 0, 0, 0.3) 30%,
+            rgba(0, 0, 0, 0.3) 60%,
+            rgba(0, 0, 0, 0.62) 100%);
+    pointer-events: none;
 }
 
 .pdd__hero-inner {

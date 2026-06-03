@@ -127,6 +127,7 @@ export const productDetails = {
                 src: "/img/banners/banner-pro.png",
                 w: 1254, h: 1254,
             },
+            heroBackground: true,
         },
         // Highlights de Pro: paleta coral/salmón. Renders nuevos
         // (zip 2026-05-31) que muestran cada etapa del ciclo
@@ -226,6 +227,7 @@ export const productDetails = {
                 src: "/img/banners/banner-race.png",
                 w: 1536, h: 1024,
             },
+            heroBackground: true,
             heroImage: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
         },
         // Cada highlight tiene su imagen propia + color tema. El componente
@@ -378,6 +380,7 @@ export const productDetails = {
                 src: "/img/banners/banner-bio.png",
                 w: 1448, h: 1086,
             },
+            heroBackground: true,
         },
         // Highlights de Bio Estimulante: paleta rosa/coral. Botella
         // grande en distintas perspectivas + raíz dramática (5533) que
@@ -559,6 +562,7 @@ export const productDetails = {
                 src: "/img/banners/banner-day0.png",
                 w: 1254, h: 1254,
             },
+            heroBackground: true,
         },
         // Highlights de Day-0: paleta amarilla/dorada — el "cierre"
         // del ciclo. Botella en distintas perspectivas comunican el
