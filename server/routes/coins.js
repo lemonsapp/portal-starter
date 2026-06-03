@@ -298,7 +298,8 @@ router.get("/lookup/:code", authRequired, requireRole(["operator", "admin"]), as
       [code]
     );
     if (!uq.rows[0]) return res.status(404).json({ error: "Cliente no encontrado" });
-    res.json({ user: uq.rows[0] });
+    const pesoPerPoint = await getPointConfig("peso_per_point", 2000);
+    res.json({ user: uq.rows[0], peso_per_point: pesoPerPoint });
   } catch (e) {
     console.error("COINS LOOKUP ERROR:", e);
     res.status(500).json({ error: e.message });

@@ -91,7 +91,13 @@ const ADMIN_NAV = [
       { key: "feed",     label: "Feed",      Comp: FeedTab },
     ],
   },
-  { key: "coins",     label: "🪙 Coins",        Comp: CoinsTab },
+  {
+    key: "puntos", label: "💎 Puntos",
+    subs: [
+      { key: "manual",  label: "Carga manual", Comp: PuntosManualTab },
+      { key: "ranking", label: "Ranking",      Comp: CoinsTab },
+    ],
+  },
   { key: "clientes",  label: "👥 Clientes",     Comp: CustomersTab },
   { key: "campaigns", label: "📧 Campañas",     Comp: CampaignsTab },
   { key: "promos",    label: "🎟️ Códigos",      Comp: PromoCodesTab },
@@ -153,6 +159,143 @@ export default function AdminPanel() {
 
         <ActiveComp />
       </div>
+    </div>
+  );
+}
+
+// ── Tab: Puntos → Carga manual (panel Gaia) ──────────────────────────────────
+function PuntosManualTab() {
+  const [code, setCode] = useState("");
+  const [customer, setCustomer] = useState(null);   // { id, name, email, customer_code, balance }
+  const [pesoPerPoint, setPesoPerPoint] = useState(2000);
+  const [looking, setLooking] = useState(false);
+  const [lookupErr, setLookupErr] = useState("");
+
+  const [amount, setAmount] = useState("");
+  const [canal, setCanal] = useState("whatsapp");
+  const [descripcion, setDescripcion] = useState("");
+  const [override, setOverride] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState("");
+  const [result, setResult] = useState(null);
+
+  async function lookup() {
+    const c = code.trim().toUpperCase();
+    if (!c) return;
+    setLooking(true); setLookupErr(""); setCustomer(null); setResult(null);
+    try {
+      const r = await fetch(`${API}/coins/lookup/${encodeURIComponent(c)}`, { headers: authHdr() });
+      const d = await r.json();
+      if (!r.ok) setLookupErr(d.error || "Cliente no encontrado");
+      else { setCustomer(d.user); setPesoPerPoint(d.peso_per_point || 2000); }
+    } catch { setLookupErr("Error de conexión"); }
+    setLooking(false);
+  }
+
+  const pesos = Math.max(0, Math.floor(Number(amount) || 0));
+  const previewPoints = override !== ""
+    ? Math.max(0, Math.floor(Number(override) || 0))
+    : Math.floor(pesos / (pesoPerPoint || 2000));
+
+  async function submit() {
+    if (!customer || previewPoints <= 0) return;
+    setSubmitting(true); setErr(""); setResult(null);
+    try {
+      const r = await fetch(`${API}/coins/manual-credit`, {
+        method: "POST", headers: jsonHdr(),
+        body: JSON.stringify({
+          customer_code: customer.customer_code,
+          amount_pesos: pesos,
+          canal, descripcion,
+          points_override: override === "" ? undefined : override,
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) setErr(d.error || "Error al acreditar");
+      else {
+        setResult(d);
+        setCustomer({ ...customer, balance: d.new_balance });
+        setAmount(""); setDescripcion(""); setOverride("");
+      }
+    } catch { setErr("Error de conexión"); }
+    setSubmitting(false);
+  }
+
+  return (
+    <div>
+      <div style={styles.card}>
+        <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800 }}>Carga manual de puntos</h3>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: "rgba(237,233,224,.55)" }}>
+          Compra externa (WhatsApp, ML, efectivo…). Buscá al cliente por su código, ingresá el monto y acreditá.
+        </p>
+        <label style={styles.label}>Código de cliente</label>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            style={styles.input}
+            placeholder="HST-XXXX-XX"
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            onKeyDown={(e) => { if (e.key === "Enter") lookup(); }}
+          />
+          <button style={styles.btn(true)} onClick={lookup} disabled={looking}>
+            {looking ? "…" : "Buscar"}
+          </button>
+        </div>
+        {lookupErr && <p style={{ color: "#fca5a5", fontSize: 13, marginTop: 8 }}>{lookupErr}</p>}
+      </div>
+
+      {customer && (
+        <div style={styles.card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 4 }}>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 16 }}>{customer.name}</div>
+              <div style={{ fontSize: 12, color: "rgba(237,233,224,.55)" }}>{customer.email} · {customer.customer_code}</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.4)" }}>Saldo</div>
+              <div style={{ fontWeight: 900, fontSize: 20, color: "var(--brand-primary, #3B82F6)" }}>{customer.balance} pts</div>
+            </div>
+          </div>
+
+          <label style={styles.label}>Monto de la compra ($)</label>
+          <input style={styles.input} type="number" min="0" placeholder="35000" value={amount} onChange={(e) => setAmount(e.target.value)} />
+
+          <label style={styles.label}>Canal</label>
+          <select style={styles.input} value={canal} onChange={(e) => setCanal(e.target.value)}>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="mercadolibre">MercadoLibre</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="instagram">Instagram</option>
+            <option value="historial_previo">Historial previo</option>
+            <option value="otro">Otro</option>
+          </select>
+
+          <label style={styles.label}>Descripción (opcional)</label>
+          <input style={styles.input} placeholder="2x Elite 500ml + Kit 100gr" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
+
+          <label style={styles.label}>Puntos a acreditar — override (opcional)</label>
+          <input style={styles.input} type="number" min="0" placeholder={`auto: ${previewPoints}`} value={override} onChange={(e) => setOverride(e.target.value)} />
+
+          <div style={{ marginTop: 14, padding: "12px 14px", borderRadius: 8, background: "rgba(59,130,246,.12)", border: "1px solid rgba(59,130,246,.25)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 13, color: "rgba(237,233,224,.8)" }}>Se acreditarán</span>
+            <span style={{ fontWeight: 900, fontSize: 20, color: "var(--brand-primary, #3B82F6)" }}>+{previewPoints} pts</span>
+          </div>
+          <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 6 }}>
+            1 punto = ${pesoPerPoint.toLocaleString("es-AR")} · redondeo hacia abajo.
+          </div>
+
+          {err && <p style={{ color: "#fca5a5", fontSize: 13, marginTop: 10 }}>{err}</p>}
+          <button style={{ ...styles.btn(true), marginTop: 14, width: "100%", padding: "11px" }} onClick={submit} disabled={submitting || previewPoints <= 0}>
+            {submitting ? "Acreditando…" : `Acreditar +${previewPoints} pts`}
+          </button>
+        </div>
+      )}
+
+      {result && (
+        <div style={{ ...styles.card, borderColor: "rgba(34,197,94,.4)", background: "rgba(34,197,94,.06)" }}>
+          ✓ Acreditados <b>+{result.points_credited} pts</b> a <b>{result.user.name}</b>. Nuevo saldo: <b>{result.new_balance} pts</b>.
+        </div>
+      )}
     </div>
   );
 }
