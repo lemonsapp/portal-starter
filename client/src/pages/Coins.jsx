@@ -170,7 +170,7 @@ function SpinModal({ onClose, onWin }) {
           <div style={{ background:"linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05))",border:"1px solid rgba(239,68,68,0.3)",borderRadius:16,padding:"16px 28px",textAlign:"center" }}>
             <div style={{ fontSize:28,marginBottom:4 }}>⏰</div>
             <div style={{ color:"#ef4444",fontWeight:800,fontSize:16 }}>{errorMsg}</div>
-            <div style={{ color:"#666",fontSize:12,marginTop:4 }}>Volvé mañana para tu próximo giro</div>
+            <div style={{ color:"rgba(237,233,224,.6)",fontSize:12,marginTop:4 }}>Volvé mañana para tu próximo giro</div>
           </div>
         )}
         {result && !errorMsg ? (
@@ -192,7 +192,7 @@ function SpinModal({ onClose, onWin }) {
             <div style={{ fontWeight:900,fontSize:36,color:"var(--brand-primary)",fontVariantNumeric:"tabular-nums",textShadow:"0 0 20px var(--brand-primary)66" }}>{timeLeft}</div>
           </div>
         ) : !errorMsg && (
-          <div style={{ textAlign:"center",color:"#666",fontSize:13 }}>¡Girá para ganar hasta 1000 Puntos!</div>
+          <div style={{ textAlign:"center",color:"rgba(237,233,224,.6)",fontSize:13 }}>¡Girá para ganar hasta 1000 Puntos!</div>
         )}
 
         <button onClick={spin} disabled={!canSpin||spinning}
@@ -297,7 +297,7 @@ function Store({ balance, onBuy }) {
                 {!isOwned && item.badge && <div style={{ display:"inline-flex",alignItems:"center",background:`linear-gradient(135deg,${item.color}33,${item.color}11)`,border:`1px solid ${item.color}55`,borderRadius:20,padding:"3px 12px",fontSize:10,fontWeight:900,color:item.color,letterSpacing:1,marginBottom:12 }}>{item.badge}</div>}
                 <div style={{ fontSize:42,marginBottom:12,filter:`drop-shadow(0 0 12px ${item.color}88)`,display:"inline-block",transition:"transform .3s" }}>{item.icon}</div>
                 <div style={{ fontWeight:900,color:"#fff",fontSize:17,marginBottom:4 }}>{item.name}</div>
-                <div style={{ color:"#666",fontSize:12,lineHeight:1.5,marginBottom:14 }}>{item.desc}</div>
+                <div style={{ color:"rgba(237,233,224,.6)",fontSize:12,lineHeight:1.5,marginBottom:14 }}>{item.desc}</div>
                 <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between" }}>
                   <div style={{ fontWeight:900,fontSize:20,color:"var(--brand-primary)",textShadow:"0 0 10px var(--brand-primary)44" }}>💎 {item.cost.toLocaleString()}</div>
                   <Pop as="button" onClick={e=>{ e.stopPropagation(); buy(item); }} disabled={isOwned||!canAfford||buying===item.id}
@@ -501,11 +501,11 @@ function Missions({ onClaim }) {
               <div style={{ width:52,height:52,borderRadius:14,background:`linear-gradient(135deg,${g.color}22,${g.color}44)`,border:`1px solid ${g.color}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0 }}>{g.icon}</div>
               <div style={{ flex:1 }}>
                 <div style={{ fontWeight:900,color:"#fff",fontSize:17 }}>{g.label}</div>
-                <div style={{ color:"#666",fontSize:12,marginTop:2 }}>{g.desc}</div>
+                <div style={{ color:"rgba(237,233,224,.6)",fontSize:12,marginTop:2 }}>{g.desc}</div>
               </div>
               <div style={{ textAlign:"right",flexShrink:0 }}>
                 <div style={{ fontWeight:900,fontSize:24,color:g.color,textShadow:`0 0 20px ${g.color}66` }}>{done}/{gm.length}</div>
-                <div style={{ color:"#666",fontSize:11 }}>completadas</div>
+                <div style={{ color:"rgba(237,233,224,.6)",fontSize:11 }}>completadas</div>
               </div>
             </div>
 
@@ -523,13 +523,13 @@ function Missions({ onClaim }) {
                     </div>
                     <div style={{ flex:1,minWidth:0 }}>
                       <div style={{ fontWeight:800,color:claimed?"#22c55e":done2?g.color:"#ccc",fontSize:15,marginBottom:3 }}>{m.title}</div>
-                      <div style={{ color:"#555",fontSize:12 }}>{m.description}</div>
+                      <div style={{ color:"rgba(237,233,224,.6)",fontSize:12 }}>{m.description}</div>
                       {!done2 && m.requirement_value>1 && (
                         <div style={{ marginTop:10 }}>
                           <div style={{ height:4,background:"rgba(255,255,255,0.05)",borderRadius:4,overflow:"hidden" }}>
                             <div style={{ height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${g.color},${g.color}88)`,borderRadius:4,transition:"width .8s ease",boxShadow:`0 0 8px ${g.color}66` }}/>
                           </div>
-                          <div style={{ color:"#444",fontSize:10,marginTop:4 }}>{m.progress||0} / {m.requirement_value}</div>
+                          <div style={{ color:"rgba(237,233,224,.6)",fontSize:10,marginTop:4 }}>{m.progress||0} / {m.requirement_value}</div>
                         </div>
                       )}
                     </div>
@@ -541,7 +541,7 @@ function Missions({ onClaim }) {
                           style={{ background:`linear-gradient(135deg,${g.color},${g.color}bb)`,color:"#000",border:"none",borderRadius:10,padding:"8px 18px",fontWeight:900,cursor:"pointer",fontSize:13,boxShadow:`0 4px 20px ${g.color}55` }}>
                           {claiming===m.slug?"...":"Reclamar 💎"}
                         </Pop>
-                      : <div style={{ color:"#333",fontSize:12,fontWeight:700 }}>Pendiente</div>}
+                      : <div style={{ color:"rgba(237,233,224,.6)",fontSize:12,fontWeight:700 }}>Pendiente</div>}
                     </div>
                   </div>
                 );
@@ -590,7 +590,7 @@ function Ranking() {
 
             <div style={{ width:48,textAlign:"center",flexShrink:0 }}>
               {isPod ? <span style={{ fontSize:30,filter:`drop-shadow(0 0 10px ${PODIUM_GLOW[i]}88)` }}>{MEDALS[i]}</span>
-              : <span style={{ fontSize:14,fontWeight:900,color:"#333" }}>#{i+1}</span>}
+              : <span style={{ fontSize:14,fontWeight:900,color:"rgba(237,233,224,.6)" }}>#{i+1}</span>}
             </div>
 
             <Avatar u={u} size={48} />
@@ -604,10 +604,10 @@ function Ranking() {
               </div>
               {u.nickname && <div style={{ fontSize:12,color:u.nick_color||"#555",textShadow:u.nick_glow?`0 0 ${u.nick_glow}px ${u.nick_color||"#555"}`:"none",marginBottom:4 }}>{u.nickname}</div>}
               <div style={{ display:"flex",gap:12 }}>
-                <span style={{ color:"#333",fontSize:11 }}>#{u.client_number}</span>
+                <span style={{ color:"rgba(237,233,224,.6)",fontSize:11 }}>#{u.client_number}</span>
                 {/* Sprint 11: stats sociales reales en el ranking. */}
-                {u.posts_count>0   && <span style={{ color:"#444",fontSize:11 }}>📰 {u.posts_count}</span>}
-                {u.friends_count>0 && <span style={{ color:"#444",fontSize:11 }}>👥 {u.friends_count}</span>}
+                {u.posts_count>0   && <span style={{ color:"rgba(237,233,224,.6)",fontSize:11 }}>📰 {u.posts_count}</span>}
+                {u.friends_count>0 && <span style={{ color:"rgba(237,233,224,.6)",fontSize:11 }}>👥 {u.friends_count}</span>}
               </div>
             </div>
 
@@ -615,8 +615,8 @@ function Ranking() {
               <div style={{ fontWeight:900,fontSize:24,color:isPod?PODIUM_COLORS[i]:"#e2e8f0",textShadow:isPod?`0 0 20px ${PODIUM_GLOW[i]}66`:"none" }}>
                 {Number(u.total_earned||0).toLocaleString()}
               </div>
-              <div style={{ color:"#333",fontSize:10 }}>💎 ganados</div>
-              <div style={{ color:"#444",fontSize:11,marginTop:2,fontWeight:700 }}>{Number(u.balance||0).toLocaleString()} disp.</div>
+              <div style={{ color:"rgba(237,233,224,.6)",fontSize:10 }}>💎 ganados</div>
+              <div style={{ color:"rgba(237,233,224,.6)",fontSize:11,marginTop:2,fontWeight:700 }}>{Number(u.balance||0).toLocaleString()} disp.</div>
             </div>
           </div>
         );
@@ -651,7 +651,7 @@ function Gift({ balance, onGift }) {
         <div style={{ textAlign:"center",marginBottom:32 }}>
           <div style={{ fontSize:64,marginBottom:12,filter:"drop-shadow(0 0 20px var(--brand-primary)66)",display:"inline-block",animation:"wiggle 3s ease-in-out infinite" }}>🎁</div>
           <div style={{ fontWeight:900,fontSize:26,color:"#fff",marginBottom:6 }}>Regalar Puntos</div>
-          <div style={{ color:"#555",fontSize:14 }}>Compartí tu amor con la comunidad 💎</div>
+          <div style={{ color:"rgba(237,233,224,.6)",fontSize:14 }}>Compartí tu amor con la comunidad 💎</div>
         </div>
 
         {result && <div style={{ background:result.ok?"linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05))":"linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05))",border:`1px solid ${result.ok?"rgba(34,197,94,0.4)":"rgba(239,68,68,0.4)"}`,borderRadius:14,padding:"14px 20px",color:result.ok?"#22c55e":"#ef4444",fontSize:15,fontWeight:800,marginBottom:24,textAlign:"center",animation:"popInBounce 0.5s ease" }}>{result.text}</div>}
@@ -681,7 +681,7 @@ function Gift({ balance, onGift }) {
               <span style={{ fontSize:26 }}>💎</span>
               <input type="number" value={amount} onChange={e=>setAmount(Math.max(10,Math.min(balance,parseInt(e.target.value)||10)))} min={10} max={balance}
                 style={{ flex:1,background:"none",border:"none",color:"var(--brand-primary)",fontSize:28,fontWeight:900,outline:"none" }}/>
-              <span style={{ color:"#333",fontSize:12 }}>puntos</span>
+              <span style={{ color:"rgba(237,233,224,.6)",fontSize:12 }}>puntos</span>
             </div>
           </div>
 
@@ -763,14 +763,14 @@ function Canjes({ balance, userId, onRedeem }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
           <div>
             <div style={{ fontWeight: 900, fontSize: 16, color: "#fff" }}>{rw.label}</div>
-            {rw.description && <div style={{ fontSize: 12, color: "#666", marginTop: 3, lineHeight: 1.4 }}>{rw.description}</div>}
+            {rw.description && <div style={{ fontSize: 12, color:"rgba(237,233,224,.6)", marginTop: 3, lineHeight: 1.4 }}>{rw.description}</div>}
             {rw.kind === "premio" && rw.market_value_cents && (
-              <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Valor: {fmt$(rw.market_value_cents)}{rw.stock != null ? ` · stock: ${rw.stock}` : ""}</div>
+              <div style={{ fontSize: 11, color:"rgba(237,233,224,.6)", marginTop: 4 }}>Valor: {fmt$(rw.market_value_cents)}{rw.stock != null ? ` · stock: ${rw.stock}` : ""}</div>
             )}
           </div>
           <div style={{ textAlign: "right", flexShrink: 0 }}>
             <div style={{ fontWeight: 900, fontSize: 18, color: "var(--brand-primary)" }}>{rw.cost_points}</div>
-            <div style={{ fontSize: 10, color: "#555", textTransform: "uppercase", letterSpacing: 1 }}>puntos</div>
+            <div style={{ fontSize: 10, color:"rgba(237,233,224,.6)", textTransform: "uppercase", letterSpacing: 1 }}>puntos</div>
           </div>
         </div>
         <button
@@ -809,7 +809,7 @@ function Canjes({ balance, userId, onRedeem }) {
       {err && <div style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.4)", borderRadius: 12, padding: "12px 18px", color: "#ef4444", fontWeight: 700, fontSize: 14, marginBottom: 20 }}>{err}</div>}
 
       {loading ? (
-        <div style={{ color: "#555", padding: "40px 0", textAlign: "center" }}>Cargando catálogo…</div>
+        <div style={{ color:"rgba(237,233,224,.6)", padding: "40px 0", textAlign: "center" }}>Cargando catálogo…</div>
       ) : (
         <>
           <div style={{ fontWeight: 900, fontSize: 18, color: "#fff", margin: "0 0 14px" }}>🎟️ Descuentos</div>
@@ -831,7 +831,7 @@ function Canjes({ balance, userId, onRedeem }) {
                 <div key={rd.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12 }}>
                   <div>
                     <div style={{ fontWeight: 800, fontSize: 14, color: "#ddd" }}>{rd.label || rd.reward_slug}</div>
-                    <div style={{ fontSize: 11, color: "#555" }}>−{rd.cost_points} pts · {rd.kind === "descuento" ? "descuento" : "premio"} · {rd.status}</div>
+                    <div style={{ fontSize: 11, color:"rgba(237,233,224,.6)" }}>−{rd.cost_points} pts · {rd.kind === "descuento" ? "descuento" : "premio"} · {rd.status}</div>
                   </div>
                   {rd.coupon_code && (
                     <button onClick={() => copyCoupon(rd.coupon_code)} style={{ background: copied === rd.coupon_code ? "#22c55e" : "rgba(255,255,255,0.06)", color: copied === rd.coupon_code ? "#000" : "var(--brand-primary)", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
@@ -901,7 +901,7 @@ function Instagram() {
               <div style={{ fontWeight: 800, fontSize: 14, color: "#fff" }}>{a.label}</div>
               <div style={{ fontWeight: 900, fontSize: 16, color: "#ec4899", whiteSpace: "nowrap" }}>+{a.points}</div>
             </div>
-            <div style={{ fontSize: 11, color: "#666", margin: "4px 0 12px" }}>{a.limit}</div>
+            <div style={{ fontSize: 11, color:"rgba(237,233,224,.6)", margin: "4px 0 12px" }}>{a.limit}</div>
             {open === a.key ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <input placeholder="Link de la publicación (opcional)" value={link} onChange={e => setLink(e.target.value)} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#fff", fontSize: 13, padding: "9px 11px", outline: "none" }} />
@@ -927,7 +927,7 @@ function Instagram() {
               <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12 }}>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 14, color: "#ddd" }}>{s.label}</div>
-                  <div style={{ fontSize: 11, color: "#666" }}>+{s.points} pts · {new Date(s.created_at).toLocaleDateString("es-AR")}</div>
+                  <div style={{ fontSize: 11, color:"rgba(237,233,224,.6)" }}>+{s.points} pts · {new Date(s.created_at).toLocaleDateString("es-AR")}</div>
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 800, color: st[1] }}>{st[0]}</span>
               </div>
@@ -1070,7 +1070,7 @@ export default function Coins() {
                 {/* Equivalencia en $ (Sistema de Puntos: 1 punto = $peso_per_point) */}
                 <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:13,color:"var(--muted2)",marginBottom:14 }}>
                   ≈ <span style={{ color:"var(--lemon)",fontWeight:900 }}>${(balance*pesoPerPoint).toLocaleString("es-AR")}</span> en valor de canje
-                  <span style={{ color:"#444",marginLeft:8 }}>· 1 punto = ${pesoPerPoint.toLocaleString("es-AR")}</span>
+                  <span style={{ color:"rgba(237,233,224,.6)",marginLeft:8 }}>· 1 punto = ${pesoPerPoint.toLocaleString("es-AR")}</span>
                 </div>
 
                 {/* Código de cliente — para sumar puntos en compras externas */}
@@ -1089,7 +1089,7 @@ export default function Coins() {
                     <span style={{ fontSize:16 }}>{lc.i}</span>
                     <span style={{ fontSize:12,fontWeight:900,color:"#000",letterSpacing:1 }}>NIVEL {lc.l.toUpperCase()}</span>
                   </div>
-                  {lc.n&&<span style={{ color:"#333",fontSize:12 }}>→ {(lc.n-totalEarned).toLocaleString()} para el siguiente</span>}
+                  {lc.n&&<span style={{ color:"rgba(237,233,224,.6)",fontSize:12 }}>→ {(lc.n-totalEarned).toLocaleString()} para el siguiente</span>}
                 </div>
                 <div style={{ height:6,width:"min(320px,100%)",background:"rgba(255,255,255,0.04)",borderRadius:10,overflow:"hidden",border:"1px solid rgba(255,255,255,0.04)" }}>
                   <div style={{ height:"100%",width:`${pct}%`,background:lc.g,borderRadius:10,transition:"width 2s ease",boxShadow:`0 0 16px ${lc.c}66` }}/>
