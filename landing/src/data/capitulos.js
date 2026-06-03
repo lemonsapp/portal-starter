@@ -98,7 +98,7 @@ export const capitulos = [
         quote: "La velocidad sin control es ruido. Race es el fertilizante que te da las dos cosas: velocidad y precisión, indoor y outdoor.",
 
         producto: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
-        productoSecundario: "/img/productos/linea-race/500ml/race-3-rosa-500ml.png",
+        productoSecundario: "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
         ctaTexto: "Ver Línea Race",
         ctaHref: "/linea-race",
         bgColor: "#C7F0DD",

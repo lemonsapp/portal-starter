@@ -890,7 +890,7 @@ function groupIntoFamilies(products) {
     if (!buckets.has(key)) { buckets.set(key, []); order.push(key); }
     buckets.get(key).push(p);
   }
-  return order.map((key) => {
+  const families = order.map((key) => {
     const items = buckets.get(key).slice().sort((a, b) => variantOrder(a.meta) - variantOrder(b.meta));
     const head = items[0];
     const isFamily = !key.startsWith("solo:");
@@ -915,6 +915,17 @@ function groupIntoFamilies(products) {
         stock: i.stock, primary_image: i.primary_image,
       })),
     };
+  });
+
+  // Dedupe: ocultar el producto "kit" suelto (ej. bio-estimulante, day-0) cuando
+  // ya existe una familia de variantes que lo cubre (sus slugs lo prefijan).
+  // No afecta bundles (linea-*) ni productos sin variantes (cloner).
+  const variantSlugs = new Set();
+  for (const f of families) if (f.group) for (const v of f.variants) variantSlugs.add(v.slug);
+  return families.filter((f) => {
+    if (f.group || f.meta?.bundle) return true;
+    const redundant = [...variantSlugs].some((s) => s.startsWith(f.slug + "-"));
+    return !redundant;
   });
 }
 
