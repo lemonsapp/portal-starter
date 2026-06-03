@@ -9,8 +9,21 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
+import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
+
+// Normaliza las imágenes de una familia: corrige paths Race viejos del backend
+// y, si un pack de puntos no trae imagen (backend sin redeploy), usa el SVG.
+function normalizeFamily(f) {
+  const fixed = fixImageUrl(f.primary_image);
+  const primary = fixed || (f.meta?.points_pack ? PRODUCT_FALLBACK_IMG : f.primary_image);
+  return {
+    ...f,
+    primary_image: primary,
+    variants: (f.variants || []).map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
+  };
+}
 
 // Fallback: convierte un producto plano en la forma "familia" que espera ShopCard
 // (cuando el server no devuelve familias agrupadas). 1 variante = quick-add directo.
@@ -69,7 +82,7 @@ export default function Shop() {
           }
           fams = (products || []).map(toFamily);
         }
-        setFamilies(fams || []);
+        setFamilies((fams || []).map(normalizeFamily));
         setCategories(cd.categories || []);
       } catch (e) {
         setErr("No se pudo cargar el catálogo. Refrescá la página.");

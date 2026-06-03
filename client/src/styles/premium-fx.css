@@ -70,6 +70,17 @@
   z-index: 3;
 }
 
+/* ── Páginas con tema CLARO (shop: catálogo, producto, checkout) ──
+   Se renderizan FUERA del AppLayout, así que sin esto quedaban en el nivel
+   base, DEBAJO de las capas FX fijas (aurora/grano/glow z-index 0-2) → el
+   grano oscuro las tapaba y se veían "todo oscuro". Las elevamos por encima
+   del FX con fondo claro opaco para que se vean como fueron diseñadas. */
+.theme-light {
+  position: relative;
+  z-index: 4;
+  background: var(--c-bg, #F7F6F1);
+}
+
 /* ── Hacer transparentes los wrappers de página que tapan la capa FX
        (las páginas usan inline-styles con background dark; los reemplazamos
        por transparente para que aurora/partículas se vean) ── */

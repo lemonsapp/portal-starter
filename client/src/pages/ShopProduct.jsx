@@ -8,9 +8,24 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
+import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
+
+// Corrige las imágenes del producto (paths Race viejos del backend sin redeploy)
+// y el fallback de packs de puntos sin imagen. Espeja la reconciliación del server.
+function normalizeProduct(p) {
+  if (!p) return p;
+  const fixedPrimary = fixImageUrl(p.primary_image);
+  return {
+    ...p,
+    primary_image: fixedPrimary || (p.meta?.points_pack ? PRODUCT_FALLBACK_IMG : p.primary_image),
+    images: (p.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) })),
+    variants: (p.variants || []).map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
+    cross_sell: (p.cross_sell || []).map((c) => ({ ...c, primary_image: fixImageUrl(c.primary_image) })),
+  };
+}
 
 export default function ShopProduct() {
   useBranding();
@@ -37,12 +52,12 @@ export default function ShopProduct() {
           setErr("Producto no encontrado");
         } else {
           const d = await r.json();
-          setProduct(d.product || null);
+          setProduct(normalizeProduct(d.product || null));
           // Cargar productos relacionados de la misma categoría
           if (d.product?.category?.slug) {
             fetch(`${API}/api/shop/products?category=${d.product.category.slug}&limit=8`)
               .then((r) => r.json())
-              .then((rd) => setRelated((rd.products || []).filter((p) => p.id !== d.product.id).slice(0, 4)))
+              .then((rd) => setRelated((rd.products || []).filter((p) => p.id !== d.product.id).slice(0, 4).map(normalizeProduct)))
               .catch(() => {});
           }
         }
