@@ -107,7 +107,7 @@ export default function ShopProduct() {
                   style={S.mainImg}
                 />
               ) : (
-                <div style={{ ...S.mainImg, background: "rgba(255,255,255,.05)" }} />
+                <div style={{ ...S.mainImg, background: "var(--c-surface-2)" }} />
               )}
               {product.featured && (
                 <span style={S.featuredBadge}>⭐ Destacado</span>
@@ -341,7 +341,7 @@ const S = {
     width: "100%", aspectRatio: "1 / 1",
     background: "linear-gradient(135deg, rgba(var(--c-accent-rgb),.05), rgba(46,143,110,.08))",
     borderRadius: 22,
-    border: "1px solid rgba(255,255,255,.05)",
+    border: "1px solid var(--c-border)",
     overflow: "hidden",
     display: "grid", placeItems: "center",
     padding: "10%",
@@ -362,8 +362,8 @@ const S = {
   thumb: (active) => ({
     width: 76, height: 76, padding: 8,
     borderRadius: 12, cursor: "pointer",
-    background: "rgba(255,255,255,.04)",
-    border: active ? "2px solid var(--brand-primary, var(--c-accent))" : "1px solid rgba(255,255,255,.08)",
+    background: "var(--c-surface-2)",
+    border: active ? "2px solid var(--brand-primary, var(--c-accent))" : "1px solid var(--c-border)",
     overflow: "hidden",
     transition: "border-color .25s ease",
   }),
@@ -438,8 +438,8 @@ const S = {
   qtyControls: { display: "inline-flex", alignItems: "center", gap: 4 },
   qtyBtn: {
     width: 36, height: 36, borderRadius: 10,
-    background: "rgba(255,255,255,.05)",
-    color: "inherit", border: "1px solid rgba(255,255,255,.08)",
+    background: "var(--c-surface-2)",
+    color: "inherit", border: "1px solid var(--c-border)",
     cursor: "pointer", fontFamily: "inherit",
     fontSize: 18, fontWeight: 700,
   },
@@ -483,7 +483,7 @@ const S = {
   trustItem: {
     display: "inline-flex", alignItems: "center", gap: 6,
     padding: "7px 13px", borderRadius: 999,
-    background: "rgba(255,255,255,.03)",
+    background: "var(--c-surface-2)",
     border: "1px solid var(--c-border)",
     fontSize: 11, color: "rgba(var(--c-text-rgb),.75)", fontWeight: 600,
   },
@@ -498,11 +498,12 @@ const S = {
     textTransform: "uppercase",
   },
   sectionHeadingItalic: {
-    fontFamily: "'Fraunces', Georgia, serif",
-    fontStyle: "italic", fontWeight: 400,
-    textTransform: "none",
+    // Pedido del cliente: acentos verdes minúscula → Gotham MAYÚSCULA.
+    fontFamily: "'Gotham', sans-serif",
+    fontStyle: "normal", fontWeight: 900,
+    textTransform: "uppercase",
     color: "var(--brand-primary, var(--c-accent))",
-    letterSpacing: "-0.005em",
+    letterSpacing: "-0.01em",
   },
 
   longDescSection: {},
@@ -553,7 +554,7 @@ const S = {
     textDecoration: "none", color: "inherit",
     border: "1px solid var(--c-border)",
     borderRadius: 14, overflow: "hidden",
-    background: "rgba(255,255,255,.025)",
+    background: "var(--c-surface)",
     transition: "transform .3s ease, border-color .3s ease",
   },
   relatedImgWrap: {

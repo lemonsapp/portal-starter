@@ -197,7 +197,7 @@ function ShopCard({ product, onAdd }) {
             style={{ ...S.cardImg, transform: hover ? "scale(1.06)" : "scale(1)" }}
           />
         ) : (
-          <div style={{ ...S.cardImg, background: "rgba(255,255,255,.04)" }} />
+          <div style={{ ...S.cardImg, background: "var(--c-surface-2)" }} />
         )}
       </div>
 
@@ -358,7 +358,7 @@ const S = {
   card: {
     position: "relative",
     display: "flex", flexDirection: "column",
-    background: "rgba(255,255,255,.025)",
+    background: "var(--c-surface)",
     border: "1px solid var(--c-border)",
     borderRadius: "var(--r-4)", overflow: "hidden",
     textDecoration: "none", color: "inherit",

@@ -47,8 +47,8 @@ const styles = {
     alignItems: "start",
   },
   card: {
-    background: "rgba(255,255,255,.03)",
-    border: "1px solid rgba(255,255,255,.08)",
+    background: "var(--c-surface)",
+    border: "1px solid var(--c-border)",
     borderRadius: 14,
     padding: "clamp(20px, 3vw, 28px)",
     marginBottom: 18,
@@ -63,7 +63,7 @@ const styles = {
   label: { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(var(--c-text-rgb),.55)", marginBottom: 6 },
   input: {
     width: "100%", padding: "11px 13px", fontSize: 14,
-    background: "rgba(255,255,255,.04)",
+    background: "var(--c-surface-2)",
     border: "1px solid var(--c-border-2)",
     borderRadius: 8, color: "inherit", fontFamily: "inherit",
     boxSizing: "border-box",
@@ -78,11 +78,11 @@ const styles = {
   summaryRow: {
     display: "grid", gridTemplateColumns: "48px 1fr auto",
     gap: 10, padding: "8px 0",
-    borderBottom: "1px solid rgba(255,255,255,.05)",
+    borderBottom: "1px solid var(--c-border)",
     alignItems: "center",
   },
-  summaryImg: { width: 48, height: 48, objectFit: "contain", borderRadius: 6, background: "rgba(255,255,255,.04)", padding: 4 },
-  totals: { marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.12)" },
+  summaryImg: { width: 48, height: 48, objectFit: "contain", borderRadius: 6, background: "var(--c-surface-2)", padding: 4 },
+  totals: { marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--c-border-2)" },
   totalLine: { display: "flex", justifyContent: "space-between", fontSize: 14, marginBottom: 6 },
   totalGrand: { fontSize: 22, fontWeight: 900, color: "var(--brand-primary, var(--c-accent))" },
   cta: {
@@ -389,7 +389,7 @@ export default function ShopCheckout() {
                         placeholder="TEST10"
                         style={{
                           flex: 1, padding: "10px 12px", fontSize: 13,
-                          background: "rgba(255,255,255,.04)",
+                          background: "var(--c-surface-2)",
                           border: "1px solid var(--c-border-2)",
                           borderRadius: 8, color: "inherit", fontFamily: "inherit",
                           letterSpacing: ".06em", textTransform: "uppercase",
