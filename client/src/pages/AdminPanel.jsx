@@ -97,6 +97,7 @@ const ADMIN_NAV = [
       { key: "manual",   label: "Carga manual", Comp: PuntosManualTab },
       { key: "catalogo", label: "Catálogo",     Comp: RewardsCatalogTab },
       { key: "canjes",   label: "Canjes",       Comp: RedemptionsTab },
+      { key: "instagram",label: "Instagram",    Comp: IgQueueTab },
       { key: "ranking",  label: "Ranking",      Comp: CoinsTab },
     ],
   },
@@ -473,6 +474,72 @@ function RedemptionsTab() {
                   )}
                   {r.status === "fulfilled" && (
                     <button style={styles.btn(false, true)} onClick={() => { if (confirm("Cancelar y devolver puntos?")) act(r.id, "cancelled"); }}>Cancelar</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+// ── Tab: Puntos → Instagram (cola de evidencias) ─────────────────────────────
+function IgQueueTab() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("pending");
+
+  function load() {
+    setLoading(true);
+    const url = `${API}/coins/admin/ig${filter !== "all" ? `?status=${filter}` : ""}`;
+    fetch(url, { headers: authHdr() }).then(r => r.json()).then(d => { setRows(d.submissions || []); setLoading(false); }).catch(() => setLoading(false));
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [filter]);
+
+  async function act(id, status) {
+    const r = await fetch(`${API}/coins/admin/ig/${id}`, { method: "PATCH", headers: jsonHdr(), body: JSON.stringify({ status }) });
+    if (r.ok) load(); else { const d = await r.json().catch(() => ({})); alert(d.error || "Error"); }
+  }
+
+  return (
+    <div>
+      <p style={{ margin: "0 0 12px", fontSize: 13, color: "rgba(237,233,224,.55)" }}>Evidencias de acciones de Instagram. Aprobar acredita los puntos al cliente.</p>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        {[["pending", "Pendientes"], ["approved", "Aprobadas"], ["rejected", "Rechazadas"], ["all", "Todas"]].map(([k, l]) => (
+          <button key={k} style={styles.subtab(filter === k)} onClick={() => setFilter(k)}>{l}</button>
+        ))}
+      </div>
+      {loading ? <div style={{ color: "rgba(237,233,224,.5)", padding: 20 }}>Cargando…</div> : rows.length === 0 ? (
+        <div style={{ color: "rgba(237,233,224,.4)", padding: 20 }}>Sin evidencias en este filtro.</div>
+      ) : (
+        <table style={styles.table}>
+          <thead><tr>
+            <th style={styles.th}>Cliente</th><th style={styles.th}>Acción</th><th style={styles.th}>Pts</th>
+            <th style={styles.th}>Evidencia</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th>
+          </tr></thead>
+          <tbody>
+            {rows.map(s => (
+              <tr key={s.id}>
+                <td style={styles.td}>
+                  <div style={{ fontWeight: 700 }}>{s.user_name}</div>
+                  <div style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>{s.customer_code}</div>
+                </td>
+                <td style={styles.td}>{s.label}</td>
+                <td style={styles.td}>+{s.points}</td>
+                <td style={styles.td}>
+                  {s.evidence_url ? <a href={s.evidence_url} target="_blank" rel="noreferrer" style={{ color: "var(--brand-primary, #3B82F6)" }}>Ver link</a> : null}
+                  {s.note ? <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>{s.note}</div> : null}
+                  {!s.evidence_url && !s.note ? "—" : null}
+                </td>
+                <td style={styles.td}>{s.status}</td>
+                <td style={styles.td}>
+                  {s.status === "pending" && (
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button style={styles.btn(true)} onClick={() => act(s.id, "approved")}>Aprobar</button>
+                      <button style={styles.btn(false, true)} onClick={() => act(s.id, "rejected")}>Rechazar</button>
+                    </div>
                   )}
                 </td>
               </tr>

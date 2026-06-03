@@ -140,7 +140,41 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
       ON CONFLICT (slug) DO NOTHING`);
     console.log("[MIGRATION] canjes ready (point_rewards + point_redemptions)");
   } catch (e) { console.error("[MIGRATION canjes ERROR]", e.message); }
+
+  // ── F4 Comunidad Instagram: evidencias de acciones ──
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS ig_submissions (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        action_key TEXT NOT NULL,
+        label TEXT,
+        points INT NOT NULL,
+        evidence_url TEXT,
+        note TEXT,
+        status TEXT NOT NULL DEFAULT 'pending',  -- pending | approved | rejected
+        reviewed_by TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        reviewed_at TIMESTAMPTZ
+      )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_ig_submissions_user ON ig_submissions(user_id, created_at DESC)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_ig_submissions_status ON ig_submissions(status, created_at DESC)`);
+    console.log("[MIGRATION] instagram ready (ig_submissions)");
+  } catch (e) { console.error("[MIGRATION instagram ERROR]", e.message); }
 })();
+
+// Catálogo de acciones de Instagram (puntos + límite, según el documento).
+// Todas requieren mencionar @hgrowshop en la publicación.
+const IG_ACTIONS = [
+  { key: "like",          label: "Like a publicación oficial",       points: 5,   limit: "Máx 1 por día" },
+  { key: "comment",       label: "Comentario en publicación",        points: 15,  limit: "Máx 1 por publicación" },
+  { key: "story",         label: "Compartir en stories",             points: 20,  limit: "Máx 1 por publicación" },
+  { key: "photo_product", label: "Foto del envase (sin planta)",     points: 50,  limit: "Máx 2 por mes" },
+  { key: "photo_plant",   label: "Foto con planta y producto",       points: 100, limit: "Máx 4 por mes" },
+  { key: "stage",         label: "Compartir una etapa del ciclo",    points: 150, limit: "Máx 1 por etapa" },
+  { key: "full_cycle",    label: "Ciclo completo documentado",       points: 500, limit: "1 por ciclo (mín. 4 fotos)" },
+];
+const IG_ACTION_MAP = Object.fromEntries(IG_ACTIONS.map((a) => [a.key, a]));
 
 // Genera un código de cupón único para canjes de descuento (PTS-XXXXXX).
 async function generatePromoCode() {
@@ -705,6 +739,95 @@ router.patch("/admin/redemptions/:id", authRequired, requireRole(["operator", "a
     res.json({ success: true });
   } catch (e) {
     console.error("REDEMPTION PATCH ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Instagram: acciones disponibles + enviar evidencia + mis envíos ──────────
+router.get("/ig/actions", authRequired, (_req, res) => {
+  res.json({ actions: IG_ACTIONS });
+});
+
+router.post("/ig/submit", authRequired, async (req, res) => {
+  try {
+    const { action_key, evidence_url, note } = req.body;
+    const action = IG_ACTION_MAP[action_key];
+    if (!action) return res.status(400).json({ error: "Acción inválida" });
+    if (!evidence_url && !note) return res.status(400).json({ error: "Adjuntá un link o nota como evidencia" });
+    const q = await db.query(
+      `INSERT INTO ig_submissions (user_id, action_key, label, points, evidence_url, note)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [req.user.id, action.key, action.label, action.points, evidence_url || null, note || null]
+    );
+    res.json({ submission: q.rows[0] });
+  } catch (e) {
+    console.error("IG SUBMIT ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.get("/ig/mine", authRequired, async (req, res) => {
+  try {
+    const q = await db.query(
+      `SELECT * FROM ig_submissions WHERE user_id=$1 ORDER BY created_at DESC LIMIT 30`,
+      [req.user.id]
+    );
+    res.json({ submissions: q.rows });
+  } catch (e) {
+    console.error("IG MINE ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Admin: cola de evidencias IG (aprobar/rechazar) ──────────────────────────
+router.get("/admin/ig", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  try {
+    const params = [];
+    let where = "";
+    if (req.query.status) { params.push(req.query.status); where = `WHERE s.status = $1`; }
+    const q = await db.query(
+      `SELECT s.*, u.name AS user_name, u.customer_code, u.email AS user_email
+       FROM ig_submissions s JOIN users u ON u.id = s.user_id
+       ${where} ORDER BY s.created_at DESC LIMIT 200`,
+      params
+    );
+    res.json({ submissions: q.rows });
+  } catch (e) {
+    console.error("IG ADMIN LIST ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.patch("/admin/ig/:id", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!["approved", "rejected"].includes(status)) return res.status(400).json({ error: "Estado inválido" });
+    const sq = await db.query(`SELECT * FROM ig_submissions WHERE id=$1`, [req.params.id]);
+    const sub = sq.rows[0];
+    if (!sub) return res.status(404).json({ error: "Evidencia no encontrada" });
+    if (sub.status !== "pending") return res.status(400).json({ error: "Esta evidencia ya fue revisada" });
+
+    if (status === "approved") {
+      await getOrCreateCoins(sub.user_id);
+      await db.query(
+        `UPDATE coins SET balance = balance + $1, total_earned = total_earned + $1,
+           peak_balance = GREATEST(peak_balance, balance + $1), updated_at = NOW()
+         WHERE user_id = $2`,
+        [sub.points, sub.user_id]
+      );
+      await db.query(
+        `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador)
+         VALUES ($1, 'accion_ig', $2, $3, 'instagram', $4)`,
+        [sub.user_id, sub.points, `Instagram: ${sub.label}`, req.user.email || "admin"]
+      );
+    }
+    await db.query(
+      `UPDATE ig_submissions SET status=$1, reviewed_by=$2, reviewed_at=NOW() WHERE id=$3`,
+      [status, req.user.email || "admin", req.params.id]
+    );
+    res.json({ success: true });
+  } catch (e) {
+    console.error("IG ADMIN PATCH ERROR:", e);
     res.status(500).json({ error: e.message });
   }
 });

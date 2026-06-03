@@ -848,6 +848,97 @@ function Canjes({ balance, userId, onRedeem }) {
   );
 }
 
+// ── INSTAGRAM (Comunidad — F4) ────────────────────────────────────────────────
+function Instagram() {
+  const [actions, setActions] = useState([]);
+  const [mine, setMine] = useState([]);
+  const [open, setOpen] = useState(null);     // action_key del form abierto
+  const [link, setLink] = useState("");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  function loadMine() {
+    fetch(`${API}/coins/ig/mine`, { headers: hdrs() })
+      .then(r => r.json()).then(d => setMine(d.submissions || [])).catch(() => {});
+  }
+  useEffect(() => {
+    fetch(`${API}/coins/ig/actions`, { headers: hdrs() })
+      .then(r => r.json()).then(d => setActions(d.actions || [])).catch(() => {});
+    loadMine();
+  }, []);
+
+  async function submit(action) {
+    if (!link.trim() && !note.trim()) { setMsg({ ok: false, text: "Adjuntá un link o nota como evidencia." }); return; }
+    setBusy(true); setMsg(null);
+    try {
+      const r = await fetch(`${API}/coins/ig/submit`, {
+        method: "POST", headers: hdrs(),
+        body: JSON.stringify({ action_key: action.key, evidence_url: link.trim(), note: note.trim() }),
+      });
+      const d = await r.json();
+      if (!r.ok) setMsg({ ok: false, text: d.error || "Error al enviar" });
+      else { setMsg({ ok: true, text: "✅ Evidencia enviada. Gaia la revisa en hasta 48 hs." }); setOpen(null); setLink(""); setNote(""); loadMine(); }
+    } catch { setMsg({ ok: false, text: "Error de conexión" }); }
+    setBusy(false);
+  }
+
+  const ST = { pending: ["Pendiente", "#f5a623"], approved: ["Aprobado ✓", "#22c55e"], rejected: ["Rechazado", "#ef4444"] };
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,rgba(236,72,153,0.08),rgba(167,139,250,0.05))", border: "1px solid rgba(236,72,153,0.25)", borderRadius: 16, padding: "16px 20px", marginBottom: 22 }}>
+        <div style={{ fontWeight: 900, fontSize: 16, color: "#fff", marginBottom: 4 }}>📸 Ganá puntos con Instagram</div>
+        <div style={{ fontSize: 13, color: "#aaa", lineHeight: 1.5 }}>Mencioná <b style={{ color: "#ec4899" }}>@hgrowshop</b> en tu publicación, enviá la evidencia (link o captura) y sumás puntos cuando la aprobamos.</div>
+      </div>
+
+      {msg && <div style={{ background: msg.ok ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", border: `1px solid ${msg.ok ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.4)"}`, borderRadius: 12, padding: "12px 18px", color: msg.ok ? "#22c55e" : "#ef4444", fontWeight: 700, fontSize: 14, marginBottom: 18 }}>{msg.text}</div>}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 14, marginBottom: 36 }}>
+        {actions.map(a => (
+          <div key={a.key} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: "16px 18px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+              <div style={{ fontWeight: 800, fontSize: 14, color: "#fff" }}>{a.label}</div>
+              <div style={{ fontWeight: 900, fontSize: 16, color: "#ec4899", whiteSpace: "nowrap" }}>+{a.points}</div>
+            </div>
+            <div style={{ fontSize: 11, color: "#666", margin: "4px 0 12px" }}>{a.limit}</div>
+            {open === a.key ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <input placeholder="Link de la publicación (opcional)" value={link} onChange={e => setLink(e.target.value)} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#fff", fontSize: 13, padding: "9px 11px", outline: "none" }} />
+                <input placeholder="Nota / usuario IG (opcional)" value={note} onChange={e => setNote(e.target.value)} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#fff", fontSize: 13, padding: "9px 11px", outline: "none" }} />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => submit(a)} disabled={busy} style={{ flex: 1, background: "linear-gradient(135deg,#ec4899,#a78bfa)", color: "#fff", border: "none", borderRadius: 8, padding: "9px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>{busy ? "Enviando…" : "Enviar"}</button>
+                  <button onClick={() => { setOpen(null); setLink(""); setNote(""); }} style={{ background: "rgba(255,255,255,0.06)", color: "#888", border: "none", borderRadius: 8, padding: "9px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>✕</button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => { setOpen(a.key); setLink(""); setNote(""); setMsg(null); }} style={{ width: "100%", background: "rgba(236,72,153,0.12)", color: "#ec4899", border: "1px solid rgba(236,72,153,0.3)", borderRadius: 8, padding: "9px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Enviar evidencia</button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {mine.length > 0 && <>
+        <div style={{ fontWeight: 900, fontSize: 18, color: "#fff", margin: "0 0 14px" }}>Mis envíos</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {mine.map(s => {
+            const st = ST[s.status] || [s.status, "#888"];
+            return (
+              <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12 }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#ddd" }}>{s.label}</div>
+                  <div style={{ fontSize: 11, color: "#666" }}>+{s.points} pts · {new Date(s.created_at).toLocaleDateString("es-AR")}</div>
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 800, color: st[1] }}>{st[0]}</span>
+              </div>
+            );
+          })}
+        </div>
+      </>}
+    </div>
+  );
+}
+
 // ── MAIN ───────────────────────────────────────────────────────────────────────
 export default function Coins() {
   const [tab, setTab] = useState("tienda");
@@ -902,6 +993,7 @@ export default function Coins() {
 
   const TABS = [
     { id:"canjes",   icon:"🎟️", label:"Canjes",   color:"var(--brand-primary)" },
+    { id:"instagram",icon:"📸", label:"Instagram",color:"#ec4899" },
     { id:"tienda",   icon:"🛍️", label:"Tienda",   color:"var(--brand-primary)" },
     { id:"ruleta",   icon:"🎰", label:"Ruleta",   color:"#a78bfa" },
     { id:"misiones", icon:"🎯", label:"Misiones", color:"#22c55e" },
@@ -1018,6 +1110,7 @@ export default function Coins() {
           <ReferralCard />
 
           {tab==="canjes"   && <Canjes balance={balance} userId={userId} onRedeem={c=>{ setBalance(b=>b-c); }} />}
+          {tab==="instagram" && <Instagram />}
           {tab==="tienda"   && <Store balance={balance} onBuy={c=>{ setBalance(b=>b-c); spawn(6); }} />}
           {tab==="misiones" && <Missions onClaim={c=>{ setBalance(b=>b+c); spawn(14); }} />}
           {tab==="ranking"  && <Ranking />}
