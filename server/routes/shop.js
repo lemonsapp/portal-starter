@@ -448,6 +448,21 @@ async function migrate() {
     WHERE NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `);
 
+  // ─── Bundles (Diseño C): marcar los 3 "kit" de línea como bundles ─────────
+  // meta.bundle=true → "comprar junto". bundle_line conecta con las variantes
+  // individuales (capa derivada en variantGroup/buildBundle). bundle_discount_pct
+  // es el % de ahorro vs comprar separado (configurable después desde admin).
+  // Idempotente: solo setea si meta todavía no tiene 'bundle' (no pisa ajustes).
+  await safeQuery(
+    `UPDATE products SET meta = meta || '{"bundle":true,"bundle_line":"race","bundle_discount_pct":10}'::jsonb
+       WHERE slug='linea-race' AND NOT (meta ? 'bundle')`, "bundle race");
+  await safeQuery(
+    `UPDATE products SET meta = meta || '{"bundle":true,"bundle_line":"pro","bundle_discount_pct":10}'::jsonb
+       WHERE slug='linea-pro' AND NOT (meta ? 'bundle')`, "bundle pro");
+  await safeQuery(
+    `UPDATE products SET meta = meta || '{"bundle":true,"bundle_line":"elite","bundle_discount_pct":10}'::jsonb
+       WHERE slug='linea-elite' AND NOT (meta ? 'bundle')`, "bundle elite");
+
   // ═════════════════════════════════════════════════════════════════════════
   // F2: ORDERS — carrito + checkout + MercadoPago
   // ═════════════════════════════════════════════════════════════════════════
@@ -726,6 +741,75 @@ function formatARS(cents) {
   });
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// VARIANTES / FAMILIAS / BUNDLES / CROSS-SELL (Diseño C)
+// Capa derivada de products.meta — sin tablas nuevas. Las variantes ya existen
+// como productos separados (meta.linea/etapa/parte/formato); acá las agrupamos.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FMT_LABEL = {
+  "250ml": "250 ml", "500ml": "500 ml", "1L": "1 L", "5L": "5 L", "10L": "10 L", "20L": "20 L",
+  "25g": "25 g", "100g": "100 g", "500g": "500 g", "1kg": "1 kg",
+};
+const FMT_ORDER = {
+  "25g": 1, "100g": 2, "500g": 3, "1kg": 4,
+  "250ml": 1, "500ml": 2, "1L": 3, "5L": 4, "10L": 5, "20L": 6,
+};
+// Tokens de medida embebidos en el name (para derivar el nombre de familia).
+const SIZE_RE = /\b(250\s?ml|500\s?ml|1\s?L|5\s?L|10\s?L|20\s?L|25\s?g|100\s?g|500\s?g|1\s?kg)\b/gi;
+
+// Clave de familia (mismo producto, distinta medida). null = no agrupable
+// (bundles, combos, o SKUs sin formato → quedan solos).
+function variantGroup(meta = {}) {
+  if (meta.bundle || meta.tipo === "combo") return null;
+  const fmt = meta.formato;
+  if (!fmt) return null;
+  const l = meta.linea;
+  if (l === "race")  return `race-${meta.etapa}${meta.parte ? "-" + meta.parte : ""}`;
+  if (l === "pro")   return `pro-${meta.etapa}`;
+  if (l === "elite") return meta.tipo === "bidon"
+        ? `elite-max-${String(meta.parte || "a").toLowerCase()}`
+        : `elite-parte-${meta.parte}`;
+  if (l) return `linea-${l}`; // bio, day0, etc → agrupan por línea
+  return null;
+}
+const variantLabel = (meta = {}) => (meta.formato ? (FMT_LABEL[meta.formato] || meta.formato) : null);
+const variantOrder = (meta = {}) => (meta.formato ? (FMT_ORDER[meta.formato] ?? 99) : 99);
+
+// Nombre de familia: el name sin el token de medida ("Race 1 — NPK 250ml" → "Race 1 — NPK").
+function familyName(name = "") {
+  return name.replace(SIZE_RE, "").replace(/\s*[—-]\s*$/, "").replace(/\s{2,}/g, " ").trim();
+}
+
+// Resumen liviano de una variante para el selector de medida.
+function variantSummary(row, img) {
+  const m = row.meta || {};
+  return {
+    slug: row.slug,
+    sku: row.sku,
+    label: variantLabel(m) || row.name,
+    formato: m.formato || null,
+    order: variantOrder(m),
+    price_cents: row.price_cents,
+    price_formatted: formatARS(row.price_cents),
+    stock: row.stock,
+    primary_image: img || null,
+  };
+}
+
+// Cross-sell curado por línea (slugs sugeridos para "te olvidaste / acompañar").
+const CROSS_SELL_BY_LINE = {
+  race:  ["bio-estimulante-500ml", "day-0-500ml", "cloner"],
+  pro:   ["bio-estimulante-500ml", "day-0-500ml", "cloner"],
+  elite: ["bio-estimulante-500ml", "day-0-500ml", "cloner"],
+  bio:   ["day-0-500ml", "cloner"],
+  day0:  ["bio-estimulante-500ml", "cloner"],
+};
+function crossSellSlugsFor(meta = {}) {
+  const line = meta.bundle_line || meta.linea;
+  return CROSS_SELL_BY_LINE[line] || ["bio-estimulante-500ml", "day-0-500ml", "cloner"];
+}
+
 /**
  * Carga imágenes de N productos en una sola query (evita N+1). Devuelve un
  * Map<productId, image[]> ordenado por sort_order.
@@ -745,6 +829,71 @@ async function loadImagesFor(productIds) {
     map.get(r.product_id).push(r);
   }
   return map;
+}
+
+// Imagen primaria (url) de un map de imágenes para un product id.
+function primaryUrl(imagesMap, id) {
+  const imgs = imagesMap.get(id) || [];
+  return imgs.find((i) => i.is_primary)?.url || imgs[0]?.url || null;
+}
+
+// Trae filas de productos activos por lista de slugs (preserva el orden de entrada).
+async function fetchRowsBySlugs(slugs) {
+  if (!slugs.length) return [];
+  const { rows } = await db.query(
+    `SELECT * FROM products WHERE slug = ANY($1::text[]) AND active = TRUE`, [slugs]);
+  const imagesMap = await loadImagesFor(rows.map((r) => r.id));
+  const bySlug = new Map(rows.map((r) => [r.slug, r]));
+  return slugs.map((s) => bySlug.get(s)).filter(Boolean)
+    .map((r) => ({ row: r, img: primaryUrl(imagesMap, r.id) }));
+}
+
+// Trae todas las variantes activas de una línea (meta.linea = X) con su imagen.
+async function fetchLineRows(linea) {
+  if (!linea) return [];
+  const { rows } = await db.query(
+    `SELECT * FROM products WHERE active = TRUE AND meta->>'linea' = $1`, [linea]);
+  const imagesMap = await loadImagesFor(rows.map((r) => r.id));
+  return rows.map((r) => ({ row: r, img: primaryUrl(imagesMap, r.id) }));
+}
+
+// Agrupa una lista de productos YA serializados en familias (1 por variantGroup).
+// Los no agrupables quedan como familia de 1 (group: null).
+function groupIntoFamilies(products) {
+  const buckets = new Map();
+  const order = [];
+  for (const p of products) {
+    const g = variantGroup(p.meta);
+    const key = g || `solo:${p.slug}`;
+    if (!buckets.has(key)) { buckets.set(key, []); order.push(key); }
+    buckets.get(key).push(p);
+  }
+  return order.map((key) => {
+    const items = buckets.get(key).slice().sort((a, b) => variantOrder(a.meta) - variantOrder(b.meta));
+    const head = items[0];
+    const isFamily = !key.startsWith("solo:");
+    const prices = items.map((i) => i.price_cents).filter((v) => v != null);
+    return {
+      group: isFamily ? key : null,
+      slug: head.slug,
+      name: isFamily ? familyName(head.name) : head.name,
+      short_description: head.short_description,
+      category: head.category,
+      meta: head.meta,
+      featured: items.some((i) => i.featured),
+      primary_image: head.primary_image,
+      from_price_cents: prices.length ? Math.min(...prices) : null,
+      from_price_formatted: prices.length ? formatARS(Math.min(...prices)) : null,
+      variant_count: items.length,
+      variants: items.map((i) => ({
+        slug: i.slug, sku: i.sku,
+        label: variantLabel(i.meta) || i.name,
+        formato: i.meta?.formato || null,
+        price_cents: i.price_cents, price_formatted: i.price_formatted,
+        stock: i.stock, primary_image: i.primary_image,
+      })),
+    };
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -819,6 +968,12 @@ function publicRouter() {
         r.cat_id ? { id: r.cat_id, slug: r.cat_slug, name: r.cat_name } : null
       ));
 
+      // ?grouped=1 → 1 entrada por familia (variantes agrupadas por medida).
+      if (req.query.grouped === "1" || req.query.grouped === "true") {
+        const families = groupIntoFamilies(products);
+        return res.json({ families, count: families.length });
+      }
+
       res.json({ products, count: products.length });
     } catch (e) {
       console.error("[shop.public products]", e);
@@ -852,7 +1007,47 @@ function publicRouter() {
         imagesMap.get(row.id) || [],
         row.cat_id ? { id: row.cat_id, slug: row.cat_slug, name: row.cat_name } : null
       );
-      res.json({ product });
+
+      // ── Diseño C: variantes (medidas), bundle y cross-sell ──
+      const meta = product.meta || {};
+      const grp = variantGroup(meta);
+      const lineRows = meta.linea ? await fetchLineRows(meta.linea) : [];
+
+      // Variantes: hermanos de la misma familia (otras medidas del mismo producto).
+      let variants = [];
+      if (grp) {
+        variants = lineRows
+          .filter((x) => variantGroup(x.row.meta) === grp)
+          .map((x) => variantSummary(x.row, x.img))
+          .sort((a, b) => a.order - b.order);
+      }
+
+      // Bundle: si este producto es el "kit" de la línea, listamos las familias incluidas.
+      let bundle = null;
+      if (meta.bundle) {
+        const fams = new Map();
+        for (const x of lineRows) {
+          const g = variantGroup(x.row.meta);
+          if (!g) continue;
+          if (!fams.has(g)) fams.set(g, { group: g, name: familyName(x.row.name), variants: [] });
+          fams.get(g).variants.push(variantSummary(x.row, x.img));
+        }
+        const includes = [...fams.values()];
+        includes.forEach((f) => f.variants.sort((a, b) => a.order - b.order));
+        bundle = {
+          line: meta.bundle_line || meta.linea || null,
+          discount_pct: meta.bundle_discount_pct ?? 0,
+          includes,
+        };
+      }
+
+      // Cross-sell: complementarios curados por línea (excluye el propio producto).
+      const csRows = await fetchRowsBySlugs(
+        crossSellSlugsFor(meta).filter((s) => s !== product.slug)
+      );
+      const cross_sell = csRows.map((x) => variantSummary(x.row, x.img));
+
+      res.json({ product: { ...product, variant_group: grp, variants, bundle, cross_sell } });
     } catch (e) {
       console.error("[shop.public product detail]", e);
       res.status(500).json({ error: "Error al obtener producto" });
