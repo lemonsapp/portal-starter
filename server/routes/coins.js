@@ -21,7 +21,59 @@ const { authRequired, requireRole } = require("../auth");
     `);
     console.log("[MIGRATION] coins table ready");
   } catch (e) { console.error("[MIGRATION coins ERROR]", e.message); }
+
+  // ── F1 Sistema de Puntos: customer_code + columnas de movimiento + config ──
+  try {
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS customer_code TEXT`);
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uniq_users_customer_code ON users(customer_code) WHERE customer_code IS NOT NULL`);
+    await db.query(`ALTER TABLE coin_transactions ADD COLUMN IF NOT EXISTS canal TEXT`);
+    await db.query(`ALTER TABLE coin_transactions ADD COLUMN IF NOT EXISTS operador TEXT`);
+    await db.query(`ALTER TABLE coin_transactions ADD COLUMN IF NOT EXISTS amount_cents BIGINT`);
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS point_config (
+        key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`);
+    await db.query(`INSERT INTO point_config (key, value) VALUES ('peso_per_point','2000'),('buy_price','1600') ON CONFLICT (key) DO NOTHING`);
+    // Backfill: asignar customer_code a usuarios que no tengan (bounded).
+    const pend = await db.query(`SELECT id FROM users WHERE customer_code IS NULL LIMIT 5000`);
+    for (const u of pend.rows) { await ensureCustomerCode(u.id); }
+    console.log(`[MIGRATION] puntos ready (backfilled ${pend.rows.length} customer_code)`);
+  } catch (e) { console.error("[MIGRATION puntos ERROR]", e.message); }
 })();
+
+// ── Helpers Sistema de Puntos ────────────────────────────────────────────────
+// Código de cliente HST-XXXX-XX (charset sin caracteres ambiguos 0/O/1/I).
+const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function randCustomerCode() {
+  const pick = (n) => Array.from({ length: n }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join("");
+  return `HST-${pick(4)}-${pick(2)}`;
+}
+// Asigna (idempotente) un customer_code único al usuario. Devuelve el código.
+async function ensureCustomerCode(userId) {
+  const cur = await db.query(`SELECT customer_code FROM users WHERE id=$1`, [userId]);
+  if (cur.rows[0]?.customer_code) return cur.rows[0].customer_code;
+  for (let i = 0; i < 12; i++) {
+    const code = randCustomerCode();
+    try {
+      const u = await db.query(
+        `UPDATE users SET customer_code=$1 WHERE id=$2 AND customer_code IS NULL RETURNING customer_code`,
+        [code, userId]
+      );
+      if (u.rows[0]) return u.rows[0].customer_code;
+      const rr = await db.query(`SELECT customer_code FROM users WHERE id=$1`, [userId]);
+      if (rr.rows[0]?.customer_code) return rr.rows[0].customer_code;
+    } catch (_) { /* colisión de unicidad → reintentar con otro código */ }
+  }
+  return null;
+}
+// Lee un parámetro de point_config con fallback numérico.
+async function getPointConfig(key, fallback) {
+  try {
+    const r = await db.query(`SELECT value FROM point_config WHERE key=$1`, [key]);
+    const v = parseInt(r.rows[0]?.value, 10);
+    return Number.isFinite(v) && v > 0 ? v : fallback;
+  } catch (_) { return fallback; }
+}
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 const COINS_FIRST_BONUS  = 15;
@@ -86,6 +138,10 @@ router.get("/:userId", authRequired, async (req, res) => {
     const nextLevel   = [...LEVELS].reverse().find(l => l.min > coins.balance) ?? null;
     const coinsToNext = nextLevel ? nextLevel.min - coins.balance : null;
 
+    // Sistema de Puntos: código de cliente (lazy) + valor del punto en $.
+    const customerCode = await ensureCustomerCode(userId);
+    const pesoPerPoint = await getPointConfig("peso_per_point", 2000);
+
     // Sprint 4: removida tabla shipments (legacy). Las queries no
     // joinen más; shipment_code queda como undefined en el response (los
     // consumers ya manejan undefined gracefully).
@@ -104,6 +160,9 @@ router.get("/:userId", authRequired, async (req, res) => {
     res.json({
       balance:               coins.balance,
       total_earned:          coins.total_earned,
+      customer_code:         customerCode,
+      peso_per_point:        pesoPerPoint,
+      value_ars:             coins.balance * pesoPerPoint,   // equivalencia en $ del saldo
       level:                 { ...level, min: level.min ?? 0 },
       next_level:            nextLevel,
       coins_to_next:         coinsToNext,
@@ -222,6 +281,78 @@ router.patch("/redemptions/:id", authRequired, requireRole(["operator","admin"])
     res.json({ success: true });
   } catch (e) {
     console.error("COINS REDEMPTION PATCH ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── GET /coins/lookup/:code — buscar cliente por código (panel Gaia) ──────────
+// 2 segmentos → no colisiona con GET /:userId. Solo staff.
+router.get("/lookup/:code", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  try {
+    const code = String(req.params.code || "").trim().toUpperCase();
+    if (!code) return res.status(400).json({ error: "Falta el código" });
+    const uq = await db.query(
+      `SELECT u.id, u.name, u.email, u.customer_code, COALESCE(c.balance, 0) AS balance
+       FROM users u LEFT JOIN coins c ON c.user_id = u.id
+       WHERE u.customer_code = $1`,
+      [code]
+    );
+    if (!uq.rows[0]) return res.status(404).json({ error: "Cliente no encontrado" });
+    res.json({ user: uq.rows[0] });
+  } catch (e) {
+    console.error("COINS LOOKUP ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── POST /coins/manual-credit — carga manual de puntos por compra externa ─────
+// Body: { customer_code, amount_pesos?, canal?, descripcion?, points_override? }
+// Puntos = floor(amount_pesos / peso_per_point), o points_override si se envía.
+router.post("/manual-credit", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  try {
+    const { customer_code, amount_pesos, canal, descripcion, points_override } = req.body;
+    const code = String(customer_code || "").trim().toUpperCase();
+    if (!code) return res.status(400).json({ error: "Falta el código de cliente" });
+
+    const uq = await db.query(`SELECT id, name, customer_code FROM users WHERE customer_code=$1`, [code]);
+    const u = uq.rows[0];
+    if (!u) return res.status(404).json({ error: "Cliente no encontrado" });
+
+    const pesoPerPoint = await getPointConfig("peso_per_point", 2000);
+    const pesos = Math.max(0, Math.floor(Number(amount_pesos) || 0));
+    let points;
+    if (points_override !== undefined && points_override !== null && points_override !== "") {
+      points = Math.max(0, Math.floor(Number(points_override)));
+    } else {
+      points = Math.floor(pesos / pesoPerPoint); // redondeo hacia abajo (regla del spec)
+    }
+    if (points <= 0) return res.status(400).json({ error: "Los puntos a acreditar dan 0 — revisá el monto." });
+
+    await getOrCreateCoins(u.id);
+    await db.query(
+      `UPDATE coins
+         SET balance = balance + $1,
+             total_earned = total_earned + $1,
+             peak_balance = GREATEST(peak_balance, balance + $1),
+             updated_at = NOW()
+       WHERE user_id = $2`,
+      [points, u.id]
+    );
+    await db.query(
+      `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, amount_cents)
+       VALUES ($1, 'compra_externa', $2, $3, $4, $5, $6)`,
+      [u.id, points, descripcion || "Compra externa", canal || "admin",
+       req.user.email || "admin", pesos > 0 ? pesos * 100 : null]
+    );
+    const updQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [u.id]);
+    res.json({
+      success: true,
+      user: { id: u.id, name: u.name, customer_code: u.customer_code },
+      points_credited: points,
+      new_balance: updQ.rows[0].balance,
+    });
+  } catch (e) {
+    console.error("COINS MANUAL-CREDIT ERROR:", e);
     res.status(500).json({ error: e.message });
   }
 });

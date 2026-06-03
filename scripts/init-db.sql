@@ -18,6 +18,7 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS users (
   id                            SERIAL PRIMARY KEY,
   client_number                 INT UNIQUE,
+  customer_code                 TEXT UNIQUE,                      -- Sistema de Puntos: HST-XXXX-XX, inmutable
   name                          TEXT NOT NULL,
   username                      TEXT UNIQUE,
   email                         TEXT UNIQUE NOT NULL,
@@ -81,13 +82,27 @@ CREATE TABLE IF NOT EXISTS coins (
 CREATE TABLE IF NOT EXISTS coin_transactions (
   id           SERIAL PRIMARY KEY,
   user_id      INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  type         TEXT NOT NULL,          -- earn | spend | gift | adjust
+  type         TEXT NOT NULL,          -- earn|spend|gift|adjust + puntos: compra_web|compra_externa|compra_puntos|accion_ig|canje_descuento|canje_premio|correccion
   amount       INT NOT NULL,
   reason       TEXT,
   shipment_id  INT,                    -- legacy Lemons (FK opcional, no fuerza)
+  canal        TEXT,                   -- Puntos: web|whatsapp|mercadolibre|efectivo|instagram|compra_puntos|admin
+  operador     TEXT,                   -- Puntos: 'sistema' o email del admin que cargó
+  amount_cents BIGINT,                 -- Puntos: monto $ de la compra asociada (si aplica)
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_coin_tx_user ON coin_transactions(user_id, created_at DESC);
+
+-- ── point_config — parámetros del Sistema de Puntos (no secretos, admin-editable)
+CREATE TABLE IF NOT EXISTS point_config (
+  key        TEXT PRIMARY KEY,
+  value      TEXT NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+INSERT INTO point_config (key, value) VALUES
+  ('peso_per_point', '2000'),   -- 1 punto = $2.000 de valor de canje
+  ('buy_price',      '1600')    -- comprar 1 punto cuesta $1.600
+ON CONFLICT (key) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS coin_redemptions (
   id           SERIAL PRIMARY KEY,
