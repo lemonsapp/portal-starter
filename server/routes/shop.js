@@ -788,6 +788,7 @@ function variantSummary(row, img) {
     id: row.id,
     slug: row.slug,
     sku: row.sku,
+    name: row.name,
     label: variantLabel(m) || row.name,
     formato: m.formato || null,
     order: variantOrder(m),
@@ -1052,6 +1053,18 @@ function publicRouter() {
     } catch (e) {
       console.error("[shop.public product detail]", e);
       res.status(500).json({ error: "Error al obtener producto" });
+    }
+  });
+
+  // GET /api/shop/cross-sell — complementarios curados (para el carrito).
+  // "te olvidaste / sirve para acompañar". Set genérico por ahora.
+  router.get("/cross-sell", async (_req, res) => {
+    try {
+      const rows = await fetchRowsBySlugs(["bio-estimulante-500ml", "day-0-500ml", "cloner"]);
+      res.json({ products: rows.map((x) => variantSummary(x.row, x.img)) });
+    } catch (e) {
+      console.error("[shop.public cross-sell]", e);
+      res.status(500).json({ error: "Error al obtener cross-sell" });
     }
   });
 

@@ -61,6 +61,14 @@ export default function ShopProduct() {
     setTimeout(() => setToast(""), 2500);
   }
 
+  function addCross(c) {
+    addItem({
+      id: c.id, slug: c.slug, name: c.name,
+      price_cents: c.price_cents, primary_image: c.primary_image, stock: c.stock,
+    }, 1);
+    window.dispatchEvent(new CustomEvent("holistic-cart-open"));
+  }
+
   if (loading) {
     return (
       <div className="theme-light" style={S.shell}>
@@ -283,6 +291,35 @@ export default function ShopProduct() {
             <p style={S.bundleSeparate}>
               ¿Preferís elegir vos? <Link to="/shop" style={S.bundleSeparateLink}>Comprar por separado →</Link>
             </p>
+          </section>
+        )}
+
+        {/* Cross-sell — "te olvidaste / sirve para acompañar" */}
+        {product.cross_sell?.length > 0 && (
+          <section style={S.longDescSection}>
+            <h2 style={S.sectionHeading}>
+              <span>Sumá para </span>
+              <span style={S.sectionHeadingItalic}>acompañar</span>
+            </h2>
+            <p style={S.crossHint}>Productos que combinan con tu compra. No te olvides de:</p>
+            <div style={S.crossGrid}>
+              {product.cross_sell.map((c) => (
+                <div key={c.slug} style={S.crossCard}>
+                  <Link to={`/shop/${c.slug}`} style={S.crossImgWrap} aria-label={`Ver ${c.name}`}>
+                    {c.primary_image && <img src={c.primary_image} alt={c.name} style={S.crossImg} loading="lazy" />}
+                  </Link>
+                  <div style={S.crossBody}>
+                    <Link to={`/shop/${c.slug}`} style={S.crossName}>{c.name}</Link>
+                    <div style={S.crossPriceRow}>
+                      <span style={S.crossPrice}>{c.price_formatted}</span>
+                      <button style={S.crossAdd} onClick={() => addCross(c)} aria-label={`Agregar ${c.name}`}>
+                        + Sumar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 
@@ -624,6 +661,38 @@ const S = {
   bundleItemMeta: { fontSize: 12, color: "rgba(var(--c-text-rgb),.6)", marginTop: 2 },
   bundleSeparate: { marginTop: 18, fontSize: 14, color: "rgba(var(--c-text-rgb),.7)" },
   bundleSeparateLink: { fontWeight: 800, color: "var(--brand-primary, var(--c-accent))", textDecoration: "none" },
+
+  // ── Cross-sell ──
+  crossHint: { margin: "0 0 18px", fontSize: 14, color: "rgba(var(--c-text-rgb),.7)" },
+  crossGrid: {
+    display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14,
+  },
+  crossCard: {
+    display: "flex", flexDirection: "column",
+    border: "1px solid var(--c-border)", borderRadius: 14, overflow: "hidden",
+    background: "var(--c-surface)",
+  },
+  crossImgWrap: {
+    width: "100%", aspectRatio: "1 / 1", padding: "14%",
+    background: "linear-gradient(135deg, rgba(var(--c-accent-rgb),.04), rgba(46,143,110,.06))",
+    display: "grid", placeItems: "center",
+  },
+  crossImg: { width: "100%", height: "100%", objectFit: "contain" },
+  crossBody: { padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 8, flex: 1 },
+  crossName: {
+    fontSize: 13.5, fontWeight: 800, lineHeight: 1.3, letterSpacing: "-0.01em",
+    textDecoration: "none", color: "inherit",
+  },
+  crossPriceRow: {
+    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: "auto",
+  },
+  crossPrice: { fontSize: 14, fontWeight: 900, color: "var(--brand-primary, var(--c-accent))" },
+  crossAdd: {
+    padding: "7px 12px", borderRadius: 999, border: "1px solid rgba(var(--c-accent-rgb),.35)",
+    background: "var(--c-accent-soft)", color: "var(--brand-primary, var(--c-accent))",
+    fontFamily: "inherit", fontWeight: 800, fontSize: 11, letterSpacing: ".04em",
+    textTransform: "uppercase", cursor: "pointer",
+  },
 
   // ── Editorial sections ──
   sectionHeading: {

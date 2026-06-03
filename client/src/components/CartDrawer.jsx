@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart, formatARS } from "../lib/useCart.js";
 
+const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
+
 const styles = {
   fab: (visible) => ({
     position: "fixed",
@@ -112,6 +114,34 @@ const styles = {
     border: "none", cursor: "pointer", fontSize: 12,
     fontFamily: "inherit", padding: 4,
   },
+  sugWrap: {
+    marginTop: 18, paddingTop: 16,
+    borderTop: "1px dashed var(--c-border)",
+  },
+  sugTitle: {
+    fontSize: 12, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase",
+    color: "var(--brand-primary, var(--c-accent))", marginBottom: 12,
+  },
+  sugRow: {
+    display: "grid", gridTemplateColumns: "44px 1fr auto",
+    gap: 10, alignItems: "center", padding: "8px 0",
+  },
+  sugImg: {
+    width: 44, height: 44, objectFit: "contain",
+    background: "rgba(255,255,255,.04)", borderRadius: 6, padding: 4,
+  },
+  sugName: {
+    fontSize: 13, fontWeight: 600, lineHeight: 1.25,
+    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+  },
+  sugPrice: { fontSize: 12, color: "rgba(var(--c-text-rgb),.6)", marginTop: 2 },
+  sugAdd: {
+    padding: "7px 11px", borderRadius: 999, whiteSpace: "nowrap",
+    border: "1px solid rgba(var(--c-accent-rgb),.4)",
+    background: "rgba(var(--c-accent-rgb),.12)", color: "var(--brand-primary, var(--c-accent))",
+    fontFamily: "inherit", fontWeight: 800, fontSize: 11, letterSpacing: ".03em",
+    textTransform: "uppercase", cursor: "pointer",
+  },
   drawerFoot: {
     borderTop: "1px solid rgba(255,255,255,.08)",
     padding: "18px 22px",
@@ -138,10 +168,34 @@ const styles = {
 };
 
 export default function CartDrawer() {
-  const { items, updateQty, removeItem, subtotalCents, itemCount } = useCart();
+  const { items, addItem, updateQty, removeItem, subtotalCents, itemCount } = useCart();
   const [open, setOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Cross-sell: trae complementarios curados una sola vez (al primer open).
+  useEffect(() => {
+    if (!open || suggestions.length) return;
+    let alive = true;
+    fetch(`${API}/api/shop/cross-sell`)
+      .then((r) => r.json())
+      .then((d) => { if (alive) setSuggestions(d.products || []); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [open, suggestions.length]);
+
+  // Sugerencias a mostrar: las que todavía no están en el carrito (máx 3).
+  const suggestToShow = suggestions
+    .filter((s) => !items.some((i) => i.id === s.id))
+    .slice(0, 3);
+
+  function addSuggestion(s) {
+    addItem({
+      id: s.id, slug: s.slug, name: s.name,
+      price_cents: s.price_cents, primary_image: s.primary_image, stock: s.stock,
+    }, 1);
+  }
 
   // No mostrar el FAB en /shop/checkout (ya hay carrito visible inline)
   // ni en /admin* (admin no compra como cliente desde su sesión).
@@ -223,6 +277,27 @@ export default function CartDrawer() {
                 </button>
               </div>
             ))
+          )}
+
+          {/* Cross-sell: "te olvidaste / sirve para acompañar" */}
+          {items.length > 0 && suggestToShow.length > 0 && (
+            <div style={styles.sugWrap}>
+              <div style={styles.sugTitle}>¿Te olvidaste algo?</div>
+              {suggestToShow.map((s) => (
+                <div key={s.id} style={styles.sugRow}>
+                  {s.primary_image
+                    ? <img src={s.primary_image} alt={s.name} style={styles.sugImg} />
+                    : <div style={{ ...styles.sugImg, background: "var(--c-border)" }} />}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={styles.sugName}>{s.name}</div>
+                    <div style={styles.sugPrice}>{formatARS(s.price_cents)}</div>
+                  </div>
+                  <button style={styles.sugAdd} onClick={() => addSuggestion(s)} aria-label={`Agregar ${s.name}`}>
+                    + Sumar
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
