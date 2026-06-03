@@ -3,6 +3,39 @@ const express = require("express");
 const router  = express.Router();
 const db      = require("../db");
 const { authRequired, requireRole } = require("../auth");
+const { sendEmail } = require("../mailer");
+
+// Template HTML simple para emails de canje (descuento con cupón / premio físico).
+function redemptionEmailHtml({ name, reward, couponCode }) {
+  const hi = `Hola ${name || ""},`.trim();
+  const wrap = (inner) => `<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;padding:28px 24px;color:#15171c">${inner}<p style="color:#64748b;font-size:12px;margin-top:24px">Gracias por ser parte de Holistic 🌱</p></div>`;
+  if (reward.kind === "descuento") {
+    return wrap(`
+      <h2 style="margin:0 0 12px;font-size:20px">¡Canjeaste tu descuento! 🎟️</h2>
+      <p style="margin:0 0 8px">${hi}</p>
+      <p style="margin:0 0 8px">Canjeaste <b>${reward.label}</b>. Acá está tu cupón de un solo uso para tu próximo pedido:</p>
+      <div style="font-size:26px;font-weight:900;letter-spacing:3px;background:#f1f5f9;border:2px dashed #1FA350;border-radius:12px;padding:16px;text-align:center;color:#1FA350;margin:16px 0">${couponCode}</div>
+      <p style="margin:0;font-size:14px">Aplicalo en el checkout de la tienda. Válido para una sola compra.</p>`);
+  }
+  return wrap(`
+    <h2 style="margin:0 0 12px;font-size:20px">¡Canjeaste un premio! 🎁</h2>
+    <p style="margin:0 0 8px">${hi}</p>
+    <p style="margin:0 0 8px">Canjeaste <b>${reward.label}</b>.</p>
+    <p style="margin:0;font-size:14px">Te vamos a contactar para coordinar el envío. ¡Disfrutalo!</p>`);
+}
+
+// Email de puntos acreditados (compra externa cargada por el admin).
+function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
+  const hi = `Hola ${name || ""},`.trim();
+  return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;padding:28px 24px;color:#15171c">
+    <h2 style="margin:0 0 12px;font-size:20px">Sumaste puntos 💎</h2>
+    <p style="margin:0 0 8px">${hi}</p>
+    <p style="margin:0 0 8px">Se acreditaron <b>+${points} puntos</b> a tu cuenta${descripcion ? ` por: ${descripcion}` : ""}.</p>
+    <p style="margin:0 0 8px">Tu nuevo saldo es de <b>${newBalance} puntos</b>.</p>
+    <p style="margin:0;font-size:14px">Entrá a "Mis puntos" para ver tus canjes disponibles.</p>
+    <p style="color:#64748b;font-size:12px;margin-top:24px">Gracias por ser parte de Holistic 🌱</p>
+  </div>`;
+}
 
 // ── Auto-migración (Sprint 7): rename lemon_coins → coins ────────────────────
 // Idempotente: si existe la vieja y NO la nueva, ALTER RENAME. Tenants nuevos
@@ -278,6 +311,19 @@ router.post("/redeem-points", authRequired, async (req, res) => {
     );
     const updQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId]);
 
+    // Email de confirmación (no bloquea la respuesta si falla).
+    try {
+      const uq = await db.query(`SELECT name, email FROM users WHERE id=$1`, [userId]);
+      const u = uq.rows[0];
+      if (u?.email) {
+        await sendEmail({
+          to: u.email,
+          subject: reward.kind === "descuento" ? "Tu cupón de canje — Holistic" : "Canjeaste un premio — Holistic",
+          html: redemptionEmailHtml({ name: u.name, reward, couponCode }),
+        });
+      }
+    } catch (mailErr) { console.error("[redeem email]", mailErr.message); }
+
     res.json({
       success: true,
       redemption: redQ.rows[0],
@@ -523,6 +569,19 @@ router.post("/manual-credit", authRequired, requireRole(["operator", "admin"]), 
        req.user.email || "admin", pesos > 0 ? pesos * 100 : null]
     );
     const updQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [u.id]);
+
+    // Email de acreditación (no bloquea la respuesta).
+    try {
+      const eq = await db.query(`SELECT email FROM users WHERE id=$1`, [u.id]);
+      if (eq.rows[0]?.email) {
+        await sendEmail({
+          to: eq.rows[0].email,
+          subject: "Puntos acreditados — Holistic",
+          html: pointsCreditedEmailHtml({ name: u.name, points, newBalance: updQ.rows[0].balance, descripcion }),
+        });
+      }
+    } catch (mailErr) { console.error("[credit email]", mailErr.message); }
+
     res.json({
       success: true,
       user: { id: u.id, name: u.name, customer_code: u.customer_code },
