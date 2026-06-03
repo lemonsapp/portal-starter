@@ -785,6 +785,7 @@ function familyName(name = "") {
 function variantSummary(row, img) {
   const m = row.meta || {};
   return {
+    id: row.id,
     slug: row.slug,
     sku: row.sku,
     label: variantLabel(m) || row.name,
@@ -886,7 +887,7 @@ function groupIntoFamilies(products) {
       from_price_formatted: prices.length ? formatARS(Math.min(...prices)) : null,
       variant_count: items.length,
       variants: items.map((i) => ({
-        slug: i.slug, sku: i.sku,
+        id: i.id, slug: i.slug, sku: i.sku,
         label: variantLabel(i.meta) || i.name,
         formato: i.meta?.formato || null,
         price_cents: i.price_cents, price_formatted: i.price_formatted,

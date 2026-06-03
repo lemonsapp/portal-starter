@@ -15,7 +15,7 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\
 export default function Shop() {
   useBranding();
   const { addItem } = useCart();
-  const [products, setProducts] = useState([]);
+  const [families, setFamilies] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ export default function Shop() {
     (async () => {
       try {
         const [pr, cr] = await Promise.all([
-          fetch(`${API}/api/shop/products?limit=200`),
+          fetch(`${API}/api/shop/products?grouped=1&limit=200`),
           fetch(`${API}/api/shop/categories`),
         ]);
         if (pr.status === 404) {
@@ -36,7 +36,7 @@ export default function Shop() {
         }
         const pd = await pr.json();
         const cd = await cr.json();
-        setProducts(pd.products || []);
+        setFamilies(pd.families || []);
         setCategories(cd.categories || []);
       } catch (e) {
         setErr("No se pudo cargar el catálogo. Refrescá la página.");
@@ -46,25 +46,25 @@ export default function Shop() {
   }, []);
 
   const filtered = useMemo(() => {
-    let list = products;
+    let list = families;
     if (activeCategory !== "all") {
-      list = list.filter((p) => p.category?.slug === activeCategory);
+      list = list.filter((f) => f.category?.slug === activeCategory);
     }
     if (searchInput.trim()) {
       const q = searchInput.trim().toLowerCase();
-      list = list.filter((p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.slug.toLowerCase().includes(q) ||
-        (p.short_description || "").toLowerCase().includes(q)
+      list = list.filter((f) =>
+        f.name.toLowerCase().includes(q) ||
+        f.slug.toLowerCase().includes(q) ||
+        (f.short_description || "").toLowerCase().includes(q)
       );
     }
     return list;
-  }, [products, activeCategory, searchInput]);
+  }, [families, activeCategory, searchInput]);
 
-  function handleAdd(e, product) {
+  function handleAdd(e, item) {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product, 1);
+    addItem(item, 1);
     window.dispatchEvent(new CustomEvent("holistic-cart-open"));
   }
 
@@ -103,7 +103,7 @@ export default function Shop() {
               role="tab"
               aria-selected={activeCategory === "all"}
             >
-              Todos{products.length ? ` · ${products.length}` : ""}
+              Todos{families.length ? ` · ${families.length}` : ""}
             </button>
             {categories.map((c) => (
               <button
@@ -154,7 +154,7 @@ export default function Shop() {
 
         {!loading && !err && filtered.length > 0 && (
           <div style={S.grid}>
-            {filtered.map((p) => <ShopCard key={p.id} product={p} onAdd={handleAdd} />)}
+            {filtered.map((f) => <ShopCard key={f.group || f.slug} family={f} onAdd={handleAdd} />)}
           </div>
         )}
       </div>
@@ -171,28 +171,49 @@ export default function Shop() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Card de producto — hover lift + image scale + add-to-cart inline
 // ─────────────────────────────────────────────────────────────────────────────
-function ShopCard({ product, onAdd }) {
+function ShopCard({ family, onAdd }) {
   const [hover, setHover] = useState(false);
+  // Si la familia tiene una sola medida → quick-add directo. Si tiene varias →
+  // la card lleva a la interna para elegir la medida.
+  const multi = (family.variant_count || 1) > 1;
+  const single = !multi && family.variants?.length ? family.variants[0] : null;
+  const priceText = multi
+    ? `desde ${family.from_price_formatted}`
+    : (single?.price_formatted || family.from_price_formatted);
+
+  function addSingle(e) {
+    if (!single) return;
+    onAdd(e, {
+      id: single.id,
+      slug: single.slug,
+      name: family.name,
+      price_cents: single.price_cents,
+      primary_image: single.primary_image || family.primary_image,
+      stock: single.stock,
+    });
+  }
+
   return (
     <Link
-      to={`/shop/${product.slug}`}
+      to={`/shop/${family.slug}`}
       style={{
         ...S.card,
         transform: hover ? "translateY(-6px)" : "translateY(0)",
         borderColor: hover ? "rgba(var(--c-accent-rgb), .4)" : "var(--c-border)",
-        boxShadow: hover ? "0 30px 60px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(var(--c-accent-rgb), .08)" : "none",
+        boxShadow: hover ? "0 30px 60px -20px rgba(0,0,0,0.18), 0 0 0 1px rgba(var(--c-accent-rgb), .08)" : "none",
       }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      aria-label={`Ver ${product.name}`}
+      aria-label={`Ver ${family.name}`}
     >
-      {product.featured && <span style={S.cardFeatured}>⭐ Destacado</span>}
+      {family.featured && <span style={S.cardFeatured}>⭐ Destacado</span>}
+      {multi && <span style={S.cardSizes}>{family.variant_count} medidas</span>}
 
       <div style={S.cardImgWrap}>
-        {product.primary_image ? (
+        {family.primary_image ? (
           <img
-            src={product.primary_image}
-            alt={product.name}
+            src={family.primary_image}
+            alt={family.name}
             loading="lazy"
             style={{ ...S.cardImg, transform: hover ? "scale(1.06)" : "scale(1)" }}
           />
@@ -202,25 +223,34 @@ function ShopCard({ product, onAdd }) {
       </div>
 
       <div style={S.cardBody}>
-        {product.category && <span style={S.cardCat}>{product.category.name}</span>}
-        <h3 style={S.cardName}>{product.name}</h3>
-        {product.short_description && (
-          <p style={S.cardDesc}>{product.short_description}</p>
+        {family.category && <span style={S.cardCat}>{family.category.name}</span>}
+        <h3 style={S.cardName}>{family.name}</h3>
+        {family.short_description && (
+          <p style={S.cardDesc}>{family.short_description}</p>
         )}
         <div style={S.cardPriceRow}>
-          <span style={S.cardPrice}>{product.price_formatted}</span>
-          <button
-            onClick={(e) => onAdd(e, product)}
-            style={{ ...S.cardCta, opacity: hover ? 1 : 0.85 }}
-            aria-label={`Agregar ${product.name} al carrito`}
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="9" cy="20" r="1.4" />
-              <circle cx="18" cy="20" r="1.4" />
-              <path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6" />
-            </svg>
-            <span>Sumar</span>
-          </button>
+          <span style={S.cardPrice}>{priceText}</span>
+          {single ? (
+            <button
+              onClick={addSingle}
+              style={{ ...S.cardCta, opacity: hover ? 1 : 0.85 }}
+              aria-label={`Agregar ${family.name} al carrito`}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="9" cy="20" r="1.4" />
+                <circle cx="18" cy="20" r="1.4" />
+                <path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6" />
+              </svg>
+              <span>Sumar</span>
+            </button>
+          ) : (
+            <span style={{ ...S.cardCta, opacity: hover ? 1 : 0.85 }}>
+              <span>Elegir medida</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </span>
+          )}
         </div>
       </div>
     </Link>
@@ -417,6 +447,15 @@ const S = {
     fontSize: 10, fontWeight: 800, letterSpacing: ".18em",
     textTransform: "uppercase",
     backdropFilter: "blur(8px)",
+  },
+  cardSizes: {
+    position: "absolute", top: 16, left: 16, zIndex: 2,
+    padding: "5px 11px", borderRadius: "var(--r-pill)",
+    background: "var(--c-surface)",
+    border: "1px solid var(--c-border)",
+    color: "rgba(var(--c-text-rgb),.72)",
+    fontSize: 10, fontWeight: 800, letterSpacing: ".1em",
+    textTransform: "uppercase",
   },
 
   empty: {
