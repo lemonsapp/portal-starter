@@ -1,8 +1,11 @@
 // client/src/pages/ShopProduct.jsx
 //
-// Detalle de producto — REWRITE editorial 2026-05-23.
-// Layout magazine: galería 55% + info 45%, Gotham Black + Fraunces
-// italic, mint accents, sticky add-to-cart en mobile.
+// Detalle de producto — REWRITE editorial botánico (2026-06-03).
+// Light-luxury: campo crema, galería grande sticky + panel de compra,
+// secciones editoriales numeradas (counter CSS), Gotham black caps +
+// acentos verdes, reveal escalonado. Estilos en styles/shop-product.css
+// (clases reales con media queries — reemplaza el style-object inline que
+// mutaba según window.innerWidth y rompía el responsive).
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -10,6 +13,7 @@ import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
 import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
+import "../styles/shop-product.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -25,6 +29,32 @@ function normalizeProduct(p) {
     variants: (p.variants || []).map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
     cross_sell: (p.cross_sell || []).map((c) => ({ ...c, primary_image: fixImageUrl(c.primary_image) })),
   };
+}
+
+// Encabezado editorial reutilizable: número (counter CSS) + título con acento.
+function SectionHead({ pre, em }) {
+  return (
+    <div className="sp-section-head">
+      <span className="sp-section-num" aria-hidden="true" />
+      <h2 className="sp-section-title">
+        {pre} <span className="sp-em">{em}</span>
+      </h2>
+      <div className="sp-section-rule" />
+    </div>
+  );
+}
+
+const LINE_NAMES = { race: "Race", pro: "Pro", elite: "Elite" };
+
+// Claves de `meta` que son de control interno (no son ficha técnica del producto).
+const META_HIDDEN = new Set([
+  "linea", "bundle", "bundle_discount_pct", "points_pack", "variant_of",
+  "family", "grupo", "group", "order", "orden",
+]);
+function visibleSpecs(meta) {
+  return Object.entries(meta).filter(
+    ([k, v]) => !META_HIDDEN.has(k) && v != null && v !== "" && !(Array.isArray(v) && v.length === 0)
+  );
 }
 
 export default function ShopProduct() {
@@ -53,11 +83,17 @@ export default function ShopProduct() {
         } else {
           const d = await r.json();
           setProduct(normalizeProduct(d.product || null));
-          // Cargar productos relacionados de la misma categoría
           if (d.product?.category?.slug) {
             fetch(`${API}/api/shop/products?category=${d.product.category.slug}&limit=8`)
               .then((r) => r.json())
-              .then((rd) => setRelated((rd.products || []).filter((p) => p.id !== d.product.id).slice(0, 4).map(normalizeProduct)))
+              .then((rd) =>
+                setRelated(
+                  (rd.products || [])
+                    .filter((p) => p.id !== d.product.id)
+                    .slice(0, 4)
+                    .map(normalizeProduct)
+                )
+              )
               .catch(() => {});
           }
         }
@@ -77,29 +113,32 @@ export default function ShopProduct() {
   }
 
   function addCross(c) {
-    addItem({
-      id: c.id, slug: c.slug, name: c.name,
-      price_cents: c.price_cents, primary_image: c.primary_image, stock: c.stock,
-    }, 1);
+    addItem(
+      {
+        id: c.id, slug: c.slug, name: c.name,
+        price_cents: c.price_cents, primary_image: c.primary_image, stock: c.stock,
+      },
+      1
+    );
     window.dispatchEvent(new CustomEvent("holistic-cart-open"));
   }
 
   if (loading) {
     return (
-      <div className="theme-light" style={S.shell}>
-        <div style={S.container}>
-          <div style={S.loading}>Cargando…</div>
-        </div>
+      <div className="sp-page theme-light">
+        <div className="sp-container"><div className="sp-loading">Cargando…</div></div>
       </div>
     );
   }
 
   if (err || !product) {
     return (
-      <div className="theme-light" style={S.shell}>
-        <div style={S.container}>
-          <Link to="/shop" style={S.back}>← Volver al catálogo</Link>
-          <div style={S.loading}>{err || "Producto no encontrado"}</div>
+      <div className="sp-page theme-light">
+        <div className="sp-container">
+          <Link to="/shop" className="sp-back">
+            <span className="sp-back-arrow">←</span> Volver al catálogo
+          </Link>
+          <div className="sp-loading">{err || "Producto no encontrado"}</div>
         </div>
       </div>
     );
@@ -109,90 +148,78 @@ export default function ShopProduct() {
     ? product.images
     : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
   const inStock = product.stock == null || product.stock > 0;
-  // Info de la web (landing) por línea, para armar las secciones de la interna.
   const _lk = lineKeyFor(product);
   const details = _lk ? lineDetails[_lk] : null;
 
-  // Bundle de la línea (Diseño C): si este producto es individual de Race/Pro/
-  // Elite, ofrecemos el kit completo. Si ES el kit (product.bundle), mostramos
-  // qué incluye + opción de comprar por separado.
-  const LINE_NAMES = { race: "Race", pro: "Pro", elite: "Elite" };
+  // Bundle de la línea: si este producto es individual de Race/Pro/Elite,
+  // ofrecemos el kit. Si ES el kit (product.bundle), mostramos qué incluye.
   const lineKey = product.meta?.linea;
-  const lineBundleSlug = (!product.bundle && ["race", "pro", "elite"].includes(lineKey))
-    ? `linea-${lineKey}` : null;
+  const lineBundleSlug =
+    !product.bundle && ["race", "pro", "elite"].includes(lineKey) ? `linea-${lineKey}` : null;
 
   return (
-    <div className="theme-light" style={S.shell}>
-      <div style={S.container}>
-        <Link to="/shop" style={S.back}>← Volver al catálogo</Link>
+    <div className="sp-page theme-light">
+      <div className="sp-container">
+        <Link to="/shop" className="sp-back">
+          <span className="sp-back-arrow">←</span> Volver al catálogo
+        </Link>
 
-        {/* Layout: galería 55% + info 45% en desktop, stack en mobile */}
-        <div style={S.layout}>
-          {/* ─── GALERÍA ─── */}
-          <div style={S.gallery}>
-            <div style={S.mainImgWrap}>
+        {/* ─────────────────────────── HERO ─────────────────────────── */}
+        <div className="sp-hero">
+          {/* GALERÍA */}
+          <div className="sp-gallery sp-reveal" data-d="1">
+            <div className="sp-stage">
               {images[activeImg]?.url ? (
-                <img
-                  src={images[activeImg].url}
-                  alt={images[activeImg].alt || product.name}
-                  style={S.mainImg}
-                />
+                <img src={images[activeImg].url} alt={images[activeImg].alt || product.name} />
               ) : (
-                <div style={{ ...S.mainImg, background: "var(--c-surface-2)" }} />
+                <div className="sp-stage-empty" />
               )}
-              {product.featured && (
-                <span style={S.featuredBadge}>⭐ Destacado</span>
-              )}
+              {product.featured && <span className="sp-badge">⭐ Destacado</span>}
             </div>
             {images.length > 1 && (
-              <div style={S.thumbs}>
+              <div className="sp-thumbs">
                 {images.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImg(i)}
-                    style={S.thumb(i === activeImg)}
+                    className={`sp-thumb${i === activeImg ? " is-active" : ""}`}
                     aria-label={`Ver imagen ${i + 1}`}
                   >
-                    <img src={img.url} alt={img.alt || ""} style={S.thumbImg} />
+                    <img src={img.url} alt={img.alt || ""} />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* ─── INFO ─── */}
-          <div style={S.info}>
+          {/* PANEL DE COMPRA */}
+          <div className="sp-buy sp-reveal" data-d="2">
             {product.category && (
-              <div style={S.cat}>
-                <span style={S.catDot} />
-                {product.category.name.toUpperCase()}
-              </div>
+              <div className="sp-eyebrow">{product.category.name.toUpperCase()}</div>
             )}
 
-            <h1 style={S.name}>{product.name}</h1>
+            <h1 className="sp-title">{product.name}</h1>
 
-            {product.short_description && (
-              <p style={S.tagline}>{product.short_description}</p>
-            )}
+            {product.short_description && <p className="sp-tagline">{product.short_description}</p>}
 
-            <div style={S.priceRow}>
-              <span style={S.price}>{product.price_formatted}</span>
-              {product.sku && <span style={S.sku}>SKU: {product.sku}</span>}
+            <div className="sp-pricerow">
+              <span className="sp-price">{product.price_formatted}</span>
+              {product.sku && <span className="sp-sku">SKU: {product.sku}</span>}
             </div>
 
-            {/* Selector de medida (variantes de la misma familia) */}
+            {/* Selector de medida */}
             {product.variants?.length > 1 && (
-              <div style={S.variantRow}>
-                <span style={S.qtyLabel}>Medida</span>
-                <div style={S.variantPills}>
+              <div className="sp-field">
+                <span className="sp-field-label">Medida</span>
+                <div className="sp-pills">
                   {product.variants.map((v) => {
                     const active = v.slug === product.slug;
                     const out = v.stock != null && v.stock <= 0;
                     return (
                       <button
                         key={v.slug}
-                        onClick={() => { if (!active) navigate(`/shop/${v.slug}`); }}
-                        style={S.variantPill(active, out)}
+                        onClick={() => { if (!active && !out) navigate(`/shop/${v.slug}`); }}
+                        className={`sp-pill${active ? " is-active" : ""}${out ? " is-out" : ""}`}
                         aria-pressed={active}
                         title={out ? "Sin stock" : v.label}
                       >
@@ -204,594 +231,198 @@ export default function ShopProduct() {
               </div>
             )}
 
-            <div style={S.stockRow}>
+            <div className="sp-stock">
               {inStock ? (
-                <span style={S.stockOk}>
-                  <span style={S.stockOkDot} /> Disponible
-                  {product.stock != null && ` · ${product.stock} en stock`}
+                <span className="sp-stock-ok">
+                  Disponible{product.stock != null && ` · ${product.stock} en stock`}
                 </span>
               ) : (
-                <span style={S.stockOut}>● Sin stock por ahora</span>
+                <span className="sp-stock-out">● Sin stock por ahora</span>
               )}
             </div>
 
-            {/* Quantity selector */}
+            {/* Cantidad */}
             {inStock && (
-              <div style={S.qtyRow}>
-                <span style={S.qtyLabel}>Cantidad</span>
-                <div style={S.qtyControls}>
-                  <button
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    style={S.qtyBtn}
-                    aria-label="Restar uno"
-                  >−</button>
-                  <span style={S.qtyNum}>{quantity}</span>
-                  <button
-                    onClick={() => setQuantity((q) => Math.min(product.stock ?? 99, q + 1))}
-                    style={S.qtyBtn}
-                    aria-label="Sumar uno"
-                  >+</button>
+              <div className="sp-qty-row">
+                <span className="sp-field-label">Cantidad</span>
+                <div className="sp-qty">
+                  <button className="sp-qty-btn" onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label="Restar uno">−</button>
+                  <span className="sp-qty-num">{quantity}</span>
+                  <button className="sp-qty-btn" onClick={() => setQuantity((q) => Math.min(product.stock ?? 99, q + 1))} aria-label="Sumar uno">+</button>
                 </div>
               </div>
             )}
 
             {/* CTA */}
-            <button
-              style={{ ...S.cta, ...(inStock ? {} : S.ctaDisabled) }}
-              disabled={!inStock}
-              onClick={addToCart}
-              aria-label={`Agregar ${product.name} al carrito`}
-            >
+            <button className="sp-cta" disabled={!inStock} onClick={addToCart} aria-label={`Agregar ${product.name} al carrito`}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="9" cy="20" r="1.4" />
-                <circle cx="18" cy="20" r="1.4" />
+                <circle cx="9" cy="20" r="1.4" /><circle cx="18" cy="20" r="1.4" />
                 <path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6" />
               </svg>
               <span>{inStock ? "Agregar al carrito" : "Sin stock"}</span>
             </button>
 
-            {toast && <div style={S.toast}>✓ {toast}</div>}
+            {toast && <div className="sp-toast">✓ {toast}</div>}
 
-            {/* Trust signals */}
-            <div style={S.trust}>
-              <span style={S.trustItem}>🚚 Envío 48 hs</span>
-              <span style={S.trustItem}>💳 Cuotas</span>
-              <span style={S.trustItem}>🔒 Pago seguro MP</span>
-              <span style={S.trustItem}>♥ Soporte humano</span>
+            {/* Confianza */}
+            <div className="sp-trust">
+              <span className="sp-trust-item"><span className="sp-trust-ico">🚚</span> Envío 48 hs</span>
+              <span className="sp-trust-item"><span className="sp-trust-ico">💳</span> Cuotas</span>
+              <span className="sp-trust-item"><span className="sp-trust-ico">🔒</span> Pago seguro MP</span>
+              <span className="sp-trust-item"><span className="sp-trust-ico">♥</span> Soporte humano</span>
             </div>
 
-            {/* "¿Lo querés completo?" → kit de la línea (upsell) */}
+            {/* Upsell al kit */}
             {lineBundleSlug && (
-              <Link to={`/shop/${lineBundleSlug}`} style={S.bundlePromo}>
+              <Link to={`/shop/${lineBundleSlug}`} className="sp-bundle-promo">
                 <div>
-                  <div style={S.bundlePromoTitle}>¿Lo querés completo?</div>
-                  <div style={S.bundlePromoBody}>
+                  <div className="sp-bundle-promo-title">¿Lo querés completo?</div>
+                  <div className="sp-bundle-promo-body">
                     Llevá toda la línea {LINE_NAMES[lineKey]} en un kit y ahorrá vs comprar por separado.
                   </div>
                 </div>
-                <span style={S.bundlePromoCta} aria-hidden="true">Ver kit →</span>
+                <span className="sp-bundle-promo-cta" aria-hidden="true">Ver kit →</span>
               </Link>
             )}
           </div>
         </div>
 
-        {/* Bundle: qué incluye + comprar por separado (cuando este producto ES el kit) */}
-        {product.bundle && product.bundle.includes?.length > 0 && (
-          <section style={S.longDescSection}>
-            <h2 style={S.sectionHeading}>
-              <span>Incluye </span>
-              <span style={S.sectionHeadingItalic}>la línea completa</span>
-            </h2>
-            {product.bundle.discount_pct > 0 && (
-              <p style={S.bundleSavings}>
-                Comprándolo junto ahorrás ~{product.bundle.discount_pct}% vs comprar cada producto por separado.
+        {/* ──────────────────── SECCIONES EDITORIALES ──────────────────── */}
+        <div className="sp-sections">
+          {/* Bundle: incluye la línea */}
+          {product.bundle && product.bundle.includes?.length > 0 && (
+            <section className="sp-section">
+              <SectionHead pre="Incluye" em="la línea completa" />
+              {product.bundle.discount_pct > 0 && (
+                <p className="sp-savings">
+                  Comprándolo junto ahorrás ~{product.bundle.discount_pct}% vs comprar cada producto por separado.
+                </p>
+              )}
+              <div className="sp-bundle-grid">
+                {product.bundle.includes.map((f) => {
+                  const v0 = f.variants?.[0];
+                  return (
+                    <Link key={f.group} to={v0 ? `/shop/${v0.slug}` : "/shop"} className="sp-bundle-item">
+                      {v0?.primary_image && <img src={v0.primary_image} alt={f.name} loading="lazy" />}
+                      <div>
+                        <div className="sp-bundle-item-name">{f.name}</div>
+                        <div className="sp-bundle-item-meta">
+                          {f.variants.length > 1 ? `${f.variants.length} medidas` : v0?.label}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+              <p className="sp-separate">
+                ¿Preferís elegir vos? <Link to="/shop">Comprar por separado →</Link>
               </p>
-            )}
-            <div style={S.bundleGrid}>
-              {product.bundle.includes.map((f) => {
-                const v0 = f.variants?.[0];
-                return (
-                  <Link key={f.group} to={v0 ? `/shop/${v0.slug}` : "/shop"} style={S.bundleItem}>
-                    {v0?.primary_image && <img src={v0.primary_image} alt={f.name} style={S.bundleItemImg} loading="lazy" />}
-                    <div>
-                      <div style={S.bundleItemName}>{f.name}</div>
-                      <div style={S.bundleItemMeta}>
-                        {f.variants.length > 1 ? `${f.variants.length} medidas` : v0?.label}
+            </section>
+          )}
+
+          {/* Cross-sell */}
+          {product.cross_sell?.length > 0 && (
+            <section className="sp-section">
+              <SectionHead pre="Sumá para" em="acompañar" />
+              <p className="sp-hint">Productos que combinan con tu compra. No te olvides de:</p>
+              <div className="sp-cross-grid">
+                {product.cross_sell.map((c) => (
+                  <div key={c.slug} className="sp-cross-card">
+                    <Link to={`/shop/${c.slug}`} className="sp-cross-imgwrap" aria-label={`Ver ${c.name}`}>
+                      {c.primary_image && <img src={c.primary_image} alt={c.name} loading="lazy" />}
+                    </Link>
+                    <div className="sp-cross-body">
+                      <Link to={`/shop/${c.slug}`} className="sp-cross-name">{c.name}</Link>
+                      <div className="sp-cross-pricerow">
+                        <span className="sp-cross-price">{c.price_formatted}</span>
+                        <button className="sp-cross-add" onClick={() => addCross(c)} aria-label={`Agregar ${c.name}`}>
+                          + Sumar
+                        </button>
                       </div>
                     </div>
-                  </Link>
-                );
-              })}
-            </div>
-            <p style={S.bundleSeparate}>
-              ¿Preferís elegir vos? <Link to="/shop" style={S.bundleSeparateLink}>Comprar por separado →</Link>
-            </p>
-          </section>
-        )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
-        {/* Cross-sell — "te olvidaste / sirve para acompañar" */}
-        {product.cross_sell?.length > 0 && (
-          <section style={S.longDescSection}>
-            <h2 style={S.sectionHeading}>
-              <span>Sumá para </span>
-              <span style={S.sectionHeadingItalic}>acompañar</span>
-            </h2>
-            <p style={S.crossHint}>Productos que combinan con tu compra. No te olvides de:</p>
-            <div style={S.crossGrid}>
-              {product.cross_sell.map((c) => (
-                <div key={c.slug} style={S.crossCard}>
-                  <Link to={`/shop/${c.slug}`} style={S.crossImgWrap} aria-label={`Ver ${c.name}`}>
-                    {c.primary_image && <img src={c.primary_image} alt={c.name} style={S.crossImg} loading="lazy" />}
-                  </Link>
-                  <div style={S.crossBody}>
-                    <Link to={`/shop/${c.slug}`} style={S.crossName}>{c.name}</Link>
-                    <div style={S.crossPriceRow}>
-                      <span style={S.crossPrice}>{c.price_formatted}</span>
-                      <button style={S.crossAdd} onClick={() => addCross(c)} aria-label={`Agregar ${c.name}`}>
-                        + Sumar
-                      </button>
+          {/* Sobre el producto */}
+          {product.long_description && (
+            <section className="sp-section">
+              <SectionHead pre="Sobre" em="el producto" />
+              <p className="sp-lead sp-lead-first">{product.long_description}</p>
+            </section>
+          )}
+
+          {/* Por qué elegirlo (beneficios) */}
+          {details && details.benefits.length > 0 && (
+            <section className="sp-section">
+              <SectionHead pre="Por qué" em="elegirlo" />
+              <div className="sp-benefits-grid">
+                {details.benefits.map((b, i) => (
+                  <div key={i} className="sp-benefit">
+                    <div className="sp-benefit-title">{b.title}</div>
+                    <div className="sp-benefit-body">{b.body}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Características clave */}
+          {details && details.features.length > 0 && (
+            <section className="sp-section">
+              <SectionHead pre="Características" em="clave" />
+              <div className="sp-features">
+                {details.features.map((f, i) => (
+                  <div key={i} className="sp-feature">
+                    <span className="sp-feature-ico">{f.emoji || "◆"}</span>
+                    <div>
+                      <div className="sp-feature-title">{f.title}</div>
+                      <div className="sp-feature-body">{f.body}</div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+                ))}
+              </div>
+            </section>
+          )}
 
-        {/* Descripción larga — sección editorial separada */}
-        {product.long_description && (
-          <section style={S.longDescSection}>
-            <h2 style={S.sectionHeading}>
-              <span>Sobre </span>
-              <span style={S.sectionHeadingItalic}>el producto</span>
-            </h2>
-            <p style={S.longDesc}>{product.long_description}</p>
-          </section>
-        )}
-
-        {/* Beneficios — reusa los highlights de la web por línea */}
-        {details && details.benefits.length > 0 && (
-          <section style={S.longDescSection}>
-            <h2 style={S.sectionHeading}>
-              <span>Por qué </span>
-              <span style={S.sectionHeadingItalic}>elegirlo</span>
-            </h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 16, marginTop: 20 }}>
-              {details.benefits.map((b, i) => (
-                <div key={i} style={{ background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: "var(--r-3,14px)", padding: "18px 20px" }}>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "var(--c-text)", marginBottom: 7, letterSpacing: "-0.01em" }}>{b.title}</div>
-                  <div style={{ fontSize: 13.5, lineHeight: 1.6, color: "var(--c-text-2)" }}>{b.body}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Características clave — reusa los features de la web por línea */}
-        {details && details.features.length > 0 && (
-          <section style={S.metaSection}>
-            <h2 style={S.sectionHeading}>
-              <span>Características </span>
-              <span style={S.sectionHeadingItalic}>clave</span>
-            </h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: 16, marginTop: 20 }}>
-              {details.features.map((f, i) => (
-                <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 18, color: "var(--c-accent)", flexShrink: 0, lineHeight: 1.4 }}>{f.emoji || "◆"}</span>
-                  <div>
-                    <div style={{ fontWeight: 800, fontSize: 14, color: "var(--c-text)", marginBottom: 3 }}>{f.title}</div>
-                    <div style={{ fontSize: 13, lineHeight: 1.55, color: "var(--c-text-2)" }}>{f.body}</div>
+          {/* Datos técnicos */}
+          {product.meta && visibleSpecs(product.meta).length > 0 && (
+            <section className="sp-section">
+              <SectionHead pre="Datos" em="técnicos" />
+              <dl className="sp-specs">
+                {visibleSpecs(product.meta).map(([k, v]) => (
+                  <div key={k} className="sp-spec-row">
+                    <dt className="sp-spec-key">{k.replace(/_/g, " ")}</dt>
+                    <dd className="sp-spec-val">{Array.isArray(v) ? v.join(" · ") : String(v)}</dd>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+                ))}
+              </dl>
+            </section>
+          )}
 
-        {/* Metadata sheet (si meta tiene info útil) */}
-        {product.meta && Object.keys(product.meta).length > 0 && (
-          <section style={S.metaSection}>
-            <h2 style={S.sectionHeading}>
-              <span>Datos </span>
-              <span style={S.sectionHeadingItalic}>técnicos</span>
-            </h2>
-            <dl style={S.metaSheet}>
-              {Object.entries(product.meta).map(([k, v]) => (
-                <div key={k} style={S.metaRow}>
-                  <dt style={S.metaKey}>{k.replace(/_/g, " ")}</dt>
-                  <dd style={S.metaVal}>{Array.isArray(v) ? v.join(" · ") : String(v)}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        )}
-
-        {/* Productos relacionados */}
-        {related.length > 0 && (
-          <section style={S.relatedSection}>
-            <h2 style={S.sectionHeading}>
-              <span>También de </span>
-              <span style={S.sectionHeadingItalic}>{product.category?.name?.toLowerCase() || "esta línea"}</span>
-            </h2>
-            <div style={S.relatedGrid}>
-              {related.map((r) => (
-                <Link key={r.id} to={`/shop/${r.slug}`} style={S.relatedCard}>
-                  <div style={S.relatedImgWrap}>
-                    {r.primary_image && <img src={r.primary_image} alt={r.name} style={S.relatedImg} loading="lazy" />}
-                  </div>
-                  <div style={S.relatedBody}>
-                    <span style={S.relatedName}>{r.name}</span>
-                    <span style={S.relatedPrice}>{r.price_formatted}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+          {/* Relacionados */}
+          {related.length > 0 && (
+            <section className="sp-section">
+              <SectionHead pre="También de" em={product.category?.name?.toLowerCase() || "esta línea"} />
+              <div className="sp-related-grid">
+                {related.map((r) => (
+                  <Link key={r.id} to={`/shop/${r.slug}`} className="sp-related-card">
+                    <div className="sp-related-imgwrap">
+                      {r.primary_image && <img src={r.primary_image} alt={r.name} loading="lazy" />}
+                    </div>
+                    <div className="sp-related-body">
+                      <span className="sp-related-name">{r.name}</span>
+                      <span className="sp-related-price">{r.price_formatted}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       </div>
     </div>
   );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Styles
-// ─────────────────────────────────────────────────────────────────────────────
-const S = {
-  shell: {
-    minHeight: "100vh",
-    background: "var(--brand-bg, var(--c-bg))",
-    color: "var(--brand-text, var(--c-text))",
-    fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
-    padding: "32px 24px 100px",
-  },
-  container: { maxWidth: 1280, margin: "0 auto" },
-
-  back: {
-    display: "inline-flex", alignItems: "center", gap: 8,
-    color: "rgba(var(--c-text-rgb),.7)", textDecoration: "none",
-    fontSize: 12, fontWeight: 700, letterSpacing: ".06em",
-    marginBottom: 36, textTransform: "uppercase",
-  },
-
-  loading: {
-    padding: "120px 20px", textAlign: "center",
-    color: "rgba(var(--c-text-rgb),.5)", fontSize: 14,
-  },
-
-  layout: {
-    display: "grid",
-    gridTemplateColumns: "minmax(0, 1.15fr) minmax(0, 1fr)",
-    gap: "clamp(36px, 6vw, 80px)",
-    alignItems: "flex-start",
-  },
-
-  // ── Gallery ──
-  gallery: { display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 24 },
-  mainImgWrap: {
-    position: "relative",
-    width: "100%", aspectRatio: "1 / 1",
-    background: "linear-gradient(135deg, rgba(var(--c-accent-rgb),.05), rgba(46,143,110,.08))",
-    borderRadius: 22,
-    border: "1px solid var(--c-border)",
-    overflow: "hidden",
-    display: "grid", placeItems: "center",
-    padding: "10%",
-  },
-  mainImg: {
-    width: "100%", height: "100%",
-    objectFit: "contain", display: "block",
-  },
-  featuredBadge: {
-    position: "absolute", top: 18, right: 18,
-    padding: "6px 14px", borderRadius: 999,
-    background: "rgba(var(--c-accent-rgb),.20)",
-    color: "var(--brand-primary, var(--c-accent))",
-    fontSize: 10, fontWeight: 800, letterSpacing: ".2em",
-    textTransform: "uppercase", backdropFilter: "blur(8px)",
-  },
-  thumbs: { display: "flex", gap: 10, flexWrap: "wrap" },
-  thumb: (active) => ({
-    width: 76, height: 76, padding: 8,
-    borderRadius: 12, cursor: "pointer",
-    background: "var(--c-surface-2)",
-    border: active ? "2px solid var(--brand-primary, var(--c-accent))" : "1px solid var(--c-border)",
-    overflow: "hidden",
-    transition: "border-color .25s ease",
-  }),
-  thumbImg: { width: "100%", height: "100%", objectFit: "contain", display: "block" },
-
-  // ── Info ──
-  info: { display: "flex", flexDirection: "column", gap: 14 },
-  cat: {
-    display: "inline-flex", alignItems: "center", gap: 10,
-    fontSize: 11, fontWeight: 700, letterSpacing: ".3em",
-    color: "var(--brand-primary, var(--c-accent))",
-    marginBottom: 4,
-  },
-  catDot: {
-    display: "inline-block",
-    width: 5, height: 5, borderRadius: "50%",
-    background: "var(--brand-primary, var(--c-accent))",
-    boxShadow: "0 0 8px var(--brand-primary, var(--c-accent))",
-  },
-  name: {
-    margin: 0,
-    fontFamily: "'Gotham', sans-serif",
-    fontSize: "clamp(2rem, 3.6vw, 3rem)",
-    fontWeight: 900, lineHeight: 1.05,
-    letterSpacing: "-0.025em",
-    textTransform: "uppercase",
-    paddingBottom: "0.04em",
-  },
-  tagline: {
-    margin: 0,
-    fontFamily: "'Fraunces', Georgia, serif",
-    fontStyle: "italic", fontWeight: 400,
-    fontSize: "clamp(1rem, 1.3vw, 1.2rem)",
-    lineHeight: 1.45,
-    color: "rgba(var(--c-text-rgb),.78)",
-  },
-
-  priceRow: {
-    display: "flex", alignItems: "baseline", gap: 16,
-    paddingTop: 14,
-  },
-  price: {
-    fontFamily: "'Gotham', sans-serif",
-    fontSize: "clamp(2rem, 3.4vw, 2.8rem)",
-    fontWeight: 900,
-    color: "var(--brand-primary, var(--c-accent))",
-    letterSpacing: "-0.01em",
-  },
-  sku: { fontSize: 11, color: "rgba(var(--c-text-rgb),.4)", fontFamily: "monospace" },
-
-  stockRow: { marginTop: -4 },
-  stockOk: {
-    display: "inline-flex", alignItems: "center", gap: 8,
-    fontSize: 13, color: "rgba(var(--c-accent-rgb),.95)", fontWeight: 600,
-  },
-  stockOkDot: {
-    display: "inline-block",
-    width: 8, height: 8, borderRadius: "50%",
-    background: "var(--brand-primary, var(--c-accent))",
-    boxShadow: "0 0 8px var(--brand-primary, var(--c-accent))",
-  },
-  stockOut: { fontSize: 13, color: "rgba(252,165,165,.85)", fontWeight: 600 },
-
-  qtyRow: {
-    display: "flex", alignItems: "center", gap: 14,
-    paddingTop: 8,
-  },
-  qtyLabel: {
-    fontSize: 11, fontWeight: 700, letterSpacing: ".2em",
-    textTransform: "uppercase", color: "rgba(var(--c-text-rgb),.55)",
-  },
-  qtyControls: { display: "inline-flex", alignItems: "center", gap: 4 },
-  qtyBtn: {
-    width: 36, height: 36, borderRadius: 10,
-    background: "var(--c-surface-2)",
-    color: "inherit", border: "1px solid var(--c-border)",
-    cursor: "pointer", fontFamily: "inherit",
-    fontSize: 18, fontWeight: 700,
-  },
-  qtyNum: {
-    minWidth: 44, textAlign: "center",
-    fontSize: 16, fontWeight: 800,
-  },
-
-  cta: {
-    display: "inline-flex", alignItems: "center", justifyContent: "center",
-    gap: 14, padding: "18px 32px",
-    marginTop: 8,
-    borderRadius: 999, border: "none",
-    background: "linear-gradient(135deg, var(--c-accent-2) 0%, #2E8F6E 100%)",
-    color: "#fff",
-    fontFamily: "inherit", fontSize: 14, fontWeight: 900,
-    letterSpacing: ".1em", textTransform: "uppercase",
-    cursor: "pointer",
-    boxShadow: "0 18px 36px -10px rgba(46,143,110,.6), 0 0 0 1px rgba(var(--c-accent-rgb),.25)",
-    transition: "transform .25s ease, box-shadow .25s ease",
-  },
-  ctaDisabled: {
-    background: "var(--c-border)", color: "rgba(var(--c-text-rgb),.4)",
-    boxShadow: "none", cursor: "not-allowed",
-  },
-
-  toast: {
-    padding: "11px 16px", borderRadius: 10,
-    background: "rgba(var(--c-accent-rgb),.10)",
-    border: "1px solid rgba(var(--c-accent-rgb),.3)",
-    color: "var(--brand-primary, var(--c-accent))",
-    fontSize: 13, fontWeight: 600,
-  },
-
-  trust: {
-    display: "flex", flexWrap: "wrap", gap: 10,
-    marginTop: 14,
-    paddingTop: 18,
-    borderTop: "1px solid var(--c-border)",
-  },
-  trustItem: {
-    display: "inline-flex", alignItems: "center", gap: 6,
-    padding: "7px 13px", borderRadius: 999,
-    background: "var(--c-surface-2)",
-    border: "1px solid var(--c-border)",
-    fontSize: 11, color: "rgba(var(--c-text-rgb),.75)", fontWeight: 600,
-  },
-
-  // ── Selector de medida (variantes) ──
-  variantRow: { display: "flex", flexDirection: "column", gap: 10, paddingTop: 4 },
-  variantPills: { display: "flex", flexWrap: "wrap", gap: 8 },
-  variantPill: (active, out) => ({
-    padding: "9px 16px", borderRadius: 999, cursor: out ? "not-allowed" : "pointer",
-    fontFamily: "inherit", fontSize: 13, fontWeight: 800, letterSpacing: ".02em",
-    border: active
-      ? "2px solid var(--brand-primary, var(--c-accent))"
-      : "1px solid var(--c-border-2)",
-    background: active ? "var(--c-accent-soft)" : "var(--c-surface)",
-    color: active ? "var(--brand-primary, var(--c-accent))" : "var(--c-text)",
-    opacity: out ? 0.45 : 1,
-    textDecoration: out ? "line-through" : "none",
-    transition: "border-color .2s ease, background .2s ease",
-  }),
-
-  // ── "¿Lo querés completo?" (upsell al kit) ──
-  bundlePromo: {
-    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
-    marginTop: 16, padding: "16px 18px", borderRadius: 14,
-    background: "linear-gradient(135deg, var(--c-accent-soft), rgba(46,143,110,.10))",
-    border: "1px solid rgba(var(--c-accent-rgb),.3)",
-    textDecoration: "none", color: "inherit",
-    transition: "transform .2s ease, box-shadow .2s ease",
-  },
-  bundlePromoTitle: {
-    fontFamily: "'Gotham', sans-serif", fontWeight: 900, fontSize: 15,
-    textTransform: "uppercase", letterSpacing: "-0.01em", marginBottom: 3,
-    color: "var(--brand-primary, var(--c-accent))",
-  },
-  bundlePromoBody: { fontSize: 13, lineHeight: 1.45, color: "rgba(var(--c-text-rgb),.75)" },
-  bundlePromoCta: {
-    flexShrink: 0, fontSize: 12, fontWeight: 800, letterSpacing: ".06em",
-    textTransform: "uppercase", color: "var(--brand-primary, var(--c-accent))",
-  },
-
-  // ── Bundle: incluye la línea ──
-  bundleSavings: {
-    margin: "0 0 18px", fontSize: 14, fontWeight: 700,
-    color: "var(--brand-primary, var(--c-accent))",
-  },
-  bundleGrid: {
-    display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12,
-  },
-  bundleItem: {
-    display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-    borderRadius: 12, border: "1px solid var(--c-border)", background: "var(--c-surface)",
-    textDecoration: "none", color: "inherit",
-  },
-  bundleItemImg: {
-    width: 52, height: 52, objectFit: "contain", flexShrink: 0,
-    background: "var(--c-surface-2)", borderRadius: 8, padding: 4,
-  },
-  bundleItemName: { fontSize: 13.5, fontWeight: 800, lineHeight: 1.25, letterSpacing: "-0.01em" },
-  bundleItemMeta: { fontSize: 12, color: "rgba(var(--c-text-rgb),.6)", marginTop: 2 },
-  bundleSeparate: { marginTop: 18, fontSize: 14, color: "rgba(var(--c-text-rgb),.7)" },
-  bundleSeparateLink: { fontWeight: 800, color: "var(--brand-primary, var(--c-accent))", textDecoration: "none" },
-
-  // ── Cross-sell ──
-  crossHint: { margin: "0 0 18px", fontSize: 14, color: "rgba(var(--c-text-rgb),.7)" },
-  crossGrid: {
-    display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14,
-  },
-  crossCard: {
-    display: "flex", flexDirection: "column",
-    border: "1px solid var(--c-border)", borderRadius: 14, overflow: "hidden",
-    background: "var(--c-surface)",
-  },
-  crossImgWrap: {
-    width: "100%", aspectRatio: "1 / 1", padding: "14%",
-    background: "linear-gradient(135deg, rgba(var(--c-accent-rgb),.04), rgba(46,143,110,.06))",
-    display: "grid", placeItems: "center",
-  },
-  crossImg: { width: "100%", height: "100%", objectFit: "contain" },
-  crossBody: { padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 8, flex: 1 },
-  crossName: {
-    fontSize: 13.5, fontWeight: 800, lineHeight: 1.3, letterSpacing: "-0.01em",
-    textDecoration: "none", color: "inherit",
-  },
-  crossPriceRow: {
-    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: "auto",
-  },
-  crossPrice: { fontSize: 14, fontWeight: 900, color: "var(--brand-primary, var(--c-accent))" },
-  crossAdd: {
-    padding: "7px 12px", borderRadius: 999, border: "1px solid rgba(var(--c-accent-rgb),.35)",
-    background: "var(--c-accent-soft)", color: "var(--brand-primary, var(--c-accent))",
-    fontFamily: "inherit", fontWeight: 800, fontSize: 11, letterSpacing: ".04em",
-    textTransform: "uppercase", cursor: "pointer",
-  },
-
-  // ── Editorial sections ──
-  sectionHeading: {
-    margin: "80px 0 24px",
-    fontFamily: "'Gotham', sans-serif",
-    fontSize: "clamp(1.6rem, 3vw, 2.4rem)",
-    fontWeight: 900, lineHeight: 1.1,
-    letterSpacing: "-0.02em",
-    textTransform: "uppercase",
-  },
-  sectionHeadingItalic: {
-    // Pedido del cliente: acentos verdes minúscula → Gotham MAYÚSCULA.
-    fontFamily: "'Gotham', sans-serif",
-    fontStyle: "normal", fontWeight: 900,
-    textTransform: "uppercase",
-    color: "var(--brand-primary, var(--c-accent))",
-    letterSpacing: "-0.01em",
-  },
-
-  longDescSection: {},
-  longDesc: {
-    margin: 0,
-    fontSize: "clamp(1rem, 1.2vw, 1.15rem)",
-    lineHeight: 1.7,
-    color: "rgba(var(--c-text-rgb),.8)",
-    maxWidth: 720,
-    whiteSpace: "pre-line",
-  },
-
-  metaSection: {},
-  metaSheet: {
-    margin: 0, padding: 0,
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 0,
-    maxWidth: 920,
-    border: "1px solid var(--c-border)",
-    borderRadius: 14,
-    overflow: "hidden",
-  },
-  metaRow: {
-    padding: "16px 20px",
-    borderRight: "1px solid var(--c-border)",
-    borderBottom: "1px solid var(--c-border)",
-    display: "flex", flexDirection: "column", gap: 4,
-  },
-  metaKey: {
-    fontSize: 10, fontWeight: 800, letterSpacing: ".22em",
-    textTransform: "uppercase", color: "rgba(var(--c-text-rgb),.45)",
-  },
-  metaVal: {
-    margin: 0,
-    fontSize: 14, fontWeight: 600, color: "rgba(var(--c-text-rgb),.9)",
-  },
-
-  // ── Related ──
-  relatedSection: {},
-  relatedGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 16,
-  },
-  relatedCard: {
-    display: "flex", flexDirection: "column",
-    textDecoration: "none", color: "inherit",
-    border: "1px solid var(--c-border)",
-    borderRadius: 14, overflow: "hidden",
-    background: "var(--c-surface)",
-    transition: "transform .3s ease, border-color .3s ease",
-  },
-  relatedImgWrap: {
-    width: "100%", aspectRatio: "1 / 1",
-    padding: "16%",
-    background: "linear-gradient(135deg, rgba(var(--c-accent-rgb),.03), rgba(46,143,110,.05))",
-    display: "grid", placeItems: "center",
-  },
-  relatedImg: { width: "100%", height: "100%", objectFit: "contain" },
-  relatedBody: { padding: "14px 16px 18px", display: "flex", flexDirection: "column", gap: 6 },
-  relatedName: { fontSize: 13, fontWeight: 700, lineHeight: 1.3, letterSpacing: "-0.005em" },
-  relatedPrice: { fontSize: 14, fontWeight: 800, color: "var(--brand-primary, var(--c-accent))" },
-};
-
-// Responsive: stack en mobile (<=900px)
-if (typeof window !== "undefined" && window.innerWidth <= 900) {
-  S.layout.gridTemplateColumns = "1fr";
-  S.gallery.position = "static";
 }
