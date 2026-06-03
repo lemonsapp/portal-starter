@@ -90,6 +90,14 @@ export default function ShopProduct() {
   const _lk = lineKeyFor(product);
   const details = _lk ? lineDetails[_lk] : null;
 
+  // Bundle de la línea (Diseño C): si este producto es individual de Race/Pro/
+  // Elite, ofrecemos el kit completo. Si ES el kit (product.bundle), mostramos
+  // qué incluye + opción de comprar por separado.
+  const LINE_NAMES = { race: "Race", pro: "Pro", elite: "Elite" };
+  const lineKey = product.meta?.linea;
+  const lineBundleSlug = (!product.bundle && ["race", "pro", "elite"].includes(lineKey))
+    ? `linea-${lineKey}` : null;
+
   return (
     <div className="theme-light" style={S.shell}>
       <div style={S.container}>
@@ -149,6 +157,30 @@ export default function ShopProduct() {
               {product.sku && <span style={S.sku}>SKU: {product.sku}</span>}
             </div>
 
+            {/* Selector de medida (variantes de la misma familia) */}
+            {product.variants?.length > 1 && (
+              <div style={S.variantRow}>
+                <span style={S.qtyLabel}>Medida</span>
+                <div style={S.variantPills}>
+                  {product.variants.map((v) => {
+                    const active = v.slug === product.slug;
+                    const out = v.stock != null && v.stock <= 0;
+                    return (
+                      <button
+                        key={v.slug}
+                        onClick={() => { if (!active) navigate(`/shop/${v.slug}`); }}
+                        style={S.variantPill(active, out)}
+                        aria-pressed={active}
+                        title={out ? "Sin stock" : v.label}
+                      >
+                        {v.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div style={S.stockRow}>
               {inStock ? (
                 <span style={S.stockOk}>
@@ -204,8 +236,55 @@ export default function ShopProduct() {
               <span style={S.trustItem}>🔒 Pago seguro MP</span>
               <span style={S.trustItem}>♥ Soporte humano</span>
             </div>
+
+            {/* "¿Lo querés completo?" → kit de la línea (upsell) */}
+            {lineBundleSlug && (
+              <Link to={`/shop/${lineBundleSlug}`} style={S.bundlePromo}>
+                <div>
+                  <div style={S.bundlePromoTitle}>¿Lo querés completo?</div>
+                  <div style={S.bundlePromoBody}>
+                    Llevá toda la línea {LINE_NAMES[lineKey]} en un kit y ahorrá vs comprar por separado.
+                  </div>
+                </div>
+                <span style={S.bundlePromoCta} aria-hidden="true">Ver kit →</span>
+              </Link>
+            )}
           </div>
         </div>
+
+        {/* Bundle: qué incluye + comprar por separado (cuando este producto ES el kit) */}
+        {product.bundle && product.bundle.includes?.length > 0 && (
+          <section style={S.longDescSection}>
+            <h2 style={S.sectionHeading}>
+              <span>Incluye </span>
+              <span style={S.sectionHeadingItalic}>la línea completa</span>
+            </h2>
+            {product.bundle.discount_pct > 0 && (
+              <p style={S.bundleSavings}>
+                Comprándolo junto ahorrás ~{product.bundle.discount_pct}% vs comprar cada producto por separado.
+              </p>
+            )}
+            <div style={S.bundleGrid}>
+              {product.bundle.includes.map((f) => {
+                const v0 = f.variants?.[0];
+                return (
+                  <Link key={f.group} to={v0 ? `/shop/${v0.slug}` : "/shop"} style={S.bundleItem}>
+                    {v0?.primary_image && <img src={v0.primary_image} alt={f.name} style={S.bundleItemImg} loading="lazy" />}
+                    <div>
+                      <div style={S.bundleItemName}>{f.name}</div>
+                      <div style={S.bundleItemMeta}>
+                        {f.variants.length > 1 ? `${f.variants.length} medidas` : v0?.label}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+            <p style={S.bundleSeparate}>
+              ¿Preferís elegir vos? <Link to="/shop" style={S.bundleSeparateLink}>Comprar por separado →</Link>
+            </p>
+          </section>
+        )}
 
         {/* Descripción larga — sección editorial separada */}
         {product.long_description && (
@@ -487,6 +566,64 @@ const S = {
     border: "1px solid var(--c-border)",
     fontSize: 11, color: "rgba(var(--c-text-rgb),.75)", fontWeight: 600,
   },
+
+  // ── Selector de medida (variantes) ──
+  variantRow: { display: "flex", flexDirection: "column", gap: 10, paddingTop: 4 },
+  variantPills: { display: "flex", flexWrap: "wrap", gap: 8 },
+  variantPill: (active, out) => ({
+    padding: "9px 16px", borderRadius: 999, cursor: out ? "not-allowed" : "pointer",
+    fontFamily: "inherit", fontSize: 13, fontWeight: 800, letterSpacing: ".02em",
+    border: active
+      ? "2px solid var(--brand-primary, var(--c-accent))"
+      : "1px solid var(--c-border-2)",
+    background: active ? "var(--c-accent-soft)" : "var(--c-surface)",
+    color: active ? "var(--brand-primary, var(--c-accent))" : "var(--c-text)",
+    opacity: out ? 0.45 : 1,
+    textDecoration: out ? "line-through" : "none",
+    transition: "border-color .2s ease, background .2s ease",
+  }),
+
+  // ── "¿Lo querés completo?" (upsell al kit) ──
+  bundlePromo: {
+    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
+    marginTop: 16, padding: "16px 18px", borderRadius: 14,
+    background: "linear-gradient(135deg, var(--c-accent-soft), rgba(46,143,110,.10))",
+    border: "1px solid rgba(var(--c-accent-rgb),.3)",
+    textDecoration: "none", color: "inherit",
+    transition: "transform .2s ease, box-shadow .2s ease",
+  },
+  bundlePromoTitle: {
+    fontFamily: "'Gotham', sans-serif", fontWeight: 900, fontSize: 15,
+    textTransform: "uppercase", letterSpacing: "-0.01em", marginBottom: 3,
+    color: "var(--brand-primary, var(--c-accent))",
+  },
+  bundlePromoBody: { fontSize: 13, lineHeight: 1.45, color: "rgba(var(--c-text-rgb),.75)" },
+  bundlePromoCta: {
+    flexShrink: 0, fontSize: 12, fontWeight: 800, letterSpacing: ".06em",
+    textTransform: "uppercase", color: "var(--brand-primary, var(--c-accent))",
+  },
+
+  // ── Bundle: incluye la línea ──
+  bundleSavings: {
+    margin: "0 0 18px", fontSize: 14, fontWeight: 700,
+    color: "var(--brand-primary, var(--c-accent))",
+  },
+  bundleGrid: {
+    display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12,
+  },
+  bundleItem: {
+    display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+    borderRadius: 12, border: "1px solid var(--c-border)", background: "var(--c-surface)",
+    textDecoration: "none", color: "inherit",
+  },
+  bundleItemImg: {
+    width: 52, height: 52, objectFit: "contain", flexShrink: 0,
+    background: "var(--c-surface-2)", borderRadius: 8, padding: 4,
+  },
+  bundleItemName: { fontSize: 13.5, fontWeight: 800, lineHeight: 1.25, letterSpacing: "-0.01em" },
+  bundleItemMeta: { fontSize: 12, color: "rgba(var(--c-text-rgb),.6)", marginTop: 2 },
+  bundleSeparate: { marginTop: 18, fontSize: 14, color: "rgba(var(--c-text-rgb),.7)" },
+  bundleSeparateLink: { fontWeight: 800, color: "var(--brand-primary, var(--c-accent))", textDecoration: "none" },
 
   // ── Editorial sections ──
   sectionHeading: {
