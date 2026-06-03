@@ -39,7 +39,86 @@ const { authRequired, requireRole } = require("../auth");
     for (const u of pend.rows) { await ensureCustomerCode(u.id); }
     console.log(`[MIGRATION] puntos ready (backfilled ${pend.rows.length} customer_code)`);
   } catch (e) { console.error("[MIGRATION puntos ERROR]", e.message); }
+
+  // ── F2 Canjes: catálogo de premios/descuentos + tabla de canjes ──
+  try {
+    // promo_codes lo crea shop.js; lo aseguramos acá (idempotente, mismo schema)
+    // para que el canje de descuento funcione aunque shop aún no haya migrado.
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS promo_codes (
+        id SERIAL PRIMARY KEY, code TEXT UNIQUE NOT NULL,
+        kind TEXT NOT NULL CHECK (kind IN ('percent','fixed_cents')),
+        value INT NOT NULL CHECK (value > 0),
+        min_subtotal_cents INT NOT NULL DEFAULT 0,
+        max_uses INT, current_uses INT NOT NULL DEFAULT 0,
+        expires_at TIMESTAMPTZ, active BOOLEAN NOT NULL DEFAULT TRUE, notes TEXT,
+        created_by INT REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`);
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uniq_promo_codes_code_upper ON promo_codes(UPPER(code))`);
+
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS point_rewards (
+        id SERIAL PRIMARY KEY,
+        slug TEXT UNIQUE NOT NULL,
+        kind TEXT NOT NULL CHECK (kind IN ('descuento','premio')),
+        label TEXT NOT NULL,
+        description TEXT,
+        cost_points INT NOT NULL CHECK (cost_points > 0),
+        discount_pct INT,                 -- solo descuentos
+        market_value_cents BIGINT,        -- solo premios (valor de mercado)
+        stock INT,                        -- null = sin límite
+        active BOOLEAN NOT NULL DEFAULT TRUE,
+        sort_order INT NOT NULL DEFAULT 0
+      )`);
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS point_redemptions (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        reward_slug TEXT NOT NULL,
+        kind TEXT NOT NULL,
+        label TEXT,
+        cost_points INT NOT NULL,
+        discount_pct INT,
+        coupon_code TEXT,
+        market_value_cents BIGINT,
+        status TEXT NOT NULL DEFAULT 'pending',   -- pending | fulfilled | cancelled
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        fulfilled_at TIMESTAMPTZ
+      )`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_point_redemptions_user ON point_redemptions(user_id, created_at DESC)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_point_redemptions_status ON point_redemptions(status, created_at DESC)`);
+
+    // Seed del catálogo (valores del documento Holistic). Idempotente por slug.
+    await db.query(`
+      INSERT INTO point_rewards (slug, kind, label, description, cost_points, discount_pct, market_value_cents, stock, sort_order) VALUES
+        ('disc-5',  'descuento', '5% de descuento',  'Cupón de 5% off en tu próximo pedido',  50,  5,  NULL, NULL, 1),
+        ('disc-10', 'descuento', '10% de descuento', 'Cupón de 10% off en tu próximo pedido', 88,  10, NULL, NULL, 2),
+        ('disc-15', 'descuento', '15% de descuento', 'Cupón de 15% off en tu próximo pedido', 125, 15, NULL, NULL, 3),
+        ('disc-20', 'descuento', '20% de descuento', 'Cupón de 20% off en tu próximo pedido', 175, 20, NULL, NULL, 4),
+        ('disc-25', 'descuento', '25% de descuento', 'Cupón de 25% off en tu próximo pedido', 225, 25, NULL, NULL, 5),
+        ('disc-30', 'descuento', '30% de descuento', 'Cupón de 30% off en tu próximo pedido', 300, 30, NULL, NULL, 6),
+        ('disc-35', 'descuento', '35% de descuento', 'Cupón de 35% off en tu próximo pedido', 400, 35, NULL, NULL, 7),
+        ('disc-40', 'descuento', '40% de descuento', 'Cupón de 40% off — premio máximo',       500, 40, NULL, NULL, 8),
+        ('premio-pack',     'premio', 'Pack Accesorios Holistic', 'Pack de accesorios de marca',          22, NULL, 3500000,  NULL, 20),
+        ('premio-tensores', 'premio', 'Tensores de red',          'Tensores de red para cultivo',         22, NULL, 3500000,  NULL, 21),
+        ('premio-gel',      'premio', 'Gel Cloner Holistic',      'Gel enraizante de la línea Holistic',  25, NULL, 4000000,  NULL, 22),
+        ('premio-dije',     'premio', 'Dije Don Rouch',           'Joya exclusiva de la marca',           88, NULL, 14000000, NULL, 23)
+      ON CONFLICT (slug) DO NOTHING`);
+    console.log("[MIGRATION] canjes ready (point_rewards + point_redemptions)");
+  } catch (e) { console.error("[MIGRATION canjes ERROR]", e.message); }
 })();
+
+// Genera un código de cupón único para canjes de descuento (PTS-XXXXXX).
+async function generatePromoCode() {
+  const CH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  for (let i = 0; i < 15; i++) {
+    const code = "PTS-" + Array.from({ length: 6 }, () => CH[Math.floor(Math.random() * CH.length)]).join("");
+    const ex = await db.query(`SELECT 1 FROM promo_codes WHERE UPPER(code)=UPPER($1)`, [code]);
+    if (!ex.rows[0]) return code;
+  }
+  return "PTS-" + Date.now().toString(36).toUpperCase();
+}
 
 // ── Helpers Sistema de Puntos ────────────────────────────────────────────────
 // Código de cliente HST-XXXX-XX (charset sin caracteres ambiguos 0/O/1/I).
@@ -124,6 +203,93 @@ router.get("/", authRequired, requireRole(["operator", "admin"]), async (req, re
   }
 });
 
+// ── GET /coins/rewards — catálogo de canjes (descuentos + premios) ────────────
+// Definido ANTES de /:userId para no colisionar (1 segmento). ?all=1 (staff) trae
+// también los inactivos (para el editor del admin).
+router.get("/rewards", authRequired, async (req, res) => {
+  try {
+    const wantAll = (req.query.all === "1" || req.query.all === "true")
+      && ["operator", "admin"].includes(req.user.role);
+    const q = await db.query(
+      `SELECT * FROM point_rewards ${wantAll ? "" : "WHERE active = TRUE"} ORDER BY sort_order, id`
+    );
+    res.json({ rewards: q.rows });
+  } catch (e) {
+    console.error("COINS REWARDS ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── POST /coins/redeem-points — canjear puntos por descuento o premio ─────────
+router.post("/redeem-points", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { reward_slug } = req.body;
+    if (!reward_slug) return res.status(400).json({ error: "Falta el premio a canjear" });
+
+    const rq = await db.query(`SELECT * FROM point_rewards WHERE slug=$1 AND active=TRUE`, [reward_slug]);
+    const reward = rq.rows[0];
+    if (!reward) return res.status(400).json({ error: "Canje inválido o no disponible" });
+
+    const coins = await getOrCreateCoins(userId);
+    if (coins.balance < reward.cost_points) {
+      return res.status(400).json({ error: `Puntos insuficientes. Tenés ${coins.balance}, necesitás ${reward.cost_points}.` });
+    }
+
+    // Premio físico: descontar stock atómicamente antes de cobrar los puntos.
+    if (reward.kind === "premio" && reward.stock != null) {
+      const st = await db.query(
+        `UPDATE point_rewards SET stock = stock - 1 WHERE id=$1 AND stock > 0 RETURNING stock`,
+        [reward.id]
+      );
+      if (!st.rows[0]) return res.status(400).json({ error: "Premio temporalmente sin stock" });
+    }
+
+    // Descuento: generar cupón de 1 uso (integra con el promo del checkout).
+    let couponCode = null;
+    if (reward.kind === "descuento") {
+      couponCode = await generatePromoCode();
+      await db.query(
+        `INSERT INTO promo_codes (code, kind, value, max_uses, active, created_by, notes)
+         VALUES ($1, 'percent', $2, 1, TRUE, $3, $4)`,
+        [couponCode, reward.discount_pct, userId, `Canje de puntos: ${reward.label}`]
+      );
+    }
+
+    // Cobrar los puntos + registrar movimiento y canje.
+    await db.query(
+      `UPDATE coins SET balance = balance - $1, updated_at = NOW() WHERE user_id = $2`,
+      [reward.cost_points, userId]
+    );
+    await db.query(
+      `INSERT INTO coin_transactions (user_id, type, amount, reason, operador)
+       VALUES ($1, $2, $3, $4, 'sistema')`,
+      [userId, reward.kind === "descuento" ? "canje_descuento" : "canje_premio",
+       -reward.cost_points, `Canje: ${reward.label}`]
+    );
+    const status = reward.kind === "descuento" ? "fulfilled" : "pending";
+    const redQ = await db.query(
+      `INSERT INTO point_redemptions
+         (user_id, reward_slug, kind, label, cost_points, discount_pct, coupon_code, market_value_cents, status, fulfilled_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, CASE WHEN $9='fulfilled' THEN NOW() ELSE NULL END)
+       RETURNING *`,
+      [userId, reward.slug, reward.kind, reward.label, reward.cost_points,
+       reward.discount_pct || null, couponCode, reward.market_value_cents || null, status]
+    );
+    const updQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId]);
+
+    res.json({
+      success: true,
+      redemption: redQ.rows[0],
+      coupon_code: couponCode,
+      new_balance: updQ.rows[0].balance,
+    });
+  } catch (e) {
+    console.error("COINS REDEEM-POINTS ERROR:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── GET /coins/:userId — saldo + historial ────────────────────────────────────
 router.get("/:userId", authRequired, async (req, res) => {
   try {
@@ -157,6 +323,16 @@ router.get("/:userId", authRequired, async (req, res) => {
       ORDER BY created_at DESC LIMIT 20
     `, [userId]);
 
+    // Canjes del Sistema de Puntos (descuentos con cupón + premios).
+    let pointRedemptions = [];
+    try {
+      const pr = await db.query(
+        `SELECT * FROM point_redemptions WHERE user_id=$1 ORDER BY created_at DESC LIMIT 20`,
+        [userId]
+      );
+      pointRedemptions = pr.rows;
+    } catch (_) { /* tabla aún no migrada */ }
+
     res.json({
       balance:               coins.balance,
       total_earned:          coins.total_earned,
@@ -169,6 +345,7 @@ router.get("/:userId", authRequired, async (req, res) => {
       rewards:               REWARDS,
       transactions:          txQ.rows,
       redemptions:           redQ.rows,
+      point_redemptions:     pointRedemptions,
       has_delivered_shipment: false,    // legacy contract; el starter no tiene shipments
       first_bonus_claimed:   true,      // legacy contract; el starter no tiene bonus de primer envío
     });
