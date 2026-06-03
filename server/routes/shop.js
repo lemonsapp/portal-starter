@@ -463,6 +463,24 @@ async function migrate() {
     `UPDATE products SET meta = meta || '{"bundle":true,"bundle_line":"elite","bundle_discount_pct":10}'::jsonb
        WHERE slug='linea-elite' AND NOT (meta ? 'bundle')`, "bundle elite");
 
+  // ─── Packs de puntos (F3.2): comprar puntos como producto del shop ─────────
+  // Precio = puntos × buy_price ($1.600/pto). Al pagar, onOrderPaid acredita
+  // meta.points_pack como compra_puntos (ver shopNotify.creditOrderPoints).
+  await safeQuery(
+    `INSERT INTO product_categories (slug, name, description, sort_order)
+     VALUES ('puntos', 'Puntos', 'Comprá puntos Holistic y canjealos por descuentos o premios', 50)
+     ON CONFLICT (slug) DO NOTHING`, "cat puntos");
+  await safeQuery(`
+    INSERT INTO products (slug, name, short_description, price_cents, sku, category_id, featured, sort_order, meta)
+    SELECT v.slug, v.name, v.short, v.price, v.sku, c.id, FALSE, v.sort, v.meta::jsonb
+    FROM (VALUES
+      ('pack-50-puntos',  'Pack 50 puntos',  'Sumá 50 puntos a tu cuenta (se acreditan al pagar).',   8000000,  'PACK-PTS-50',  'puntos', 50, '{"points_pack":50}'),
+      ('pack-100-puntos', 'Pack 100 puntos', 'Sumá 100 puntos a tu cuenta (se acreditan al pagar).',  16000000, 'PACK-PTS-100', 'puntos', 51, '{"points_pack":100}'),
+      ('pack-250-puntos', 'Pack 250 puntos', 'Sumá 250 puntos a tu cuenta (se acreditan al pagar).',  40000000, 'PACK-PTS-250', 'puntos', 52, '{"points_pack":250}')
+    ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
+    JOIN product_categories c ON c.slug = v.cat_slug
+    ON CONFLICT (slug) DO NOTHING`, "packs puntos");
+
   // ═════════════════════════════════════════════════════════════════════════
   // F2: ORDERS — carrito + checkout + MercadoPago
   // ═════════════════════════════════════════════════════════════════════════
