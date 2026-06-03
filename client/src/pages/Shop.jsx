@@ -283,14 +283,13 @@ const S = {
   },
   displayLine: { display: "block" },
   displayItalic: {
-    // "premium" e "indoor & outdoor" usaban Fraunces italic — pedido del
-    // cliente: mover a Gotham (mantenemos el style italic porque Gotham
-    // tiene gotham-book-italic.woff2 cargado).
+    // "premium" e "indoor & outdoor" — Gotham italic (gotham-book-italic.woff2
+    // cargado). Pedido del cliente: en MAYÚSCULA (textTransform uppercase).
     display: "block",
     fontFamily: "var(--f-display, 'Gotham', sans-serif)",
     fontStyle: "italic",
     fontWeight: 400,
-    textTransform: "none",
+    textTransform: "uppercase",
     fontSize: "0.78em",
     color: "var(--c-accent)",
     letterSpacing: "-0.01em",

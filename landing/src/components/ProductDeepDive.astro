@@ -31,6 +31,12 @@ const detail = getProductDetail(cap.slug);
 //     central, partículas y tabs animadas.
 const isRace = cap.slug === "linea-race";
 const useRaceFormats = isRace;
+// La sección "Cinco fórmulas · Un ciclo entero" (RaceFormatsShowcase, fondo
+// oscuro + imágenes) fue removida por pedido del cliente. Dejamos el flag en
+// false para no montarla. useRaceFormats sigue en true, así el selector de
+// formatos genérico tampoco aparece → Race queda sin sección de formatos.
+// El componente sigue existiendo en components/ por si se reactiva.
+const showRaceFormats = false;
 const useProductHighlights = !!(detail?.highlights?.[0]?.image);
 
 // Eyebrow por producto para el HUD del top del showcase.
@@ -89,13 +95,17 @@ const detailSoft = d.hero.colorSoft;
 
 // Layout flags:
 //   • heroBackground: true → video como fondo full-bleed con scrim, texto
-//     centrado encima. Race usa este layout. Default false: stage al lado.
+//     centrado encima. Default false: stage al lado.
+//   • heroBanner: {src,w,h} → imagen del slider full HD como hero limpio:
+//     imagen entera arriba (sin scrim) + texto/CTAs debajo, centrado sobre el
+//     gradient claro. Race/Pro/Bio/Day-0 usan esto en vez del video.
 //   • Cualquier hero sin ctaPrimary/ctaSecondary omite el bloque de CTAs.
 const heroBackground = !!d.hero?.heroBackground;
+const heroBanner = d.hero?.heroBanner || null;
 const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
 ---
 <article
-    class:list={["pdd", heroBackground && "pdd--hero-bg"]}
+    class:list={["pdd", heroBackground && "pdd--hero-bg", heroBanner && "pdd--hero-banner"]}
     data-product-deepdive
     data-slug={cap.slug}
     style={`--pdd-color: ${detailColor}; --pdd-color-soft: ${detailSoft};`}
@@ -108,7 +118,7 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
              centrado encima con scrim. Race usa este modo.
          ============================================================ -->
     <section
-        class:list={["pdd__hero", heroBackground && "pdd__hero--bg"]}
+        class:list={["pdd__hero", heroBackground && "pdd__hero--bg", heroBanner && "pdd__hero--banner"]}
         data-pdd-hero
     >
         {heroBackground && heroVideo && (
@@ -138,6 +148,21 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
         )}
 
         <div class="pdd__hero-inner">
+            {heroBanner && (
+                <figure class="pdd__hero-banner" data-pdd-hero-banner>
+                    <img
+                        class="pdd__hero-banner-img"
+                        src={heroBanner.src}
+                        width={heroBanner.w}
+                        height={heroBanner.h}
+                        alt={`${cap.nombreCorto || ""} ${cap.nombreDestacado}`.trim()}
+                        loading="eager"
+                        fetchpriority="high"
+                        decoding="async"
+                    />
+                </figure>
+            )}
+
             <p class="pdd__hero-kicker" data-pdd-kicker>
                 <span class="pdd__hero-dot" aria-hidden="true"></span>
                 <span>{d.hero.kicker}</span>
@@ -171,8 +196,8 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
                 </div>
             )}
 
-            {/* Stage al costado sólo en modo NO-fullbleed */}
-            {!heroBackground && (
+            {/* Stage al costado sólo en modo NO-fullbleed y NO-banner */}
+            {!heroBackground && !heroBanner && (
                 <div
                     class:list={["pdd__hero-stage", heroVideo && "pdd__hero-stage--video"]}
                     data-pdd-hero-stage
@@ -309,9 +334,10 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
         </section>
     )}
 
-    {d.formats.length > 0 && useRaceFormats && (
+    {d.formats.length > 0 && useRaceFormats && showRaceFormats && (
         <!-- ============================================================
              5R) RACE FORMATS SHOWCASE — versión cinematográfica
+             (desmontada por pedido del cliente; ver showRaceFormats arriba)
              ============================================================ -->
         <RaceFormatsShowcase formats={d.formats} />
     )}

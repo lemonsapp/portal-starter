@@ -5334,6 +5334,40 @@ html.is-loading body {
     transform: translate(-50%, -55%);
     will-change: transform, opacity;
 }
+
+/* ============================================================
+   HERO BANNER — imagen del slider full HD como hero limpio.
+   Imagen entera arriba (sin scrim, sin recorte) + texto/CTAs
+   debajo, centrado sobre el gradient claro. Activado por
+   .pdd__hero--banner. Reemplaza al video full-bleed en
+   Race/Pro/Bio/Day-0.
+   ============================================================ */
+.pdd__hero--banner {
+    /* Menos padding-top: la imagen ya aporta presencia arriba. */
+    padding-top: clamp(110px, 15vh, 170px);
+}
+.pdd__hero-banner {
+    margin: 0 0 clamp(8px, 1.5vh, 18px);
+    width: min(560px, 86vw);
+    border-radius: 24px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow:
+        0 2px 0 rgba(0, 0, 0, 0.02),
+        0 34px 70px -34px color-mix(in srgb, var(--pdd-color, #c9a34e) 45%, rgba(0, 0, 0, 0.55));
+}
+.pdd__hero-banner-img {
+    display: block;
+    width: 100%;
+    height: auto; /* aspect-ratio intrínseco (attrs width/height) → sin CLS */
+}
+@media (max-width: 640px) {
+    .pdd__hero-banner {
+        width: 100%;
+        border-radius: 18px;
+    }
+}
+
 .pdd__hero-inner {
     position: relative;
     z-index: 2;

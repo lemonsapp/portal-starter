@@ -122,11 +122,11 @@ export const productDetails = {
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#F5948A",
             colorSoft: "#FFE3DE",
-            heroVideo: {
-                src: "/video/internas/linea-pro/hero.mp4",
-                poster: "/video/internas/linea-pro/poster.jpg",
+            // Hero BANNER full HD (reemplaza video por pedido del cliente).
+            heroBanner: {
+                src: "/img/banners/banner-pro.png",
+                w: 1254, h: 1254,
             },
-            heroBackground: true,
         },
         // Highlights de Pro: paleta coral/salmón. Renders nuevos
         // (zip 2026-05-31) que muestran cada etapa del ciclo
@@ -219,14 +219,14 @@ export const productDetails = {
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#2E8F6E",
             colorSoft: "#C7F0DD",
-            // Hero CINEMATOGRÁFICO: video MP4 full-bleed como fondo. La
-            // botella render queda como fallback poster si el video no carga.
-            heroVideo: {
-                src: "/video/race/cinematic-violeta-splash-radial.mp4",
-                poster: "/img/race/cinematic-violeta-splash-radial-poster.png",
+            // Hero BANNER: imagen del slider full HD como hero limpio (imagen
+            // entera arriba + texto/CTAs debajo). Reemplaza al video cinematic
+            // por pedido del cliente. w/h evitan CLS (aspect-ratio intrínseco).
+            heroBanner: {
+                src: "/img/banners/banner-race.png",
+                w: 1536, h: 1024,
             },
             heroImage: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
-            heroBackground: true,
         },
         // Cada highlight tiene su imagen propia + color tema. El componente
         // ProductHighlights lee estos colores (vía data-colors) para teñir
@@ -373,11 +373,11 @@ export const productDetails = {
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#E8A5B1",
             colorSoft: "#F7D6DC",
-            heroVideo: {
-                src: "/video/internas/bio-estimulante/hero.mp4",
-                poster: "/video/internas/bio-estimulante/poster.jpg",
+            // Hero BANNER full HD (reemplaza video por pedido del cliente).
+            heroBanner: {
+                src: "/img/banners/banner-bio.png",
+                w: 1448, h: 1086,
             },
-            heroBackground: true,
         },
         // Highlights de Bio Estimulante: paleta rosa/coral. Botella
         // grande en distintas perspectivas + raíz dramática (5533) que
@@ -532,7 +532,9 @@ export const productDetails = {
             body: "Cloner es el punto de entrada del ciclo. Aplicalo junto a Bio Estimulante en el agua del propagador y entrá a vegetativo con plantas vigorosas listas para Elite o Pro.",
             chips: ["+ Bio Estimulante"],
         },
-        pullquote: "El comienzo del ciclo define la calidad del resultado final.",
+        // Pullquote removido por pedido del cliente (sección arriba de
+        // "Datos del producto"). Vacío → el bloque no se renderiza.
+        pullquote: "",
         techSpecs: [
             { label: "Forma",             value: "Gel de alta viscosidad" },
             { label: "Principio activo",  value: "IBA + NAA en vehículo protector" },
@@ -547,16 +549,16 @@ export const productDetails = {
         hero: {
             kicker: "DAY 0 · FINALIZADOR DE COSECHA",
             headline: "Finalizador de cosecha.\nLa última decisión que define todo.",
-            claim: "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Limpieza profunda del sistema radicular, pulido del sabor, aroma y textura del resultado final. Lo que diferencia una cosecha buena de una perfecta. Se usa junto a Race 4 o como cierre exclusivo de cualquier sistema Holistic.",
+            claim: "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Diferencia una cosecha buena de una perfecta. Se usa junto a Race 4 o como cierre exclusivo de cualquier sistema Holistic.",
             ctaPrimary:   { label: "COMPRAR DAY-0",          href: "/shop?categoria=day0" },
             ctaSecondary: { label: "VER GUÍA DE USO",   href: "#specs" },
             color: "#C9A34E",
             colorSoft: "#F9E79B",
-            heroVideo: {
-                src: "/video/internas/day-0/hero.mp4",
-                poster: "/video/internas/day-0/poster.jpg",
+            // Hero BANNER full HD (reemplaza video por pedido del cliente).
+            heroBanner: {
+                src: "/img/banners/banner-day0.png",
+                w: 1254, h: 1254,
             },
-            heroBackground: true,
         },
         // Highlights de Day-0: paleta amarilla/dorada — el "cierre"
         // del ciclo. Botella en distintas perspectivas comunican el
@@ -572,9 +574,9 @@ export const productDetails = {
                 stat: "01",
             },
             {
-                kicker: "SABOR",
+                kicker: "SIN QUÍMICOS",
                 title: "El detalle que se nota.",
-                body: "Cosechas con sabor y aroma más limpios, sin notas químicas residuales. La diferencia entre una cosecha técnica y una excelente.",
+                body: "La diferencia entre una cosecha técnica y una excelente.",
                 image: "/img/productos/day-0/perspectiva-2-grande-amarillo-sin-fondo.png",
                 color: "#F0D56D",
                 stat: "02",
@@ -582,7 +584,7 @@ export const productDetails = {
             {
                 kicker: "TIMING",
                 title: "Programable al día.",
-                body: "10-14 días antes del corte estimado. La planta ajusta su metabolismo y el cultivador llega al día 0 con una flor pulida.",
+                body: "5 días antes del corte estimado. La planta ajusta su metabolismo y el cultivador llega al día 0 con una flor pulida.",
                 image: "/img/productos/day-0/lateral-grande-amarillo-sin-fondo.png",
                 color: "#C9A34E",
                 stat: "03",
@@ -597,17 +599,17 @@ export const productDetails = {
             },
         ],
         bigStat: {
-            num: 14,
+            num: 5,
             suffix: " días",
             label: "PROTOCOLO DE CIERRE",
-            body: "Programá el último riego de Day-0 catorce días antes del corte estimado. La planta usa esos días para metabolizar reservas internas y entregar el sabor final más limpio posible.",
+            body: "Programá el último riego de Day-0 cinco días antes del corte estimado. La planta usa esos días para metabolizar reservas internas y entregar el sabor final más limpio posible.",
         },
         features: [
             { title: "Activa metabolitos",     body: "Estimula la conversión final de azúcares y aceites esenciales.",                emoji: "✦" },
             { title: "Sin shock",               body: "Transición suave del nutriente principal a la fase de cierre.",                  emoji: "◇" },
             { title: "Mejora aromas",           body: "Las plantas tratadas con Day-0 muestran perfil aromático más definido.",         emoji: "♥" },
             { title: "Compatibilidad total",    body: "Después de cualquier línea Holistic — Elite, Pro, Race.",                       emoji: "↯" },
-            { title: "Aplicación simple",       body: "Una sola dosis por riego en los últimos 10-14 días. Sin escalones complejos.",   emoji: "○" },
+            { title: "Aplicación simple",       body: "Una sola dosis por riego en los últimos 5 días. Sin escalones complejos.",   emoji: "○" },
             { title: "Validado en cultivo",     body: "Probado en variedades indoor/outdoor con resultado consistente.",                emoji: "✓" },
         ],
         formats: [
@@ -619,10 +621,12 @@ export const productDetails = {
             body: "Day-0 es la última decisión del cultivo. Después de Elite, Pro o Race — antes del corte. Cierra el ciclo con la calidad que merece.",
             chips: ["+ Elite", "+ Pro", "+ Race"],
         },
-        pullquote: "Lo que diferencia una cosecha buena de una perfecta se decide en los últimos días.",
+        // Pullquote removido por pedido del cliente (sección arriba de
+        // "Datos del producto"). Vacío → el bloque no se renderiza.
+        pullquote: "",
         techSpecs: [
             { label: "Forma",             value: "Líquido / 250 ml" },
-            { label: "Aplicación",         value: "Últimos 10-14 días pre-cosecha" },
+            { label: "Aplicación",         value: "Últimos 5 días pre-cosecha" },
             { label: "Dosis",              value: "1-2 ml/L según protocolo" },
             { label: "Compatibilidad",     value: "Cualquier línea Holistic + sustratos minerales" },
             { label: "Función",             value: "Limpieza de residuos + activación metabolitos" },
