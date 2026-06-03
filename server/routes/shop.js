@@ -448,6 +448,31 @@ async function migrate() {
     WHERE NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `);
 
+  // ─── Reconciliación de imágenes Race (fix de paths viejos) ────────────────
+  // El seed de arriba usa `WHERE NOT EXISTS`, así que en deploys que ya tenían
+  // filas en product_images (sembradas con una organización vieja de la línea
+  // Race: "floración part-a/b", "pk-rosa", race-4 celeste) los paths corregidos
+  // NUNCA se reaplican → quedan apuntando a archivos que no existen (404).
+  // Acá mapeamos cada URL vieja → el render real que corresponde por COLOR
+  // (verde/celeste/violeta/rosa son los 5 únicos renders por tamaño que existen).
+  // Idempotente: tras la 1ª corrida las URLs viejas ya no existen → no-op.
+  await safeQuery(`
+    UPDATE product_images pi SET url = m.new_url
+    FROM (VALUES
+      -- 250ml: floración morado → violeta · pk-rosa/race-4 → rosa
+      ('/img/productos/linea-race/250ml/race-2-part-a.png',     '/img/productos/linea-race/250ml/race-3-violeta-a.png'),
+      ('/img/productos/linea-race/250ml/race-2-part-b.png',     '/img/productos/linea-race/250ml/race-3-violeta-b.png'),
+      ('/img/productos/linea-race/250ml/race-3-rosa.png',       '/img/productos/linea-race/250ml/race-4-rosa.png'),
+      ('/img/productos/linea-race/250ml/race-4-celeste.png',    '/img/productos/linea-race/250ml/race-4-rosa.png'),
+      -- 500ml: mismos mapeos
+      ('/img/productos/linea-race/500ml/race-2-part-a-500ml.png','/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png'),
+      ('/img/productos/linea-race/500ml/race-2-part-b-500ml.png','/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png'),
+      ('/img/productos/linea-race/500ml/race-3-rosa-500ml.png',  '/img/productos/linea-race/500ml/race-4-rosa-500ml.png'),
+      ('/img/productos/linea-race/500ml/race-4-celeste-500ml.png','/img/productos/linea-race/500ml/race-4-rosa-500ml.png')
+    ) AS m(old_url, new_url)
+    WHERE pi.url = m.old_url
+  `, "reconcile race image paths");
+
   // ─── Bundles (Diseño C): marcar los 3 "kit" de línea como bundles ─────────
   // meta.bundle=true → "comprar junto". bundle_line conecta con las variantes
   // individuales (capa derivada en variantGroup/buildBundle). bundle_discount_pct
@@ -480,6 +505,17 @@ async function migrate() {
     ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
     JOIN product_categories c ON c.slug = v.cat_slug
     ON CONFLICT (slug) DO NOTHING`, "packs puntos");
+
+  // Imagen de los packs de puntos: no hay render fotográfico, usamos un SVG
+  // on-brand (💎 Puntos Holistic) servido desde landing/public. NOT EXISTS para
+  // idempotencia (no pisa una imagen que el admin haya cargado después).
+  await safeQuery(`
+    INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+    SELECT p.id, '/img/productos/puntos/pack-puntos.svg', p.name, 0, TRUE
+    FROM products p
+    WHERE p.slug IN ('pack-50-puntos','pack-100-puntos','pack-250-puntos')
+      AND NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
+  `, "img packs puntos");
 
   // ═════════════════════════════════════════════════════════════════════════
   // F2: ORDERS — carrito + checkout + MercadoPago
