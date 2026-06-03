@@ -45,7 +45,7 @@ const Icon = ({ name, size = 18 }) => {
 const NAV_BASE = [
     { path: "/inicio",  label: "Inicio", icon: "home" },
     { path: "/shop",    label: "Tienda", icon: "shop" },
-    { path: "/coins",   label: "Coins",  icon: "coins" },
+    { path: "/coins",   label: "Puntos", icon: "coins" },
     { path: "/chat",    label: "Chat",   icon: "chat" },
 ];
 const NAV_BY_ROLE = {

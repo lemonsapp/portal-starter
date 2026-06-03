@@ -713,14 +713,33 @@ export default function Coins() {
   const [loading, setLoading] = useState(true);
   const [showSpin, setShowSpin] = useState(false);
   const [particles, setParticles] = useState([]);
+  const [customerCode, setCustomerCode] = useState("");
+  const [pesoPerPoint, setPesoPerPoint] = useState(2000);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
     fetch(`${API}/profile`,{headers:hdrs()}).then(r=>r.json()).then(d=>{
       if (d.coins) { setBalance(d.coins.balance||0); setTotalEarned(d.coins.total_earned||0); }
-      if (d.user) setLevel(d.user.level||"bronze");
+      if (d.user) {
+        setLevel(d.user.level||"bronze");
+        // Sistema de Puntos: traer código de cliente + valor del punto.
+        if (d.user.id) {
+          fetch(`${API}/coins/${d.user.id}`,{headers:hdrs()})
+            .then(r=>r.json())
+            .then(c=>{ setCustomerCode(c.customer_code||""); setPesoPerPoint(c.peso_per_point||2000); })
+            .catch(()=>{});
+        }
+      }
       setLoading(false);
     });
   }, []);
+
+  function copyCode() {
+    if (!customerCode) return;
+    navigator.clipboard?.writeText(customerCode);
+    setCopiedCode(true);
+    setTimeout(()=>setCopiedCode(false), 2000);
+  }
 
   const spawn = (n=12) => {
     const ps = Array.from({length:n},(_,i)=>({id:Date.now()+i,x:15+Math.random()*70,delay:Math.random()*0.6}));
@@ -793,12 +812,12 @@ export default function Coins() {
           <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"32px 36px",marginBottom:28,overflow:"hidden",display:"block" }}>
             <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--lemon),var(--orange),transparent)" }}/>
             <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px)",backgroundSize:"48px 48px",pointerEvents:"none",opacity:.7 }}/>
-            <div style={{ position:"absolute",right:-30,bottom:-50,fontFamily:"'Gotham', sans-serif",fontSize:"clamp(140px,18vw,260px)",lineHeight:.78,letterSpacing:"-6px",color:"transparent",WebkitTextStroke:"1px rgba(var(--brand-primary-rgb),.04)",pointerEvents:"none",userSelect:"none" }}>COINS</div>
+            <div style={{ position:"absolute",right:-30,bottom:-50,fontFamily:"'Gotham', sans-serif",fontSize:"clamp(140px,18vw,260px)",lineHeight:.78,letterSpacing:"-6px",color:"transparent",WebkitTextStroke:"1px rgba(var(--brand-primary-rgb),.04)",pointerEvents:"none",userSelect:"none" }}>PUNTOS</div>
 
             <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:24,position:"relative",zIndex:2 }}>
               <div>
                 <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:10,letterSpacing:"2.4px",textTransform:"uppercase",color:"var(--orange)",display:"flex",alignItems:"center",gap:12,marginBottom:14 }}>
-                  <span style={{ width:28,height:1,background:"var(--orange)" }}/>Coins
+                  <span style={{ width:28,height:1,background:"var(--orange)" }}/>Puntos
                 </div>
                 <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:"clamp(48px,6.4vw,80px)",lineHeight:.92,letterSpacing:"-0.03em",color:"var(--text)",marginBottom:6 }}>
                   TU <em style={{ fontStyle:"normal",color:"var(--lemon)" }}>BALANCE</em>
@@ -809,6 +828,21 @@ export default function Coins() {
                   </CountUp>
                   <span style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:13,color:"var(--muted2)",letterSpacing:"2.4px" }}>🪙</span>
                 </div>
+                {/* Equivalencia en $ (Sistema de Puntos: 1 punto = $peso_per_point) */}
+                <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:13,color:"var(--muted2)",marginBottom:14 }}>
+                  ≈ <span style={{ color:"var(--lemon)",fontWeight:900 }}>${(balance*pesoPerPoint).toLocaleString("es-AR")}</span> en valor de canje
+                  <span style={{ color:"#444",marginLeft:8 }}>· 1 punto = ${pesoPerPoint.toLocaleString("es-AR")}</span>
+                </div>
+
+                {/* Código de cliente — para sumar puntos en compras externas */}
+                {customerCode && (
+                  <div style={{ display:"inline-flex",alignItems:"center",gap:10,background:"rgba(255,255,255,.04)",border:"1px solid var(--border2)",borderRadius:12,padding:"8px 12px",marginBottom:16 }}>
+                    <span style={{ fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"var(--muted2)",fontWeight:700 }}>Tu código</span>
+                    <code style={{ fontFamily:"'Gotham', monospace",fontSize:15,fontWeight:900,color:"var(--lemon)",letterSpacing:1 }}>{customerCode}</code>
+                    <button onClick={copyCode} style={{ background:copiedCode?"#22c55e":"rgba(var(--brand-primary-rgb),.15)",color:copiedCode?"#000":"var(--lemon)",border:"none",borderRadius:8,padding:"5px 10px",fontSize:11,fontWeight:800,cursor:"pointer",fontFamily:"inherit" }}>{copiedCode?"✓ Copiado":"Copiar"}</button>
+                  </div>
+                )}
+
                 <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:10,letterSpacing:"1.6px",color:"var(--muted2)",marginBottom:18,textTransform:"uppercase" }}>Total ganado: <span style={{ color:"var(--lemon)",fontWeight:900 }}>{Number(totalEarned).toLocaleString()}</span></div>
 
                 <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:10 }}>
