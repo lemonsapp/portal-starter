@@ -676,6 +676,8 @@ async function migrate() {
   // Agregar columnas a orders para tracking del descuento aplicado (idempotente).
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS promo_code TEXT`);
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_cents INT NOT NULL DEFAULT 0`);
+  // Puntos (F3): flag idempotente para no acreditar dos veces al pagar.
+  await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS points_credited BOOLEAN NOT NULL DEFAULT FALSE`);
 
   // Seed de códigos TEST para que el admin pueda probar el flow inmediato.
   await db.query(`

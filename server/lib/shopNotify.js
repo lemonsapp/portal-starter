@@ -356,7 +356,74 @@ async function onOrderCreated(order, items) {
  * Disparado por webhook MP cuando status pasa a paid.
  * Envía email confirmando pago al cliente + actualiza broadcast admin.
  */
+// Acredita puntos a un usuario (upsert coins + movimiento). No-op si points<=0.
+async function addPoints(userId, points, type, reason, canal, amountCents) {
+  if (!userId || points <= 0) return;
+  await db.query(
+    `INSERT INTO coins (user_id, balance, total_earned) VALUES ($1, $2, $2)
+     ON CONFLICT (user_id) DO UPDATE SET balance = coins.balance + $2,
+       total_earned = coins.total_earned + $2, updated_at = NOW()`,
+    [userId, points]
+  );
+  await db.query(
+    `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, amount_cents)
+     VALUES ($1, $2, $3, $4, $5, 'sistema', $6)`,
+    [userId, type, points, reason, canal, amountCents || null]
+  );
+}
+
+// F3: acreditación automática de puntos al confirmarse el pago de una orden web.
+// Idempotente (orders.points_credited). Solo para compras de usuarios logueados.
+// Excluye envío y descuento. Detecta "packs de puntos" (product.meta.points_pack)
+// y los acredita aparte como compra_puntos (sin ganar 1pt/$2000 sobre ese ítem).
+async function creditOrderPoints(order) {
+  if (!order?.user_id || !order?.id) return;
+  try {
+    const guard = await db.query(
+      `UPDATE orders SET points_credited = TRUE WHERE id = $1 AND points_credited IS NOT TRUE RETURNING id`,
+      [order.id]
+    );
+    if (!guard.rows[0]) return; // ya acreditada
+
+    const its = await db.query(
+      `SELECT oi.line_total_cents, oi.quantity, p.meta
+       FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
+       WHERE oi.order_id = $1`,
+      [order.id]
+    );
+    let packPoints = 0, packCents = 0;
+    for (const it of its.rows) {
+      const pp = it.meta && it.meta.points_pack ? parseInt(it.meta.points_pack, 10) : 0;
+      if (pp > 0) { packPoints += pp * it.quantity; packCents += it.line_total_cents; }
+    }
+
+    let pesoPerPoint = 2000;
+    try {
+      const cfg = await db.query(`SELECT value FROM point_config WHERE key='peso_per_point'`);
+      const v = parseInt(cfg.rows[0]?.value, 10);
+      if (Number.isFinite(v) && v > 0) pesoPerPoint = v;
+    } catch (_) {}
+
+    const baseCents = Math.max(0, (order.subtotal_cents || 0) - (order.discount_cents || 0) - packCents);
+    const earnPoints = Math.floor((baseCents / 100) / pesoPerPoint);
+
+    if (packPoints > 0) {
+      await addPoints(order.user_id, packPoints, "compra_puntos",
+        `Compra de ${packPoints} puntos · ${order.public_id}`, "compra_puntos", packCents);
+    }
+    if (earnPoints > 0) {
+      await addPoints(order.user_id, earnPoints, "compra_web",
+        `Compra web ${order.public_id}`, "web", baseCents);
+    }
+  } catch (e) {
+    console.error("[shopNotify creditOrderPoints]", e.message);
+  }
+}
+
 async function onOrderPaid(order, items) {
+  // Puntos (F3): acreditar antes de notificar (idempotente y non-fatal).
+  await creditOrderPoints(order);
+
   sendResendEmail({
     to: order.customer_email,
     subject: `Pago confirmado · ${order.public_id}`,
