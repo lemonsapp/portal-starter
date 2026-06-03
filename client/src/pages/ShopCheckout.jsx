@@ -1,15 +1,19 @@
 // client/src/pages/ShopCheckout.jsx
 //
-// Checkout — Sprint 14 F2 (2026-05-23). Form de datos del cliente +
-// dirección de envío, resumen del carrito, botón "Pagar con MercadoPago".
+// Checkout — REWRITE editorial botánico (2026-06-03). Form de datos +
+// dirección de envío, resumen sticky del carrito, código promocional y
+// botón "Pagar con MercadoPago". Estilos en styles/shop-checkout.css
+// (clases reales con media queries e inputs con focus ring — reemplaza el
+// style-object inline y los window.innerWidth que no reaccionaban al resize).
+//
 // El submit pega a POST /api/shop/checkout que crea la orden y devuelve
-// init_point (URL de MercadoPago Checkout Pro) o un fallback de "orden
-// pendiente" si MP no está configurado.
+// init_point (MercadoPago Checkout Pro) o un fallback de "orden pendiente".
 
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart, formatARS } from "../lib/useCart.js";
 import { useBranding } from "../lib/branding.js";
+import "../styles/shop-checkout.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -19,86 +23,6 @@ const PROVINCIAS_AR = [
   "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe",
   "Santiago del Estero", "Tierra del Fuego", "Tucumán",
 ];
-
-const styles = {
-  shell: {
-    minHeight: "100vh",
-    background: "var(--brand-bg, var(--c-bg))",
-    color: "var(--brand-text, var(--c-text))",
-    fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
-    padding: "32px 20px 80px",
-  },
-  container: { maxWidth: 1140, margin: "0 auto" },
-  back: {
-    display: "inline-flex", alignItems: "center", gap: 8,
-    color: "rgba(var(--c-text-rgb),.7)", textDecoration: "none",
-    fontSize: 13, fontWeight: 600, marginBottom: 24,
-  },
-  h1: {
-    fontFamily: "'Gotham', sans-serif",
-    fontSize: "clamp(2rem, 4vw, 2.6rem)", fontWeight: 900,
-    margin: "0 0 8px", letterSpacing: "-0.02em", textTransform: "uppercase",
-  },
-  sub: { color: "rgba(var(--c-text-rgb),.65)", marginBottom: 28, fontSize: 14 },
-  layout: {
-    display: "grid",
-    gridTemplateColumns: "1.4fr 1fr",
-    gap: "clamp(24px, 4vw, 48px)",
-    alignItems: "start",
-  },
-  card: {
-    background: "var(--c-surface)",
-    border: "1px solid var(--c-border)",
-    borderRadius: 14,
-    padding: "clamp(20px, 3vw, 28px)",
-    marginBottom: 18,
-  },
-  sectionH: {
-    fontSize: 12, fontWeight: 800, letterSpacing: ".24em",
-    textTransform: "uppercase", color: "var(--brand-primary, var(--c-accent))",
-    margin: "0 0 14px",
-  },
-  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
-  grid3: { display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 12 },
-  label: { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(var(--c-text-rgb),.55)", marginBottom: 6 },
-  input: {
-    width: "100%", padding: "11px 13px", fontSize: 14,
-    background: "var(--c-surface-2)",
-    border: "1px solid var(--c-border-2)",
-    borderRadius: 8, color: "inherit", fontFamily: "inherit",
-    boxSizing: "border-box",
-  },
-  row: { marginBottom: 12 },
-  err: {
-    padding: 10, marginBottom: 14, borderRadius: 8,
-    background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.35)",
-    color: "var(--c-danger)", fontSize: 13,
-  },
-  summaryHead: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
-  summaryRow: {
-    display: "grid", gridTemplateColumns: "48px 1fr auto",
-    gap: 10, padding: "8px 0",
-    borderBottom: "1px solid var(--c-border)",
-    alignItems: "center",
-  },
-  summaryImg: { width: 48, height: 48, objectFit: "contain", borderRadius: 6, background: "var(--c-surface-2)", padding: 4 },
-  totals: { marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--c-border-2)" },
-  totalLine: { display: "flex", justifyContent: "space-between", fontSize: 14, marginBottom: 6 },
-  totalGrand: { fontSize: 22, fontWeight: 900, color: "var(--brand-primary, var(--c-accent))" },
-  cta: {
-    width: "100%", padding: "16px 22px", marginTop: 18,
-    borderRadius: 999, border: "none",
-    background: "linear-gradient(135deg, var(--c-accent-2) 0%, #2E8F6E 100%)",
-    color: "#fff", fontFamily: "inherit",
-    fontWeight: 900, fontSize: 14, letterSpacing: ".06em", textTransform: "uppercase",
-    cursor: "pointer",
-    boxShadow: "0 14px 30px -8px rgba(46,143,110,.55)",
-  },
-  ctaDisabled: {
-    background: "var(--c-border)", color: "rgba(var(--c-text-rgb),.4)",
-    cursor: "not-allowed", boxShadow: "none",
-  },
-};
 
 export default function ShopCheckout() {
   useBranding();
@@ -155,8 +79,6 @@ export default function ShopCheckout() {
   // Redirect a /shop si el carrito está vacío.
   useEffect(() => {
     if (items.length === 0) {
-      // Pequeño delay para no chocar con re-renders post mutación; si sigue
-      // vacío después de mounted, redirigimos.
       const t = setTimeout(() => {
         if (items.length === 0) navigate("/shop", { replace: true });
       }, 80);
@@ -219,14 +141,11 @@ export default function ShopCheckout() {
       //   • free: true → orden 100% off (paid directo, skip MP)
       //   • init_point → URL de MP Checkout Pro → redirect
       //   • ninguno → fallback manual (MP no configurado)
-      // En todos los casos guardamos el public_id en sessionStorage para
-      // que la success page pueda recuperarlo + clear cart al montarse.
       if (data.public_id) {
         sessionStorage.setItem("holistic.lastOrder", data.public_id);
         if (data.free) sessionStorage.setItem("holistic.lastOrderFree", "1");
       }
       if (data.init_point) {
-        // MercadoPago redirect (Checkout Pro)
         window.location.href = data.init_point;
         return;
       }
@@ -241,197 +160,168 @@ export default function ShopCheckout() {
   }
 
   return (
-    <div className="theme-light" style={styles.shell}>
-      <div style={styles.container}>
-        <Link to="/shop" style={styles.back}>← Seguir comprando</Link>
-        <h1 style={styles.h1}>Finalizar compra</h1>
-        <p style={styles.sub}>Completá tus datos de contacto y envío. El pago se procesa por MercadoPago — aceptamos tarjetas y efectivo.</p>
+    <div className="co-page theme-light">
+      <div className="co-container">
+        <Link to="/shop" className="co-back">
+          <span className="co-arrow">←</span> Seguir comprando
+        </Link>
+        <h1 className="co-title">Finalizar <span className="co-em">compra</span></h1>
+        <p className="co-sub">
+          Completá tus datos de contacto y envío. El pago se procesa por MercadoPago — aceptamos tarjetas y efectivo.
+        </p>
 
         {isGuest && (
-          <div style={{ display:"flex", alignItems:"center", gap:14, flexWrap:"wrap", padding:"14px 18px", marginBottom:20, borderRadius:"var(--r-3,14px)", background:"var(--c-accent-soft)", border:"1px solid var(--c-border-2)" }}>
-            <span style={{ fontSize:22 }} aria-hidden="true">💚</span>
-            <div style={{ flex:1, minWidth:200 }}>
-              <div style={{ fontWeight:800, fontSize:14, color:"var(--c-text)" }}>Comprás como invitado — recibís todo por email igual</div>
-              <div style={{ fontSize:13, color:"var(--c-text-2)", marginTop:2, lineHeight:1.5 }}>Te recomendamos crear tu cuenta: seguís tus pedidos, sumás coins y la próxima comprás más rápido.</div>
+          <div className="co-guest">
+            <span className="co-guest-ico" aria-hidden="true">💚</span>
+            <div className="co-guest-body">
+              <div className="co-guest-title">Comprás como invitado — recibís todo por email igual</div>
+              <div className="co-guest-text">Te recomendamos crear tu cuenta: seguís tus pedidos, sumás puntos y la próxima comprás más rápido.</div>
             </div>
-            <Link to="/register" style={{ flexShrink:0, padding:"10px 20px", borderRadius:"var(--r-pill,999px)", background:"var(--c-accent)", color:"#fff", fontWeight:800, fontSize:13, textDecoration:"none", whiteSpace:"nowrap" }}>Registrarme →</Link>
+            <Link to="/register" className="co-guest-cta">Registrarme →</Link>
           </div>
         )}
 
-        {err && <div style={styles.err}>{err}</div>}
+        {err && <div className="co-error">{err}</div>}
 
-        <div style={{ ...styles.layout, gridTemplateColumns: window.innerWidth < 900 ? "1fr" : styles.layout.gridTemplateColumns }}>
+        <div className="co-layout">
           {/* ── Form datos ── */}
-          <div>
-            <div style={styles.card}>
-              <h3 style={styles.sectionH}>Contacto</h3>
-              <div style={styles.row}>
-                <label style={styles.label}>Email *</label>
-                <input style={styles.input} type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="tunombre@correo.com" autoComplete="email" />
+          <div className="co-reveal">
+            <div className="co-card">
+              <h3 className="co-section-h">Contacto</h3>
+              <div className="co-row">
+                <label className="co-label">Email *</label>
+                <input className="co-input" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="tunombre@correo.com" autoComplete="email" />
               </div>
-              <div style={styles.grid2}>
+              <div className="co-grid2">
                 <div>
-                  <label style={styles.label}>Nombre *</label>
-                  <input style={styles.input} value={form.firstName} onChange={(e) => set("firstName", e.target.value)} autoComplete="given-name" />
+                  <label className="co-label">Nombre *</label>
+                  <input className="co-input" value={form.firstName} onChange={(e) => set("firstName", e.target.value)} autoComplete="given-name" />
                 </div>
                 <div>
-                  <label style={styles.label}>Apellido</label>
-                  <input style={styles.input} value={form.lastName} onChange={(e) => set("lastName", e.target.value)} autoComplete="family-name" />
+                  <label className="co-label">Apellido</label>
+                  <input className="co-input" value={form.lastName} onChange={(e) => set("lastName", e.target.value)} autoComplete="family-name" />
                 </div>
               </div>
-              <div style={styles.row}>
-                <label style={styles.label}>Teléfono / WhatsApp *</label>
-                <input style={styles.input} type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+54 9 11 1234 5678" autoComplete="tel" />
+              <div className="co-row" style={{ marginTop: 14 }}>
+                <label className="co-label">Teléfono / WhatsApp *</label>
+                <input className="co-input" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+54 9 11 1234 5678" autoComplete="tel" />
               </div>
             </div>
 
-            <div style={styles.card}>
-              <h3 style={styles.sectionH}>Dirección de envío</h3>
-              <div style={styles.grid3}>
+            <div className="co-card">
+              <h3 className="co-section-h">Dirección de envío</h3>
+              <div className="co-grid3">
                 <div>
-                  <label style={styles.label}>Calle *</label>
-                  <input style={styles.input} value={form.street} onChange={(e) => set("street", e.target.value)} autoComplete="street-address" />
+                  <label className="co-label">Calle *</label>
+                  <input className="co-input" value={form.street} onChange={(e) => set("street", e.target.value)} autoComplete="street-address" />
                 </div>
                 <div>
-                  <label style={styles.label}>Número *</label>
-                  <input style={styles.input} value={form.number} onChange={(e) => set("number", e.target.value)} />
+                  <label className="co-label">Número *</label>
+                  <input className="co-input" value={form.number} onChange={(e) => set("number", e.target.value)} />
                 </div>
                 <div>
-                  <label style={styles.label}>Depto / piso</label>
-                  <input style={styles.input} value={form.apartment} onChange={(e) => set("apartment", e.target.value)} placeholder="3B" />
+                  <label className="co-label">Depto / piso</label>
+                  <input className="co-input" value={form.apartment} onChange={(e) => set("apartment", e.target.value)} placeholder="3B" />
                 </div>
               </div>
-              <div style={styles.grid3}>
+              <div className="co-grid3" style={{ marginTop: 14 }}>
                 <div>
-                  <label style={styles.label}>Ciudad *</label>
-                  <input style={styles.input} value={form.city} onChange={(e) => set("city", e.target.value)} autoComplete="address-level2" />
+                  <label className="co-label">Ciudad *</label>
+                  <input className="co-input" value={form.city} onChange={(e) => set("city", e.target.value)} autoComplete="address-level2" />
                 </div>
                 <div>
-                  <label style={styles.label}>Provincia *</label>
-                  <select style={styles.input} value={form.province} onChange={(e) => set("province", e.target.value)} autoComplete="address-level1">
+                  <label className="co-label">Provincia *</label>
+                  <select className="co-input" value={form.province} onChange={(e) => set("province", e.target.value)} autoComplete="address-level1">
                     {PROVINCIAS_AR.map((p) => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={styles.label}>Código postal *</label>
-                  <input style={styles.input} value={form.postalCode} onChange={(e) => set("postalCode", e.target.value)} autoComplete="postal-code" />
+                  <label className="co-label">Código postal *</label>
+                  <input className="co-input" value={form.postalCode} onChange={(e) => set("postalCode", e.target.value)} autoComplete="postal-code" />
                 </div>
               </div>
-              <div style={styles.row}>
-                <label style={styles.label}>Notas para el envío</label>
-                <textarea style={{ ...styles.input, minHeight: 70, resize: "vertical" }} value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Entre tal y cual calle / dejar con el portero / etc." />
+              <div className="co-row" style={{ marginTop: 14 }}>
+                <label className="co-label">Notas para el envío</label>
+                <textarea className="co-input" value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Entre tal y cual calle / dejar con el portero / etc." />
               </div>
             </div>
           </div>
 
           {/* ── Resumen del pedido ── */}
-          <div style={{ position: window.innerWidth < 900 ? "static" : "sticky", top: 24 }}>
-            <div style={styles.card}>
-              <div style={styles.summaryHead}>
-                <h3 style={styles.sectionH}>Tu pedido</h3>
-                <Link to="/shop" style={{ fontSize: 11, color: "rgba(var(--c-text-rgb),.6)" }}>Editar</Link>
+          <div className="co-summary-wrap co-reveal">
+            <div className="co-card">
+              <div className="co-summary-head">
+                <h3 className="co-section-h">Tu pedido</h3>
+                <Link to="/shop" className="co-summary-edit">Editar</Link>
               </div>
 
               {items.map((i) => (
-                <div key={i.id} style={styles.summaryRow}>
+                <div key={i.id} className="co-item">
                   {i.primary_image
-                    ? <img src={i.primary_image} alt="" style={styles.summaryImg} />
-                    : <div style={{ ...styles.summaryImg, background: "var(--c-border)" }} />
+                    ? <img src={i.primary_image} alt="" className="co-item-img" />
+                    : <div className="co-item-img" />
                   }
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600 }}>{i.name}</div>
-                    <div style={{ fontSize: 11, color: "rgba(var(--c-text-rgb),.55)" }}>Cantidad: {i.quantity}</div>
+                    <div className="co-item-name">{i.name}</div>
+                    <div className="co-item-qty">Cantidad: {i.quantity}</div>
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--brand-primary, var(--c-accent))" }}>
-                    {formatARS(i.price_cents * i.quantity)}
-                  </div>
+                  <div className="co-item-price">{formatARS(i.price_cents * i.quantity)}</div>
                 </div>
               ))}
 
-              <div style={styles.totals}>
-                <div style={styles.totalLine}>
-                  <span style={{ color: "rgba(var(--c-text-rgb),.65)" }}>Subtotal</span>
-                  <span style={{ fontWeight: 600 }}>{formatARS(subtotalCents)}</span>
+              <div className="co-totals">
+                <div className="co-total-line">
+                  <span className="co-muted">Subtotal</span>
+                  <span>{formatARS(subtotalCents)}</span>
                 </div>
-                <div style={styles.totalLine}>
-                  <span style={{ color: "rgba(var(--c-text-rgb),.65)" }}>Envío</span>
-                  <span style={{ fontWeight: 600 }}>A coordinar</span>
+                <div className="co-total-line">
+                  <span className="co-muted">Envío</span>
+                  <span>A coordinar</span>
                 </div>
                 {promoApplied && (
-                  <div style={styles.totalLine}>
-                    <span style={{ color: "var(--brand-primary, var(--c-accent))" }}>
-                      🎟️ {promoApplied.code}
-                    </span>
-                    <span style={{ fontWeight: 600, color: "var(--brand-primary, var(--c-accent))" }}>
-                      −{promoApplied.discount_formatted}
-                    </span>
+                  <div className="co-total-line">
+                    <span className="co-accent">🎟️ {promoApplied.code}</span>
+                    <span className="co-accent">−{promoApplied.discount_formatted}</span>
                   </div>
                 )}
-                <div style={{ ...styles.totalLine, marginTop: 10 }}>
-                  <span style={{ fontWeight: 700 }}>Total</span>
-                  <span style={styles.totalGrand}>{formatARS(totalCents)}</span>
+                <div className="co-total-grand-row">
+                  <span className="co-total-grand-label">Total</span>
+                  <span className="co-total-grand">{formatARS(totalCents)}</span>
                 </div>
               </div>
 
-              {/* ── Campo de código promocional ── */}
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--c-border)" }}>
+              {/* ── Código promocional ── */}
+              <div className="co-promo">
                 {!promoApplied ? (
                   <>
-                    <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(var(--c-text-rgb),.55)", marginBottom: 6, display: "block" }}>
-                      🎟️ Código promocional
-                    </label>
-                    <div style={{ display: "flex", gap: 8 }}>
+                    <label className="co-promo-label">🎟️ Código promocional</label>
+                    <div className="co-promo-row">
                       <input
                         type="text"
+                        className="co-promo-input"
                         value={promoInput}
                         onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
                         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyPromoCode(); } }}
                         placeholder="TEST10"
-                        style={{
-                          flex: 1, padding: "10px 12px", fontSize: 13,
-                          background: "var(--c-surface-2)",
-                          border: "1px solid var(--c-border-2)",
-                          borderRadius: 8, color: "inherit", fontFamily: "inherit",
-                          letterSpacing: ".06em", textTransform: "uppercase",
-                        }}
                       />
                       <button
                         type="button"
+                        className="co-promo-btn"
                         onClick={applyPromoCode}
                         disabled={promoChecking || !promoInput.trim()}
-                        style={{
-                          padding: "10px 16px", borderRadius: 8, border: "none",
-                          background: "rgba(var(--c-accent-rgb),.12)",
-                          color: "var(--brand-primary, var(--c-accent))",
-                          fontFamily: "inherit", fontWeight: 700, fontSize: 12,
-                          letterSpacing: ".08em", textTransform: "uppercase",
-                          cursor: promoChecking || !promoInput.trim() ? "not-allowed" : "pointer",
-                          opacity: promoChecking || !promoInput.trim() ? 0.5 : 1,
-                        }}
                       >
                         {promoChecking ? "..." : "Aplicar"}
                       </button>
                     </div>
                   </>
                 ) : (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 12, color: "var(--brand-primary, var(--c-accent))", fontWeight: 700 }}>
-                      ✓ {promoApplied.code} aplicado
-                    </span>
-                    <button
-                      type="button"
-                      onClick={clearPromo}
-                      style={{ background: "transparent", border: "none", color: "rgba(var(--c-text-rgb),.55)", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}
-                    >
-                      Quitar
-                    </button>
+                  <div className="co-promo-applied">
+                    <span className="co-promo-applied-tag">✓ {promoApplied.code} aplicado</span>
+                    <button type="button" className="co-promo-remove" onClick={clearPromo}>Quitar</button>
                   </div>
                 )}
                 {promoMsg && (
-                  <div style={{
-                    marginTop: 8, fontSize: 11,
-                    color: promoMsg.type === "ok" ? "var(--brand-primary, var(--c-accent))" : "var(--c-danger)",
-                  }}>
+                  <div className={`co-promo-msg ${promoMsg.type === "ok" ? "is-ok" : "is-err"}`}>
                     {promoMsg.text}
                   </div>
                 )}
@@ -440,17 +330,11 @@ export default function ShopCheckout() {
               <button
                 onClick={submit}
                 disabled={!isValid || submitting}
-                style={{ ...styles.cta, ...((!isValid || submitting) ? styles.ctaDisabled : {}) }}
+                className="co-cta"
               >
                 {submitting ? (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-                    <span style={{
-                      width: 16, height: 16, borderRadius: "50%",
-                      border: "2px solid rgba(255,255,255,.3)",
-                      borderTopColor: "#fff",
-                      animation: "holistic-spin .8s linear infinite",
-                      display: "inline-block",
-                    }} />
+                  <span className="co-spinner-row">
+                    <span className="co-spinner" />
                     Procesando tu compra…
                   </span>
                 ) : totalCents === 0 ? (
@@ -459,10 +343,8 @@ export default function ShopCheckout() {
                   "Pagar con MercadoPago →"
                 )}
               </button>
-              {/* Keyframes inline para el spinner — no afecta otros componentes */}
-              <style>{`@keyframes holistic-spin { to { transform: rotate(360deg); } }`}</style>
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14, fontSize: 11, color: "rgba(var(--c-text-rgb),.55)" }}>
+              <div className="co-trust">
                 <span>🔒 Pago seguro</span>
                 <span>💳 Tarjetas + efectivo</span>
                 <span>📦 Envío 48 hs</span>
