@@ -704,6 +704,150 @@ function Gift({ balance, onGift }) {
   );
 }
 
+// ── CANJES (Sistema de Puntos) ───────────────────────────────────────────────
+function Canjes({ balance, userId, onRedeem }) {
+  const [rewards, setRewards] = useState([]);
+  const [redemptions, setRedemptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(null);
+  const [result, setResult] = useState(null);   // { kind, label, coupon }
+  const [err, setErr] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  function loadRewards() {
+    fetch(`${API}/coins/rewards`, { headers: hdrs() })
+      .then(r => r.json()).then(d => setRewards(d.rewards || [])).catch(() => {});
+  }
+  function loadRedemptions() {
+    if (!userId) return;
+    fetch(`${API}/coins/${userId}`, { headers: hdrs() })
+      .then(r => r.json()).then(d => setRedemptions(d.point_redemptions || [])).catch(() => {});
+  }
+  useEffect(() => { loadRewards(); setLoading(false); loadRedemptions(); /* eslint-disable-next-line */ }, [userId]);
+
+  async function redeem(rw) {
+    if (balance < rw.cost_points || busy) return;
+    if (!confirm(`Canjear ${rw.cost_points} puntos por "${rw.label}"?`)) return;
+    setBusy(rw.slug); setErr(""); setResult(null);
+    try {
+      const r = await fetch(`${API}/coins/redeem-points`, {
+        method: "POST", headers: hdrs(), body: JSON.stringify({ reward_slug: rw.slug }),
+      });
+      const d = await r.json();
+      if (!r.ok) setErr(d.error || "Error al canjear");
+      else {
+        setResult({ kind: rw.kind, label: rw.label, coupon: d.coupon_code });
+        onRedeem?.(rw.cost_points);
+        loadRedemptions();
+        if (rw.kind === "premio") loadRewards(); // refrescar stock
+      }
+    } catch { setErr("Error de conexión"); }
+    setBusy(null);
+  }
+
+  function copyCoupon(code) {
+    navigator.clipboard?.writeText(code);
+    setCopied(code);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  const descuentos = rewards.filter(r => r.kind === "descuento");
+  const premios = rewards.filter(r => r.kind === "premio");
+  const fmt$ = (cents) => "$" + Math.round((cents || 0) / 100).toLocaleString("es-AR");
+
+  function Card({ rw }) {
+    const can = balance >= rw.cost_points;
+    const out = rw.kind === "premio" && rw.stock != null && rw.stock <= 0;
+    return (
+      <div style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${can && !out ? "rgba(var(--brand-primary-rgb),0.25)" : "rgba(255,255,255,0.06)"}`, borderRadius: 16, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+          <div>
+            <div style={{ fontWeight: 900, fontSize: 16, color: "#fff" }}>{rw.label}</div>
+            {rw.description && <div style={{ fontSize: 12, color: "#666", marginTop: 3, lineHeight: 1.4 }}>{rw.description}</div>}
+            {rw.kind === "premio" && rw.market_value_cents && (
+              <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>Valor: {fmt$(rw.market_value_cents)}{rw.stock != null ? ` · stock: ${rw.stock}` : ""}</div>
+            )}
+          </div>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div style={{ fontWeight: 900, fontSize: 18, color: "var(--brand-primary)" }}>{rw.cost_points}</div>
+            <div style={{ fontSize: 10, color: "#555", textTransform: "uppercase", letterSpacing: 1 }}>puntos</div>
+          </div>
+        </div>
+        <button
+          onClick={() => redeem(rw)}
+          disabled={!can || out || busy === rw.slug}
+          style={{ marginTop: "auto", padding: "10px", borderRadius: 10, border: "none", fontFamily: "inherit", fontWeight: 900, fontSize: 13, cursor: (can && !out) ? "pointer" : "not-allowed",
+            background: out ? "rgba(255,255,255,0.04)" : can ? "linear-gradient(135deg,var(--brand-primary),var(--brand-accent))" : "rgba(255,255,255,0.04)",
+            color: (can && !out) ? "#000" : "#555" }}>
+          {busy === rw.slug ? "Canjeando…" : out ? "Sin stock" : can ? "Canjear" : `Te faltan ${rw.cost_points - balance} pts`}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Resultado del canje */}
+      {result && (
+        <div style={{ background: "linear-gradient(135deg,rgba(34,197,94,0.12),rgba(34,197,94,0.04))", border: "1px solid rgba(34,197,94,0.4)", borderRadius: 16, padding: "18px 22px", marginBottom: 22 }}>
+          <div style={{ fontWeight: 900, fontSize: 16, color: "#22c55e", marginBottom: 6 }}>✓ ¡Canje confirmado!</div>
+          {result.kind === "descuento" ? (
+            <div>
+              <div style={{ fontSize: 13, color: "#cbd5e1", marginBottom: 10 }}>Tu cupón de <b>{result.label}</b> — usalo en el checkout (1 solo uso):</div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.4)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 10, padding: "10px 14px" }}>
+                <code style={{ fontFamily: "'Gotham', monospace", fontSize: 18, fontWeight: 900, color: "#22c55e", letterSpacing: 2 }}>{result.coupon}</code>
+                <button onClick={() => copyCoupon(result.coupon)} style={{ background: copied === result.coupon ? "#22c55e" : "rgba(34,197,94,0.15)", color: copied === result.coupon ? "#000" : "#22c55e", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+                  {copied === result.coupon ? "✓ Copiado" : "Copiar"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontSize: 13, color: "#cbd5e1" }}>Canjeaste <b>{result.label}</b>. Te vamos a contactar para coordinar el envío. ¡Gracias!</div>
+          )}
+        </div>
+      )}
+      {err && <div style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.4)", borderRadius: 12, padding: "12px 18px", color: "#ef4444", fontWeight: 700, fontSize: 14, marginBottom: 20 }}>{err}</div>}
+
+      {loading ? (
+        <div style={{ color: "#555", padding: "40px 0", textAlign: "center" }}>Cargando catálogo…</div>
+      ) : (
+        <>
+          <div style={{ fontWeight: 900, fontSize: 18, color: "#fff", margin: "0 0 14px" }}>🎟️ Descuentos</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 14, marginBottom: 36 }}>
+            {descuentos.map(rw => <Card key={rw.slug} rw={rw} />)}
+          </div>
+
+          {premios.length > 0 && <>
+            <div style={{ fontWeight: 900, fontSize: 18, color: "#fff", margin: "0 0 14px" }}>🎁 Premios físicos</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 14, marginBottom: 36 }}>
+              {premios.map(rw => <Card key={rw.slug} rw={rw} />)}
+            </div>
+          </>}
+
+          {redemptions.length > 0 && <>
+            <div style={{ fontWeight: 900, fontSize: 18, color: "#fff", margin: "0 0 14px" }}>Mis canjes</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {redemptions.map(rd => (
+                <div key={rd.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12 }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: "#ddd" }}>{rd.label || rd.reward_slug}</div>
+                    <div style={{ fontSize: 11, color: "#555" }}>−{rd.cost_points} pts · {rd.kind === "descuento" ? "descuento" : "premio"} · {rd.status}</div>
+                  </div>
+                  {rd.coupon_code && (
+                    <button onClick={() => copyCoupon(rd.coupon_code)} style={{ background: copied === rd.coupon_code ? "#22c55e" : "rgba(255,255,255,0.06)", color: copied === rd.coupon_code ? "#000" : "var(--brand-primary)", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+                      {copied === rd.coupon_code ? "✓" : rd.coupon_code}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── MAIN ───────────────────────────────────────────────────────────────────────
 export default function Coins() {
   const [tab, setTab] = useState("tienda");
@@ -716,12 +860,14 @@ export default function Coins() {
   const [customerCode, setCustomerCode] = useState("");
   const [pesoPerPoint, setPesoPerPoint] = useState(2000);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     fetch(`${API}/profile`,{headers:hdrs()}).then(r=>r.json()).then(d=>{
       if (d.coins) { setBalance(d.coins.balance||0); setTotalEarned(d.coins.total_earned||0); }
       if (d.user) {
         setLevel(d.user.level||"bronze");
+        setUserId(d.user.id||null);
         // Sistema de Puntos: traer código de cliente + valor del punto.
         if (d.user.id) {
           fetch(`${API}/coins/${d.user.id}`,{headers:hdrs()})
@@ -755,6 +901,7 @@ export default function Coins() {
   const pct = lc.n ? Math.min(100,(totalEarned/lc.n)*100) : 100;
 
   const TABS = [
+    { id:"canjes",   icon:"🎟️", label:"Canjes",   color:"var(--brand-primary)" },
     { id:"tienda",   icon:"🛍️", label:"Tienda",   color:"var(--brand-primary)" },
     { id:"ruleta",   icon:"🎰", label:"Ruleta",   color:"#a78bfa" },
     { id:"misiones", icon:"🎯", label:"Misiones", color:"#22c55e" },
@@ -870,6 +1017,7 @@ export default function Coins() {
 
           <ReferralCard />
 
+          {tab==="canjes"   && <Canjes balance={balance} userId={userId} onRedeem={c=>{ setBalance(b=>b-c); }} />}
           {tab==="tienda"   && <Store balance={balance} onBuy={c=>{ setBalance(b=>b-c); spawn(6); }} />}
           {tab==="misiones" && <Missions onClaim={c=>{ setBalance(b=>b+c); spawn(14); }} />}
           {tab==="ranking"  && <Ranking />}
