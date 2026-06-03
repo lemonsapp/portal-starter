@@ -250,8 +250,8 @@ export default function Login() {
           margin: 0;
         }
         .lg-hero-headline em {
-          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
-          font-style: italic; font-weight: 400;
+          font-family: var(--f-display, 'Gotham', sans-serif);
+          font-style: normal; font-weight: 900; text-transform: uppercase;
           color: var(--c-accent, #A7F5C8);
           letter-spacing: -0.015em;
         }
@@ -313,8 +313,8 @@ export default function Login() {
           margin-bottom: 10px;
         }
         .lg-form-title em {
-          font-style: italic;
-          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
+          font-style: normal; text-transform: uppercase;
+          font-family: var(--f-display, 'Gotham', sans-serif);
           font-weight: 400;
           color: var(--c-accent, #A7F5C8);
           letter-spacing: -0.015em;

@@ -128,8 +128,8 @@ export default function Register() {
           margin-bottom: 10px;
         }
         .rg-title em {
-          font-style: italic;
-          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
+          font-style: normal; text-transform: uppercase;
+          font-family: var(--f-display, 'Gotham', sans-serif);
           font-weight: 400;
           color: var(--c-accent, #A7F5C8);
           letter-spacing: -0.015em;
@@ -275,8 +275,8 @@ export default function Register() {
           margin-bottom: 12px;
         }
         .rg-success-title em {
-          font-style: italic;
-          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
+          font-style: normal; text-transform: uppercase;
+          font-family: var(--f-display, 'Gotham', sans-serif);
           font-weight: 400;
           color: var(--c-accent, #A7F5C8);
         }
@@ -364,8 +364,8 @@ export default function Register() {
           color: var(--c-text);
         }
         .rg-pitch h2 em {
-          font-style: italic;
-          font-family: var(--f-italic, 'Fraunces', Georgia, serif);
+          font-style: normal; text-transform: uppercase;
+          font-family: var(--f-display, 'Gotham', sans-serif);
           font-weight: 400;
           color: var(--c-accent, #A7F5C8);
         }

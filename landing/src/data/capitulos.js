@@ -90,7 +90,7 @@ export const capitulos = [
 
         // Copy visible — v4
         h1: "Sistema completo de fertilizantes para cultivo indoor y outdoor.",
-        tagline: "Velocidad pura para cultivos exigentes.",
+        tagline: "Velocidad máxima para cultivos exigentes.",
         parrafoIntro:
             "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno, Part A + B), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
         descripcion:

@@ -4239,7 +4239,8 @@ html.is-loading body {
     align-items: center;
     gap: clamp(12px, 1.6vw, 24px);
     margin-top: 0.18em;
-    font-style: italic;
+    font-style: normal;
+    text-transform: uppercase;
     color: #A7F5C8;
     text-shadow:
         0 0 18px rgba(167, 245, 200, 0.42),
@@ -5427,10 +5428,10 @@ html.is-loading body {
     line-height: 1.05;
 }
 .pdd__hero-em {
-    font-family: 'Gotham', serif;
-    font-style: italic;
-    font-weight: 500;
-    text-transform: none;
+    font-family: 'Gotham', sans-serif;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
     letter-spacing: -0.04em;
     color: var(--pdd-color, #c9a34e);
 }
@@ -5682,11 +5683,11 @@ html.is-loading body {
    Anton (geométrica condensada) y Fraunces italic es lo que hace el
    look editorial automotriz/luxury. */
 [data-slug="linea-race"] .pdd__hero-em {
-    font-family: 'Gotham', serif;
-    font-style: italic;
-    font-weight: 500;
+    font-family: 'Gotham', sans-serif;
+    font-style: normal;
+    font-weight: 900;
     letter-spacing: -0.015em;
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 [data-slug="linea-race"] .pdd__hero-kicker,

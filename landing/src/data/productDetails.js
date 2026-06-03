@@ -75,10 +75,10 @@ export const productDetails = {
             body: "Cada elemento en su forma absorbible. Sin pasar por la microbiología del suelo: las raíces toman lo que necesitan, cuando lo necesitan.",
         },
         features: [
-            { title: "pH auto-buffer",        body: "La fórmula mantiene el pH del solución entre 5.8 y 6.2 sin ajustes manuales constantes.",                  emoji: "⚖" },
+            { title: "pH auto-buffer",        body: "La fórmula mantiene el pH de la solución, sin ajustes manuales constantes.",                  emoji: "⚖" },
             { title: "EC predecible",          body: "Dosis exacta = EC exacta. Repetible riego tras riego, lote tras lote.",                                       emoji: "📊" },
             { title: "Sin precipitados",       body: "Part 1 y Part 2 están diseñadas para mezclarse en el agua sin formar sales insolubles.",                     emoji: "✦" },
-            { title: "Concentración premium",  body: "Más nutriente por ml — menos botellas, más densidad activa.",                                                 emoji: "◆" },
+            { title: "Concentración máxima",  body: "Más nutriente por ml — menos botellas, más densidad activa.",                                                 emoji: "◆" },
             { title: "Soporte técnico",        body: "Acompañamiento humano en arranque, ajustes y diagnóstico. Sin call centers.",                                emoji: "♥" },
             { title: "Trazabilidad de lote",   body: "Sabés exactamente qué materia prima entró en tu botella.",                                                    emoji: "✓" },
         ],
@@ -370,7 +370,7 @@ export const productDetails = {
         hero: {
             kicker: "BIO ESTIMULANTE · ORGÁNICO PARA CULTIVO INDOOR",
             headline: "Bioestimulante orgánico\npara cultivo indoor.",
-            claim: "Bioestimulante 100% orgánico para cultivo indoor, fabricado en biorreactor industrial con cepas seleccionadas de Azospirillum y Azotobacter. Hasta 70% más efectivo que micorrizas tradicionales. Estimula el desarrollo radicular, potencia la absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo: Línea Pro, Línea Elite y Línea Race.",
+            claim: "Bioestimulante 100% orgánico para cultivo indoor y outdoor, fabricado en biorreactor industrial con materias primas seleccionadas. Hasta 70% más efectivo que micorrizas tradicionales. Estimula el desarrollo radicular, potencia la absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo: Línea Pro, Línea Elite y Línea Race.",
             ctaPrimary:   { label: "COMPRAR BIO",           href: "/shop?categoria=bio" },
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#E8A5B1",
@@ -389,7 +389,7 @@ export const productDetails = {
             {
                 kicker: "BIORREACTOR",
                 title: "Producido en biorreactor industrial.",
-                body: "No es un té de compost casero: es un bioestimulante orgánico producido en fermentadores industriales controlados, con cepas de Azospirillum y Azotobacter seleccionadas y CFU ≥10⁹ UFC/ml verificado por lote.",
+                body: "No es un té de compost casero: es un bioestimulante orgánico producido en fermentadores industriales controlados.",
                 image: "/video/internas/bio-estimulante/highlight-01.mp4",
                 mediaType: "video",
                 color: "#E8A5B1",
@@ -405,7 +405,7 @@ export const productDetails = {
             },
             {
                 kicker: "VERSÁTIL",
-                title: "Riego, foliar, esquejes.",
+                title: "Para todo el ciclo.",
                 body: "Una sola botella para activar raíces, mejorar foliage y reforzar defensas naturales. Multifunción real.",
                 image: "/img/race/root-detail.jpg",
                 color: "#F091A5",
@@ -452,7 +452,7 @@ export const productDetails = {
             { label: "Composición",     value: "Microorganismos benéficos + metabolitos secundarios" },
             { label: "Forma",            value: "Líquido orgánico" },
             { label: "CFU",              value: "≥10^9 UFC/ml (cepas seleccionadas)" },
-            { label: "Aplicación",       value: "Riego, foliar, esquejes, transplante" },
+            { label: "Aplicación",       value: "Riego, esquejes y transplante" },
             { label: "Conservación",     value: "Bajo techo, 5–25°C, 12 meses" },
             { label: "Compatibilidad",   value: "Todos los productos del catálogo + sustratos minerales" },
             { label: "Certificación",    value: "Producción en biorreactor — sin metales pesados" },
@@ -609,7 +609,7 @@ export const productDetails = {
             body: "Programá el último riego de Day-0 cinco días antes del corte estimado. La planta usa esos días para metabolizar reservas internas y entregar el sabor final más limpio posible.",
         },
         features: [
-            { title: "Activa metabolitos",     body: "Estimula la conversión final de azúcares y aceites esenciales.",                emoji: "✦" },
+            { title: "Activa metabolitos",     body: "Ácidos cítricos.",                emoji: "✦" },
             { title: "Sin shock",               body: "Transición suave del nutriente principal a la fase de cierre.",                  emoji: "◇" },
             { title: "Mejora aromas",           body: "Las plantas tratadas con Day-0 muestran perfil aromático más definido.",         emoji: "♥" },
             { title: "Compatibilidad total",    body: "Después de cualquier línea Holistic — Elite, Pro, Race.",                       emoji: "↯" },
