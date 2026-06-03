@@ -8,14 +8,14 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 const hdrs = () => ({ Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" });
 const ICONS_MAP = { gold:"🥇", diamond:"💎", crown:"👑" };
-const AVATAR_EMOJI = { avatar_lemon:"🪙", avatar_fire:"🔥", avatar_diamond:"💎", avatar_star:"⭐", avatar_crown:"👑", avatar_rocket:"🚀" };
+const AVATAR_EMOJI = { avatar_lemon:"💎", avatar_fire:"🔥", avatar_diamond:"💎", avatar_star:"⭐", avatar_crown:"👑", avatar_rocket:"🚀" };
 
 import { buildNameStyle } from "../utils/nameStyles.js";
 
 function Avatar({ u, size=44 }) {
   const isStaff = ["admin","operator"].includes(u?.role);
   const color = u?.name_color||(isStaff?"#ef4444":"var(--brand-primary)");
-  const emoji = u?.avatar_key?(AVATAR_EMOJI[u.avatar_key]||"🪙"):"🪙";
+  const emoji = u?.avatar_key?(AVATAR_EMOJI[u.avatar_key]||"💎"):"💎";
   if (u?.avatar_url) return (
     <div style={{ width:size,height:size,borderRadius:"50%",overflow:"hidden",border:`2px solid ${color}88`,flexShrink:0,boxShadow:`0 0 16px ${color}44` }}>
       <img src={u.avatar_url} style={{ width:"100%",height:"100%",objectFit:"cover" }} alt="" />
@@ -63,13 +63,13 @@ function SpinModal({ onClose, onWin }) {
   // ORDEN EXACTO igual al backend
   const PRIZES = [
     { label:"😢 Mañana", coins:0,    color:"#1a1a2e", accent:"#64748b" },
-    { label:"5 🪙",      coins:5,    color:"#0a2a0a", accent:"#4ade80" },
-    { label:"10 🪙",     coins:10,   color:"#0a1a3a", accent:"#60a5fa" },
-    { label:"50 🪙",     coins:50,   color:"#2a1a00", accent:"var(--brand-primary)" },
-    { label:"100 🪙",    coins:100,  color:"#0a2a10", accent:"#34d399" },
-    { label:"200 🪙",    coins:200,  color:"#2a0a0a", accent:"#f87171" },
-    { label:"500 🪙",    coins:500,  color:"#1a0a3a", accent:"#a78bfa" },
-    { label:"1000 🪙",   coins:1000, color:"#2a1500", accent:"var(--brand-primary)" },
+    { label:"5 💎",      coins:5,    color:"#0a2a0a", accent:"#4ade80" },
+    { label:"10 💎",     coins:10,   color:"#0a1a3a", accent:"#60a5fa" },
+    { label:"50 💎",     coins:50,   color:"#2a1a00", accent:"var(--brand-primary)" },
+    { label:"100 💎",    coins:100,  color:"#0a2a10", accent:"#34d399" },
+    { label:"200 💎",    coins:200,  color:"#2a0a0a", accent:"#f87171" },
+    { label:"500 💎",    coins:500,  color:"#1a0a3a", accent:"#a78bfa" },
+    { label:"1000 💎",   coins:1000, color:"#2a1500", accent:"var(--brand-primary)" },
   ];
 
   useEffect(() => {
@@ -136,7 +136,7 @@ function SpinModal({ onClose, onWin }) {
 
         <div style={{ textAlign:"center" }}>
           <div style={{ fontSize:11,fontWeight:800,color:"var(--brand-primary)",letterSpacing:4,textTransform:"uppercase",marginBottom:4 }}>🎰 Ruleta Diaria</div>
-          <div style={{ fontSize:26,fontWeight:900,color:"#fff",textShadow:"0 0 30px var(--brand-primary)66" }}>Girá y Ganás 🪙</div>
+          <div style={{ fontSize:26,fontWeight:900,color:"#fff",textShadow:"0 0 30px var(--brand-primary)66" }}>Girá y Ganás 💎</div>
         </div>
 
         <div style={{ position:"relative",width:SIZE+200,height:SIZE+60,display:"flex",alignItems:"center",justifyContent:"center" }}>
@@ -152,14 +152,14 @@ function SpinModal({ onClose, onWin }) {
               return (
                 <g key={i}>
                   <path d={`M${cx},${cy} L${x1},${y1} A${R},${R} 0 0,1 ${x2},${y2} Z`} fill={p.color} stroke="rgba(255,255,255,0.06)" strokeWidth="2"/>
-                  <text transform={`translate(${tx},${ty}) rotate(${rot})`} textAnchor="middle" dominantBaseline="middle" fill={p.accent} fontSize="13" fontWeight="900">{p.label} 🪙</text>
+                  <text transform={`translate(${tx},${ty}) rotate(${rot})`} textAnchor="middle" dominantBaseline="middle" fill={p.accent} fontSize="13" fontWeight="900">{p.label} 💎</text>
                 </g>
               );
             })}
             <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--brand-primary)" strokeWidth="3" opacity="0.5"/>
             <circle cx={cx} cy={cy} r={R-4} fill="none" stroke="var(--brand-primary)" strokeWidth="1" opacity="0.2"/>
             <circle cx={cx} cy={cy} r="32" fill="#0d0d0d" stroke="var(--brand-primary)" strokeWidth="3"/>
-            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle" fontSize="24">🪙</text>
+            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle" fontSize="24">💎</text>
           </svg>
           <div style={{ position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",zIndex:10,filter:"drop-shadow(0 0 12px var(--brand-primary))" }}>
             <svg width="28" height="42" viewBox="0 0 28 42"><polygon points="0,0 28,0 14,42" fill="var(--brand-primary)"/><polygon points="6,0 22,0 14,36" fill="var(--brand-primary)"/></svg>
@@ -178,8 +178,8 @@ function SpinModal({ onClose, onWin }) {
             <div style={{ fontSize:52,marginBottom:8 }}>{result.coins>0?"🎉":"😢"}</div>
             {result.coins>0 ? <>
               <div style={{ color:"var(--brand-primary)",fontSize:12,marginBottom:4,letterSpacing:2,fontWeight:800,textTransform:"uppercase" }}>¡Ganaste!</div>
-              <div style={{ fontWeight:900,fontSize:52,color:"var(--brand-primary)",textShadow:"0 0 30px var(--brand-primary)88" }}>+{result.coins} 🪙</div>
-              <div style={{ color:"#888",fontSize:13,marginTop:4 }}>Coins acreditados</div>
+              <div style={{ fontWeight:900,fontSize:52,color:"var(--brand-primary)",textShadow:"0 0 30px var(--brand-primary)88" }}>+{result.coins} 💎</div>
+              <div style={{ color:"#888",fontSize:13,marginTop:4 }}>Puntos acreditados</div>
             </> : <>
               <div style={{ color:"#64748b",fontSize:13,marginBottom:4,letterSpacing:1,textTransform:"uppercase" }}>¡Suerte la próxima!</div>
               <div style={{ fontWeight:900,fontSize:24,color:"#475569" }}>Seguí participando</div>
@@ -192,7 +192,7 @@ function SpinModal({ onClose, onWin }) {
             <div style={{ fontWeight:900,fontSize:36,color:"var(--brand-primary)",fontVariantNumeric:"tabular-nums",textShadow:"0 0 20px var(--brand-primary)66" }}>{timeLeft}</div>
           </div>
         ) : !errorMsg && (
-          <div style={{ textAlign:"center",color:"#666",fontSize:13 }}>¡Girá para ganar hasta 1000 Coins!</div>
+          <div style={{ textAlign:"center",color:"#666",fontSize:13 }}>¡Girá para ganar hasta 1000 Puntos!</div>
         )}
 
         <button onClick={spin} disabled={!canSpin||spinning}
@@ -244,7 +244,7 @@ function Store({ balance, onBuy }) {
 
   const buy = async (item) => {
     if (item.cat==="powers" && ownedPowers.includes(item.id.replace("power_",""))) return;
-    if (!confirm(`Gastar ${item.cost} Coins en ${item.name}?`)) return;
+    if (!confirm(`Gastar ${item.cost} Puntos en ${item.name}?`)) return;
     setBuying(item.id); setMsg(null);
     try {
       let url, body={};
@@ -252,7 +252,7 @@ function Store({ balance, onBuy }) {
       else { url=`${API}/profile/redeem`; body={reward_id:item.id}; }
       const r = await fetch(url,{method:"POST",headers:hdrs(),body:JSON.stringify(body)});
       const d = await r.json();
-      if (d.ok) { setMsg({ok:true,text:`✅ ${item.name} activado!`}); onBuy?.(item.cost); showToast({ title: `${item.name} activado!`, subtitle: `Gastaste ${item.cost.toLocaleString()} 🪙`, icon: item.icon, color: item.color }); }
+      if (d.ok) { setMsg({ok:true,text:`✅ ${item.name} activado!`}); onBuy?.(item.cost); showToast({ title: `${item.name} activado!`, subtitle: `Gastaste ${item.cost.toLocaleString()} 💎`, icon: item.icon, color: item.color }); }
       else setMsg({ok:false,text:d.error||"Error"});
     } catch { setMsg({ok:false,text:"Error de red"}); }
     setBuying(null);
@@ -299,14 +299,14 @@ function Store({ balance, onBuy }) {
                 <div style={{ fontWeight:900,color:"#fff",fontSize:17,marginBottom:4 }}>{item.name}</div>
                 <div style={{ color:"#666",fontSize:12,lineHeight:1.5,marginBottom:14 }}>{item.desc}</div>
                 <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-                  <div style={{ fontWeight:900,fontSize:20,color:"var(--brand-primary)",textShadow:"0 0 10px var(--brand-primary)44" }}>🪙 {item.cost.toLocaleString()}</div>
+                  <div style={{ fontWeight:900,fontSize:20,color:"var(--brand-primary)",textShadow:"0 0 10px var(--brand-primary)44" }}>💎 {item.cost.toLocaleString()}</div>
                   <Pop as="button" onClick={e=>{ e.stopPropagation(); buy(item); }} disabled={isOwned||!canAfford||buying===item.id}
                     hoverScale={(!isOwned&&canAfford)?1.08:1}
                     style={{ background:isOwned?"rgba(34,197,94,0.15)":canAfford?`linear-gradient(135deg,${item.color},${item.color}cc)`:"rgba(255,255,255,0.05)",color:isOwned?"#22c55e":canAfford?"#000":"#444",border:isOwned?"1px solid rgba(34,197,94,0.4)":"none",borderRadius:10,padding:"8px 18px",fontWeight:900,cursor:isOwned||!canAfford?"not-allowed":"pointer",fontSize:13,boxShadow:(!isOwned&&canAfford)?`0 4px 20px ${item.color}55`:"none" }}>
-                    {buying===item.id?"...":isOwned?"✓ Obtenido":canAfford?"Comprar":"Sin coins"}
+                    {buying===item.id?"...":isOwned?"✓ Obtenido":canAfford?"Comprar":"Sin puntos"}
                   </Pop>
                 </div>
-                {!canAfford&&!isOwned&&<div style={{ color:"#ef4444",fontSize:11,marginTop:6,fontWeight:700 }}>Faltan {(item.cost-balance).toLocaleString()} 🪙</div>}
+                {!canAfford&&!isOwned&&<div style={{ color:"#ef4444",fontSize:11,marginTop:6,fontWeight:700 }}>Faltan {(item.cost-balance).toLocaleString()} 💎</div>}
               </div>
               <AnimatePresence initial={false}>
                 {isOpen&&(
@@ -355,10 +355,10 @@ function ReferralCard() {
             <span style={{ width: 18, height: 1, background: "#a78bfa" }} />Programa de referidos
           </div>
           <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: 32, letterSpacing: "1px", color: "#fff", lineHeight: 1 }}>
-            Invitá amigos · ganá <span style={{ color: "var(--brand-primary)" }}>25 🪙</span>
+            Invitá amigos · ganá <span style={{ color: "var(--brand-primary)" }}>25 💎</span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginTop: 6, lineHeight: 1.5 }}>
-            Tu amigo recibe 25 🪙 al activar su cuenta. Vos también ganás 25 🪙.
+            Tu amigo recibe 25 💎 al activar su cuenta. Vos también ganás 25 💎.
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, fontFamily: "'Gotham', monospace" }}>
@@ -372,7 +372,7 @@ function ReferralCard() {
           </div>
           <div style={{ textAlign: "center" }}>
             <CountUp value={stats.total_coins_earned || 0} style={{ fontFamily: "'Gotham', sans-serif", fontSize: 28, color: "var(--brand-primary)", lineHeight: 1, display: "block" }}>{stats.total_coins_earned || 0}</CountUp>
-            <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>🪙 ganados</div>
+            <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>💎 ganados</div>
           </div>
         </div>
       </div>
@@ -384,7 +384,7 @@ function ReferralCard() {
             style={{ padding: "8px 14px", background: copied ? "#22c55e" : "linear-gradient(135deg,#a78bfa,#ec4899)", color: "#000", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0 }}>
             {copied ? "✓ Copiado" : "📋 Copiar link"}
           </Pop>
-          <Pop as="a" href={`https://wa.me/?text=${encodeURIComponent(`Te paso mi link: ${link} — sumá 25 🪙 al activar tu cuenta`)}`} target="_blank" rel="noreferrer"
+          <Pop as="a" href={`https://wa.me/?text=${encodeURIComponent(`Te paso mi link: ${link} — sumá 25 💎 al activar tu cuenta`)}`} target="_blank" rel="noreferrer"
             style={{ padding: "8px 14px", background: "rgba(34,197,94,.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,.4)", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0, textDecoration: "none" }}>
             💬 WA
           </Pop>
@@ -423,7 +423,7 @@ function LoginStreak({ refreshKey }) {
         </div>
         <div style={{ textAlign:"right", fontFamily:"'Gotham', monospace", fontSize:10, letterSpacing:"1.5px", color:"rgba(255,255,255,.45)" }}>
           {streak >= 7 ? "MÁXIMO ✓" : `Faltan ${7 - streak} para el bonus`}
-          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 🪙 al completar 7</div>
+          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 💎 al completar 7</div>
         </div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6 }}>
@@ -469,7 +469,7 @@ function Missions({ onClaim }) {
       setMissions(p=>p.map(m=>m.slug===slug?{...m,claimed_at:new Date().toISOString()}:m));
       onClaim?.(d.coins_earned);
       const mission = missions.find(m=>m.slug===slug);
-      showToast({ title: mission?.title || "Mision completada", subtitle: `+${d.coins_earned} Coins acreditados`, icon: mission?.icon || "🪙", color: "var(--brand-primary)" });
+      showToast({ title: mission?.title || "Mision completada", subtitle: `+${d.coins_earned} Coins acreditados`, icon: mission?.icon || "💎", color: "var(--brand-primary)" });
     } else alert(d.error);
     setClaiming(null);
   };
@@ -534,12 +534,12 @@ function Missions({ onClaim }) {
                       )}
                     </div>
                     <div style={{ flexShrink:0,textAlign:"right" }}>
-                      <div style={{ color:"var(--brand-primary)",fontWeight:900,fontSize:18,marginBottom:8,textShadow:"0 0 10px var(--brand-primary)44" }}>+{m.coins_reward} 🪙</div>
+                      <div style={{ color:"var(--brand-primary)",fontWeight:900,fontSize:18,marginBottom:8,textShadow:"0 0 10px var(--brand-primary)44" }}>+{m.coins_reward} 💎</div>
                       {claimed ? <div style={{ color:"#22c55e",fontSize:12,fontWeight:800,background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.3)",borderRadius:8,padding:"4px 10px" }}>✓ Listo</div>
                       : done2 ? <Pop as="button" onClick={()=>claim(m.slug)} disabled={claiming===m.slug}
                           hoverScale={1.08}
                           style={{ background:`linear-gradient(135deg,${g.color},${g.color}bb)`,color:"#000",border:"none",borderRadius:10,padding:"8px 18px",fontWeight:900,cursor:"pointer",fontSize:13,boxShadow:`0 4px 20px ${g.color}55` }}>
-                          {claiming===m.slug?"...":"Reclamar 🪙"}
+                          {claiming===m.slug?"...":"Reclamar 💎"}
                         </Pop>
                       : <div style={{ color:"#333",fontSize:12,fontWeight:700 }}>Pendiente</div>}
                     </div>
@@ -598,7 +598,7 @@ function Ranking() {
             <div style={{ flex:1,minWidth:0 }}>
               <div style={{ display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:4 }}>
                 {u.icon_slug && ICONS_MAP[u.icon_slug] && <span style={{ fontSize:15 }}>{ICONS_MAP[u.icon_slug]}</span>}
-                {isStaff && <span style={{ fontSize:15 }}>🪙</span>}
+                {isStaff && <span style={{ fontSize:15 }}>💎</span>}
                 <span style={{ fontWeight:900,fontSize:17,...ns }}>{u.name}</span>
                 {isStaff && <span style={{ background:"#ef444418",border:"1px solid #ef444430",borderRadius:6,padding:"2px 8px",fontSize:9,color:"#ef4444",fontWeight:900,letterSpacing:1 }}>STAFF</span>}
               </div>
@@ -615,7 +615,7 @@ function Ranking() {
               <div style={{ fontWeight:900,fontSize:24,color:isPod?PODIUM_COLORS[i]:"#e2e8f0",textShadow:isPod?`0 0 20px ${PODIUM_GLOW[i]}66`:"none" }}>
                 {Number(u.total_earned||0).toLocaleString()}
               </div>
-              <div style={{ color:"#333",fontSize:10 }}>🪙 ganados</div>
+              <div style={{ color:"#333",fontSize:10 }}>💎 ganados</div>
               <div style={{ color:"#444",fontSize:11,marginTop:2,fontWeight:700 }}>{Number(u.balance||0).toLocaleString()} disp.</div>
             </div>
           </div>
@@ -650,8 +650,8 @@ function Gift({ balance, onGift }) {
         <div style={{ position:"absolute",top:-40,right:-40,fontSize:180,opacity:0.03,userSelect:"none",pointerEvents:"none" }}>🎁</div>
         <div style={{ textAlign:"center",marginBottom:32 }}>
           <div style={{ fontSize:64,marginBottom:12,filter:"drop-shadow(0 0 20px var(--brand-primary)66)",display:"inline-block",animation:"wiggle 3s ease-in-out infinite" }}>🎁</div>
-          <div style={{ fontWeight:900,fontSize:26,color:"#fff",marginBottom:6 }}>Regalar Coins</div>
-          <div style={{ color:"#555",fontSize:14 }}>Compartí tu amor con la comunidad 🪙</div>
+          <div style={{ fontWeight:900,fontSize:26,color:"#fff",marginBottom:6 }}>Regalar Puntos</div>
+          <div style={{ color:"#555",fontSize:14 }}>Compartí tu amor con la comunidad 💎</div>
         </div>
 
         {result && <div style={{ background:result.ok?"linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05))":"linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05))",border:`1px solid ${result.ok?"rgba(34,197,94,0.4)":"rgba(239,68,68,0.4)"}`,borderRadius:14,padding:"14px 20px",color:result.ok?"#22c55e":"#ef4444",fontSize:15,fontWeight:800,marginBottom:24,textAlign:"center",animation:"popInBounce 0.5s ease" }}>{result.text}</div>}
@@ -678,16 +678,16 @@ function Gift({ balance, onGift }) {
               ))}
             </div>
             <div style={{ background:"rgba(255,255,255,0.04)",border:"2px solid rgba(var(--brand-primary-rgb),0.2)",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12 }}>
-              <span style={{ fontSize:26 }}>🪙</span>
+              <span style={{ fontSize:26 }}>💎</span>
               <input type="number" value={amount} onChange={e=>setAmount(Math.max(10,Math.min(balance,parseInt(e.target.value)||10)))} min={10} max={balance}
                 style={{ flex:1,background:"none",border:"none",color:"var(--brand-primary)",fontSize:28,fontWeight:900,outline:"none" }}/>
-              <span style={{ color:"#333",fontSize:12 }}>coins</span>
+              <span style={{ color:"#333",fontSize:12 }}>puntos</span>
             </div>
           </div>
 
           <div>
             <label style={{ color:"var(--brand-primary)",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>Mensaje (opcional)</label>
-            <input value={message} onChange={e=>setMessage(e.target.value)} placeholder="Un regalo para vos! 🪙" maxLength={100}
+            <input value={message} onChange={e=>setMessage(e.target.value)} placeholder="Un regalo para vos! 💎" maxLength={100}
               style={{ width:"100%",background:"rgba(255,255,255,0.04)",border:"2px solid rgba(255,255,255,0.08)",borderRadius:14,color:"#fff",fontSize:14,padding:"15px 18px",outline:"none",boxSizing:"border-box",transition:"all .2s" }}
               onFocus={e=>{e.target.style.borderColor="var(--brand-primary)";e.target.style.boxShadow="0 0 20px var(--brand-primary)22";}}
               onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.08)";e.target.style.boxShadow="none";}}/>
@@ -696,7 +696,7 @@ function Gift({ balance, onGift }) {
           <Pop as="button" onClick={send} disabled={sending||!clientNum||amount>balance||amount<10}
             hoverScale={1.02}
             style={{ background:(!sending&&clientNum&&amount<=balance&&amount>=10)?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent))":"rgba(255,255,255,0.04)",color:(!sending&&clientNum&&amount<=balance&&amount>=10)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&clientNum&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&clientNum&&amount<=balance)?"0 8px 40px var(--brand-primary)55":"none",letterSpacing:1 }}>
-            {sending?"Enviando...":`🎁 Regalar ${amount.toLocaleString()} 🪙`}
+            {sending?"Enviando...":`🎁 Regalar ${amount.toLocaleString()} 💎`}
           </Pop>
         </div>
       </div>
@@ -1021,7 +1021,7 @@ export default function Coins() {
         `}</style>
 
         {particles.map(p=>(
-          <div key={p.id} style={{ position:"fixed",left:`${p.x}%`,top:"50%",zIndex:9999,fontSize:28,animation:"coinFly 2.8s ease-out forwards",animationDelay:`${p.delay}s`,pointerEvents:"none" }}>🪙</div>
+          <div key={p.id} style={{ position:"fixed",left:`${p.x}%`,top:"50%",zIndex:9999,fontSize:28,animation:"coinFly 2.8s ease-out forwards",animationDelay:`${p.delay}s`,pointerEvents:"none" }}>💎</div>
         ))}
 
         {/* TOPBAR DE TABS (Tienda · Ruleta · Misiones · Ranking · Regalar) */}
@@ -1065,7 +1065,7 @@ export default function Coins() {
                   <CountUp value={balance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
                     {loading?"—":Number(balance).toLocaleString()}
                   </CountUp>
-                  <span style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:13,color:"var(--muted2)",letterSpacing:"2.4px" }}>🪙</span>
+                  <span style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:13,color:"var(--muted2)",letterSpacing:"2.4px" }}>💎</span>
                 </div>
                 {/* Equivalencia en $ (Sistema de Puntos: 1 punto = $peso_per_point) */}
                 <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:13,color:"var(--muted2)",marginBottom:14 }}>

@@ -2,7 +2,7 @@
 //
 // Top nav minimalista (2026-05-23) — reemplaza Sidebar + Topbar legacy.
 // Una sola barra horizontal arriba con todo: brand + nav role-based +
-// balance coins + user menu. Mobile: hamburger con drawer lateral.
+// balance puntos + user menu. Mobile: hamburger con drawer lateral.
 //
 // Estética alineada al landing Holistic: dark bg con backdrop blur,
 // mint accents, Gotham Black para brand y nav labels uppercase.
@@ -25,7 +25,7 @@ const Icon = ({ name, size = 18 }) => {
     switch (name) {
         case "home":     return <svg {...p}><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>;
         case "user":     return <svg {...p}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>;
-        case "coins":    return <svg {...p}><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M3 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>;
+        case "puntos":    return <svg {...p}><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M3 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>;
         case "chat":     return <svg {...p}><path d="M4 6.5C4 5.7 4.7 5 5.5 5h13c.8 0 1.5.7 1.5 1.5v9c0 .8-.7 1.5-1.5 1.5H10l-4 3v-3H5.5c-.8 0-1.5-.7-1.5-1.5z"/></svg>;
         case "bell":     return <svg {...p}><path d="M6 8a6 6 0 1 1 12 0c0 4 1.5 5 2 6H4c.5-1 2-2 2-6"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>;
         case "shop":     return <svg {...p}><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/></svg>;
@@ -45,7 +45,7 @@ const Icon = ({ name, size = 18 }) => {
 const NAV_BASE = [
     { path: "/inicio",  label: "Inicio", icon: "home" },
     { path: "/shop",    label: "Tienda", icon: "shop" },
-    { path: "/coins",   label: "Puntos", icon: "coins" },
+    { path: "/coins",   label: "Puntos", icon: "puntos" },
     { path: "/chat",    label: "Chat",   icon: "chat" },
 ];
 const NAV_BY_ROLE = {
@@ -186,7 +186,7 @@ export default function TopNav() {
 
     const isAnon = !getToken();
     const role = me?.role || "client";
-    // Si es anónimo, nav reducida (Tienda + Inicio) sin admin / coins / chat
+    // Si es anónimo, nav reducida (Tienda + Inicio) sin admin / puntos / chat
     const nav = useMemo(() => {
         if (isAnon) return [
             { path: "/shop", label: "Tienda", icon: "shop" },
@@ -249,7 +249,7 @@ export default function TopNav() {
                     <div style={S.right}>
                         {balance != null && !isAnon && (
                             <Link to="/coins" className="topnav-balance" style={S.balance} aria-label={`Balance: ${balance} coins`}>
-                                <Icon name="coins" size={14} />
+                                <Icon name="puntos" size={14} />
                                 <span style={S.balanceNum}>{balance}</span>
                             </Link>
                         )}
@@ -356,7 +356,7 @@ export default function TopNav() {
                                         <Icon name="user" size={16} /> Mi perfil
                                     </Link>
                                     <Link to="/coins" style={S.userMenuItem}>
-                                        <Icon name="coins" size={16} /> Mis coins{balance != null ? ` (${balance})` : ""}
+                                        <Icon name="puntos" size={16} /> Mis puntos{balance != null ? ` (${balance})` : ""}
                                     </Link>
                                     {role === "admin" && (
                                         <Link to="/admin" style={S.userMenuItem}>
