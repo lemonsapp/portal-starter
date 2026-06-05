@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
-import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
+import { fixImageUrl, isStaleProduct, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
 import "../styles/shop-catalog.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -106,7 +106,15 @@ export default function Shop() {
           }
           fams = (products || []).map(toFamily);
         }
-        setFamilies((fams || []).map(normalizeFamily));
+        // Oculta los SKUs Race fantasma del esquema viejo (backend sin
+        // redeploy todavía los devuelve) y descarta familias que queden vacías.
+        const visible = (fams || [])
+          .map((f) => ({
+            ...f,
+            variants: (f.variants || []).filter((v) => !isStaleProduct(v.slug)),
+          }))
+          .filter((f) => !isStaleProduct(f.slug) && (f.variants || []).length > 0);
+        setFamilies(visible.map(normalizeFamily));
         setCategories(cd.categories || []);
       } catch (e) {
         setErr("No se pudo cargar el catálogo. Refrescá la página.");

@@ -43,3 +43,21 @@ export function fixImageUrl(url) {
   if (!url) return url;
   return IMG_FIXES[url] || url;
 }
+
+// Productos Race fantasma del esquema viejo que quedaron en la DB de
+// producción (duplican a los SKUs actuales con nombres/colores incorrectos,
+// ej. "Race 2 — Floración" con la botella violeta que hoy es Race 3).
+// El server los desactiva al redeployar (migración en routes/shop.js);
+// este set los oculta en el cliente mientras tanto. Mismo patrón espejo
+// que IMG_FIXES.
+export const STALE_PRODUCT_SLUGS = new Set([
+  "race-1-vegetativo-250ml", "race-1-vegetativo-500ml",
+  "race-2-floracion-part-a-250ml", "race-2-floracion-part-a-500ml",
+  "race-2-floracion-part-b-250ml", "race-2-floracion-part-b-500ml",
+  "race-3-pk-rosa-250ml", "race-3-pk-rosa-500ml",
+]);
+
+/** true si el slug pertenece a un producto fantasma a ocultar. */
+export function isStaleProduct(slug) {
+  return STALE_PRODUCT_SLUGS.has(slug);
+}

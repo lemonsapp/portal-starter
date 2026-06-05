@@ -483,6 +483,26 @@ async function migrate() {
     WHERE pi.url = m.old_url
   `, "reconcile race image paths");
 
+  // ─── Desactivar productos Race fantasma del esquema viejo ─────────────────
+  // La DB de producción quedó con 8 SKUs Race de una organización anterior
+  // de la línea (Race 1 "Vegetativo", Race 2 "Floración Part A/B", Race 3
+  // "PK rosa") que DUPLICAN a los SKUs actuales con nombres/colores que ya
+  // no corresponden (ej: "Race 2 — Floración" mostrando la botella violeta
+  // que hoy es Race 3). El seed usa ON CONFLICT DO NOTHING, así que nunca
+  // los pisa. Verificado contra la API de producción 2026-06-05: estos 8
+  // slugs son los únicos que existen en prod y no en el seed actual.
+  // Se desactivan (no DELETE: pueden estar referenciados por orders viejas).
+  // Idempotente: tras la 1ª corrida ya están inactive → no-op.
+  await safeQuery(`
+    UPDATE products SET active = FALSE
+    WHERE active = TRUE AND slug IN (
+      'race-1-vegetativo-250ml',        'race-1-vegetativo-500ml',
+      'race-2-floracion-part-a-250ml',  'race-2-floracion-part-a-500ml',
+      'race-2-floracion-part-b-250ml',  'race-2-floracion-part-b-500ml',
+      'race-3-pk-rosa-250ml',           'race-3-pk-rosa-500ml'
+    )
+  `, "deactivate stale race products");
+
   // ─── Bundles (Diseño C): marcar los 3 "kit" de línea como bundles ─────────
   // meta.bundle=true → "comprar junto". bundle_line conecta con las variantes
   // individuales (capa derivada en variantGroup/buildBundle). bundle_discount_pct

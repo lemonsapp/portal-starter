@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
-import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
+import { fixImageUrl, isStaleProduct, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
 import "../styles/shop-product.css";
 
@@ -26,8 +26,12 @@ function normalizeProduct(p) {
     ...p,
     primary_image: fixedPrimary || (p.meta?.points_pack ? PRODUCT_FALLBACK_IMG : p.primary_image),
     images: (p.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) })),
-    variants: (p.variants || []).map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
-    cross_sell: (p.cross_sell || []).map((c) => ({ ...c, primary_image: fixImageUrl(c.primary_image) })),
+    variants: (p.variants || [])
+      .filter((v) => !isStaleProduct(v.slug))
+      .map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
+    cross_sell: (p.cross_sell || [])
+      .filter((c) => !isStaleProduct(c.slug))
+      .map((c) => ({ ...c, primary_image: fixImageUrl(c.primary_image) })),
   };
 }
 
@@ -150,7 +154,7 @@ export default function ShopProduct() {
               .then((rd) =>
                 setRelated(
                   (rd.products || [])
-                    .filter((p) => p.id !== d.product.id)
+                    .filter((p) => p.id !== d.product.id && !isStaleProduct(p.slug))
                     .slice(0, 4)
                     .map(normalizeProduct)
                 )
