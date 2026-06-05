@@ -180,7 +180,12 @@ function initHumanSupport() {
         // performance que keyframes (GSAP tween, transforms only).
         const W = root.clientWidth;
         const H = root.clientHeight;
-        particles.forEach((p, i) => {
+        // Mobile: 8 partículas (vs 32). Cada una son 3 tweens infinitos —
+        // 96 tweens simultáneos saturan el main thread de un iPhone promedio.
+        const isMobileHS = ctx.conditions.isMobile;
+        const activeParticles = isMobileHS ? particles.slice(0, 8) : particles;
+        particles.slice(activeParticles.length).forEach((p) => gsap.set(p, { autoAlpha: 0 }));
+        activeParticles.forEach((p, i) => {
             const startX = gsap.utils.random(0, W);
             const startY = gsap.utils.random(H * 0.2, H * 1.05);
             gsap.set(p, {

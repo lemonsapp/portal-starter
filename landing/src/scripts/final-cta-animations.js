@@ -74,7 +74,9 @@ function initFinalCTA() {
 
         const particles = [];
         const COLORS = ["#25D366", "#3FBE82", "#2E8F6E", "#A7F5C8"];
-        for (let i = 0; i < 8; i++) {
+        // Mobile: 3 partículas (vs 8) — menos tweens infinitos en pantalla.
+        const PARTICLE_COUNT = context.conditions.isMobile ? 3 : 8;
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
             const p = document.createElement("span");
             const size = gsap.utils.random(6, 14, 1);
             const color = gsap.utils.random(COLORS);

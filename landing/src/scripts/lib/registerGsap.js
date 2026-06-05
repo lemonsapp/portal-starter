@@ -46,7 +46,12 @@ if (!window.__holisticGsapRegistered) {
     // animación temporalmente en vez de saltar) y considerar lag a partir
     // de 33ms (1 frame perdido a 30fps). Mejora la suavidad en mobile/CPU
     // débil sin afectar 60fps en desktop.
-    gsap.ticker.lagSmoothing(500, 33);
+    // EXCEPCIÓN: si Lenis maneja el rAF (desktop), necesita lagSmoothing(0)
+    // — no pisarlo (era un conflicto: smooth-scroll seteaba 0 y acá se
+    // sobreescribía a 500/33 según orden de carga).
+    if (!window.__lenisActive) {
+        gsap.ticker.lagSmoothing(500, 33);
+    }
 
     if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(() => {

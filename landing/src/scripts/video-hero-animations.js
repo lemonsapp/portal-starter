@@ -55,6 +55,14 @@ function initVideoHero() {
     //   del final y seteamos currentTime a (duration - ~1 frame): el último
     //   frame queda renderizado y el reproductor nunca dispara `ended`.
     if (video) {
+        // MOBILE: servir la variante liviana (854×480, ~264KB vs 4.4MB).
+        // Se swapea ANTES de cualquier load/play — preload="metadata" en el
+        // HTML evita que el browser haya descargado el src desktop.
+        const mobileSrc = video.dataset.srcMobile;
+        if (mobileSrc && window.matchMedia("(max-width: 768px), (pointer: coarse)").matches) {
+            video.src = mobileSrc;
+        }
+
         const FRAME = 1 / 30;        // asumimos 30 fps source (inicio.mp4 es 30fps)
         const FREEZE_OFFSET = FRAME; // último frame visible
 
@@ -270,7 +278,10 @@ function initVideoHero() {
             // Acto VI: particles
             .addLabel("particles", "cta+=0.15")
             .add(() => {
-                particles.slice(0, isMobile ? 14 : particles.length).forEach((p) => {
+                // Mobile: 6 partículas (vs 28 desktop). Cada una son 3 tweens
+                // infinitos — en un iPhone promedio 14 partículas ya disputan
+                // el main thread con el scroll.
+                particles.slice(0, isMobile ? 6 : particles.length).forEach((p) => {
                     gsap.set(p, {
                         left: `${gsap.utils.random(0, 100)}%`,
                         top: `${gsap.utils.random(60, 110)}%`,
@@ -288,18 +299,22 @@ function initVideoHero() {
                         .to(p, { x: driftX, y: driftY, duration: dur, ease: "sine.inOut" }, 0)
                         .to(p, { autoAlpha: 0, duration: dur * 0.3, ease: "sine.in" }, dur * 0.7);
                 });
-                particles.slice(isMobile ? 14 : particles.length).forEach((p) =>
+                particles.slice(isMobile ? 6 : particles.length).forEach((p) =>
                     gsap.set(p, { autoAlpha: 0 })
                 );
             }, "particles")
 
-            // Acto VII: idle ken-burns infinito del video + HUD rotación
+            // Acto VII: idle ken-burns infinito del video + HUD rotación.
+            // Mobile: SIN ken-burns — animar scale sobre un <video> full-bleed
+            // con filter CSS fuerza repaint del viewport completo por frame.
             .add(() => {
-                gsap.to(video, {
-                    scale: 1.05,
-                    duration: 16, ease: "sine.inOut",
-                    yoyo: true, repeat: -1,
-                });
+                if (!isMobile) {
+                    gsap.to(video, {
+                        scale: 1.05,
+                        duration: 16, ease: "sine.inOut",
+                        yoyo: true, repeat: -1,
+                    });
+                }
                 hudTimer = window.setInterval(rotateHud, 2800);
             }, "particles+=1.2");
 
