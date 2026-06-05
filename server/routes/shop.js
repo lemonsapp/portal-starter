@@ -103,7 +103,7 @@ async function migrate() {
        'Sistema de 4 fertilizantes para el ciclo completo indoor y outdoor.',
        'Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en 2 partes) y Race 4 (Micro + Magnesio).',
        25000000, NULL::int, 'RACE-KIT', 'fertilizantes', TRUE, 1,
-       '{"presentaciones": ["250ml", "500ml"], "linea": "race", "indoor_outdoor": true}'),
+       '{"presentaciones": ["250ml", "500ml", "1L", "5L", "10L", "20L"], "linea": "race", "indoor_outdoor": true}'),
       ('linea-elite',
        'Línea Elite — Part 1 + Part 2',
        'Fertilizante dual premium para hidroponía y sustratos.',
@@ -224,6 +224,107 @@ async function migrate() {
        'Microelementos (Fe, Zn, B, Mn, Cu, Mo) + magnesio. Activan enzimas y fotosíntesis.',
        7500000, 'RACE4-MIC-500', 'fertilizantes', 19,
        '{"linea":"race","etapa":"micro","formato":"500ml","color":"rosa"}'),
+
+      -- ═══ RACE formatos grandes (2026-06-05): 1L + bidones 5/10/20L ═══
+      -- Mismas familias (meta.linea/etapa/parte) → se suman solas al selector
+      -- de medida. Race 3 Parte B no tiene render de 20L → ese SKU no existe
+      -- (mismo criterio que Elite Max 20L, solo Parte A).
+      -- Precios PLACEHOLDER — el cliente los ajusta desde admin → Productos.
+      ('race-1-npk-1l',
+       'Race 1 — NPK 1L',
+       'NPK concentrado para todo el ciclo. Hojas, raíces y metabolismo regulado.',
+       12000000, 'RACE1-NPK-1L', 'fertilizantes', 110,
+       '{"linea":"race","etapa":"npk","formato":"1L","color":"verde"}'),
+      ('race-1-npk-5l',
+       'Race 1 — NPK 5L',
+       'Bidón profesional para cultivadores intensivos. NPK para todo el ciclo.',
+       45000000, 'RACE1-NPK-5L', 'fertilizantes', 111,
+       '{"linea":"race","etapa":"npk","formato":"5L","color":"verde","tipo":"bidon"}'),
+      ('race-1-npk-10l',
+       'Race 1 — NPK 10L',
+       'Bidón industrial para grow shops o cultivos a gran escala.',
+       85000000, 'RACE1-NPK-10L', 'fertilizantes', 112,
+       '{"linea":"race","etapa":"npk","formato":"10L","color":"verde","tipo":"bidon"}'),
+      ('race-1-npk-20l',
+       'Race 1 — NPK 20L',
+       'Bidón industrial — el formato más grande de la línea Race.',
+       150000000, 'RACE1-NPK-20L', 'fertilizantes', 113,
+       '{"linea":"race","etapa":"npk","formato":"20L","color":"verde","tipo":"bidon"}'),
+      ('race-2-calcio-nitrogeno-1l',
+       'Race 2 — Calcio + Nitrógeno 1L',
+       'Paredes celulares fuertes, más raíces y brotes, resistencia a plagas y sequías.',
+       12000000, 'RACE2-CAN-1L', 'fertilizantes', 114,
+       '{"linea":"race","etapa":"estructura","formato":"1L","color":"celeste"}'),
+      ('race-2-calcio-nitrogeno-5l',
+       'Race 2 — Calcio + Nitrógeno 5L',
+       'Bidón profesional para cultivadores intensivos. Calcio + Nitrógeno.',
+       45000000, 'RACE2-CAN-5L', 'fertilizantes', 115,
+       '{"linea":"race","etapa":"estructura","formato":"5L","color":"celeste","tipo":"bidon"}'),
+      ('race-2-calcio-nitrogeno-10l',
+       'Race 2 — Calcio + Nitrógeno 10L',
+       'Bidón industrial para grow shops o cultivos a gran escala.',
+       85000000, 'RACE2-CAN-10L', 'fertilizantes', 116,
+       '{"linea":"race","etapa":"estructura","formato":"10L","color":"celeste","tipo":"bidon"}'),
+      ('race-2-calcio-nitrogeno-20l',
+       'Race 2 — Calcio + Nitrógeno 20L',
+       'Bidón industrial — el formato más grande de la línea Race.',
+       150000000, 'RACE2-CAN-20L', 'fertilizantes', 117,
+       '{"linea":"race","etapa":"estructura","formato":"20L","color":"celeste","tipo":"bidon"}'),
+      ('race-3-pk-1-1l',
+       'Race 3 — PK 1ª parte 1L',
+       'Primera de las 2 partes PK. Translocación de azúcares y flores agrandadas.',
+       14000000, 'RACE3A-PK-1L', 'fertilizantes', 118,
+       '{"linea":"race","etapa":"pk","formato":"1L","color":"violeta","parte":"1"}'),
+      ('race-3-pk-1-5l',
+       'Race 3 — PK 1ª parte 5L',
+       'Bidón profesional para cultivadores intensivos. PK 1ª parte.',
+       50000000, 'RACE3A-PK-5L', 'fertilizantes', 119,
+       '{"linea":"race","etapa":"pk","formato":"5L","color":"violeta","parte":"1","tipo":"bidon"}'),
+      ('race-3-pk-1-10l',
+       'Race 3 — PK 1ª parte 10L',
+       'Bidón industrial para grow shops o cultivos a gran escala.',
+       95000000, 'RACE3A-PK-10L', 'fertilizantes', 120,
+       '{"linea":"race","etapa":"pk","formato":"10L","color":"violeta","parte":"1","tipo":"bidon"}'),
+      ('race-3-pk-1-20l',
+       'Race 3 — PK 1ª parte 20L',
+       'Bidón industrial — el formato más grande de la línea Race.',
+       165000000, 'RACE3A-PK-20L', 'fertilizantes', 121,
+       '{"linea":"race","etapa":"pk","formato":"20L","color":"violeta","parte":"1","tipo":"bidon"}'),
+      ('race-3-pk-2-1l',
+       'Race 3 — PK 2ª parte 1L',
+       'Segunda parte PK. Sostiene flores densas hasta el cierre del ciclo.',
+       14000000, 'RACE3B-PK-1L', 'fertilizantes', 122,
+       '{"linea":"race","etapa":"pk","formato":"1L","color":"violeta","parte":"2"}'),
+      ('race-3-pk-2-5l',
+       'Race 3 — PK 2ª parte 5L',
+       'Bidón profesional para cultivadores intensivos. PK 2ª parte.',
+       50000000, 'RACE3B-PK-5L', 'fertilizantes', 123,
+       '{"linea":"race","etapa":"pk","formato":"5L","color":"violeta","parte":"2","tipo":"bidon"}'),
+      ('race-3-pk-2-10l',
+       'Race 3 — PK 2ª parte 10L',
+       'Bidón industrial para grow shops o cultivos a gran escala.',
+       95000000, 'RACE3B-PK-10L', 'fertilizantes', 124,
+       '{"linea":"race","etapa":"pk","formato":"10L","color":"violeta","parte":"2","tipo":"bidon"}'),
+      ('race-4-micro-magnesio-1l',
+       'Race 4 — Micro + Magnesio 1L',
+       'Microelementos (Fe, Zn, B, Mn, Cu, Mo) + magnesio. Activan enzimas y fotosíntesis.',
+       12000000, 'RACE4-MIC-1L', 'fertilizantes', 125,
+       '{"linea":"race","etapa":"micro","formato":"1L","color":"rosa"}'),
+      ('race-4-micro-magnesio-5l',
+       'Race 4 — Micro + Magnesio 5L',
+       'Bidón profesional para cultivadores intensivos. Micro + Magnesio.',
+       45000000, 'RACE4-MIC-5L', 'fertilizantes', 126,
+       '{"linea":"race","etapa":"micro","formato":"5L","color":"rosa","tipo":"bidon"}'),
+      ('race-4-micro-magnesio-10l',
+       'Race 4 — Micro + Magnesio 10L',
+       'Bidón industrial para grow shops o cultivos a gran escala.',
+       85000000, 'RACE4-MIC-10L', 'fertilizantes', 127,
+       '{"linea":"race","etapa":"micro","formato":"10L","color":"rosa","tipo":"bidon"}'),
+      ('race-4-micro-magnesio-20l',
+       'Race 4 — Micro + Magnesio 20L',
+       'Bidón industrial — el formato más grande de la línea Race.',
+       150000000, 'RACE4-MIC-20L', 'fertilizantes', 128,
+       '{"linea":"race","etapa":"micro","formato":"20L","color":"rosa","tipo":"bidon"}'),
 
       -- ═══════════════ LÍNEA ELITE (10 SKUs: Parte 1 + Parte 2 × varios sizes) ═══════════════
       ('elite-parte-1-500ml',
@@ -409,6 +510,29 @@ async function migrate() {
       ('race-3-pk-1-500ml',               '/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png', 'Race 3 PK 1ª parte (violeta) 500ml'),
       ('race-3-pk-2-500ml',               '/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png', 'Race 3 PK 2ª parte (violeta) 500ml'),
       ('race-4-micro-magnesio-500ml',     '/img/productos/linea-race/500ml/race-4-rosa-500ml.png',      'Race 4 Micro + Magnesio (rosa) 500ml'),
+      -- Race 1L (botellas frontales)
+      ('race-1-npk-1l',                   '/img/productos/linea-race/1l/race-1-verde-1l.png',           'Race 1 NPK (verde) 1L'),
+      ('race-2-calcio-nitrogeno-1l',      '/img/productos/linea-race/1l/race-2-celeste-1l.png',         'Race 2 Calcio + Nitrógeno (celeste) 1L'),
+      ('race-3-pk-1-1l',                  '/img/productos/linea-race/1l/race-3-violeta-a-1l.png',       'Race 3 PK 1ª parte (violeta) 1L'),
+      ('race-3-pk-2-1l',                  '/img/productos/linea-race/1l/race-3-violeta-b-1l.png',       'Race 3 PK 2ª parte (violeta) 1L'),
+      ('race-4-micro-magnesio-1l',        '/img/productos/linea-race/1l/race-4-rosa-1l.png',            'Race 4 Micro + Magnesio (rosa) 1L'),
+      -- Race bidones 5L
+      ('race-1-npk-5l',                   '/img/productos/linea-race/5l/race-1-verde-5l.png',           'Race 1 NPK (verde) bidón 5L'),
+      ('race-2-calcio-nitrogeno-5l',      '/img/productos/linea-race/5l/race-2-celeste-5l.png',         'Race 2 Calcio + Nitrógeno (celeste) bidón 5L'),
+      ('race-3-pk-1-5l',                  '/img/productos/linea-race/5l/race-3-violeta-a-5l.png',       'Race 3 PK 1ª parte (violeta) bidón 5L'),
+      ('race-3-pk-2-5l',                  '/img/productos/linea-race/5l/race-3-violeta-b-5l.png',       'Race 3 PK 2ª parte (violeta) bidón 5L'),
+      ('race-4-micro-magnesio-5l',        '/img/productos/linea-race/5l/race-4-rosa-5l.png',            'Race 4 Micro + Magnesio (rosa) bidón 5L'),
+      -- Race bidones 10L
+      ('race-1-npk-10l',                  '/img/productos/linea-race/10l/race-1-verde-10l.png',         'Race 1 NPK (verde) bidón 10L'),
+      ('race-2-calcio-nitrogeno-10l',     '/img/productos/linea-race/10l/race-2-celeste-10l.png',       'Race 2 Calcio + Nitrógeno (celeste) bidón 10L'),
+      ('race-3-pk-1-10l',                 '/img/productos/linea-race/10l/race-3-violeta-a-10l.png',     'Race 3 PK 1ª parte (violeta) bidón 10L'),
+      ('race-3-pk-2-10l',                 '/img/productos/linea-race/10l/race-3-violeta-b-10l.png',     'Race 3 PK 2ª parte (violeta) bidón 10L'),
+      ('race-4-micro-magnesio-10l',       '/img/productos/linea-race/10l/race-4-rosa-10l.png',          'Race 4 Micro + Magnesio (rosa) bidón 10L'),
+      -- Race bidones 20L (Race 3 sólo Parte A: no hay render de Parte B 20L)
+      ('race-1-npk-20l',                  '/img/productos/linea-race/20l/race-1-verde-20l.png',         'Race 1 NPK (verde) bidón 20L'),
+      ('race-2-calcio-nitrogeno-20l',     '/img/productos/linea-race/20l/race-2-celeste-20l.png',       'Race 2 Calcio + Nitrógeno (celeste) bidón 20L'),
+      ('race-3-pk-1-20l',                 '/img/productos/linea-race/20l/race-3-violeta-a-20l.png',     'Race 3 PK 1ª parte (violeta) bidón 20L'),
+      ('race-4-micro-magnesio-20l',       '/img/productos/linea-race/20l/race-4-rosa-20l.png',          'Race 4 Micro + Magnesio (rosa) bidón 20L'),
       -- Elite 500ml + 1L
       ('elite-parte-1-500ml',             '/img/productos/linea-elite/elite-part-1.png',                'Elite Parte 1 500ml'),
       ('elite-parte-1-1l',                '/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png',   'Elite Parte 1 1L'),
@@ -502,6 +626,18 @@ async function migrate() {
       'race-3-pk-rosa-250ml',           'race-3-pk-rosa-500ml'
     )
   `, "deactivate stale race products");
+
+  // ─── Race formatos grandes (2026-06-05): presentaciones del kit ───────────
+  // El seed del kit linea-race usa ON CONFLICT DO NOTHING, así que en DBs ya
+  // sembradas el meta viejo (sólo 250ml/500ml) no se actualiza. Idempotente:
+  // sólo corre si '1L' todavía no está en presentaciones.
+  await safeQuery(`
+    UPDATE products
+       SET meta = jsonb_set(meta, '{presentaciones}',
+                            '["250ml","500ml","1L","5L","10L","20L"]'::jsonb)
+     WHERE slug = 'linea-race'
+       AND NOT (meta->'presentaciones' @> '"1L"'::jsonb)
+  `, "extend race kit presentaciones");
 
   // ─── Bundles (Diseño C): marcar los 3 "kit" de línea como bundles ─────────
   // meta.bundle=true → "comprar junto". bundle_line conecta con las variantes
