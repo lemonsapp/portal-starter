@@ -147,12 +147,12 @@ async function migrate() {
     FROM (VALUES
       ('linea-race',     '/img/productos/linea-race/500ml/race-unificado.png',                    'Línea Race completa — todos los potes',   0, TRUE),
       ('linea-race',     '/img/productos/linea-race/500ml/race-1-verde-500ml.png',                'Race 1 verde 500ml',              1, FALSE),
-      ('linea-elite',    '/img/productos/linea-elite/elite-unificado.png',                        'Línea Elite completa — Part 1 + Part 2',  0, TRUE),
+      ('linea-elite',    '/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png',                     'Línea Elite completa — Part 1 + Part 2',  0, TRUE),
       ('linea-elite',    '/img/productos/linea-elite/elite-part-1.png',                           'Elite Parte 1',                   1, FALSE),
       ('linea-pro',      '/img/productos/linea-pro/1kg/pro-unificado.png',                        'Línea Pro completa — 4 etapas',   0, TRUE),
       ('linea-pro',      '/img/productos/linea-pro/1kg/pro-vegetativo.png',                       'Pro Vegetativo 1kg',              1, FALSE),
       ('bio-estimulante','/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png','Bio Estimulante perspectiva',     0, TRUE),
-      ('cloner',         '/assets/productos/cloner2.png',                                         'Cloner gel enraizante',           0, TRUE),
+      ('cloner',         '/ultimos-cambios/POTE-CLONER-HOME.png',                                 'Cloner gel enraizante',           0, TRUE),
       ('day-0',          '/img/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png',      'Day-0 finalizador',               0, TRUE)
     ) AS v(prod_slug, url, alt, sort, is_primary)
     JOIN products p ON p.slug = v.prod_slug
@@ -410,14 +410,14 @@ async function migrate() {
       ('race-3-pk-2-500ml',               '/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png', 'Race 3 PK 2ª parte (violeta) 500ml'),
       ('race-4-micro-magnesio-500ml',     '/img/productos/linea-race/500ml/race-4-rosa-500ml.png',      'Race 4 Micro + Magnesio (rosa) 500ml'),
       -- Elite 500ml + 1L
-      ('elite-parte-1-500ml',             '/img/productos/linea-elite/500gr/parte-1-lateral.png',       'Elite Parte 1 500ml'),
+      ('elite-parte-1-500ml',             '/img/productos/linea-elite/elite-part-1.png',                'Elite Parte 1 500ml'),
       ('elite-parte-1-1l',                '/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png',   'Elite Parte 1 1L'),
       ('elite-parte-2-500ml',             '/img/productos/linea-elite/500gr/parte-2-perspectiva.png',   'Elite Parte 2 500ml'),
       ('elite-parte-2-1l',                '/img/productos/linea-elite/500gr/parte-2-perspectiva-1l.png','Elite Parte 2 1L'),
       ('elite-juntos-1l',                 '/img/productos/linea-elite/1l/juntos-1l.png',                'Elite Parte 1 + Parte 2 1L'),
       -- Elite Max
       ('elite-max-5l',                    '/img/productos/elite-max/a-5-lts-perspectiva-1.png',         'Elite Max Parte A 5L'),
-      ('elite-max-5l-b',                  '/img/productos/elite-max/a-5-lts-perspectiva-2.png',         'Elite Max Parte B 5L'),
+      ('elite-max-5l-b',                  '/img/productos/elite-max/b-5-lts-perspectiva-1.png',         'Elite Max Parte B 5L'),
       ('elite-max-10l',                   '/img/productos/elite-max/a-10-lts-perspectiva-1.png',        'Elite Max Parte A 10L'),
       ('elite-max-10l-b',                 '/img/productos/elite-max/b-10-lts-perspectiva-1.png',        'Elite Max Parte B 10L'),
       ('elite-max-20l',                   '/img/productos/elite-max/a-20-lts-perspectiva-1.png',        'Elite Max Parte A 20L'),
@@ -468,7 +468,17 @@ async function migrate() {
       ('/img/productos/linea-race/500ml/race-2-part-a-500ml.png','/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png'),
       ('/img/productos/linea-race/500ml/race-2-part-b-500ml.png','/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png'),
       ('/img/productos/linea-race/500ml/race-3-rosa-500ml.png',  '/img/productos/linea-race/500ml/race-4-rosa-500ml.png'),
-      ('/img/productos/linea-race/500ml/race-4-celeste-500ml.png','/img/productos/linea-race/500ml/race-4-rosa-500ml.png')
+      ('/img/productos/linea-race/500ml/race-4-celeste-500ml.png','/img/productos/linea-race/500ml/race-4-rosa-500ml.png'),
+      -- Cloner: render viejo → render holográfico del home (pedido 2026-06-05,
+      -- mismo pote que se ve en ComplementosIdeales del inicio)
+      ('/assets/productos/cloner2.png',                          '/ultimos-cambios/POTE-CLONER-HOME.png'),
+      -- Auditoría de fotos 2026-06-05:
+      -- · kit Línea Elite mostraba bidones Elite Max apilados → botellas Part 1+2
+      -- · Elite Parte 1 500ml mostraba vista lateral sin el "PART 1" visible
+      -- · Elite Max 5L Parte B apuntaba a un render con nombre "a-" (Parte A)
+      ('/img/productos/linea-elite/elite-unificado.png',         '/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png'),
+      ('/img/productos/linea-elite/500gr/parte-1-lateral.png',   '/img/productos/linea-elite/elite-part-1.png'),
+      ('/img/productos/elite-max/a-5-lts-perspectiva-2.png',     '/img/productos/elite-max/b-5-lts-perspectiva-1.png')
     ) AS m(old_url, new_url)
     WHERE pi.url = m.old_url
   `, "reconcile race image paths");

@@ -9,6 +9,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart, formatARS } from "../lib/useCart.js";
+// fixImageUrl: corrige paths viejos snapshoteados en localStorage (ej. el
+// render viejo del Cloner) y las sugerencias que llegan crudas de la API.
+import { fixImageUrl } from "../lib/shopImages.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -230,6 +233,7 @@ export default function CartDrawer() {
     <>
       <button
         type="button"
+        className="cart-fab"
         style={styles.fab(itemCount > 0 && !hideFab)}
         onClick={() => setOpen(true)}
         aria-label={`Abrir carrito (${itemCount} ítems)`}
@@ -260,7 +264,7 @@ export default function CartDrawer() {
             items.map((i) => (
               <div key={i.id} style={styles.row}>
                 {i.primary_image
-                  ? <img src={i.primary_image} alt={i.name} style={styles.rowImg} />
+                  ? <img src={fixImageUrl(i.primary_image)} alt={i.name} style={styles.rowImg} />
                   : <div style={{ ...styles.rowImg, background: "var(--c-border)" }} />
                 }
                 <div>
@@ -286,7 +290,7 @@ export default function CartDrawer() {
               {suggestToShow.map((s) => (
                 <div key={s.id} style={styles.sugRow}>
                   {s.primary_image
-                    ? <img src={s.primary_image} alt={s.name} style={styles.sugImg} />
+                    ? <img src={fixImageUrl(s.primary_image)} alt={s.name} style={styles.sugImg} />
                     : <div style={{ ...styles.sugImg, background: "var(--c-border)" }} />}
                   <div style={{ minWidth: 0 }}>
                     <div style={styles.sugName}>{s.name}</div>
