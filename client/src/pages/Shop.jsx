@@ -7,7 +7,7 @@
 // reales — reemplaza el style-object inline).
 
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
 import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
@@ -49,15 +49,37 @@ function toFamily(p) {
   };
 }
 
+// ?categoria= viene de los CTAs de las internas (landing y portal) y del
+// breadcrumb de ShopProduct. Se traduce a un término de búsqueda que matchea
+// nombre/slug de las familias de esa línea.
+const CATEGORIA_QUERY = {
+  race: "race",
+  pro: "pro",
+  elite: "elite",
+  bio: "bio",
+  day0: "day-0",
+  cloner: "cloner",
+};
+
 export default function Shop() {
   useBranding();
   const { addItem } = useCart();
+  const [searchParams] = useSearchParams();
   const [families, setFamilies] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState(
+    () => searchParams.get("q") || CATEGORIA_QUERY[searchParams.get("categoria")] || ""
+  );
+
+  // Si cambia la URL sin remount (ej. segundo click en un breadcrumb de
+  // línea), re-sincroniza el buscador con los params.
+  useEffect(() => {
+    const next = searchParams.get("q") || CATEGORIA_QUERY[searchParams.get("categoria")] || "";
+    if (next) setSearchInput(next);
+  }, [searchParams]);
 
   useEffect(() => {
     (async () => {

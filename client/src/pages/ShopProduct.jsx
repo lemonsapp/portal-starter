@@ -7,7 +7,7 @@
 // (clases reales con media queries — reemplaza el style-object inline que
 // mutaba según window.innerWidth y rompía el responsive).
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
@@ -57,6 +57,41 @@ function visibleSpecs(meta) {
   );
 }
 
+// Ficha técnica en castellano: las keys/valores de `meta` vienen crudos del
+// seed ("etapa: npk", "tipo: bidon"). Estos mapas los traducen a etiquetas
+// legibles; lo no mapeado se capitaliza como fallback.
+const SPEC_LABELS = {
+  etapa: "Etapa del cultivo",
+  formato: "Formato",
+  color: "Color de identificación",
+  parte: "Parte",
+  tipo: "Presentación",
+  presentaciones: "Presentaciones disponibles",
+  indoor_outdoor: "Uso",
+};
+const SPEC_VALUES = {
+  npk: "NPK — todo el ciclo",
+  estructura: "Calcio + Nitrógeno",
+  pk: "PK — floración",
+  micro: "Micro + Magnesio",
+  enraizante: "Enraizante",
+  vegetativo: "Vegetativo",
+  preflora: "Pre-floración",
+  floracion: "Floración",
+  bidon: "Bidón profesional",
+  combo: "Combo",
+};
+function specLabel(key) {
+  return SPEC_LABELS[key] || key.replace(/_/g, " ");
+}
+function specValue(key, value) {
+  if (key === "indoor_outdoor") return value ? "Indoor y outdoor" : "Indoor";
+  if (Array.isArray(value)) return value.join(" · ");
+  if (typeof value === "boolean") return value ? "Sí" : "No";
+  const s = String(value);
+  return SPEC_VALUES[s.toLowerCase()] || s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export default function ShopProduct() {
   useBranding();
   const { slug } = useParams();
@@ -70,9 +105,35 @@ export default function ShopProduct() {
   const [err, setErr] = useState("");
   const [toast, setToast] = useState("");
 
+  // Barra de compra fija (mobile): visible sólo cuando el CTA principal
+  // salió del viewport, para que precio + "Agregar" siempre estén a mano.
+  const ctaRef = useRef(null);
+  const [ctaInView, setCtaInView] = useState(true);
+  useEffect(() => {
+    const el = ctaRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setCtaInView(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+    // `loading` en deps: el CTA recién existe cuando termina la carga, así
+    // el observer se re-engancha al navegar entre variantes (slug nuevo).
+  }, [slug, loading]);
+
+  // Cuando la barra fija está visible, el FAB del carrito sube para no
+  // taparle el botón "Agregar" (regla CSS body.sp-has-sticky .cart-fab).
+  const stickyVisible = !ctaInView && !!product && (product.stock == null || product.stock > 0);
+  useEffect(() => {
+    document.body.classList.toggle("sp-has-sticky", stickyVisible);
+    return () => document.body.classList.remove("sp-has-sticky");
+  }, [stickyVisible]);
+
   useEffect(() => {
     setActiveImg(0);
     setQuantity(1);
+    setCtaInView(true); // evita que la barra fija (y su body class) quede colgada al navegar
     (async () => {
       setLoading(true);
       setErr("");
@@ -157,12 +218,30 @@ export default function ShopProduct() {
   const lineBundleSlug =
     !product.bundle && ["race", "pro", "elite"].includes(lineKey) ? `linea-${lineKey}` : null;
 
+  // Breadcrumb: Shop / Línea X (si pertenece a una) / producto actual.
+  // El crumb de línea filtra el catálogo vía ?categoria= (Shop lo lee).
+  const crumbLine = lineKey && LINE_NAMES[lineKey]
+    ? { label: `Línea ${LINE_NAMES[lineKey]}`, to: `/shop?categoria=${lineKey}` }
+    : product.category
+      ? { label: product.category.name, to: "/shop" }
+      : null;
+
   return (
     <div className="sp-page theme-light">
       <div className="sp-container">
-        <Link to="/shop" className="sp-back">
-          <span className="sp-back-arrow">←</span> Volver al catálogo
-        </Link>
+        <nav className="sp-crumbs" aria-label="Estás en">
+          <Link to="/shop" className="sp-crumb">
+            <span className="sp-back-arrow">←</span> Shop
+          </Link>
+          {crumbLine && (
+            <>
+              <span className="sp-crumb-sep" aria-hidden="true">/</span>
+              <Link to={crumbLine.to} className="sp-crumb">{crumbLine.label}</Link>
+            </>
+          )}
+          <span className="sp-crumb-sep" aria-hidden="true">/</span>
+          <span className="sp-crumb-current" aria-current="page">{product.name}</span>
+        </nav>
 
         {/* ─────────────────────────── HERO ─────────────────────────── */}
         <div className="sp-hero">
@@ -221,9 +300,12 @@ export default function ShopProduct() {
                         onClick={() => { if (!active && !out) navigate(`/shop/${v.slug}`); }}
                         className={`sp-pill${active ? " is-active" : ""}${out ? " is-out" : ""}`}
                         aria-pressed={active}
-                        title={out ? "Sin stock" : v.label}
+                        title={out ? "Sin stock" : `${v.label} — ${v.price_formatted}`}
                       >
-                        {v.label}
+                        <span className="sp-pill-label">{v.label}</span>
+                        {v.price_formatted && (
+                          <span className="sp-pill-price">{v.price_formatted}</span>
+                        )}
                       </button>
                     );
                   })}
@@ -254,7 +336,7 @@ export default function ShopProduct() {
             )}
 
             {/* CTA */}
-            <button className="sp-cta" disabled={!inStock} onClick={addToCart} aria-label={`Agregar ${product.name} al carrito`}>
+            <button ref={ctaRef} className="sp-cta" disabled={!inStock} onClick={addToCart} aria-label={`Agregar ${product.name} al carrito`}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="9" cy="20" r="1.4" /><circle cx="18" cy="20" r="1.4" />
                 <path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6" />
@@ -394,8 +476,8 @@ export default function ShopProduct() {
               <dl className="sp-specs">
                 {visibleSpecs(product.meta).map(([k, v]) => (
                   <div key={k} className="sp-spec-row">
-                    <dt className="sp-spec-key">{k.replace(/_/g, " ")}</dt>
-                    <dd className="sp-spec-val">{Array.isArray(v) ? v.join(" · ") : String(v)}</dd>
+                    <dt className="sp-spec-key">{specLabel(k)}</dt>
+                    <dd className="sp-spec-val">{specValue(k, v)}</dd>
                   </div>
                 ))}
               </dl>
@@ -423,6 +505,25 @@ export default function ShopProduct() {
           )}
         </div>
       </div>
+
+      {/* Barra de compra fija (sólo mobile, ver shop-product.css). Aparece
+          cuando el CTA del hero sale del viewport para no duplicarlo. */}
+      {inStock && (
+        <div className={`sp-sticky-buy${!ctaInView ? " is-visible" : ""}`} aria-hidden={ctaInView}>
+          <div className="sp-sticky-info">
+            <span className="sp-sticky-name">{product.name}</span>
+            <span className="sp-sticky-price">{product.price_formatted}</span>
+          </div>
+          <button
+            className="sp-sticky-cta"
+            onClick={addToCart}
+            tabIndex={ctaInView ? -1 : 0}
+            aria-label={`Agregar ${product.name} al carrito`}
+          >
+            Agregar
+          </button>
+        </div>
+      )}
     </div>
   );
 }

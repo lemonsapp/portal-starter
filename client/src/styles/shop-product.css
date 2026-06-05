@@ -496,3 +496,83 @@
   .sp-reveal { opacity: 1; animation: none; }
   .sp-stage:hover img { transform: none; }
 }
+
+/* ════════════════════════ UX 2026-06-05 ════════════════════════ */
+
+/* ── Breadcrumb (reemplaza al "volver al catálogo" simple) ── */
+.sp-crumbs {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+  padding: 8px 0;
+  margin-bottom: clamp(20px, 3vw, 36px);
+}
+.sp-crumb {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--c-text-3); text-decoration: none;
+  transition: color var(--dur-fast, 150ms) var(--ease-out);
+}
+.sp-crumb:hover { color: var(--c-accent); }
+.sp-crumb:hover .sp-back-arrow { transform: translateX(-4px); }
+.sp-crumb-sep { opacity: 0.45; user-select: none; }
+.sp-crumb-current {
+  color: var(--c-text);
+  /* nombres largos no rompen la línea del breadcrumb en mobile */
+  max-width: 60vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Pills de medida con precio ── */
+.sp-pill {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.sp-pill-label { line-height: 1.1; }
+.sp-pill-price {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+  color: var(--c-text-3); text-decoration: none;
+}
+.sp-pill.is-active .sp-pill-price { color: inherit; opacity: 0.78; }
+.sp-pill.is-out .sp-pill-price { text-decoration: line-through; }
+
+/* ── Barra de compra fija (sólo mobile) ── */
+.sp-sticky-buy { display: none; }
+@media (max-width: 640px) {
+  /* aire extra para que la barra no tape el final del contenido */
+  .sp-page { padding-bottom: 96px; }
+
+  .sp-sticky-buy {
+    display: flex; align-items: center; gap: 14px;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 7500;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--c-surface);
+    border-top: 1px solid var(--c-border-2);
+    box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.12);
+    transform: translateY(105%);
+    transition: transform var(--dur-base, 240ms) var(--ease-out);
+  }
+  .sp-sticky-buy.is-visible { transform: translateY(0); }
+
+  .sp-sticky-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .sp-sticky-name {
+    font-size: 12px; font-weight: 700; color: var(--c-text-2);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .sp-sticky-price { font-size: 17px; font-weight: 900; color: var(--c-text); }
+
+  .sp-sticky-cta {
+    flex-shrink: 0;
+    padding: 13px 26px; border-radius: 999px; border: none;
+    background: linear-gradient(135deg, var(--c-accent) 0%, var(--c-accent-2) 100%);
+    color: #fff; font-family: inherit; font-size: 13px; font-weight: 900;
+    letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+    box-shadow: 0 10px 26px -10px rgba(var(--c-accent-rgb), 0.55);
+  }
+  .sp-sticky-cta:active { transform: translateY(1px); }
+
+  /* El FAB del carrito (estilos inline) sube cuando la barra está visible
+     para no tapar el botón "Agregar". !important gana al inline style. */
+  body.sp-has-sticky .cart-fab { bottom: 104px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-sticky-buy { transition: none; }
+}
