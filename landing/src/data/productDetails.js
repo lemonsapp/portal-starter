@@ -24,9 +24,12 @@ export const productDetails = {
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#C9A34E",
             colorSoft: "#F7F3EA",
-            heroVideo: {
-                src: "/video/internas/linea-elite/hero.mp4",
-                poster: "/video/internas/linea-elite/poster.jpg",
+            // Hero BANNER (tormenta/rayos) — reemplaza al video por pedido
+            // del cliente (2026-06-05). Mobile usa la versión 9:16 "celu".
+            heroBanner: {
+                src: "/img/banners/banner-elite.webp",
+                w: 2560, h: 1441,
+                mobile: { src: "/img/banners/banner-elite-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
         },
@@ -122,10 +125,12 @@ export const productDetails = {
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#F5948A",
             colorSoft: "#FFE3DE",
-            // Hero BANNER full HD (reemplaza video por pedido del cliente).
+            // Hero BANNER nuevo (potes flotando, fondo oscuro dramático,
+            // 2026-06-05). Mobile usa la versión 9:16 "celu".
             heroBanner: {
-                src: "/img/banners/banner-pro.png",
-                w: 1254, h: 1254,
+                src: "/img/banners/banner-pro.webp",
+                w: 2560, h: 1441,
+                mobile: { src: "/img/banners/banner-pro-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
         },
@@ -224,8 +229,9 @@ export const productDetails = {
             // entera arriba + texto/CTAs debajo). Reemplaza al video cinematic
             // por pedido del cliente. w/h evitan CLS (aspect-ratio intrínseco).
             heroBanner: {
-                src: "/img/banners/banner-race.png",
+                src: "/img/banners/banner-race.webp",
                 w: 1536, h: 1024,
+                mobile: { src: "/img/banners/banner-race-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
             heroImage: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
@@ -375,10 +381,12 @@ export const productDetails = {
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
             color: "#E8A5B1",
             colorSoft: "#F7D6DC",
-            // Hero BANNER full HD (reemplaza video por pedido del cliente).
+            // Hero BANNER nuevo (corales rosados, fondo claro, 2026-06-05).
+            // Mobile usa la versión 9:16 "celu".
             heroBanner: {
-                src: "/img/banners/banner-bio.png",
-                w: 1448, h: 1086,
+                src: "/img/banners/banner-bio.webp",
+                w: 2560, h: 1441,
+                mobile: { src: "/img/banners/banner-bio-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
         },
@@ -557,10 +565,12 @@ export const productDetails = {
             ctaSecondary: { label: "VER GUÍA DE USO",   href: "#specs" },
             color: "#C9A34E",
             colorSoft: "#F9E79B",
-            // Hero BANNER full HD (reemplaza video por pedido del cliente).
+            // Hero BANNER nuevo (splash de agua, fondo blanco, 2026-06-05).
+            // Mobile usa la versión 9:16 "celu".
             heroBanner: {
-                src: "/img/banners/banner-day0.png",
-                w: 1254, h: 1254,
+                src: "/img/banners/banner-day0.webp",
+                w: 2560, h: 1707,
+                mobile: { src: "/img/banners/banner-day0-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
         },

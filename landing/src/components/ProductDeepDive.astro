@@ -143,16 +143,26 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
 
         {heroBackground && !heroVideo && heroBanner && (
             <div class="pdd__hero-fullimg" aria-hidden="true">
-                <img
-                    class="pdd__hero-fullimg-el"
-                    src={heroBanner.src}
-                    width={heroBanner.w}
-                    height={heroBanner.h}
-                    alt=""
-                    loading="eager"
-                    fetchpriority="high"
-                    decoding="async"
-                />
+                <!-- Art direction: banner horizontal en desktop, vertical
+                     (9:16, "banners celu") en teléfonos vía heroBanner.mobile. -->
+                <picture>
+                    {heroBanner.mobile && (
+                        <source
+                            media="(max-width: 640px)"
+                            srcset={heroBanner.mobile.src}
+                        />
+                    )}
+                    <img
+                        class="pdd__hero-fullimg-el"
+                        src={heroBanner.src}
+                        width={heroBanner.w}
+                        height={heroBanner.h}
+                        alt=""
+                        loading="eager"
+                        fetchpriority="high"
+                        decoding="async"
+                    />
+                </picture>
                 <!-- Scrim para legibilidad del texto blanco sobre el banner
                      (3 de 4 banners tienen fondo claro → tinte oscuro). -->
                 <div class="pdd__hero-fullimg-scrim"></div>
