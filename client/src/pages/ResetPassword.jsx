@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import RotatingAuthBg from "../components/RotatingAuthBg";
 import { useBranding } from "../lib/branding.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -65,7 +66,8 @@ export default function ResetPassword() {
         .rp-root{min-height:100vh;min-height:100svh;background:#020307;color:#f0ece3;display:grid;grid-template-columns:.95fr 1.05fr;font-family:'Gotham', sans-serif;overflow:hidden;position:relative}
         .rp-root::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.026;pointer-events:none;z-index:9}
 
-        .rp-left{position:relative;display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:#020307;border-right:1px solid rgba(240,236,227,.07)}
+        /* BG rotativo: ver components/RotatingAuthBg.jsx (compartido con Login/Register/Forgot). Paneles translúcidos + z-index 1 encima. */
+        .rp-left{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:rgba(2,3,7,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-right:1px solid rgba(240,236,227,.07)}
         .rp-num{position:absolute;top:14px;left:14px;font-family:'Gotham', sans-serif;font-size:90px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.05);pointer-events:none;user-select:none}
         .rp-card{width:100%;max-width:460px;opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1) .15s}
         .rp-card.in{opacity:1;transform:translateY(0)}
@@ -116,7 +118,7 @@ export default function ResetPassword() {
         .rp-success-title em{font-style:normal;color:#22c55e}
         .rp-success-desc{font-size:14px;font-weight:400;color:rgba(240,236,227,.55);line-height:1.85;margin-bottom:24px;text-align:center}
 
-        .rp-right{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px;background:linear-gradient(135deg,#07090f 0%,#020307 70%)}
+        .rp-right{position:relative;z-index:1;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px;background:linear-gradient(135deg,rgba(7,9,15,.46) 0%,rgba(2,3,7,.40) 70%)}
         .rp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
         .rp-watermark{position:absolute;font-family:'Gotham', sans-serif;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-8px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;bottom:-60px;left:-40px;user-select:none}
         .rp-logo-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;max-width:520px;opacity:.06;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
@@ -147,6 +149,8 @@ export default function ResetPassword() {
       `}</style>
 
       {/* LEFT — form */}
+      <RotatingAuthBg />
+
       <div className="rp-left">
         <div className="rp-num">04</div>
         <div ref={cardRef} className="rp-card">

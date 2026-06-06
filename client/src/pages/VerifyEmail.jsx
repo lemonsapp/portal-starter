@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import RotatingAuthBg from "../components/RotatingAuthBg";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -35,7 +36,8 @@ export default function VerifyEmail() {
         .vf-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
         .vf-watermark{position:absolute;font-family:'Gotham', sans-serif;font-size:clamp(180px,22vw,360px);line-height:.78;letter-spacing:-6px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;user-select:none;top:50%;left:50%;transform:translate(-50%,-50%)}
         .vf-logo-bg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50%;max-width:480px;opacity:.05;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
-        .vf-card{position:relative;z-index:5;width:100%;max-width:560px;text-align:center;padding:56px 48px;background:linear-gradient(135deg,#07090f 0%,#020307 100%);border:1px solid rgba(240,236,227,.08);opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1)}
+        /* BG rotativo: ver components/RotatingAuthBg.jsx (compartido con las pantallas de auth). Card en vidrio encima. */
+        .vf-card{position:relative;z-index:5;width:100%;max-width:560px;text-align:center;padding:56px 48px;background:linear-gradient(135deg,rgba(7,9,15,.80) 0%,rgba(2,3,7,.78) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(240,236,227,.08);opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1)}
         .vf-card.in{opacity:1;transform:translateY(0)}
         .vf-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--lemon),var(--orange),var(--lemon));background-size:200% 100%;animation:vfBar 3s linear infinite}
         @keyframes vfBar{from{background-position:0 0}to{background-position:200% 0}}
@@ -82,6 +84,8 @@ export default function VerifyEmail() {
       <div className="vf-grid" />
       <div className="vf-watermark">VERIFY</div>
       <img src="/icons/icon.svg" alt="" className="vf-logo-bg" />
+
+      <RotatingAuthBg />
 
       <div ref={cardRef} className="vf-card">
         <div className="vf-eyebrow">Verificación de email</div>
