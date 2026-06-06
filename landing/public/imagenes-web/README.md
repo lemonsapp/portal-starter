@@ -34,6 +34,6 @@ y `/ultimos-cambios/`; `vercel.json` mantiene rewrites de esos prefijos viejos).
 5. Excepciones que NO viven acá (a propósito):
    - `/favicon.ico`, `/favicon.svg` — convención de browsers, raíz del sitio.
    - `/icons/` — íconos PWA del manifest (server `htmlBranding.js` los referencia).
-   - `client/public/imagenes-web/` — mini-espejo del portal (fondo de login +
+   - `client/public/imagenes-web/` — mini-espejo del portal (fondos de login rotativos +
      logo) para que `npm run dev` del client funcione sin la landing.
    - `/video/` — assets de video (.mp4; sus posters JPG sí viven acá).
