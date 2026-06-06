@@ -487,8 +487,7 @@ export const productDetails = {
         },
         // Highlights de Cloner: paleta violeta. Fotos propias del cliente
         // (2026-06-06) en imagenes-web/cloner-slider/ (crudos PNG en
-        // landing/imagenes-web/IMAGENES/cloner-slider-crudos/). El 04
-        // conserva el render de la esquejera hasta tener una 4ª foto.
+        // landing/imagenes-web/IMAGENES/cloner-slider-crudos/).
         highlights: [
             {
                 kicker: "ALTA ADHERENCIA",
@@ -513,14 +512,6 @@ export const productDetails = {
                 image: "/imagenes-web/cloner-slider/cloner-slider-3.webp",
                 color: "#7D4BC9",
                 stat: "03",
-            },
-            {
-                kicker: "USO SIMPLE",
-                title: "Sumergir, plantar, regar.",
-                body: "Sin polvos que se vuelan, sin diluciones a pesar. La curva de aprendizaje es casi cero.",
-                image: "/imagenes-web/productos/esquejera/5-top-editado.png",
-                color: "#B49AE0",
-                stat: "04",
             },
         ],
         bigStat: {
