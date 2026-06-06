@@ -14,6 +14,10 @@ import { useUser } from "../context/UserContext.jsx";
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
+// Moneda Holistic (cliente 2026-06-06) — misma imagen que usa Coins.jsx.
+// Definida local para no importar la page (mantiene el chunk de Coins lazy).
+const COIN_IMG = `${import.meta.env.BASE_URL}imagenes-web/coins/moneda-holistic.webp`;
+
 // SVG icon set — Lucide-like outline, 1.6 stroke
 const Icon = ({ name, size = 18 }) => {
     const p = {
@@ -249,7 +253,7 @@ export default function TopNav() {
                     <div style={S.right}>
                         {balance != null && !isAnon && (
                             <Link to="/coins" className="topnav-balance" style={S.balance} aria-label={`Balance: ${balance} coins`}>
-                                <Icon name="puntos" size={14} />
+                                <img src={COIN_IMG} alt="" aria-hidden="true" style={{ width:16, height:16, objectFit:"contain" }} />
                                 <span style={S.balanceNum}>{balance}</span>
                             </Link>
                         )}
