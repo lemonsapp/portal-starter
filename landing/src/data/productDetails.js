@@ -476,6 +476,14 @@ export const productDetails = {
             ctaSecondary: { label: "VER GUÍA DE USO",   href: "#specs" },
             color: "#6B3BAF",
             colorSoft: "#E4D5F2",
+            // Hero BANNER (2026-06-06). Mobile usa la versión 9:16 "celu".
+            // Crudos PNG en landing/imagenes-web/IMAGENES/banners-crudos/.
+            heroBanner: {
+                src: "/imagenes-web/banners/banner-cloner.webp",
+                w: 2560, h: 1707,
+                mobile: { src: "/imagenes-web/banners/banner-cloner-celu.webp", w: 1080, h: 1919 },
+            },
+            heroBackground: true,
         },
         // Highlights de Cloner: paleta violeta. Hasta tener foto del
         // tubo Cloner, usamos imágenes de la esquejera (proceso real
