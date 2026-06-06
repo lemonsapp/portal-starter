@@ -10,26 +10,14 @@ import {
   shouldShowBiometricPrompt,
 } from "../lib/webauthn";
 import ActivateBiometricModal from "../components/ActivateBiometricModal";
+import RotatingAuthBg from "../components/RotatingAuthBg";
 import { useBranding } from "../lib/branding.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
-// Fondos del login (2026-06-06): rotan con crossfade y arrancan en uno
-// al azar, así cualquiera de los dos puede aparecer primero. Viven en
-// client/public/imagenes-web/login/ (crudos en landing/imagenes-web/
-// IMAGENES/login-crudos/). BASE_URL: el portal se sirve bajo /portal/
-// en prod y / en dev — sin esto, en prod apuntarían a la landing (404).
-const BASE = import.meta.env.BASE_URL;
-const LOGIN_BGS = [
-  `${BASE}imagenes-web/login/login-1.webp`,
-  `${BASE}imagenes-web/login/login-2.webp`,
-];
-const BG_ROTATE_MS = 12000;
-
 export default function Login() {
   const navigate = useNavigate();
   const branding = useBranding();
-  const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * LOGIN_BGS.length));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
@@ -157,14 +145,6 @@ export default function Login() {
     return () => clearTimeout(t);
   }, []);
 
-  // Rotación del fondo: alterna entre las imágenes cada BG_ROTATE_MS.
-  useEffect(() => {
-    const t = setInterval(() => {
-      setBgIndex((i) => (i + 1) % LOGIN_BGS.length);
-    }, BG_ROTATE_MS);
-    return () => clearInterval(t);
-  }, []);
-
   useEffect(() => {
     (async () => {
       if (!supportsWebAuthn()) return;
@@ -200,30 +180,8 @@ export default function Login() {
           position: relative;
         }
 
-        /* ── BG rotativo: 2 fotos full-page con crossfade + Ken Burns ── */
-        .lg-bg { position: absolute; inset: 0; z-index: 0; }
-        .lg-bg-img {
-          position: absolute; inset: 0;
-          background-size: cover;
-          background-position: center;
-          opacity: 0; transform: scale(1.07);
-          transition: opacity 1.8s ease-in-out, transform 16s linear;
-          will-change: opacity;
-        }
-        .lg-bg-img.on { opacity: 1; transform: scale(1); }
-        /* Velo oscuro: contraste para que branding y form sigan legibles */
-        .lg-bg-veil {
-          position: absolute; inset: 0;
-          background: linear-gradient(
-            155deg,
-            rgba(6,7,10,.84) 0%,
-            rgba(6,7,10,.55) 48%,
-            rgba(6,7,10,.80) 100%
-          );
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .lg-bg-img { transition: opacity 1.8s ease-in-out; transform: none; }
-        }
+        /* BG rotativo: ver components/RotatingAuthBg.jsx (compartido con
+           Register). Los paneles van translúcidos + z-index 1 encima. */
 
         /* ── LEFT: branding hero ── */
         .lg-left {
@@ -534,17 +492,7 @@ export default function Login() {
         }
       `}</style>
 
-      {/* BG rotativo: ambas imágenes montadas siempre (preload), crossfade */}
-      <div className="lg-bg" aria-hidden="true">
-        {LOGIN_BGS.map((src, i) => (
-          <div
-            key={src}
-            className={`lg-bg-img${i === bgIndex ? " on" : ""}`}
-            style={{ backgroundImage: `url(${src})` }}
-          />
-        ))}
-        <div className="lg-bg-veil" />
-      </div>
+      <RotatingAuthBg />
 
       {/* LEFT: branding hero — bi-tipo Gotham + Fraunces */}
       <div className="lg-left">

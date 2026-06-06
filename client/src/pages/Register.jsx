@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import RotatingAuthBg from "../components/RotatingAuthBg";
 import { useBranding } from "../lib/branding.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -93,12 +94,17 @@ export default function Register() {
           position: relative;
         }
 
-        /* ── LEFT: form ── */
+        /* BG rotativo: ver components/RotatingAuthBg.jsx (compartido con
+           Login). Los paneles van translúcidos + z-index 1 encima. */
+
+        /* ── LEFT: form (vidrio oscuro sobre el fondo rotativo) ── */
         .rg-left {
-          position: relative;
+          position: relative; z-index: 1;
           display: flex; align-items: center; justify-content: center;
           padding: clamp(36px, 5vw, 64px);
-          background: var(--c-bg, #06070A);
+          background: rgba(6,7,10,.62);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
         }
         .rg-card {
           width: 100%; max-width: 440px;
@@ -301,15 +307,16 @@ export default function Register() {
 
         /* ── RIGHT: branding hero ── */
         .rg-right {
-          position: relative; overflow: hidden;
+          position: relative; z-index: 1;
+          overflow: hidden;
           display: flex; flex-direction: column;
           justify-content: space-between;
           padding: clamp(36px, 5vw, 64px);
           background: linear-gradient(
             205deg,
-            var(--c-bg) 0%,
-            var(--c-surface) 40%,
-            #0a1814 100%
+            rgba(6,7,10,.42) 0%,
+            rgba(14,16,20,.28) 40%,
+            rgba(10,24,20,.45) 100%
           );
           border-left: 1px solid var(--c-border);
         }
@@ -407,6 +414,8 @@ export default function Register() {
           .rg-success-title { font-size: 36px; }
         }
       `}</style>
+
+      <RotatingAuthBg />
 
       {/* LEFT — form */}
       <div className="rg-left">
