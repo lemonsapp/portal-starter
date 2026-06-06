@@ -85,20 +85,20 @@ export const capitulos = [
         // Race 3 dividida en 1ª y 2ª parte PK de crecimiento y maduración.
         seoTitle: "Línea Race — Sistema Completo de Fertilizantes para Indoor y Outdoor | Holistic",
         seoDescription:
-            "Línea Race Holistic: 4 fertilizantes para el ciclo completo de cultivo indoor y outdoor. Race 1 (NPK), Race 2 (Calcio + Nitrógeno, Part A + B), Race 3 (PK de crecimiento y maduración en 2 partes) y Race 4 (Micro + Magnesio). Envío gratis.",
+            "Línea Race Holistic: 5 fertilizantes para el ciclo completo de cultivo indoor y outdoor. Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en 2 partes) y Race 4 (Micro + Magnesio). Envío gratis.",
         keywords: ["sistema de fertilizantes", "cultivo indoor", "cultivo outdoor", "fertilizante NPK", "fertilizante PK", "calcio y nitrógeno", "micro y magnesio", "autoflorecientes", "ciclo completo"],
 
         // Copy visible — v4
         h1: "Sistema completo de fertilizantes para cultivo indoor y outdoor.",
         tagline: "Velocidad máxima para cultivos exigentes.",
         parrafoIntro:
-            "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cuatro fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno, Part A + B), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
+            "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cinco fertilizantes para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
         descripcion:
-            "4 fertilizantes para el ciclo completo indoor y outdoor: Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración, 2 partes) y Race 4 (Micro + Magnesio). Diseñada para extraer el máximo rendimiento en cada cultivo.",
+            "5 fertilizantes para el ciclo completo indoor y outdoor: Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración, 2 partes) y Race 4 (Micro + Magnesio). Diseñada para extraer el máximo rendimiento en cada cultivo.",
         quote: "La velocidad sin control es ruido. Race es el fertilizante que te da las dos cosas: velocidad y precisión, indoor y outdoor.",
 
-        producto: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
-        productoSecundario: "/imagenes-web/productos/linea-race/500ml/race-4-rosa-500ml.png",
+        producto: "/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp",
+        productoSecundario: "/imagenes-web/productos/linea-race/1l/race-4-rosa-1l-f1.webp",
         ctaTexto: "Ver Línea Race",
         ctaHref: "/linea-race",
         bgColor: "#C7F0DD",

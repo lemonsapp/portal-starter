@@ -100,7 +100,7 @@ async function migrate() {
     FROM (VALUES
       ('linea-race',
        'Línea Race — Sistema completo',
-       'Sistema de 4 fertilizantes para el ciclo completo indoor y outdoor.',
+       'Sistema de 5 fertilizantes para el ciclo completo indoor y outdoor.',
        'Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en 2 partes) y Race 4 (Micro + Magnesio).',
        25000000, NULL::int, 'RACE-KIT', 'fertilizantes', TRUE, 1,
        '{"presentaciones": ["250ml", "500ml", "1L", "5L", "10L", "20L"], "linea": "race", "indoor_outdoor": true}'),
@@ -145,12 +145,23 @@ async function migrate() {
     INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
     SELECT p.id, v.url, v.alt, v.sort, v.is_primary
     FROM (VALUES
+      -- Kit Race: foto familia + las 5 botellas (Race 3 va en 2 partes), renders F1 1L de costado.
       ('linea-race',     '/imagenes-web/productos/linea-race/500ml/race-unificado.png',                    'Línea Race completa — todos los potes',   0, TRUE),
-      ('linea-race',     '/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png',                'Race 1 verde 500ml',              1, FALSE),
+      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp',                  'Race 1 — NPK (verde)',            1, FALSE),
+      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-2-celeste-1l-f1.webp',                'Race 2 — Calcio + Nitrógeno (celeste)', 2, FALSE),
+      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp',              'Race 3 — PK 1ª parte (violeta)',  3, FALSE),
+      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp',              'Race 3 — PK 2ª parte (violeta)',  4, FALSE),
+      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-4-rosa-1l-f1.webp',                   'Race 4 — Micro + Magnesio (rosa)', 5, FALSE),
+      -- Kit Elite: foto familia + las 2 partes.
       ('linea-elite',    '/imagenes-web/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png',                     'Línea Elite completa — Part 1 + Part 2',  0, TRUE),
       ('linea-elite',    '/imagenes-web/productos/linea-elite/elite-part-1.png',                           'Elite Parte 1',                   1, FALSE),
+      ('linea-elite',    '/imagenes-web/productos/linea-elite/elite-part-2.png',                           'Elite Parte 2',                   2, FALSE),
+      -- Kit Pro: foto familia + las 4 etapas.
       ('linea-pro',      '/imagenes-web/productos/linea-pro/1kg/pro-unificado.png',                        'Línea Pro completa — 4 etapas',   0, TRUE),
-      ('linea-pro',      '/imagenes-web/productos/linea-pro/1kg/pro-vegetativo.png',                       'Pro Vegetativo 1kg',              1, FALSE),
+      ('linea-pro',      '/imagenes-web/productos/linea-pro/1kg/enraizante-1kg-1.png',                     'Pro Enraizante 1kg',              1, FALSE),
+      ('linea-pro',      '/imagenes-web/productos/linea-pro/1kg/vegetativo-1kg-1.png',                     'Pro Vegetativo 1kg',              2, FALSE),
+      ('linea-pro',      '/imagenes-web/productos/linea-pro/1kg/preflora-1kg-1.png',                       'Pro Preflora 1kg',                3, FALSE),
+      ('linea-pro',      '/imagenes-web/productos/linea-pro/1kg/flora-1kg-1.png',                          'Pro Flora 1kg',                   4, FALSE),
       ('bio-estimulante','/imagenes-web/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png','Bio Estimulante perspectiva',     0, TRUE),
       ('cloner',         '/imagenes-web/ultimos-cambios/POTE-CLONER-HOME.png',                                 'Cloner gel enraizante',           0, TRUE),
       ('day-0',          '/imagenes-web/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png',      'Day-0 finalizador',               0, TRUE)
@@ -467,22 +478,22 @@ async function migrate() {
        'Bio Estimulante — 500ml',
        'Bioestimulante orgánico. Ácidos húmicos, fúlvicos, carboxílicos. Potasio soluble.',
        5500000, 'BIO-EST-500', 'bioestimulantes', 50,
-       '{"formato":"500ml"}'),
+       '{"linea":"bio","formato":"500ml"}'),
       ('bio-estimulante-1l',
        'Bio Estimulante — 1 Litro',
        'Bioestimulante orgánico. Ácidos húmicos, fúlvicos, carboxílicos. Potasio soluble.',
        8500000, 'BIO-EST-1L', 'bioestimulantes', 51,
-       '{"formato":"1L"}'),
+       '{"linea":"bio","formato":"1L"}'),
       ('day-0-500ml',
        'Day-0 — 500ml',
        'Finalizador previo a cosecha. Limpia reservorios, pule sabor y aroma.',
        5500000, 'DAY0-EST-500', 'finalizadores', 60,
-       '{"formato":"500ml"}'),
+       '{"linea":"day0","formato":"500ml"}'),
       ('day-0-1l',
        'Day-0 — 1 Litro',
        'Finalizador previo a cosecha. Limpia reservorios, pule sabor y aroma.',
        8500000, 'DAY0-EST-1L', 'finalizadores', 61,
-       '{"formato":"1L"}')
+       '{"linea":"day0","formato":"1L"}')
     ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
     LEFT JOIN product_categories c ON c.slug = v.cat_slug
     -- ON CONFLICT DO NOTHING (catch-all sin target) → cualquier UNIQUE violation
@@ -498,41 +509,41 @@ async function migrate() {
     INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
     SELECT p.id, v.url, v.alt, 0, TRUE
     FROM (VALUES
-      -- Race 250ml
-      ('race-1-npk-250ml',                '/imagenes-web/productos/linea-race/250ml/race-1-verde.png',           'Race 1 NPK (verde) 250ml'),
-      ('race-2-calcio-nitrogeno-250ml',   '/imagenes-web/productos/linea-race/250ml/race-2-celeste.png',         'Race 2 Calcio + Nitrógeno (celeste) 250ml'),
-      ('race-3-pk-1-250ml',               '/imagenes-web/productos/linea-race/250ml/race-3-violeta-a.png',       'Race 3 PK 1ª parte (violeta) 250ml'),
-      ('race-3-pk-2-250ml',               '/imagenes-web/productos/linea-race/250ml/race-3-violeta-b.png',       'Race 3 PK 2ª parte (violeta) 250ml'),
-      ('race-4-micro-magnesio-250ml',     '/imagenes-web/productos/linea-race/250ml/race-4-rosa.png',            'Race 4 Micro + Magnesio (rosa) 250ml'),
-      -- Race 500ml
+      -- Race 250ml — renders F1 de costado (subidos 2026-06-06)
+      ('race-1-npk-250ml',                '/imagenes-web/productos/linea-race/250ml/race-1-verde-f1.webp',       'Race 1 NPK (verde) 250ml'),
+      ('race-2-calcio-nitrogeno-250ml',   '/imagenes-web/productos/linea-race/250ml/race-2-celeste-f1.webp',     'Race 2 Calcio + Nitrógeno (celeste) 250ml'),
+      ('race-3-pk-1-250ml',               '/imagenes-web/productos/linea-race/250ml/race-3-violeta-a-f1.webp',   'Race 3 PK 1ª parte (violeta) 250ml'),
+      ('race-3-pk-2-250ml',               '/imagenes-web/productos/linea-race/250ml/race-3-violeta-b-f1.webp',   'Race 3 PK 2ª parte (violeta) 250ml'),
+      ('race-4-micro-magnesio-250ml',     '/imagenes-web/productos/linea-race/250ml/race-4-rosa-f1.webp',        'Race 4 Micro + Magnesio (rosa) 250ml'),
+      -- Race 500ml — Race 1 y Race 4 conservan el render viejo (no vino F1 500ml de esos dos)
       ('race-1-npk-500ml',                '/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png',     'Race 1 NPK (verde) 500ml'),
-      ('race-2-calcio-nitrogeno-500ml',   '/imagenes-web/productos/linea-race/500ml/race-2-celeste-500ml.png',   'Race 2 Calcio + Nitrógeno (celeste) 500ml'),
-      ('race-3-pk-1-500ml',               '/imagenes-web/productos/linea-race/500ml/race-3-violeta-a-500ml.png', 'Race 3 PK 1ª parte (violeta) 500ml'),
-      ('race-3-pk-2-500ml',               '/imagenes-web/productos/linea-race/500ml/race-3-violeta-b-500ml.png', 'Race 3 PK 2ª parte (violeta) 500ml'),
+      ('race-2-calcio-nitrogeno-500ml',   '/imagenes-web/productos/linea-race/500ml/race-2-celeste-500ml-f1.webp',   'Race 2 Calcio + Nitrógeno (celeste) 500ml'),
+      ('race-3-pk-1-500ml',               '/imagenes-web/productos/linea-race/500ml/race-3-violeta-a-500ml-f1.webp', 'Race 3 PK 1ª parte (violeta) 500ml'),
+      ('race-3-pk-2-500ml',               '/imagenes-web/productos/linea-race/500ml/race-3-violeta-b-500ml-f1.webp', 'Race 3 PK 2ª parte (violeta) 500ml'),
       ('race-4-micro-magnesio-500ml',     '/imagenes-web/productos/linea-race/500ml/race-4-rosa-500ml.png',      'Race 4 Micro + Magnesio (rosa) 500ml'),
-      -- Race 1L (botellas frontales)
-      ('race-1-npk-1l',                   '/imagenes-web/productos/linea-race/1l/race-1-verde-1l.png',           'Race 1 NPK (verde) 1L'),
-      ('race-2-calcio-nitrogeno-1l',      '/imagenes-web/productos/linea-race/1l/race-2-celeste-1l.png',         'Race 2 Calcio + Nitrógeno (celeste) 1L'),
-      ('race-3-pk-1-1l',                  '/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l.png',       'Race 3 PK 1ª parte (violeta) 1L'),
-      ('race-3-pk-2-1l',                  '/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l.png',       'Race 3 PK 2ª parte (violeta) 1L'),
-      ('race-4-micro-magnesio-1l',        '/imagenes-web/productos/linea-race/1l/race-4-rosa-1l.png',            'Race 4 Micro + Magnesio (rosa) 1L'),
-      -- Race bidones 5L
-      ('race-1-npk-5l',                   '/imagenes-web/productos/linea-race/5l/race-1-verde-5l.png',           'Race 1 NPK (verde) bidón 5L'),
-      ('race-2-calcio-nitrogeno-5l',      '/imagenes-web/productos/linea-race/5l/race-2-celeste-5l.png',         'Race 2 Calcio + Nitrógeno (celeste) bidón 5L'),
-      ('race-3-pk-1-5l',                  '/imagenes-web/productos/linea-race/5l/race-3-violeta-a-5l.png',       'Race 3 PK 1ª parte (violeta) bidón 5L'),
-      ('race-3-pk-2-5l',                  '/imagenes-web/productos/linea-race/5l/race-3-violeta-b-5l.png',       'Race 3 PK 2ª parte (violeta) bidón 5L'),
-      ('race-4-micro-magnesio-5l',        '/imagenes-web/productos/linea-race/5l/race-4-rosa-5l.png',            'Race 4 Micro + Magnesio (rosa) bidón 5L'),
-      -- Race bidones 10L
-      ('race-1-npk-10l',                  '/imagenes-web/productos/linea-race/10l/race-1-verde-10l.png',         'Race 1 NPK (verde) bidón 10L'),
-      ('race-2-calcio-nitrogeno-10l',     '/imagenes-web/productos/linea-race/10l/race-2-celeste-10l.png',       'Race 2 Calcio + Nitrógeno (celeste) bidón 10L'),
-      ('race-3-pk-1-10l',                 '/imagenes-web/productos/linea-race/10l/race-3-violeta-a-10l.png',     'Race 3 PK 1ª parte (violeta) bidón 10L'),
-      ('race-3-pk-2-10l',                 '/imagenes-web/productos/linea-race/10l/race-3-violeta-b-10l.png',     'Race 3 PK 2ª parte (violeta) bidón 10L'),
-      ('race-4-micro-magnesio-10l',       '/imagenes-web/productos/linea-race/10l/race-4-rosa-10l.png',          'Race 4 Micro + Magnesio (rosa) bidón 10L'),
-      -- Race bidones 20L (Race 3 sólo Parte A: no hay render de Parte B 20L)
-      ('race-1-npk-20l',                  '/imagenes-web/productos/linea-race/20l/race-1-verde-20l.png',         'Race 1 NPK (verde) bidón 20L'),
-      ('race-2-calcio-nitrogeno-20l',     '/imagenes-web/productos/linea-race/20l/race-2-celeste-20l.png',       'Race 2 Calcio + Nitrógeno (celeste) bidón 20L'),
-      ('race-3-pk-1-20l',                 '/imagenes-web/productos/linea-race/20l/race-3-violeta-a-20l.png',     'Race 3 PK 1ª parte (violeta) bidón 20L'),
-      ('race-4-micro-magnesio-20l',       '/imagenes-web/productos/linea-race/20l/race-4-rosa-20l.png',          'Race 4 Micro + Magnesio (rosa) bidón 20L'),
+      -- Race 1L — renders F1 de costado
+      ('race-1-npk-1l',                   '/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp',       'Race 1 NPK (verde) 1L'),
+      ('race-2-calcio-nitrogeno-1l',      '/imagenes-web/productos/linea-race/1l/race-2-celeste-1l-f1.webp',     'Race 2 Calcio + Nitrógeno (celeste) 1L'),
+      ('race-3-pk-1-1l',                  '/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp',   'Race 3 PK 1ª parte (violeta) 1L'),
+      ('race-3-pk-2-1l',                  '/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp',   'Race 3 PK 2ª parte (violeta) 1L'),
+      ('race-4-micro-magnesio-1l',        '/imagenes-web/productos/linea-race/1l/race-4-rosa-1l-f1.webp',        'Race 4 Micro + Magnesio (rosa) 1L'),
+      -- Race bidones 5L — renders F1
+      ('race-1-npk-5l',                   '/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp',       'Race 1 NPK (verde) bidón 5L'),
+      ('race-2-calcio-nitrogeno-5l',      '/imagenes-web/productos/linea-race/5l/race-2-celeste-5l-f1.webp',     'Race 2 Calcio + Nitrógeno (celeste) bidón 5L'),
+      ('race-3-pk-1-5l',                  '/imagenes-web/productos/linea-race/5l/race-3-violeta-a-5l-f1.webp',   'Race 3 PK 1ª parte (violeta) bidón 5L'),
+      ('race-3-pk-2-5l',                  '/imagenes-web/productos/linea-race/5l/race-3-violeta-b-5l-f1.webp',   'Race 3 PK 2ª parte (violeta) bidón 5L'),
+      ('race-4-micro-magnesio-5l',        '/imagenes-web/productos/linea-race/5l/race-4-rosa-5l-f1.webp',        'Race 4 Micro + Magnesio (rosa) bidón 5L'),
+      -- Race bidones 10L — renders F1
+      ('race-1-npk-10l',                  '/imagenes-web/productos/linea-race/10l/race-1-verde-10l-f1.webp',     'Race 1 NPK (verde) bidón 10L'),
+      ('race-2-calcio-nitrogeno-10l',     '/imagenes-web/productos/linea-race/10l/race-2-celeste-10l-f1.webp',   'Race 2 Calcio + Nitrógeno (celeste) bidón 10L'),
+      ('race-3-pk-1-10l',                 '/imagenes-web/productos/linea-race/10l/race-3-violeta-a-10l-f1.webp', 'Race 3 PK 1ª parte (violeta) bidón 10L'),
+      ('race-3-pk-2-10l',                 '/imagenes-web/productos/linea-race/10l/race-3-violeta-b-10l-f1.webp', 'Race 3 PK 2ª parte (violeta) bidón 10L'),
+      ('race-4-micro-magnesio-10l',       '/imagenes-web/productos/linea-race/10l/race-4-rosa-10l-f1.webp',      'Race 4 Micro + Magnesio (rosa) bidón 10L'),
+      -- Race bidones 20L (Race 3 sólo Parte A: tampoco hay render F1 de Parte B 20L)
+      ('race-1-npk-20l',                  '/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp',     'Race 1 NPK (verde) bidón 20L'),
+      ('race-2-calcio-nitrogeno-20l',     '/imagenes-web/productos/linea-race/20l/race-2-celeste-20l-f1.webp',   'Race 2 Calcio + Nitrógeno (celeste) bidón 20L'),
+      ('race-3-pk-1-20l',                 '/imagenes-web/productos/linea-race/20l/race-3-violeta-a-20l-f1.webp', 'Race 3 PK 1ª parte (violeta) bidón 20L'),
+      ('race-4-micro-magnesio-20l',       '/imagenes-web/productos/linea-race/20l/race-4-rosa-20l-f1.webp',      'Race 4 Micro + Magnesio (rosa) bidón 20L'),
       -- Elite 500ml + 1L
       ('elite-parte-1-500ml',             '/imagenes-web/productos/linea-elite/elite-part-1.png',                'Elite Parte 1 500ml'),
       ('elite-parte-1-1l',                '/imagenes-web/productos/linea-elite/1l/parte-1-perspectiva-1l.png',   'Elite Parte 1 1L'),
@@ -666,6 +677,248 @@ async function migrate() {
      WHERE slug = 'linea-race'
        AND NOT (meta->'presentaciones' @> '"1L"'::jsonb)
   `, "extend race kit presentaciones");
+
+  // ─── Renders F1 de la línea Race (2026-06-06) ──────────────────────────────
+  // El cliente subió la línea gráfica nueva (etiqueta "PH IDEAL RACE" estilo
+  // F1, palanca de cambios con el número de parte). Se optimizaron a WebP en
+  // /imagenes-web/productos/linea-race/<size>/*-f1.webp. Acá repunteamos la
+  // imagen primaria de cada SKU existente (el seed de arriba sólo aplica a
+  // DBs vírgenes). Race 1 y Race 4 en 500ml conservan el render viejo (el
+  // cliente no subió F1 de esos dos); Race 3 Parte B 20L sigue sin existir.
+  // Idempotente: UPDATE a un valor fijo → segunda corrida es no-op.
+  await safeQuery(`
+    UPDATE product_images pi SET url = v.url, alt = v.alt
+    FROM (VALUES
+      ('race-1-npk-250ml',              '/imagenes-web/productos/linea-race/250ml/race-1-verde-f1.webp',           'Race 1 NPK (verde) 250ml'),
+      ('race-2-calcio-nitrogeno-250ml', '/imagenes-web/productos/linea-race/250ml/race-2-celeste-f1.webp',         'Race 2 Calcio + Nitrógeno (celeste) 250ml'),
+      ('race-3-pk-1-250ml',             '/imagenes-web/productos/linea-race/250ml/race-3-violeta-a-f1.webp',       'Race 3 PK 1ª parte (violeta) 250ml'),
+      ('race-3-pk-2-250ml',             '/imagenes-web/productos/linea-race/250ml/race-3-violeta-b-f1.webp',       'Race 3 PK 2ª parte (violeta) 250ml'),
+      ('race-4-micro-magnesio-250ml',   '/imagenes-web/productos/linea-race/250ml/race-4-rosa-f1.webp',            'Race 4 Micro + Magnesio (rosa) 250ml'),
+      ('race-2-calcio-nitrogeno-500ml', '/imagenes-web/productos/linea-race/500ml/race-2-celeste-500ml-f1.webp',   'Race 2 Calcio + Nitrógeno (celeste) 500ml'),
+      ('race-3-pk-1-500ml',             '/imagenes-web/productos/linea-race/500ml/race-3-violeta-a-500ml-f1.webp', 'Race 3 PK 1ª parte (violeta) 500ml'),
+      ('race-3-pk-2-500ml',             '/imagenes-web/productos/linea-race/500ml/race-3-violeta-b-500ml-f1.webp', 'Race 3 PK 2ª parte (violeta) 500ml'),
+      ('race-1-npk-1l',                 '/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp',           'Race 1 NPK (verde) 1L'),
+      ('race-2-calcio-nitrogeno-1l',    '/imagenes-web/productos/linea-race/1l/race-2-celeste-1l-f1.webp',         'Race 2 Calcio + Nitrógeno (celeste) 1L'),
+      ('race-3-pk-1-1l',                '/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp',       'Race 3 PK 1ª parte (violeta) 1L'),
+      ('race-3-pk-2-1l',                '/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp',       'Race 3 PK 2ª parte (violeta) 1L'),
+      ('race-4-micro-magnesio-1l',      '/imagenes-web/productos/linea-race/1l/race-4-rosa-1l-f1.webp',            'Race 4 Micro + Magnesio (rosa) 1L'),
+      ('race-1-npk-5l',                 '/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp',           'Race 1 NPK (verde) bidón 5L'),
+      ('race-2-calcio-nitrogeno-5l',    '/imagenes-web/productos/linea-race/5l/race-2-celeste-5l-f1.webp',         'Race 2 Calcio + Nitrógeno (celeste) bidón 5L'),
+      ('race-3-pk-1-5l',                '/imagenes-web/productos/linea-race/5l/race-3-violeta-a-5l-f1.webp',       'Race 3 PK 1ª parte (violeta) bidón 5L'),
+      ('race-3-pk-2-5l',                '/imagenes-web/productos/linea-race/5l/race-3-violeta-b-5l-f1.webp',       'Race 3 PK 2ª parte (violeta) bidón 5L'),
+      ('race-4-micro-magnesio-5l',      '/imagenes-web/productos/linea-race/5l/race-4-rosa-5l-f1.webp',            'Race 4 Micro + Magnesio (rosa) bidón 5L'),
+      ('race-1-npk-10l',                '/imagenes-web/productos/linea-race/10l/race-1-verde-10l-f1.webp',         'Race 1 NPK (verde) bidón 10L'),
+      ('race-2-calcio-nitrogeno-10l',   '/imagenes-web/productos/linea-race/10l/race-2-celeste-10l-f1.webp',       'Race 2 Calcio + Nitrógeno (celeste) bidón 10L'),
+      ('race-3-pk-1-10l',               '/imagenes-web/productos/linea-race/10l/race-3-violeta-a-10l-f1.webp',     'Race 3 PK 1ª parte (violeta) bidón 10L'),
+      ('race-3-pk-2-10l',               '/imagenes-web/productos/linea-race/10l/race-3-violeta-b-10l-f1.webp',     'Race 3 PK 2ª parte (violeta) bidón 10L'),
+      ('race-4-micro-magnesio-10l',     '/imagenes-web/productos/linea-race/10l/race-4-rosa-10l-f1.webp',          'Race 4 Micro + Magnesio (rosa) bidón 10L'),
+      ('race-1-npk-20l',                '/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp',         'Race 1 NPK (verde) bidón 20L'),
+      ('race-2-calcio-nitrogeno-20l',   '/imagenes-web/productos/linea-race/20l/race-2-celeste-20l-f1.webp',       'Race 2 Calcio + Nitrógeno (celeste) bidón 20L'),
+      ('race-3-pk-1-20l',               '/imagenes-web/productos/linea-race/20l/race-3-violeta-a-20l-f1.webp',     'Race 3 PK 1ª parte (violeta) bidón 20L'),
+      ('race-4-micro-magnesio-20l',     '/imagenes-web/productos/linea-race/20l/race-4-rosa-20l-f1.webp',          'Race 4 Micro + Magnesio (rosa) bidón 20L')
+    ) AS v(slug, url, alt), products p
+    WHERE p.slug = v.slug AND pi.product_id = p.id AND pi.is_primary = TRUE
+  `, "race renders F1: repoint primaries");
+
+  // El kit decía "4 fertilizantes" pero la línea son 5 envases (Race 3 va en
+  // 2 partes). Guard por el texto viejo exacto → no pisa ediciones del admin.
+  await safeQuery(`
+    UPDATE products
+       SET short_description = 'Sistema de 5 fertilizantes para el ciclo completo indoor y outdoor.'
+     WHERE slug = 'linea-race'
+       AND short_description = 'Sistema de 4 fertilizantes para el ciclo completo indoor y outdoor.'
+  `, "race kit: 5 fertilizantes");
+
+  // ─── Galerías de los kits de línea (2026-06-06) ────────────────────────────
+  // El pedido del cliente: la interna de cada "línea completa" tiene que
+  // mostrar TODOS los envases que la componen, no 1 o 2 sueltos.
+  // · linea-race: familia + 5 botellas F1 (incluye Race 3 A y B) → reset
+  //   completo (la galería vieja tenía renders del esquema viejo).
+  // · linea-elite / linea-pro: inserts aditivos de lo que falte (no borra
+  //   imágenes que el admin haya subido).
+  // Idempotencia: el reset de Race sólo corre si falta el marker F1; los
+  // inserts aditivos chequean NOT EXISTS por URL.
+  try {
+    const { rows: raceKit } = await db.query(`
+      SELECT p.id,
+             EXISTS (SELECT 1 FROM product_images
+                      WHERE product_id = p.id
+                        AND url = '/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp') AS has_f1
+      FROM products p WHERE p.slug = 'linea-race'
+    `);
+    if (raceKit[0] && !raceKit[0].has_f1) {
+      const pid = raceKit[0].id;
+      await db.query(`DELETE FROM product_images WHERE product_id = $1`, [pid]);
+      const gallery = [
+        ['/imagenes-web/productos/linea-race/500ml/race-unificado.png',       'Línea Race completa — todos los potes',   0, true],
+        ['/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp',     'Race 1 — NPK (verde)',                    1, false],
+        ['/imagenes-web/productos/linea-race/1l/race-2-celeste-1l-f1.webp',   'Race 2 — Calcio + Nitrógeno (celeste)',   2, false],
+        ['/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp', 'Race 3 — PK 1ª parte (violeta)',          3, false],
+        ['/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp', 'Race 3 — PK 2ª parte (violeta)',          4, false],
+        ['/imagenes-web/productos/linea-race/1l/race-4-rosa-1l-f1.webp',      'Race 4 — Micro + Magnesio (rosa)',        5, false],
+      ];
+      for (const [url, alt, sort, primary] of gallery) {
+        await db.query(
+          `INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+           VALUES ($1,$2,$3,$4,$5)`,
+          [pid, url, alt, sort, primary]
+        );
+      }
+    }
+  } catch (e) {
+    console.error("[SHOP MIGRATE race kit gallery]", e.message || e);
+  }
+  await safeQuery(`
+    INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+    SELECT p.id, v.url, v.alt, v.sort, FALSE
+    FROM (VALUES
+      ('linea-elite', '/imagenes-web/productos/linea-elite/elite-part-2.png',        'Elite Parte 2',      2),
+      ('linea-pro',   '/imagenes-web/productos/linea-pro/1kg/enraizante-1kg-1.png',  'Pro Enraizante 1kg', 2),
+      ('linea-pro',   '/imagenes-web/productos/linea-pro/1kg/preflora-1kg-1.png',    'Pro Preflora 1kg',   3),
+      ('linea-pro',   '/imagenes-web/productos/linea-pro/1kg/flora-1kg-1.png',       'Pro Flora 1kg',      4)
+    ) AS v(slug, url, alt, sort)
+    JOIN products p ON p.slug = v.slug
+    WHERE NOT EXISTS (
+      SELECT 1 FROM product_images WHERE product_id = p.id AND url = v.url
+    )
+  `, "elite/pro kit gallery: completar línea");
+
+  // ═══ Catálogo real (2026-06-06): medidas, precios y modelo Elite ══════════
+  // Auditoría contra la tienda WooCommerce viva del cliente (hgrowshop.com).
+  // Hallazgos aplicados acá:
+  //   1. Elite SIEMPRE se vendió como PAR ("un producto en dos partes", el
+  //      precio del envase incluye Part 1 + Part 2; Elite Max "de cada
+  //      Parte"). Los SKUs por parte suelta no existen en el negocio real →
+  //      se desactivan y los reemplazan SKUs "Parte 1 + Parte 2" por medida.
+  //   2. Faltaban formatos que el cliente vende hoy: Elite 250ml y 500ml en
+  //      par, Day-0 250ml, Bio Estimulante 250ml.
+  //   3. Precios reales de hgrowshop.com reemplazan placeholders (guard por
+  //      el valor placeholder exacto: si el admin ya tocó un precio, no se
+  //      pisa). Race no existe en la tienda vieja → conserva placeholders.
+  //   4. Bio/Day-0 sin meta.linea no agrupaban como familia → se setea.
+
+  // 4) meta.linea para variantes Bio/Day-0 sembradas sin él.
+  await safeQuery(`
+    UPDATE products SET meta = meta || '{"linea":"bio"}'::jsonb
+    WHERE slug IN ('bio-estimulante-500ml','bio-estimulante-1l') AND NOT (meta ? 'linea')
+  `, "meta.linea bio");
+  await safeQuery(`
+    UPDATE products SET meta = meta || '{"linea":"day0"}'::jsonb
+    WHERE slug IN ('day-0-500ml','day-0-1l') AND NOT (meta ? 'linea')
+  `, "meta.linea day0");
+
+  // 2) SKUs nuevos: formatos reales que faltaban. Fotos de producto reales
+  //    (fotos-productos/*) — no hay renders sin fondo de estos formatos.
+  await safeQuery(`
+    INSERT INTO products (slug, name, short_description, price_cents, sku, category_id, featured, sort_order, meta)
+    SELECT v.slug, v.name, v.short, v.price, v.sku, c.id, FALSE, v.sort, v.meta::jsonb
+    FROM (VALUES
+      ('elite-juntos-250ml',
+       'Elite Parte 1 + Parte 2 — 250ml',
+       'El fertilizante dual completo: 250ml de Parte 1 + 250ml de Parte 2.',
+       4460800, 'ELITE-COMBO-250', 'fertilizantes', 22,
+       '{"linea":"elite","parte":"1+2","formato":"250ml"}'),
+      ('elite-juntos-500ml',
+       'Elite Parte 1 + Parte 2 — 500ml',
+       'El fertilizante dual completo: 500ml de Parte 1 + 500ml de Parte 2.',
+       7492200, 'ELITE-COMBO-500', 'fertilizantes', 23,
+       '{"linea":"elite","parte":"1+2","formato":"500ml"}'),
+      ('bio-estimulante-250ml',
+       'Bio Estimulante — 250ml',
+       'Bioestimulante orgánico. Ácidos húmicos, fúlvicos, carboxílicos. Potasio soluble.',
+       3040000, 'BIO-EST-250', 'bioestimulantes', 49,
+       '{"linea":"bio","formato":"250ml"}'),
+      ('day-0-250ml',
+       'Day-0 — 250ml',
+       'Finalizador previo a cosecha. Limpia reservorios, pule sabor y aroma.',
+       1303000, 'DAY0-EST-250', 'finalizadores', 59,
+       '{"linea":"day0","formato":"250ml"}')
+    ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
+    LEFT JOIN product_categories c ON c.slug = v.cat_slug
+    ON CONFLICT DO NOTHING
+  `, "skus formatos reales faltantes");
+  await safeQuery(`
+    INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+    SELECT p.id, v.url, p.name, 0, TRUE
+    FROM (VALUES
+      ('elite-juntos-250ml',     '/imagenes-web/fotos-productos/elite250-juntos.jpg'),
+      ('elite-juntos-500ml',     '/imagenes-web/fotos-productos/elite500ml-juntos.jpg'),
+      ('bio-estimulante-250ml',  '/imagenes-web/fotos-productos/bio-250gr1.jpg'),
+      ('day-0-250ml',            '/imagenes-web/fotos-productos/day0250ml-1.jpg')
+    ) AS v(slug, url)
+    JOIN products p ON p.slug = v.slug
+    WHERE NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
+  `, "imgs skus nuevos");
+
+  // 1) Elite → modelo de pares. El combo 1L existente pasa a ser la variante
+  //    1L de la familia (sale el meta "combo" que lo excluía del agrupado).
+  await safeQuery(`
+    UPDATE products
+       SET name = 'Elite Parte 1 + Parte 2 — 1L',
+           meta = (meta - 'tipo') || '{"parte":"1+2"}'::jsonb
+     WHERE slug = 'elite-juntos-1l' AND meta->>'tipo' = 'combo'
+  `, "elite combo 1l → variante par");
+  await safeQuery(`
+    UPDATE products SET name = 'Elite Max 5L — Parte 1 + Parte 2'
+     WHERE slug = 'elite-max-5l' AND name = 'Elite Max 5L — Bidón profesional'
+  `, "elite max 5l → par");
+  await safeQuery(`
+    UPDATE products SET name = 'Elite Max 10L — Parte 1 + Parte 2'
+     WHERE slug = 'elite-max-10l' AND name = 'Elite Max 10L — Bidón industrial Parte A'
+  `, "elite max 10l → par");
+  await safeQuery(`
+    UPDATE products SET name = 'Elite Max 20L — Parte 1 + Parte 2'
+     WHERE slug = 'elite-max-20l' AND name = 'Elite Max 20L — Bidón industrial Parte A'
+  `, "elite max 20l → par");
+  // Los bidones Max muestran la foto real del par (los renders sueltos eran
+  // de una sola parte). Guard: sólo si siguen apuntando al render viejo.
+  await safeQuery(`
+    UPDATE product_images pi SET url = v.url, alt = v.alt
+    FROM (VALUES
+      ('elite-max-5l',  '/imagenes-web/fotos-productos/5lts-juntos.jpg',      'Elite Max 5L Parte 1 + Parte 2',  '/imagenes-web/productos/elite-max/a-5-lts-perspectiva-1.png'),
+      ('elite-max-10l', '/imagenes-web/fotos-productos/10-litros-juntos.jpg', 'Elite Max 10L Parte 1 + Parte 2', '/imagenes-web/productos/elite-max/a-10-lts-perspectiva-1.png'),
+      ('elite-max-20l', '/imagenes-web/fotos-productos/max20ltjuntos.jpg',    'Elite Max 20L Parte 1 + Parte 2', '/imagenes-web/productos/elite-max/a-20-lts-perspectiva-1.png')
+    ) AS v(slug, url, alt, old_url), products p
+    WHERE p.slug = v.slug AND pi.product_id = p.id AND pi.url = v.old_url
+  `, "elite max fotos par");
+  // Partes sueltas y bidones "Parte B" fuera del catálogo (no se venden así).
+  // Desactivación, no DELETE: pueden estar en orders viejas.
+  await safeQuery(`
+    UPDATE products SET active = FALSE
+    WHERE active = TRUE AND slug IN (
+      'elite-parte-1-500ml','elite-parte-1-1l',
+      'elite-parte-2-500ml','elite-parte-2-1l',
+      'elite-max-5l-b','elite-max-10l-b'
+    )
+  `, "deactivate elite partes sueltas");
+
+  // 3) Precios reales (hgrowshop.com, jun 2026). Guard por placeholder.
+  await safeQuery(`
+    UPDATE products p SET price_cents = v.real
+    FROM (VALUES
+      -- Línea Pro: mismas tarifas las 4 etapas
+      ('pro-enraizante-25gr',  1500000,  1536700), ('pro-vegetativo-25gr',  1500000,  1536700),
+      ('pro-preflora-25gr',    1500000,  1536700), ('pro-flora-25gr',       1500000,  1536700),
+      ('pro-enraizante-100gr', 4500000,  2568500), ('pro-vegetativo-100gr', 4500000,  2568500),
+      ('pro-preflora-100gr',   4500000,  2568500), ('pro-flora-100gr',      4500000,  2568500),
+      ('pro-enraizante-500gr', 12000000, 7093800), ('pro-vegetativo-500gr', 12000000, 7093800),
+      ('pro-preflora-500gr',   12000000, 7093800), ('pro-flora-500gr',      12000000, 7093800),
+      ('pro-enraizante-1kg',   18000000, 11330400),('pro-vegetativo-1kg',   18000000, 11330400),
+      ('pro-preflora-1kg',     18000000, 11330400),('pro-flora-1kg',        18000000, 11330400),
+      -- Elite en pares
+      ('elite-juntos-1l',      22000000, 11075500),
+      ('elite-max-5l',         45000000, 33774900),
+      ('elite-max-10l',        85000000, 56837200),
+      ('elite-max-20l',        150000000, 99730000),
+      -- Bio / Day-0 / Cloner
+      ('bio-estimulante-500ml', 5500000, 4758800),
+      ('bio-estimulante',       8500000, 4758800),
+      ('day-0-500ml',           5500000, 2280200),
+      ('day-0',                 7500000, 2280200),
+      ('cloner',                6500000, 2156000)
+    ) AS v(slug, placeholder, real)
+    WHERE p.slug = v.slug AND p.price_cents = v.placeholder
+  `, "precios reales hgrowshop");
 
   // ─── Bundles (Diseño C): marcar los 3 "kit" de línea como bundles ─────────
   // meta.bundle=true → "comprar junto". bundle_line conecta con las variantes
@@ -1297,6 +1550,10 @@ function publicRouter() {
         }
         const includes = [...fams.values()];
         includes.forEach((f) => f.variants.sort((a, b) => a.order - b.order));
+        // Orden estable por nombre ("Race 1 — NPK" < "Race 2 — ..." < "Race 3
+        // — PK 1ª parte" < "Race 3 — PK 2ª parte" < "Race 4 — ..."): el Map se
+        // arma en orden de llegada de la query y el front lo muestra tal cual.
+        includes.sort((a, b) => a.name.localeCompare(b.name, "es"));
         bundle = {
           line: meta.bundle_line || meta.linea || null,
           discount_pct: meta.bundle_discount_pct ?? 0,

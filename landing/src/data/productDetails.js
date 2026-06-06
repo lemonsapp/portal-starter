@@ -234,7 +234,7 @@ export const productDetails = {
                 mobile: { src: "/imagenes-web/banners/banner-race-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
-            heroImage: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
+            heroImage: "/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp",
         },
         // Cada highlight tiene su imagen propia + color tema. El componente
         // ProductHighlights lee estos colores (vía data-colors) para teñir
@@ -247,7 +247,7 @@ export const productDetails = {
                 kicker: "TODO EL CICLO",
                 title: "Race 1 — NPK concentrado.",
                 body: "Nitrógeno: motor del crecimiento vegetativo — hojas, tallos y clorofila. Fósforo: raíces fuertes y transferencia de energía. Potasio: regula el metabolismo, fortalece tallos y sube la resistencia a plagas y estrés.",
-                image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp",
                 color: "#3DA86E",
                 stat: "01",
             },
@@ -255,7 +255,7 @@ export const productDetails = {
                 kicker: "ESTRUCTURA",
                 title: "Race 2 — Calcio + Nitrógeno.",
                 body: "Forma paredes celulares fuertes, impulsa el crecimiento de raíces y brotes, y mejora la resistencia ante plagas y sequías.",
-                image: "/imagenes-web/productos/linea-race/500ml/race-2-celeste-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-2-celeste-1l-f1.webp",
                 color: "#3FB5CB",
                 stat: "02",
             },
@@ -263,7 +263,7 @@ export const productDetails = {
                 kicker: "3A",
                 title: "Race 3 (PK de crecimiento y maduración).",
                 body: "Son 2 partes PK de crecimiento y maduración. Activan la translocación de azúcares y agrandan flores en el pico productivo del ciclo.",
-                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp",
                 color: "#8E24AA",
                 stat: "03",
             },
@@ -271,7 +271,7 @@ export const productDetails = {
                 kicker: "3B",
                 title: "Race 3 (PK de crecimiento y maduración).",
                 body: "Son 2 partes PK de crecimiento y maduración. Aplicadas en secuencia, sostienen el desarrollo de flores densas hasta el cierre del ciclo.",
-                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp",
                 color: "#8E24AA",
                 stat: "04",
             },
@@ -279,7 +279,7 @@ export const productDetails = {
                 kicker: "MICRO + MAGNESIO",
                 title: "Race 4 — Micro + Magnesio.",
                 body: "Microelementos (Fe, Zn, B, Mn, Cu, Mo) que activan enzimas, fotosíntesis y división celular. Magnesio: núcleo de la clorofila — energía y desarrollo de hojas, raíces y flores.",
-                image: "/imagenes-web/productos/linea-race/500ml/race-4-rosa-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-4-rosa-1l-f1.webp",
                 color: "#F472B6",
                 stat: "05",
             },
@@ -308,7 +308,7 @@ export const productDetails = {
             {
                 name: "RACE 1",
                 size: "Todo el ciclo",
-                image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp",
                 color: "#3DA86E",
                 tagline: "NPK concentrado.",
                 description:
@@ -317,7 +317,7 @@ export const productDetails = {
             {
                 name: "RACE 2",
                 size: "Estructura",
-                image: "/imagenes-web/productos/linea-race/500ml/race-2-celeste-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-2-celeste-1l-f1.webp",
                 color: "#3FB5CB",
                 tagline: "Calcio + Nitrógeno.",
                 description:
@@ -326,7 +326,7 @@ export const productDetails = {
             {
                 name: "RACE 3 - A",
                 size: "Crecimiento y Maduración",
-                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp",
                 color: "#8E24AA",
                 tagline: "PK · parte 1.",
                 description:
@@ -335,7 +335,7 @@ export const productDetails = {
             {
                 name: "RACE 3 - B",
                 size: "Crecimiento y Maduración",
-                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp",
                 color: "#8E24AA",
                 tagline: "PK · parte 2.",
                 description:
@@ -344,7 +344,7 @@ export const productDetails = {
             {
                 name: "RACE 4",
                 size: "Micro + Magnesio",
-                image: "/imagenes-web/productos/linea-race/500ml/race-4-rosa-500ml.png",
+                image: "/imagenes-web/productos/linea-race/1l/race-4-rosa-1l-f1.webp",
                 color: "#F472B6",
                 tagline: "Micro + Magnesio.",
                 description:

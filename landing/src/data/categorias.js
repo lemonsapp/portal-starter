@@ -26,7 +26,7 @@ export const categorias = [
         kicker: "HOLISTIC",
         descripcion:
             "Línea Race en formato concentrado, en presentaciones de 250ml y 500ml. Cuatro fórmulas específicas para cada fase del ciclo, pensadas para cultivadores que buscan resultados rápidos y consistentes.",
-        imagenHero: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
+        imagenHero: "/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp",
         ctaCompra: "/shop?categoria=race",
     },
     {

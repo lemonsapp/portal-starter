@@ -18,7 +18,7 @@ export const flavors = [
     {
         slug: "linea-race",
         nombre: "LÍNEA RACE",
-        producto: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
+        producto: "/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp",
         color: "#2E8F6E",
         accentColor: "#C7F0DD",
         bgGradient: "linear-gradient(160deg, #C7F0DD 0%, #6FBE9A 100%)",
