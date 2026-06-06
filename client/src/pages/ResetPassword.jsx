@@ -138,7 +138,8 @@ export default function ResetPassword() {
         @media (max-width: 980px){
           .rp-root{grid-template-columns:1fr}
           .rp-right{padding:32px 28px;min-height:240px;order:-1}
-          .rp-left{padding:40px 24px;border-right:none}
+          /* Vidrio más claro en el celu para que el fondo rotativo se vea */
+          .rp-left{padding:40px 24px;border-right:none;background:rgba(2,3,7,.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
           .rp-tips{display:none}
         }
         @media (max-width: 600px){

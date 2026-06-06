@@ -486,6 +486,13 @@ export default function Login() {
           .lg-left { padding: 28px; min-height: 280px; gap: 32px; border-right: none; border-bottom: 1px solid var(--c-border); }
           .lg-hero-headline { font-size: clamp(36px, 9vw, 56px); }
           .lg-foot { display: none; }
+          /* En el celu el panel del form ocupa casi toda la pantalla: se
+             aclara el vidrio para que el fondo rotativo se siga viendo. */
+          .lg-right {
+            background: rgba(6,7,10,.38);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+          }
         }
         @media (max-width: 600px) {
           .lg-form-title { font-size: 34px; }

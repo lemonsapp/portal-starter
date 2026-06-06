@@ -103,7 +103,8 @@ export default function ForgotPassword() {
         @media (max-width: 980px){
           .fp-root{grid-template-columns:1fr}
           .fp-left{padding:32px 28px;min-height:280px;order:-1}
-          .fp-right{padding:40px 24px}
+          /* Vidrio más claro en el celu para que el fondo rotativo se vea */
+          .fp-right{padding:40px 24px;background:rgba(2,3,7,.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
         }
         @media (max-width: 600px){
           .fp-pitch h2{font-size:54px;letter-spacing:-1px}

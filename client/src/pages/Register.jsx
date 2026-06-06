@@ -408,6 +408,13 @@ export default function Register() {
           .rg-right { padding: 28px; min-height: 240px; order: -1; border-left: none; border-bottom: 1px solid var(--c-border); gap: 24px; }
           .rg-pitch h2 { font-size: clamp(34px, 9vw, 52px); }
           .rg-perks { display: none; }
+          /* Panel del form más translúcido en el celu: el fondo rotativo
+             se sigue viendo (mismo criterio que Login). */
+          .rg-left {
+            background: rgba(6,7,10,.38);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+          }
         }
         @media (max-width: 600px) {
           .rg-title { font-size: 32px; }
