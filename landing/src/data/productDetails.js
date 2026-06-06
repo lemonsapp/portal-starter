@@ -485,16 +485,16 @@ export const productDetails = {
             },
             heroBackground: true,
         },
-        // Highlights de Cloner: paleta violeta. Hasta tener foto del
-        // tubo Cloner, usamos imágenes de la esquejera (proceso real
-        // del clonado: barritas, paso a paso, vista superior). Cada
-        // imagen muestra una etapa del workflow.
+        // Highlights de Cloner: paleta violeta. Fotos propias del cliente
+        // (2026-06-06) en imagenes-web/cloner-slider/ (crudos PNG en
+        // landing/imagenes-web/IMAGENES/cloner-slider-crudos/). El 04
+        // conserva el render de la esquejera hasta tener una 4ª foto.
         highlights: [
             {
                 kicker: "ALTA ADHERENCIA",
                 title: "Se queda donde lo aplicás.",
                 body: "Gel viscoso que no escurre. Aplicás, plantás. Cubre el 100% del corte y mantiene la zona en contacto óptimo con el sustrato.",
-                image: "/imagenes-web/productos/esquejera/uso-barrita-pasos-sin-fondo.png",
+                image: "/imagenes-web/cloner-slider/cloner-slider-1.webp",
                 color: "#6B3BAF",
                 stat: "01",
             },
@@ -502,7 +502,7 @@ export const productDetails = {
                 kicker: "PRENDIMIENTO",
                 title: "Tasa de éxito superior al 90%.",
                 body: "Combinación de auxinas y vehículos protectores que aceleran la formación de raíces adventicias en cualquier variedad.",
-                image: "/imagenes-web/productos/esquejera/4-perspectiva-barritas-colocadas-editado.png",
+                image: "/imagenes-web/cloner-slider/cloner-slider-2.webp",
                 color: "#9C5FD8",
                 stat: "02",
             },
@@ -510,7 +510,7 @@ export const productDetails = {
                 kicker: "MULTIPLICACIÓN",
                 title: "Pensado para producción profesional.",
                 body: "Esquejes seriados, batches grandes, propagación masiva: la consistencia del gel hace que todos arranquen al mismo tiempo.",
-                image: "/imagenes-web/productos/esquejera/superior-sin-fondo.png",
+                image: "/imagenes-web/cloner-slider/cloner-slider-3.webp",
                 color: "#7D4BC9",
                 stat: "03",
             },
