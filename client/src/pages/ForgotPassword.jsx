@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import RotatingAuthBg from "../components/RotatingAuthBg";
 import { useBranding } from "../lib/branding.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -43,7 +44,8 @@ export default function ForgotPassword() {
       <style>{`
         .fp-root{min-height:100vh;min-height:100svh;background:#020307;color:#f0ece3;display:grid;grid-template-columns:1.05fr .95fr;font-family:'Gotham', sans-serif;overflow:hidden;position:relative}
         .fp-root::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.026;pointer-events:none;z-index:9}
-        .fp-left{position:relative;overflow:hidden;border-right:1px solid rgba(240,236,227,.07);display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px;background:linear-gradient(135deg,#07090f 0%,#020307 70%)}
+        /* BG rotativo: ver components/RotatingAuthBg.jsx (compartido con Login/Register). Paneles translúcidos + z-index 1 encima. */
+        .fp-left{position:relative;z-index:1;overflow:hidden;border-right:1px solid rgba(240,236,227,.07);display:flex;flex-direction:column;justify-content:space-between;padding:48px 56px;background:linear-gradient(135deg,rgba(7,9,15,.46) 0%,rgba(2,3,7,.40) 70%)}
         .fp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px);background-size:64px 64px;z-index:1;pointer-events:none}
         .fp-watermark{position:absolute;font-family:'Gotham', sans-serif;font-size:clamp(220px,28vw,420px);line-height:.78;letter-spacing:-8px;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.04);pointer-events:none;z-index:1;bottom:-60px;right:-40px;user-select:none}
         .fp-logo-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;max-width:520px;opacity:.06;filter:invert(1);pointer-events:none;user-select:none;z-index:1}
@@ -60,7 +62,7 @@ export default function ForgotPassword() {
         .fp-pitch .yl{color:var(--brand-primary, #f5e03a)}
         .fp-pitch-sub{font-size:14px;font-weight:400;color:rgba(240,236,227,.5);line-height:1.85;max-width:380px;margin-top:24px}
 
-        .fp-right{position:relative;display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:#020307}
+        .fp-right{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:rgba(2,3,7,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
         .fp-num{position:absolute;top:14px;right:14px;font-family:'Gotham', sans-serif;font-size:90px;line-height:.85;color:transparent;-webkit-text-stroke:1px rgba(var(--brand-primary-rgb),.05);pointer-events:none;user-select:none}
         .fp-card{width:100%;max-width:440px;opacity:0;transform:translateY(24px);transition:all .9s cubic-bezier(.2,.8,.2,1) .15s}
         .fp-card.in{opacity:1;transform:translateY(0)}
@@ -109,6 +111,8 @@ export default function ForgotPassword() {
           .fp-success-title{font-size:42px}
         }
       `}</style>
+
+      <RotatingAuthBg />
 
       {/* LEFT — branding */}
       <div className="fp-left">
