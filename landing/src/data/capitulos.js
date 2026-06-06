@@ -36,8 +36,8 @@ export const capitulos = [
             "Bioestimulante 100% orgánico para cultivo indoor. Fabricado en biorreactor industrial con Azospirillum y Azotobacter — 70% más efectivo que las micorrizas tradicionales. Estimula raíces, potencia absorción de nutrientes y activa defensas naturales.",
         quote: "La diferencia entre un cultivo indoor bueno y uno excelente arranca por la raíz. El Bio Estimulante es el primer paso.",
 
-        producto: "/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png",
-        productoSecundario: "/img/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png",
+        producto: "/imagenes-web/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png",
+        productoSecundario: "/imagenes-web/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png",
         ctaTexto: "Ver Bio Estimulante",
         ctaHref: "/bio-estimulante",
         bgColor: "#F7D6DC",
@@ -66,7 +66,7 @@ export const capitulos = [
             "Gel enraizante de alta adherencia para esquejes y plantines. Fórmula de contacto rápido para prendimiento radicular con mínima manipulación. Donde nace la próxima cosecha.",
         quote: "El comienzo del ciclo define la calidad del resultado final.",
 
-        producto: "/assets/productos/cloner2.png",
+        producto: "/imagenes-web/fotos-productos/cloner2.png",
         productoSecundario: null,
         ctaTexto: "Ver Cloner",
         ctaHref: "/cloner",
@@ -97,8 +97,8 @@ export const capitulos = [
             "4 fertilizantes para el ciclo completo indoor y outdoor: Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración, 2 partes) y Race 4 (Micro + Magnesio). Diseñada para extraer el máximo rendimiento en cada cultivo.",
         quote: "La velocidad sin control es ruido. Race es el fertilizante que te da las dos cosas: velocidad y precisión, indoor y outdoor.",
 
-        producto: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
-        productoSecundario: "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
+        producto: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
+        productoSecundario: "/imagenes-web/productos/linea-race/500ml/race-4-rosa-500ml.png",
         ctaTexto: "Ver Línea Race",
         ctaHref: "/linea-race",
         bgColor: "#C7F0DD",
@@ -127,8 +127,8 @@ export const capitulos = [
             "Sistema premium de dos componentes (Part 1 + Part 2) para hidroponía, NFT, DWC, coco y sustratos inertes. NPK completo, pH auto-buffer 5.8–6.2, todo el ciclo sin cambiar de producto.",
         quote: "Lo que separa una cosecha buena de una excelente está en el fertilizante que elegís. Línea Elite no deja márgenes de error.",
 
-        producto: "/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png",
-        productoSecundario: "/img/productos/linea-elite/1l/juntos-1l.png",
+        producto: "/imagenes-web/productos/linea-elite/1l/parte-1-perspectiva-1l.png",
+        productoSecundario: "/imagenes-web/productos/linea-elite/1l/juntos-1l.png",
         ctaTexto: "Ver Línea Elite",
         ctaHref: "/linea-elite",
         bgColor: "#F7F3EA",
@@ -157,8 +157,8 @@ export const capitulos = [
             "Sistema sólido hidrosoluble con 4 fórmulas específicas — Enraizante, Vegetativo, Preflora y Flora — disponibles en 25g, 100g, 500g y 1kg. NPK exacto por etapa, pH estable, 36 meses de vida útil.",
         quote: "Si lo podés pesar, lo podés repetir. Con Línea Pro, cada cultivo indoor es mejor que el anterior.",
 
-        producto: "/img/productos/linea-pro/1kg/flora-1kg-1.png",
-        productoSecundario: "/img/productos/linea-pro/1kg/vegetativo-1kg-1.png",
+        producto: "/imagenes-web/productos/linea-pro/1kg/flora-1kg-1.png",
+        productoSecundario: "/imagenes-web/productos/linea-pro/1kg/vegetativo-1kg-1.png",
         ctaTexto: "Ver Línea Pro",
         ctaHref: "/linea-pro",
         bgColor: "#AEDAD4",
@@ -187,8 +187,8 @@ export const capitulos = [
             "Tratamiento finalizador previo a cosecha: limpieza profunda, mejora de sabor y pulido del resultado final. La última decisión antes del corte.",
         quote: "Lo que diferencia una cosecha buena de una perfecta se decide en los últimos días.",
 
-        producto: "/img/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png",
-        productoSecundario: "/img/productos/day-0/lateral-grande-amarillo-sin-fondo.png",
+        producto: "/imagenes-web/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png",
+        productoSecundario: "/imagenes-web/productos/day-0/lateral-grande-amarillo-sin-fondo.png",
         ctaTexto: "Ver Day-0",
         ctaHref: "/day-0",
         bgColor: "#F9E79B",

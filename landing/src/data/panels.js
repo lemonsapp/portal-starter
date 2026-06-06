@@ -11,7 +11,7 @@
 // componente/JS (sin afectar nada porque no hay entries con este type).
 //
 // Estructura por panel producto:
-//   slug         → folder en /img/slider-spylt/
+//   slug         → folder en /imagenes-web/slider-spylt/
 //   nombre       → caption visible (debajo del card)
 //   linea        → tag pequeño arriba del card
 //   route        → href del CTA (apunta al producto/categoría)
@@ -48,9 +48,9 @@ export const panels = [
         heroScale: 1.05,
         label: "ELITE",
         layers: {
-            base: "/img/slider-spylt/linea-elite/base.png",
-            hero: "/img/slider-spylt/linea-elite/hero.png",
-            silhouette: "/img/slider-spylt/linea-elite/silhouette.png",
+            base: "/imagenes-web/slider-spylt/linea-elite/base.png",
+            hero: "/imagenes-web/slider-spylt/linea-elite/hero.png",
+            silhouette: "/imagenes-web/slider-spylt/linea-elite/silhouette.png",
         },
         // Sub-productos: 2 partes del set Elite (PART 1 + PART 2).
         // El packshot unificado muestra ambas en horizontal → cada
@@ -60,8 +60,8 @@ export const panels = [
                 slug: "parte-1",
                 nombre: "ELITE · PART 1",
                 tagline: "Base mineral",
-                base: "/img/slider-spylt/linea-elite/sub/parte-1/base.png",
-                pote: "/img/slider-spylt/linea-elite/sub/parte-1/pote.png",
+                base: "/imagenes-web/slider-spylt/linea-elite/sub/parte-1/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-elite/sub/parte-1/pote.png",
                 // texto: omitido — el texto.png exportado salió como copia
                 // del fondo del card (bug del pipeline 3D), tapaba el pote
                 // al renderearse con z=50. El swap se queda con base+pote.
@@ -72,8 +72,8 @@ export const panels = [
                 slug: "parte-2",
                 nombre: "ELITE · PART 2",
                 tagline: "Complejo orgánico",
-                base: "/img/slider-spylt/linea-elite/sub/parte-2/base.png",
-                pote: "/img/slider-spylt/linea-elite/sub/parte-2/pote.png",
+                base: "/imagenes-web/slider-spylt/linea-elite/sub/parte-2/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-elite/sub/parte-2/pote.png",
                 // texto: omitido — mismo bug que parte-1 (ver comentario arriba).
                 accentColor: "#d9a86a",
                 hotspot: { x: 52, y: 10, w: 40, h: 80 },
@@ -95,9 +95,9 @@ export const panels = [
         heroScale: 1.10,
         label: "RACE",
         layers: {
-            base: "/img/slider-spylt/linea-race/base.png",
-            hero: "/img/slider-spylt/linea-race/hero.png",
-            silhouette: "/img/slider-spylt/linea-race/silhouette.png",
+            base: "/imagenes-web/slider-spylt/linea-race/base.png",
+            hero: "/imagenes-web/slider-spylt/linea-race/hero.png",
+            silhouette: "/imagenes-web/slider-spylt/linea-race/silhouette.png",
         },
         // Sub-productos: Race son 4 fertilizantes — Verde / Celeste /
         // Violeta (solo Parte B) / Rosado. El packshot unificado se
@@ -109,10 +109,10 @@ export const panels = [
                 slug: "verde",
                 nombre: "RACE VERDE",
                 tagline: "Etapa 1",
-                base: "/img/slider-spylt/linea-race/sub/verde/base.png",
-                pote: "/img/slider-spylt/linea-race/sub/verde/bidon.png",
-                ruedas: "/img/slider-spylt/linea-race/sub/verde/ruedas.png",
-                texto: "/img/slider-spylt/linea-race/sub/verde/texto.png",
+                base: "/imagenes-web/slider-spylt/linea-race/sub/verde/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-race/sub/verde/bidon.png",
+                ruedas: "/imagenes-web/slider-spylt/linea-race/sub/verde/ruedas.png",
+                texto: "/imagenes-web/slider-spylt/linea-race/sub/verde/texto.png",
                 accentColor: "#c7f0dd",
                 hotspot: { x: 2, y: 10, w: 22, h: 80 },
             },
@@ -120,10 +120,10 @@ export const panels = [
                 slug: "celeste",
                 nombre: "RACE CELESTE",
                 tagline: "Etapa 2",
-                base: "/img/slider-spylt/linea-race/sub/celeste/base.png",
-                pote: "/img/slider-spylt/linea-race/sub/celeste/bidon.png",
-                ruedas: "/img/slider-spylt/linea-race/sub/celeste/ruedas.png",
-                texto: "/img/slider-spylt/linea-race/sub/celeste/texto.png",
+                base: "/imagenes-web/slider-spylt/linea-race/sub/celeste/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-race/sub/celeste/bidon.png",
+                ruedas: "/imagenes-web/slider-spylt/linea-race/sub/celeste/ruedas.png",
+                texto: "/imagenes-web/slider-spylt/linea-race/sub/celeste/texto.png",
                 accentColor: "#c8eaf3",
                 hotspot: { x: 26, y: 10, w: 22, h: 80 },
             },
@@ -131,10 +131,10 @@ export const panels = [
                 slug: "violeta",
                 nombre: "RACE VIOLETA",
                 tagline: "Etapa 3",
-                base: "/img/slider-spylt/linea-race/sub/violeta/base.png",
-                pote: "/img/slider-spylt/linea-race/sub/violeta/bidon.png",
-                ruedas: "/img/slider-spylt/linea-race/sub/violeta/ruedas.png",
-                texto: "/img/slider-spylt/linea-race/sub/violeta/texto.png",
+                base: "/imagenes-web/slider-spylt/linea-race/sub/violeta/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-race/sub/violeta/bidon.png",
+                ruedas: "/imagenes-web/slider-spylt/linea-race/sub/violeta/ruedas.png",
+                texto: "/imagenes-web/slider-spylt/linea-race/sub/violeta/texto.png",
                 accentColor: "#b49ae0",
                 hotspot: { x: 50, y: 10, w: 22, h: 80 },
             },
@@ -142,10 +142,10 @@ export const panels = [
                 slug: "rosado",
                 nombre: "RACE ROSADO",
                 tagline: "Etapa 4",
-                base: "/img/slider-spylt/linea-race/sub/rosado/base.png",
-                pote: "/img/slider-spylt/linea-race/sub/rosado/bidon.png",
-                ruedas: "/img/slider-spylt/linea-race/sub/rosado/ruedas.png",
-                texto: "/img/slider-spylt/linea-race/sub/rosado/texto.png",
+                base: "/imagenes-web/slider-spylt/linea-race/sub/rosado/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-race/sub/rosado/bidon.png",
+                ruedas: "/imagenes-web/slider-spylt/linea-race/sub/rosado/ruedas.png",
+                texto: "/imagenes-web/slider-spylt/linea-race/sub/rosado/texto.png",
                 accentColor: "#f7d6dc",
                 hotspot: { x: 74, y: 10, w: 24, h: 80 },
             },
@@ -168,11 +168,11 @@ export const panels = [
         label: "PRO",
         layers: {
             // base = Linea PRO.png del pack Unificados (celeste con hojas pastel)
-            base: "/img/slider-spylt/linea-pro/base.png",
-            hero: "/img/slider-spylt/linea-pro/hero.png",
+            base: "/imagenes-web/slider-spylt/linea-pro/base.png",
+            hero: "/imagenes-web/slider-spylt/linea-pro/hero.png",
             // silhouette ahora apunta al Fondo.png Unificados (gradient pastel
             // multi-color que cubre todo el panel detrás del card)
-            silhouette: "/img/slider-spylt/linea-pro/fondo.png",
+            silhouette: "/imagenes-web/slider-spylt/linea-pro/fondo.png",
         },
         // Sub-productos: 4 stages del ciclo. Cada uno tiene su packshot
         // individual + base decorativo. Hotspots posicionados sobre la
@@ -184,9 +184,9 @@ export const panels = [
                 slug: "enraizante",
                 nombre: "ENRAIZANTE",
                 tagline: "Para esquejes",
-                base: "/img/slider-spylt/linea-pro/sub/enraizante/base.png",
-                pote: "/img/slider-spylt/linea-pro/sub/enraizante/pote.png",
-                texto: "/img/slider-spylt/linea-pro/sub/enraizante/texto.png",
+                base: "/imagenes-web/slider-spylt/linea-pro/sub/enraizante/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-pro/sub/enraizante/pote.png",
+                texto: "/imagenes-web/slider-spylt/linea-pro/sub/enraizante/texto.png",
                 accentColor: "#f3c2de",
                 hotspot: { x: 2, y: 8, w: 23, h: 84 },
             },
@@ -194,9 +194,9 @@ export const panels = [
                 slug: "vegetativo",
                 nombre: "VEGETATIVO",
                 tagline: "Crecimiento vigoroso",
-                base: "/img/slider-spylt/linea-pro/sub/vegetativo/base.png",
-                pote: "/img/slider-spylt/linea-pro/sub/vegetativo/pote.png",
-                texto: "/img/slider-spylt/linea-pro/sub/vegetativo/texto.png",
+                base: "/imagenes-web/slider-spylt/linea-pro/sub/vegetativo/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-pro/sub/vegetativo/pote.png",
+                texto: "/imagenes-web/slider-spylt/linea-pro/sub/vegetativo/texto.png",
                 accentColor: "#c7f0dd",
                 hotspot: { x: 26, y: 8, w: 23, h: 84 },
             },
@@ -204,9 +204,9 @@ export const panels = [
                 slug: "pre-floracion",
                 nombre: "PRE-FLORACIÓN",
                 tagline: "Transición",
-                base: "/img/slider-spylt/linea-pro/sub/pre-floracion/base.png",
-                pote: "/img/slider-spylt/linea-pro/sub/pre-floracion/pote.png",
-                texto: "/img/slider-spylt/linea-pro/sub/pre-floracion/texto.png",
+                base: "/imagenes-web/slider-spylt/linea-pro/sub/pre-floracion/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-pro/sub/pre-floracion/pote.png",
+                texto: "/imagenes-web/slider-spylt/linea-pro/sub/pre-floracion/texto.png",
                 accentColor: "#f0a7b1",
                 hotspot: { x: 50, y: 8, w: 23, h: 84 },
             },
@@ -214,9 +214,9 @@ export const panels = [
                 slug: "floracion",
                 nombre: "FLORACIÓN",
                 tagline: "Etapa final",
-                base: "/img/slider-spylt/linea-pro/sub/floracion/base.png",
-                pote: "/img/slider-spylt/linea-pro/sub/floracion/pote.png",
-                texto: "/img/slider-spylt/linea-pro/sub/floracion/texto.png",
+                base: "/imagenes-web/slider-spylt/linea-pro/sub/floracion/base.png",
+                pote: "/imagenes-web/slider-spylt/linea-pro/sub/floracion/pote.png",
+                texto: "/imagenes-web/slider-spylt/linea-pro/sub/floracion/texto.png",
                 accentColor: "#f7d6dc",
                 hotspot: { x: 74, y: 8, w: 24, h: 84 },
             },

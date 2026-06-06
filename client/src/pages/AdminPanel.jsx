@@ -1305,7 +1305,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
                 ? <img src={img.url} alt="" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
                 : <div style={{ width: 32, height: 32, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />
               }
-              <input style={styles.input} value={img.url} onChange={(e) => updateImage(i, "url", e.target.value)} placeholder="URL de la imagen (ej: /img/productos/race/...)" />
+              <input style={styles.input} value={img.url} onChange={(e) => updateImage(i, "url", e.target.value)} placeholder="URL de la imagen (ej: /imagenes-web/productos/race/...)" />
               <input style={styles.input} value={img.alt} onChange={(e) => updateImage(i, "alt", e.target.value)} placeholder="Alt text (a11y)" />
               <label style={{ fontSize: 11, color: "rgba(237,233,224,.6)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
                 <input type="radio" name="primary" checked={img.is_primary} onChange={() => setPrimary(i)} />

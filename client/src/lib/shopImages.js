@@ -36,12 +36,26 @@ const IMG_FIXES = {
 };
 
 // SVG on-brand para productos sin imagen (ej. packs de puntos en backend viejo).
-export const PRODUCT_FALLBACK_IMG = "/img/productos/puntos/pack-puntos.svg";
+export const PRODUCT_FALLBACK_IMG = "/imagenes-web/productos/puntos/pack-puntos.svg";
 
-/** Devuelve la URL corregida si era un path viejo; si no, la original. */
+// Consolidación 2026-06-06: TODAS las imágenes servidas viven ahora en
+// landing/public/imagenes-web/. La DB de producción puede seguir devolviendo
+// los prefijos viejos hasta que el server redeploye su migración (routes/
+// shop.js), así que normalizamos acá. Espeja los rewrites de vercel.json.
+const PREFIX_MOVES = [
+  ["/img/",               "/imagenes-web/"],
+  ["/assets/productos/",  "/imagenes-web/fotos-productos/"],
+  ["/ultimos-cambios/",   "/imagenes-web/ultimos-cambios/"],
+];
+
+/** Devuelve la URL corregida (path viejo → render real → carpeta nueva). */
 export function fixImageUrl(url) {
   if (!url) return url;
-  return IMG_FIXES[url] || url;
+  const fixed = IMG_FIXES[url] || url;
+  for (const [oldPrefix, newPrefix] of PREFIX_MOVES) {
+    if (fixed.startsWith(oldPrefix)) return newPrefix + fixed.slice(oldPrefix.length);
+  }
+  return fixed;
 }
 
 // Productos Race fantasma del esquema viejo que quedaron en la DB de

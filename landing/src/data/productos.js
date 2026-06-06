@@ -8,7 +8,7 @@ export const productos = [
         nombre: "Línea Elite Envase 250ml",
         categoria: "elite",
         precio: 44608,
-        imagen: "/assets/productos/elite250-juntos.jpg",
+        imagen: "/imagenes-web/fotos-productos/elite250-juntos.jpg",
         envioGratis: false,
     },
     {
@@ -16,7 +16,7 @@ export const productos = [
         nombre: "Línea Elite Envase 500ml",
         categoria: "elite",
         precio: 78900,
-        imagen: "/assets/productos/elite500ml-juntos.jpg",
+        imagen: "/imagenes-web/fotos-productos/elite500ml-juntos.jpg",
         envioGratis: false,
     },
     {
@@ -24,7 +24,7 @@ export const productos = [
         nombre: "Línea Elite Envase 1L",
         categoria: "elite",
         precio: 142500,
-        imagen: "/assets/productos/elite-1litro-x2.jpg",
+        imagen: "/imagenes-web/fotos-productos/elite-1litro-x2.jpg",
         envioGratis: false,
     },
     {
@@ -32,7 +32,7 @@ export const productos = [
         nombre: "Línea Elite Envase 5L",
         categoria: "elite",
         precio: 489000,
-        imagen: "/assets/productos/5lts-juntos.jpg",
+        imagen: "/imagenes-web/fotos-productos/5lts-juntos.jpg",
         envioGratis: true,
     },
     {
@@ -40,7 +40,7 @@ export const productos = [
         nombre: "Línea Elite Envase 10L",
         categoria: "elite",
         precio: 825000,
-        imagen: "/assets/productos/10-litros-juntos.jpg",
+        imagen: "/imagenes-web/fotos-productos/10-litros-juntos.jpg",
         envioGratis: true,
     },
     {
@@ -48,7 +48,7 @@ export const productos = [
         nombre: "Línea Elite Envase 20L",
         categoria: "elite",
         precio: 1480000,
-        imagen: "/assets/productos/max20ltjuntos.jpg",
+        imagen: "/imagenes-web/fotos-productos/max20ltjuntos.jpg",
         envioGratis: true,
     },
 
@@ -58,7 +58,7 @@ export const productos = [
         nombre: "Línea Pro Flora 25gr",
         categoria: "pro",
         precio: 18500,
-        imagen: "/assets/productos/flora-25gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/flora-25gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -66,7 +66,7 @@ export const productos = [
         nombre: "Línea Pro Flora 100gr",
         categoria: "pro",
         precio: 52000,
-        imagen: "/assets/productos/flora-100gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/flora-100gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -74,7 +74,7 @@ export const productos = [
         nombre: "Línea Pro Flora 500gr",
         categoria: "pro",
         precio: 198000,
-        imagen: "/assets/productos/flora-500gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/flora-500gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -82,7 +82,7 @@ export const productos = [
         nombre: "Línea Pro Flora 1kg",
         categoria: "pro",
         precio: 365000,
-        imagen: "/assets/productos/flora-1kg-3.jpg",
+        imagen: "/imagenes-web/fotos-productos/flora-1kg-3.jpg",
         envioGratis: true,
     },
 
@@ -92,7 +92,7 @@ export const productos = [
         nombre: "Línea Pro Vegetativo 25gr",
         categoria: "pro",
         precio: 18500,
-        imagen: "/assets/productos/vegetativo-25gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/vegetativo-25gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -100,7 +100,7 @@ export const productos = [
         nombre: "Línea Pro Vegetativo 100gr",
         categoria: "pro",
         precio: 52000,
-        imagen: "/assets/productos/vegetativo-100gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/vegetativo-100gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -108,7 +108,7 @@ export const productos = [
         nombre: "Línea Pro Vegetativo 500gr",
         categoria: "pro",
         precio: 198000,
-        imagen: "/assets/productos/vegetativo-500gr-1-.jpg",
+        imagen: "/imagenes-web/fotos-productos/vegetativo-500gr-1-.jpg",
         envioGratis: false,
     },
     {
@@ -116,7 +116,7 @@ export const productos = [
         nombre: "Línea Pro Vegetativo 1kg",
         categoria: "pro",
         precio: 365000,
-        imagen: "/assets/productos/vegetativo-1kg-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/vegetativo-1kg-1.jpg",
         envioGratis: true,
     },
 
@@ -126,7 +126,7 @@ export const productos = [
         nombre: "Línea Pro Preflora 25gr",
         categoria: "pro",
         precio: 19500,
-        imagen: "/assets/productos/preflora-25gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/preflora-25gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -134,7 +134,7 @@ export const productos = [
         nombre: "Línea Pro Preflora 100gr",
         categoria: "pro",
         precio: 54000,
-        imagen: "/assets/productos/pre-flora-100gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/pre-flora-100gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -142,7 +142,7 @@ export const productos = [
         nombre: "Línea Pro Preflora 500gr",
         categoria: "pro",
         precio: 205000,
-        imagen: "/assets/productos/pre-flora-500gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/pre-flora-500gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -150,7 +150,7 @@ export const productos = [
         nombre: "Línea Pro Preflora 1kg",
         categoria: "pro",
         precio: 378000,
-        imagen: "/assets/productos/preflora-1kg-3.jpg",
+        imagen: "/imagenes-web/fotos-productos/preflora-1kg-3.jpg",
         envioGratis: true,
     },
 
@@ -160,7 +160,7 @@ export const productos = [
         nombre: "Línea Pro Enraizante 25gr",
         categoria: "pro",
         precio: 21000,
-        imagen: "/assets/productos/enraizante-25gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/enraizante-25gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -168,7 +168,7 @@ export const productos = [
         nombre: "Línea Pro Enraizante 100gr",
         categoria: "pro",
         precio: 58000,
-        imagen: "/assets/productos/enraizante-100gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/enraizante-100gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -176,7 +176,7 @@ export const productos = [
         nombre: "Línea Pro Enraizante 500gr",
         categoria: "pro",
         precio: 215000,
-        imagen: "/assets/productos/enraizante-500gr-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/enraizante-500gr-1.jpg",
         envioGratis: false,
     },
     {
@@ -184,7 +184,7 @@ export const productos = [
         nombre: "Línea Pro Enraizante 1kg",
         categoria: "pro",
         precio: 395000,
-        imagen: "/assets/productos/enraizante-1kg-3.jpg",
+        imagen: "/imagenes-web/fotos-productos/enraizante-1kg-3.jpg",
         envioGratis: true,
     },
 
@@ -194,7 +194,7 @@ export const productos = [
         nombre: "Bio Estimulante 250gr",
         categoria: "bio",
         precio: 28500,
-        imagen: "/assets/productos/bio-250gr1.jpg",
+        imagen: "/imagenes-web/fotos-productos/bio-250gr1.jpg",
         envioGratis: false,
     },
     {
@@ -202,7 +202,7 @@ export const productos = [
         nombre: "Bio Estimulante 500gr",
         categoria: "bio",
         precio: 49800,
-        imagen: "/assets/productos/bio-500gr1.jpg",
+        imagen: "/imagenes-web/fotos-productos/bio-500gr1.jpg",
         envioGratis: false,
     },
 
@@ -212,7 +212,7 @@ export const productos = [
         nombre: "Day-0 Tratamiento Pre-Cosecha 250ml",
         categoria: "otros",
         precio: 32500,
-        imagen: "/assets/productos/day0250ml-1.jpg",
+        imagen: "/imagenes-web/fotos-productos/day0250ml-1.jpg",
         envioGratis: false,
     },
 
@@ -222,7 +222,7 @@ export const productos = [
         nombre: "Cloner Gel Enraizante para Esquejes",
         categoria: "otros",
         precio: 24500,
-        imagen: "/assets/productos/cloner2.png",
+        imagen: "/imagenes-web/fotos-productos/cloner2.png",
         envioGratis: false,
     },
 
@@ -232,7 +232,7 @@ export const productos = [
         nombre: "Medidor de pH Digital",
         categoria: "accesorios",
         precio: 38900,
-        imagen: "/assets/productos/medidorph.png",
+        imagen: "/imagenes-web/fotos-productos/medidorph.png",
         envioGratis: false,
     },
     {
@@ -240,7 +240,7 @@ export const productos = [
         nombre: "Filtro de Carbón Activado",
         categoria: "accesorios",
         precio: 89500,
-        imagen: "/assets/productos/filtro.jpg",
+        imagen: "/imagenes-web/fotos-productos/filtro.jpg",
         envioGratis: false,
     },
     {
@@ -248,7 +248,7 @@ export const productos = [
         nombre: "Macetas de Tela (set)",
         categoria: "accesorios",
         precio: 19800,
-        imagen: "/assets/productos/macetas.png",
+        imagen: "/imagenes-web/fotos-productos/macetas.png",
         envioGratis: false,
     },
 ];

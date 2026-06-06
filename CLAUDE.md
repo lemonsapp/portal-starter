@@ -60,6 +60,7 @@ cd server && node index.js > /tmp/srv.log 2>&1 & sleep 5 && curl http://localhos
 - **Stack idéntico al origen** (React/Express/Postgres): probado, sin curva.
 - **Sin AI generativa en v1**: AI es un módulo opcional (Sprint 2+ si un cliente lo pide).
 - **CSS vars con fallback hex** (`var(--brand-primary, #f5e03a)`): si JS no corre (SSR/early), el fallback preserva color.
+- **Imágenes servidas = `landing/public/imagenes-web/`** (consolidado 2026-06-06). Toda imagen en uso por web/shop vive ahí y se referencia como `/imagenes-web/...`. Ver `landing/public/imagenes-web/README.md` para la estructura y las excepciones (favicons, `/icons/` PWA, mini-espejo del portal en `client/public/imagenes-web/`). Los prefijos viejos (`/img/`, `/assets/productos/`, `/ultimos-cambios/`) tienen rewrites en `vercel.json` + migración de DB en `server/routes/shop.js`.
 
 ## Referencias rápidas
 

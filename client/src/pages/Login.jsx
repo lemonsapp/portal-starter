@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import fondoLogin from "/FONDO-LOGIN.jpg";
+import fondoLogin from "/imagenes-web/fondo-login.jpg";
 import { useNavigate } from "react-router-dom";
 import {
   supportsWebAuthn,

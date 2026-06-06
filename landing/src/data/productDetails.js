@@ -27,9 +27,9 @@ export const productDetails = {
             // Hero BANNER (tormenta/rayos) — reemplaza al video por pedido
             // del cliente (2026-06-05). Mobile usa la versión 9:16 "celu".
             heroBanner: {
-                src: "/img/banners/banner-elite.webp",
+                src: "/imagenes-web/banners/banner-elite.webp",
                 w: 2560, h: 1441,
-                mobile: { src: "/img/banners/banner-elite-celu.webp", w: 1080, h: 1919 },
+                mobile: { src: "/imagenes-web/banners/banner-elite-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
         },
@@ -42,7 +42,7 @@ export const productDetails = {
                 kicker: "DISEÑO DUAL",
                 title: "Dos botellas, un sistema completo.",
                 body: "Parte 1: aporta NPK y calcio. Parte 2: aporta magnesio y micro. Aplicadas juntas en cada riego dan al cultivo todo lo que se necesita en su justa proporción — sin antagonismos químicos.",
-                image: "/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png",
+                image: "/imagenes-web/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png",
                 color: "#C9A34E",
                 stat: "01",
             },
@@ -50,7 +50,7 @@ export const productDetails = {
                 kicker: "FULL-CYCLE",
                 title: "Para ciclos completos de cultivo.",
                 body: "Vegetativo, preflora, floración, finalizado. La misma fórmula con dosis ajustada por etapa. Menos productos para comprar, menos chances de equivocarse al dosar.",
-                image: "/ultimos-cambios/POTE-LINEA-ELITE-DOBLE.png",
+                image: "/imagenes-web/ultimos-cambios/POTE-LINEA-ELITE-DOBLE.png",
                 color: "#E5D9B8",
                 stat: "02",
             },
@@ -58,7 +58,7 @@ export const productDetails = {
                 kicker: "SUSTRATO & HIDRO",
                 title: "Adaptable a cada sistema.",
                 body: "Coco, perlita, lana de roca, NFT, DWC, turba y sustratos compuestos. Los nutrientes son 100% biodisponibles: la planta los absorbe directamente sin depender de la microbiología del sustrato.",
-                image: "/ultimos-cambios/POTE-DOBLE-5LT.png",
+                image: "/imagenes-web/ultimos-cambios/POTE-DOBLE-5LT.png",
                 color: "#B8923A",
                 stat: "03",
             },
@@ -66,7 +66,7 @@ export const productDetails = {
                 kicker: "PUREZA",
                 title: "Nutrición concentrada.",
                 body: "Materias primas superiores. Cada lote pasa control de pureza, EC y pH antes de envasarse. Trazabilidad completa.",
-                image: "/ultimos-cambios/POTE-20LT.png",
+                image: "/imagenes-web/ultimos-cambios/POTE-20LT.png",
                 color: "#D4B856",
                 stat: "04",
             },
@@ -89,12 +89,12 @@ export const productDetails = {
         // intermedias (5L) y grandes industriales (10L y 20L apilados).
         // Las imágenes "apiladas" comunican volumen y nivel pro.
         formats: [
-            { name: "250 ML",   size: "250ml",  image: "/img/productos/linea-elite/elite-unificado.png" },
-            { name: "500 ML",   size: "500ml",  image: "/img/productos/linea-elite/elite-part-2.png" },
-            { name: "1 LITRO",  size: "1L",     image: "/img/productos/linea-elite/elite-part-1.png" },
-            { name: "5 LITROS", size: "5L",     image: "/img/productos/elite-max/a-5-lts-perspectiva-1.png" },
-            { name: "10 LITROS",size: "10L",    image: "/img/productos/elite-max/10-litros-apilados.png" },
-            { name: "20 LITROS",size: "20L",    image: "/img/productos/elite-max/20-litros-apilados.png" },
+            { name: "250 ML",   size: "250ml",  image: "/imagenes-web/productos/linea-elite/elite-unificado.png" },
+            { name: "500 ML",   size: "500ml",  image: "/imagenes-web/productos/linea-elite/elite-part-2.png" },
+            { name: "1 LITRO",  size: "1L",     image: "/imagenes-web/productos/linea-elite/elite-part-1.png" },
+            { name: "5 LITROS", size: "5L",     image: "/imagenes-web/productos/elite-max/a-5-lts-perspectiva-1.png" },
+            { name: "10 LITROS",size: "10L",    image: "/imagenes-web/productos/elite-max/10-litros-apilados.png" },
+            { name: "20 LITROS",size: "20L",    image: "/imagenes-web/productos/elite-max/20-litros-apilados.png" },
         ],
         system: {
             title: "Diseñado para integrar el sistema Holistic.",
@@ -128,9 +128,9 @@ export const productDetails = {
             // Hero BANNER nuevo (potes flotando, fondo oscuro dramático,
             // 2026-06-05). Mobile usa la versión 9:16 "celu".
             heroBanner: {
-                src: "/img/banners/banner-pro.webp",
+                src: "/imagenes-web/banners/banner-pro.webp",
                 w: 2560, h: 1441,
-                mobile: { src: "/img/banners/banner-pro-celu.webp", w: 1080, h: 1919 },
+                mobile: { src: "/imagenes-web/banners/banner-pro-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
         },
@@ -142,7 +142,7 @@ export const productDetails = {
                 kicker: "FÓRMULA POR ETAPA",
                 title: "Una para cada momento.",
                 body: "Enraizante, Vegetativo, Preflora y Flora. Cada una desarrollada para el perfil nutricional exacto que la planta necesita en esa fase.",
-                image: "/ultimos-cambios/VEGETATIVO-ENRRAIZANTE.png",
+                image: "/imagenes-web/ultimos-cambios/VEGETATIVO-ENRRAIZANTE.png",
                 color: "#F5948A",
                 stat: "01",
             },
@@ -150,7 +150,7 @@ export const productDetails = {
                 kicker: "FORMATO SÓLIDO",
                 title: "Sin agua, sin alcohol, sin conservantes.",
                 body: "100% materia activa. El fertilizante sólido no pierde potencia con el calor ni con el tiempo: 36 meses de vida útil garantizados.",
-                image: "/ultimos-cambios/vegetativo-vege2.png",
+                image: "/imagenes-web/ultimos-cambios/vegetativo-vege2.png",
                 color: "#FFB39B",
                 stat: "02",
             },
@@ -158,7 +158,7 @@ export const productDetails = {
                 kicker: "DOSIS EXACTA",
                 title: "Al gramo.",
                 body: "Balanceá tu reservorio con precisión de laboratorio. Misma cucharita, misma EC, mismo resultado.",
-                image: "/ultimos-cambios/VEGETATIVO-PREFLORA.png",
+                image: "/imagenes-web/ultimos-cambios/VEGETATIVO-PREFLORA.png",
                 color: "#E87C70",
                 stat: "03",
             },
@@ -166,7 +166,7 @@ export const productDetails = {
                 kicker: "ECONÓMICO",
                 title: "Más cosechas por kilo.",
                 body: "Más concentrado que líquidos: menor costo por dosis y menor logística (1 kg sólido = ~5 L líquido).",
-                image: "/ultimos-cambios/VEGETATIVO-FLORACION.png",
+                image: "/imagenes-web/ultimos-cambios/VEGETATIVO-FLORACION.png",
                 color: "#FF8A7A",
                 stat: "04",
             },
@@ -189,12 +189,12 @@ export const productDetails = {
         // distintos gramajes. Mostramos una por etapa para que el
         // selector cuente la historia del ciclo, no sólo del peso.
         formats: [
-            { name: "VEGETATIVO",  size: "1kg",   image: "/img/productos/linea-pro/1kg/pro-vegetativo.png" },
-            { name: "PREFLORA",    size: "1kg",   image: "/img/productos/linea-pro/1kg/pro-preflora.png" },
-            { name: "FLORA",       size: "1kg",   image: "/img/productos/linea-pro/1kg/pro-flora.png" },
-            { name: "ENRAIZANTE",  size: "1kg",   image: "/img/productos/linea-pro/1kg/pro-enraizante.png" },
-            { name: "FLORA",       size: "500g",  image: "/img/productos/linea-pro/500gr/flora-500gr-1.png" },
-            { name: "FLORACIÓN",   size: "100g",  image: "/img/productos/linea-pro/100gr/floracion-100gr-1.png" },
+            { name: "VEGETATIVO",  size: "1kg",   image: "/imagenes-web/productos/linea-pro/1kg/pro-vegetativo.png" },
+            { name: "PREFLORA",    size: "1kg",   image: "/imagenes-web/productos/linea-pro/1kg/pro-preflora.png" },
+            { name: "FLORA",       size: "1kg",   image: "/imagenes-web/productos/linea-pro/1kg/pro-flora.png" },
+            { name: "ENRAIZANTE",  size: "1kg",   image: "/imagenes-web/productos/linea-pro/1kg/pro-enraizante.png" },
+            { name: "FLORA",       size: "500g",  image: "/imagenes-web/productos/linea-pro/500gr/flora-500gr-1.png" },
+            { name: "FLORACIÓN",   size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/floracion-100gr-1.png" },
         ],
         system: {
             title: "Encaja con todo el catálogo.",
@@ -229,12 +229,12 @@ export const productDetails = {
             // entera arriba + texto/CTAs debajo). Reemplaza al video cinematic
             // por pedido del cliente. w/h evitan CLS (aspect-ratio intrínseco).
             heroBanner: {
-                src: "/img/banners/banner-race.webp",
+                src: "/imagenes-web/banners/banner-race.webp",
                 w: 1536, h: 1024,
-                mobile: { src: "/img/banners/banner-race-celu.webp", w: 1080, h: 1919 },
+                mobile: { src: "/imagenes-web/banners/banner-race-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
-            heroImage: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
+            heroImage: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
         },
         // Cada highlight tiene su imagen propia + color tema. El componente
         // ProductHighlights lee estos colores (vía data-colors) para teñir
@@ -247,7 +247,7 @@ export const productDetails = {
                 kicker: "TODO EL CICLO",
                 title: "Race 1 — NPK concentrado.",
                 body: "Nitrógeno: motor del crecimiento vegetativo — hojas, tallos y clorofila. Fósforo: raíces fuertes y transferencia de energía. Potasio: regula el metabolismo, fortalece tallos y sube la resistencia a plagas y estrés.",
-                image: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
                 color: "#3DA86E",
                 stat: "01",
             },
@@ -255,7 +255,7 @@ export const productDetails = {
                 kicker: "ESTRUCTURA",
                 title: "Race 2 — Calcio + Nitrógeno.",
                 body: "Forma paredes celulares fuertes, impulsa el crecimiento de raíces y brotes, y mejora la resistencia ante plagas y sequías.",
-                image: "/img/productos/linea-race/500ml/race-2-celeste-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-2-celeste-500ml.png",
                 color: "#3FB5CB",
                 stat: "02",
             },
@@ -263,7 +263,7 @@ export const productDetails = {
                 kicker: "3A",
                 title: "Race 3 (PK de crecimiento y maduración).",
                 body: "Son 2 partes PK de crecimiento y maduración. Activan la translocación de azúcares y agrandan flores en el pico productivo del ciclo.",
-                image: "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
                 color: "#8E24AA",
                 stat: "03",
             },
@@ -271,7 +271,7 @@ export const productDetails = {
                 kicker: "3B",
                 title: "Race 3 (PK de crecimiento y maduración).",
                 body: "Son 2 partes PK de crecimiento y maduración. Aplicadas en secuencia, sostienen el desarrollo de flores densas hasta el cierre del ciclo.",
-                image: "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
                 color: "#8E24AA",
                 stat: "04",
             },
@@ -279,7 +279,7 @@ export const productDetails = {
                 kicker: "MICRO + MAGNESIO",
                 title: "Race 4 — Micro + Magnesio.",
                 body: "Microelementos (Fe, Zn, B, Mn, Cu, Mo) que activan enzimas, fotosíntesis y división celular. Magnesio: núcleo de la clorofila — energía y desarrollo de hojas, raíces y flores.",
-                image: "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-4-rosa-500ml.png",
                 color: "#F472B6",
                 stat: "05",
             },
@@ -308,7 +308,7 @@ export const productDetails = {
             {
                 name: "RACE 1",
                 size: "Todo el ciclo",
-                image: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
                 color: "#3DA86E",
                 tagline: "NPK concentrado.",
                 description:
@@ -317,7 +317,7 @@ export const productDetails = {
             {
                 name: "RACE 2",
                 size: "Estructura",
-                image: "/img/productos/linea-race/500ml/race-2-celeste-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-2-celeste-500ml.png",
                 color: "#3FB5CB",
                 tagline: "Calcio + Nitrógeno.",
                 description:
@@ -326,7 +326,7 @@ export const productDetails = {
             {
                 name: "RACE 3 - A",
                 size: "Crecimiento y Maduración",
-                image: "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
                 color: "#8E24AA",
                 tagline: "PK · parte 1.",
                 description:
@@ -335,7 +335,7 @@ export const productDetails = {
             {
                 name: "RACE 3 - B",
                 size: "Crecimiento y Maduración",
-                image: "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
                 color: "#8E24AA",
                 tagline: "PK · parte 2.",
                 description:
@@ -344,7 +344,7 @@ export const productDetails = {
             {
                 name: "RACE 4",
                 size: "Micro + Magnesio",
-                image: "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
+                image: "/imagenes-web/productos/linea-race/500ml/race-4-rosa-500ml.png",
                 color: "#F472B6",
                 tagline: "Micro + Magnesio.",
                 description:
@@ -384,9 +384,9 @@ export const productDetails = {
             // Hero BANNER nuevo (corales rosados, fondo claro, 2026-06-05).
             // Mobile usa la versión 9:16 "celu".
             heroBanner: {
-                src: "/img/banners/banner-bio.webp",
+                src: "/imagenes-web/banners/banner-bio.webp",
                 w: 2560, h: 1441,
-                mobile: { src: "/img/banners/banner-bio-celu.webp", w: 1080, h: 1919 },
+                mobile: { src: "/imagenes-web/banners/banner-bio-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
         },
@@ -407,7 +407,7 @@ export const productDetails = {
                 kicker: "SINERGIA",
                 title: "Acelera todo lo demás.",
                 body: "Aplicado junto a Elite, Pro o Race, multiplica la eficiencia de absorción radicular. La planta toma más nutrientes con menos input.",
-                image: "/img/productos/bio-estimulante/perspectiva-2-grande-rosa-sin-fondo.png",
+                image: "/imagenes-web/productos/bio-estimulante/perspectiva-2-grande-rosa-sin-fondo.png",
                 color: "#F7B8C5",
                 stat: "02",
             },
@@ -415,7 +415,7 @@ export const productDetails = {
                 kicker: "VERSÁTIL",
                 title: "Para todo el ciclo.",
                 body: "Una sola botella para activar raíces, mejorar foliage y reforzar defensas naturales. Multifunción real.",
-                image: "/img/race/root-detail.jpg",
+                image: "/imagenes-web/race/root-detail.jpg",
                 color: "#F091A5",
                 stat: "03",
             },
@@ -423,7 +423,7 @@ export const productDetails = {
                 kicker: "SEGURIDAD",
                 title: "100% orgánico, 100% inocuo.",
                 body: "Sin metales pesados, sin sintéticos. Apto para cultivos de consumo y para todo el ciclo.",
-                image: "/img/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png",
+                image: "/imagenes-web/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png",
                 color: "#D67D92",
                 stat: "04",
             },
@@ -443,8 +443,8 @@ export const productDetails = {
             { title: "Producción local",       body: "Fabricado en Argentina con tecnología de biorreactor industrial.",           emoji: "✓" },
         ],
         formats: [
-            { name: "GRANDE", size: "Standard", image: "/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png" },
-            { name: "LATERAL", size: "Display", image: "/img/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png" },
+            { name: "GRANDE", size: "Standard", image: "/imagenes-web/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png" },
+            { name: "LATERAL", size: "Display", image: "/imagenes-web/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png" },
         ],
         system: {
             title: "El primer paso del ciclo.",
@@ -486,7 +486,7 @@ export const productDetails = {
                 kicker: "ALTA ADHERENCIA",
                 title: "Se queda donde lo aplicás.",
                 body: "Gel viscoso que no escurre. Aplicás, plantás. Cubre el 100% del corte y mantiene la zona en contacto óptimo con el sustrato.",
-                image: "/img/productos/esquejera/uso-barrita-pasos-sin-fondo.png",
+                image: "/imagenes-web/productos/esquejera/uso-barrita-pasos-sin-fondo.png",
                 color: "#6B3BAF",
                 stat: "01",
             },
@@ -494,7 +494,7 @@ export const productDetails = {
                 kicker: "PRENDIMIENTO",
                 title: "Tasa de éxito superior al 90%.",
                 body: "Combinación de auxinas y vehículos protectores que aceleran la formación de raíces adventicias en cualquier variedad.",
-                image: "/img/productos/esquejera/4-perspectiva-barritas-colocadas-editado.png",
+                image: "/imagenes-web/productos/esquejera/4-perspectiva-barritas-colocadas-editado.png",
                 color: "#9C5FD8",
                 stat: "02",
             },
@@ -502,7 +502,7 @@ export const productDetails = {
                 kicker: "MULTIPLICACIÓN",
                 title: "Pensado para producción profesional.",
                 body: "Esquejes seriados, batches grandes, propagación masiva: la consistencia del gel hace que todos arranquen al mismo tiempo.",
-                image: "/img/productos/esquejera/superior-sin-fondo.png",
+                image: "/imagenes-web/productos/esquejera/superior-sin-fondo.png",
                 color: "#7D4BC9",
                 stat: "03",
             },
@@ -510,7 +510,7 @@ export const productDetails = {
                 kicker: "USO SIMPLE",
                 title: "Sumergir, plantar, regar.",
                 body: "Sin polvos que se vuelan, sin diluciones a pesar. La curva de aprendizaje es casi cero.",
-                image: "/img/productos/esquejera/5-top-editado.png",
+                image: "/imagenes-web/productos/esquejera/5-top-editado.png",
                 color: "#B49AE0",
                 stat: "04",
             },
@@ -534,9 +534,9 @@ export const productDetails = {
         // Un solo "format" rompía visualmente este bloque, así que
         // exponemos 3 vistas del mismo flujo de uso.
         formats: [
-            { name: "USO",        size: "Paso a paso",      image: "/img/productos/esquejera/uso-barrita-pasos-sin-fondo.png" },
-            { name: "ESQUEJERA",  size: "Vista superior",   image: "/img/productos/esquejera/superior-sin-fondo.png" },
-            { name: "BARRITAS",   size: "En sustrato",      image: "/img/productos/esquejera/4-perspectiva-barritas-colocadas-editado.png" },
+            { name: "USO",        size: "Paso a paso",      image: "/imagenes-web/productos/esquejera/uso-barrita-pasos-sin-fondo.png" },
+            { name: "ESQUEJERA",  size: "Vista superior",   image: "/imagenes-web/productos/esquejera/superior-sin-fondo.png" },
+            { name: "BARRITAS",   size: "En sustrato",      image: "/imagenes-web/productos/esquejera/4-perspectiva-barritas-colocadas-editado.png" },
         ],
         system: {
             title: "Donde nace la próxima cosecha.",
@@ -568,9 +568,9 @@ export const productDetails = {
             // Hero BANNER nuevo (splash de agua, fondo blanco, 2026-06-05).
             // Mobile usa la versión 9:16 "celu".
             heroBanner: {
-                src: "/img/banners/banner-day0.webp",
+                src: "/imagenes-web/banners/banner-day0.webp",
                 w: 2560, h: 1707,
-                mobile: { src: "/img/banners/banner-day0-celu.webp", w: 1080, h: 1919 },
+                mobile: { src: "/imagenes-web/banners/banner-day0-celu.webp", w: 1080, h: 1919 },
             },
             heroBackground: true,
         },
@@ -591,7 +591,7 @@ export const productDetails = {
                 kicker: "SIN QUÍMICOS",
                 title: "El detalle que se nota.",
                 body: "La diferencia entre una cosecha técnica y una excelente.",
-                image: "/img/productos/day-0/perspectiva-2-grande-amarillo-sin-fondo.png",
+                image: "/imagenes-web/productos/day-0/perspectiva-2-grande-amarillo-sin-fondo.png",
                 color: "#F0D56D",
                 stat: "02",
             },
@@ -599,7 +599,7 @@ export const productDetails = {
                 kicker: "TIMING",
                 title: "Programable al día.",
                 body: "5 días antes del corte estimado. La planta ajusta su metabolismo y el cultivador llega al día 0 con una flor pulida.",
-                image: "/img/productos/day-0/lateral-grande-amarillo-sin-fondo.png",
+                image: "/imagenes-web/productos/day-0/lateral-grande-amarillo-sin-fondo.png",
                 color: "#C9A34E",
                 stat: "03",
             },
@@ -607,7 +607,7 @@ export const productDetails = {
                 kicker: "UNIVERSAL",
                 title: "Compatible con cualquier sistema.",
                 body: "Funciona después de Elite, Pro o Race. Independiente del nutriente principal — es el cierre que une todo el catálogo.",
-                image: "/img/productos/day-0/lateral-2-grande-amarillo-sin-fondo.png",
+                image: "/imagenes-web/productos/day-0/lateral-2-grande-amarillo-sin-fondo.png",
                 color: "#F9E79B",
                 stat: "04",
             },
@@ -627,8 +627,8 @@ export const productDetails = {
             { title: "Validado en cultivo",     body: "Probado en variedades indoor/outdoor con resultado consistente.",                emoji: "✓" },
         ],
         formats: [
-            { name: "GRANDE", size: "Standard",   image: "/img/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png" },
-            { name: "LATERAL", size: "Display",   image: "/img/productos/day-0/lateral-grande-amarillo-sin-fondo.png" },
+            { name: "GRANDE", size: "Standard",   image: "/imagenes-web/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png" },
+            { name: "LATERAL", size: "Display",   image: "/imagenes-web/productos/day-0/lateral-grande-amarillo-sin-fondo.png" },
         ],
         system: {
             title: "El cierre del catálogo.",

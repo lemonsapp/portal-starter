@@ -13,12 +13,12 @@
 
 // Bloque 1 — "MARQUEE" — banderas y carros sin fondo, layout horizontal.
 export const raceMarquee = [
-    { src: "/img/race/car-verde-logo.jpg",      alt: "F1 verde con logo Holistic Race" },
-    { src: "/img/race/flag-checkered-bw.jpg",   alt: "Bandera a cuadros blanco y negro" },
-    { src: "/img/race/car-violeta-motion.jpg",  alt: "F1 violeta en motion blur" },
-    { src: "/img/race/flags-rosa-crossed.jpg",  alt: "Banderas rosa cruzadas" },
-    { src: "/img/race/car-azul-front.jpg",      alt: "F1 azul de frente" },
-    { src: "/img/race/car-rosa-front.jpg",      alt: "F1 rosa de frente" },
+    { src: "/imagenes-web/race/car-verde-logo.jpg",      alt: "F1 verde con logo Holistic Race" },
+    { src: "/imagenes-web/race/flag-checkered-bw.jpg",   alt: "Bandera a cuadros blanco y negro" },
+    { src: "/imagenes-web/race/car-violeta-motion.jpg",  alt: "F1 violeta en motion blur" },
+    { src: "/imagenes-web/race/flags-rosa-crossed.jpg",  alt: "Banderas rosa cruzadas" },
+    { src: "/imagenes-web/race/car-azul-front.jpg",      alt: "F1 azul de frente" },
+    { src: "/imagenes-web/race/car-rosa-front.jpg",      alt: "F1 rosa de frente" },
 ];
 
 // Bloque 2 — "ESCENARIOS" — botellas en pista, campo, invernadero, raíces.
@@ -28,49 +28,49 @@ export const raceMarquee = [
 //   xl    → 2 cols, ratio 1/1
 export const raceScenes = [
     {
-        src: "/img/race/bottle-violeta-field-sunset.jpg",
+        src: "/imagenes-web/race/bottle-violeta-field-sunset.jpg",
         alt: "Race violeta volando sobre cultivo al atardecer",
         size: "xl",
         kicker: "EN EL CAMPO",
         title: "Probado en cultivo real.",
     },
     {
-        src: "/img/race/bottle-verde-greenhouse.jpg",
+        src: "/imagenes-web/race/bottle-verde-greenhouse.jpg",
         alt: "Race verde en invernadero con plantas hidropónicas",
         size: "tall",
         kicker: "INVERNADERO",
         title: "Pensado para indoor.",
     },
     {
-        src: "/img/race/bottle-violeta-a-roots.jpg",
+        src: "/imagenes-web/race/bottle-violeta-a-roots.jpg",
         alt: "Race violeta junto a raíces blancas dramáticas",
         size: "tall",
         kicker: "RAÍCES",
         title: "Donde se decide todo.",
     },
     {
-        src: "/img/race/bottle-rosa-splash.jpg",
+        src: "/imagenes-web/race/bottle-rosa-splash.jpg",
         alt: "Race rosa con splash de agua dramático",
         size: "tall",
         kicker: "CICLO COMPLETO",
         title: "Race 4 — Micro + Magnesio.",
     },
     {
-        src: "/img/race/bottle-azul-splash.jpg",
+        src: "/imagenes-web/race/bottle-azul-splash.jpg",
         alt: "Race azul con corona de salpicaduras",
         size: "tall",
         kicker: "CRECIMIENTO Y MADURACIÓN",
         title: "Race 3 — PK en dos partes.",
     },
     {
-        src: "/img/race/bottle-violeta-track-f1.jpg",
+        src: "/imagenes-web/race/bottle-violeta-track-f1.jpg",
         alt: "Race violeta sobre pista F1 al sol",
         size: "wide",
         kicker: "EN PISTA",
         title: "Velocidad y precisión.",
     },
     {
-        src: "/img/race/bottle-verde-splash-spotlight.jpg",
+        src: "/imagenes-web/race/bottle-verde-splash-spotlight.jpg",
         alt: "Race verde con splash bajo luz cinematográfica",
         size: "tall",
         kicker: "VEGETATIVO",
@@ -85,28 +85,28 @@ export const raceScenes = [
 export const raceMotion = [
     {
         src: "/video/race/cinematic-violeta-pistons.mp4",
-        poster: "/img/race/cinematic-violeta-pistons-poster.png",
+        poster: "/imagenes-web/race/cinematic-violeta-pistons-poster.png",
         alt: "Race violeta rodeada de pistones, bujías, banderas y splash",
         kicker: "MOTOR",
         title: "Sistema completo, en movimiento.",
     },
     {
         src: "/video/race/cinematic-violeta-splash-radial.mp4",
-        poster: "/img/race/cinematic-violeta-splash-radial-poster.png",
+        poster: "/imagenes-web/race/cinematic-violeta-splash-radial-poster.png",
         alt: "Race violeta con splash radial de agua",
         kicker: "IMPACTO",
         title: "Cada gota cuenta.",
     },
     {
         src: "/video/race/cinematic-violeta-splash-spotlight.mp4",
-        poster: "/img/race/cinematic-violeta-splash-spotlight-poster.png",
+        poster: "/imagenes-web/race/cinematic-violeta-splash-spotlight-poster.png",
         alt: "Splash violeta bajo luz spotlight",
         kicker: "ESCENA",
         title: "Diseñado para la luz.",
     },
     {
         src: "/video/race/race-clip-04.mp4",
-        poster: "/img/race/bottle-violeta-track-f1.jpg",
+        poster: "/imagenes-web/race/bottle-violeta-track-f1.jpg",
         alt: "Race violeta en escenario de pista",
         kicker: "PISTA",
         title: "El detalle del recorrido.",

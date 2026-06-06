@@ -10,7 +10,7 @@ const {
     title = "Fertilizantes para Cultivo Indoor | Línea Pro, Elite y Race — Holistic Growshop",
     description = "Holistic Growshop: sistema completo de fertilizantes para cultivo indoor. Línea Pro, Línea Elite, Línea Race y Bio Estimulante. pH estable, ciclo completo, resultados superiores. Envío gratis.",
     canonical,
-    ogImage = "/img/banners/og-race.jpg",
+    ogImage = "/imagenes-web/banners/og-race.jpg",
 } = Astro.props;
 
 const canonicalURL = canonical
@@ -23,7 +23,7 @@ const organizationSchema = {
     "@type": "Organization",
     "name": "Holistic Growshop",
     "url": "https://hgrowshop.com",
-    "logo": "https://hgrowshop.com/assets/productos/favicon.svg",
+    "logo": "https://hgrowshop.com/imagenes-web/marca/favicon.svg",
     "description": "Fertilizantes para cultivo indoor argentinos. Línea Pro, Línea Elite, Línea Race, Bio Estimulante, Cloner y Day 0.",
     "sameAs": [
         "https://www.instagram.com/holistic.arg/",
@@ -64,7 +64,7 @@ const organizationSchema = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
-    <link rel="icon" type="image/svg+xml" href="/assets/productos/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/imagenes-web/marca/favicon.svg" />
 
     {/* Gotham self-hosted: @font-face en global.css. Preload del Book + Black
         (los más usados) para que el title no parpadee al primer paint. */}

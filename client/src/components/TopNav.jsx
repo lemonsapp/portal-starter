@@ -214,7 +214,7 @@ export default function TopNav() {
                 <div style={S.inner}>
                     {/* Brand — logo del landing (negro sobre barra blanca, tal cual la web) */}
                     <Link to="/inicio" style={S.brand} aria-label="Inicio">
-                        <img src="/assets/logo.svg" alt="Holistic" style={S.logoImg} width="32" height="32" />
+                        <img src="/imagenes-web/marca/logo.svg" alt="Holistic" style={S.logoImg} width="32" height="32" />
                     </Link>
 
                     {/* Desktop nav — TODOS los links son pills mint iguales a la de
@@ -396,7 +396,7 @@ export default function TopNav() {
             <div style={S.mobileBackdrop(menuOpen)} onClick={() => setMenuOpen(false)} />
             <aside style={S.mobileDrawer(menuOpen)} aria-hidden={!menuOpen}>
                 <div style={S.mobileHeader}>
-                    <img src="/assets/logo.svg" alt="Holistic" style={S.logoImg} width="30" height="30" />
+                    <img src="/imagenes-web/marca/logo.svg" alt="Holistic" style={S.logoImg} width="30" height="30" />
                     <button style={S.mobileClose} onClick={() => setMenuOpen(false)} aria-label="Cerrar menú">
                         <Icon name="close" size={22} />
                     </button>

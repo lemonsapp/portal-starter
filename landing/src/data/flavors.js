@@ -2,7 +2,7 @@ export const flavors = [
     {
         slug: "bio-estimulante",
         nombre: "BIO ESTIMULANTE",
-        producto: "/img/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png",
+        producto: "/imagenes-web/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png",
         color: "#E8A5B1",
         accentColor: "#F7D6DC",
         bgGradient: "linear-gradient(160deg, #F7D6DC 0%, #E8A5B1 100%)",
@@ -10,7 +10,7 @@ export const flavors = [
     {
         slug: "cloner",
         nombre: "CLONER GEL",
-        producto: "/assets/productos/cloner2.png",
+        producto: "/imagenes-web/fotos-productos/cloner2.png",
         color: "#6B3BAF",
         accentColor: "#B49AE0",
         bgGradient: "linear-gradient(160deg, #E4D5F2 0%, #C9A8E8 100%)",
@@ -18,7 +18,7 @@ export const flavors = [
     {
         slug: "linea-race",
         nombre: "LÍNEA RACE",
-        producto: "/img/productos/linea-race/500ml/race-1-verde-500ml.png",
+        producto: "/imagenes-web/productos/linea-race/500ml/race-1-verde-500ml.png",
         color: "#2E8F6E",
         accentColor: "#C7F0DD",
         bgGradient: "linear-gradient(160deg, #C7F0DD 0%, #6FBE9A 100%)",
@@ -26,7 +26,7 @@ export const flavors = [
     {
         slug: "linea-elite",
         nombre: "LÍNEA ELITE",
-        producto: "/img/productos/linea-elite/1l/parte-1-perspectiva-1l.png",
+        producto: "/imagenes-web/productos/linea-elite/1l/parte-1-perspectiva-1l.png",
         color: "#C9A34E",
         accentColor: "#F7F3EA",
         bgGradient: "linear-gradient(160deg, #F7F3EA 0%, #E5D9B8 100%)",
@@ -34,7 +34,7 @@ export const flavors = [
     {
         slug: "linea-pro",
         nombre: "LÍNEA PRO",
-        producto: "/img/productos/linea-pro/1kg/flora-1kg-1.png",
+        producto: "/imagenes-web/productos/linea-pro/1kg/flora-1kg-1.png",
         color: "#F5948A",
         accentColor: "#AEDAD4",
         bgGradient: "linear-gradient(160deg, #AEDAD4 0%, #86C5BE 100%)",
@@ -42,7 +42,7 @@ export const flavors = [
     {
         slug: "day-0",
         nombre: "DAY 0",
-        producto: "/img/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png",
+        producto: "/imagenes-web/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png",
         color: "#D4B34A",
         accentColor: "#F9E79B",
         bgGradient: "linear-gradient(160deg, #F9E79B 0%, #F0D56D 100%)",
