@@ -18,12 +18,15 @@ const IMG_FIXES = {
   "/img/productos/linea-race/250ml/race-2-part-a.png": "/img/productos/linea-race/250ml/race-3-violeta-a.png",
   "/img/productos/linea-race/250ml/race-2-part-b.png": "/img/productos/linea-race/250ml/race-3-violeta-b.png",
   "/img/productos/linea-race/250ml/race-3-rosa.png": "/img/productos/linea-race/250ml/race-4-rosa.png",
-  "/img/productos/linea-race/250ml/race-4-celeste.png": "/img/productos/linea-race/250ml/race-4-rosa.png",
+  // race-4-celeste es el path que tiene el SKU VIVO de R4 250ml en prod →
+  // directo al tarro (fixImageUrl es de una sola pasada, no re-encadena).
+  "/img/productos/linea-race/250ml/race-4-celeste.png": "/imagenes-web/productos/linea-race/250ml/race-4-rosa-tarro.webp",
   // 500ml
   "/img/productos/linea-race/500ml/race-2-part-a-500ml.png": "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
   "/img/productos/linea-race/500ml/race-2-part-b-500ml.png": "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
   "/img/productos/linea-race/500ml/race-3-rosa-500ml.png": "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
-  "/img/productos/linea-race/500ml/race-4-celeste-500ml.png": "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
+  // Ídem 250ml: path vivo del SKU R4 500ml en prod → tarro directo.
+  "/img/productos/linea-race/500ml/race-4-celeste-500ml.png": "/imagenes-web/productos/linea-race/250ml/race-4-rosa-tarro.webp",
   // Cloner: render viejo (cloner2) → render holográfico del home
   // (mismo pote que ComplementosIdeales en el inicio, 2026-06-05).
   "/assets/productos/cloner2.png": "/ultimos-cambios/POTE-CLONER-HOME.png",
@@ -34,19 +37,22 @@ const IMG_FIXES = {
   "/img/productos/linea-elite/500gr/parte-1-lateral.png": "/img/productos/linea-elite/elite-part-1.png",
   "/img/productos/elite-max/a-5-lts-perspectiva-2.png": "/img/productos/elite-max/b-5-lts-perspectiva-1.png",
 
-  // Renders F1 (2026-06-07): mientras el server no redeploye su migración
-  // (repoint en routes/shop.js), la DB sigue devolviendo los paths viejos de
-  // Race. Acá los mapeamos a los renders F1 nuevos de costado. Race 1 y 4 en
-  // 500ml no tienen F1 → conservan su render viejo. Cuando el server
-  // redeploye, devuelve los paths -f1.webp directo y estas keys no matchean.
-  "/img/productos/linea-race/250ml/race-1-verde.png":         "/imagenes-web/productos/linea-race/250ml/race-1-verde-f1.webp",
-  "/img/productos/linea-race/250ml/race-2-celeste.png":       "/imagenes-web/productos/linea-race/250ml/race-2-celeste-f1.webp",
-  "/img/productos/linea-race/250ml/race-3-violeta-a.png":     "/imagenes-web/productos/linea-race/250ml/race-3-violeta-a-f1.webp",
-  "/img/productos/linea-race/250ml/race-3-violeta-b.png":     "/imagenes-web/productos/linea-race/250ml/race-3-violeta-b-f1.webp",
-  "/img/productos/linea-race/250ml/race-4-rosa.png":          "/imagenes-web/productos/linea-race/250ml/race-4-rosa-f1.webp",
-  "/img/productos/linea-race/500ml/race-2-celeste-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-2-celeste-500ml-f1.webp",
-  "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-3-violeta-a-500ml-f1.webp",
-  "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-3-violeta-b-500ml-f1.webp",
+  // Tarros Race de costado (2026-06-07, pedido del cliente): mientras el
+  // server no redeploye su migración (routes/shop.js), la DB sigue mandando
+  // los paths viejos de Race. Acá los mapeamos al TARRO dosificador de cada
+  // fórmula (el envase real de 250ml/500ml/1L). R3 A y B comparten el tarro
+  // violeta; 500ml de R3/R4 reusan el arte 250 (la medida no se ve en el
+  // render). Cuando el server redeploye manda -tarro.webp directo y estas
+  // keys dejan de matchear solas.
+  "/img/productos/linea-race/250ml/race-1-verde.png":         "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp",
+  "/img/productos/linea-race/250ml/race-2-celeste.png":       "/imagenes-web/productos/linea-race/250ml/race-2-celeste-tarro.webp",
+  "/img/productos/linea-race/250ml/race-3-violeta-a.png":     "/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp",
+  "/img/productos/linea-race/250ml/race-3-violeta-b.png":     "/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp",
+  "/img/productos/linea-race/250ml/race-4-rosa.png":          "/imagenes-web/productos/linea-race/250ml/race-4-rosa-tarro.webp",
+  "/img/productos/linea-race/500ml/race-2-celeste-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-2-celeste-tarro-500ml.webp",
+  "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png": "/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp",
+  "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png": "/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp",
+  "/img/productos/linea-race/500ml/race-4-rosa-500ml.png":    "/imagenes-web/productos/linea-race/250ml/race-4-rosa-tarro.webp",
   // El kit linea-race en prod tiene como primaria la botella R1 500ml suelta
   // → mostramos la foto familia (los 5 potes). Efecto colateral menor: el SKU
   // race-1-npk-500ml comparte URL y muestra la familia hasta el redeploy.
