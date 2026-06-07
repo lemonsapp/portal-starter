@@ -26,7 +26,7 @@ const IMG_FIXES = {
   "/img/productos/linea-race/500ml/race-2-part-b-500ml.png": "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
   "/img/productos/linea-race/500ml/race-3-rosa-500ml.png": "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
   // Ídem 250ml: path vivo del SKU R4 500ml en prod → tarro directo.
-  "/img/productos/linea-race/500ml/race-4-celeste-500ml.png": "/imagenes-web/productos/linea-race/250ml/race-4-rosa-tarro.webp",
+  "/img/productos/linea-race/500ml/race-4-celeste-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp",
   // Cloner: render viejo (cloner2) → render holográfico del home
   // (mismo pote que ComplementosIdeales en el inicio, 2026-06-05).
   "/assets/productos/cloner2.png": "/ultimos-cambios/POTE-CLONER-HOME.png",
@@ -40,19 +40,18 @@ const IMG_FIXES = {
   // Tarros Race de costado (2026-06-07, pedido del cliente): mientras el
   // server no redeploye su migración (routes/shop.js), la DB sigue mandando
   // los paths viejos de Race. Acá los mapeamos al TARRO dosificador de cada
-  // fórmula (el envase real de 250ml/500ml/1L). R3 A y B comparten el tarro
-  // violeta; 500ml de R3/R4 reusan el arte 250 (la medida no se ve en el
-  // render). Cuando el server redeploye manda -tarro.webp directo y estas
-  // keys dejan de matchear solas.
+  // fórmula y medida (el envase real de 250ml/500ml/1L). R3 A y B comparten
+  // el tarro violeta. Cuando el server redeploye manda -tarro.webp directo
+  // y estas keys dejan de matchear solas.
   "/img/productos/linea-race/250ml/race-1-verde.png":         "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp",
   "/img/productos/linea-race/250ml/race-2-celeste.png":       "/imagenes-web/productos/linea-race/250ml/race-2-celeste-tarro.webp",
   "/img/productos/linea-race/250ml/race-3-violeta-a.png":     "/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp",
   "/img/productos/linea-race/250ml/race-3-violeta-b.png":     "/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp",
   "/img/productos/linea-race/250ml/race-4-rosa.png":          "/imagenes-web/productos/linea-race/250ml/race-4-rosa-tarro.webp",
   "/img/productos/linea-race/500ml/race-2-celeste-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-2-celeste-tarro-500ml.webp",
-  "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png": "/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp",
-  "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png": "/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp",
-  "/img/productos/linea-race/500ml/race-4-rosa-500ml.png":    "/imagenes-web/productos/linea-race/250ml/race-4-rosa-tarro.webp",
+  "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp",
+  "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp",
+  "/img/productos/linea-race/500ml/race-4-rosa-500ml.png":    "/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp",
   // El kit linea-race en prod tiene como primaria la botella R1 500ml suelta
   // → mostramos la foto familia (los 5 potes). Efecto colateral menor: el SKU
   // race-1-npk-500ml comparte URL y muestra la familia hasta el redeploy.
@@ -80,6 +79,34 @@ export function fixImageUrl(url) {
     if (fixed.startsWith(oldPrefix)) return newPrefix + fixed.slice(oldPrefix.length);
   }
   return fixed;
+}
+
+// ── Medidas embebidas en los paths de renders ──────────────────────────────
+// meta.formato usa "500g"/"1L"; las carpetas de /imagenes-web/productos/*
+// usan "500gr"/"1l". Este mapa traduce formato → token de path.
+const FORMATO_PATH_TOKEN = {
+  "25g": "25gr", "100g": "100gr", "500g": "500gr", "1kg": "1kg",
+  "250ml": "250ml", "500ml": "500ml", "1L": "1l", "5L": "5l", "10L": "10l", "20L": "20l",
+};
+// Con borde [/-] adelante (y [/.-] o fin de string atrás): "-10l-" no matchea
+// el token "1l". Longest-first para que el match más largo gane explícitamente
+// y no dependa sólo del borde si algún token futuro lleva guión.
+const SIZE_TOKEN_RES = Object.values(FORMATO_PATH_TOKEN)
+  .sort((a, b) => b.length - a.length)
+  .map((t) => [t, new RegExp(`[/-]${t}(?:[/.-]|$)`)]);
+
+/** Token de medida presente en el path de un render ("/linea-pro/1kg/…" → "1kg"). */
+export function sizeTokenFromUrl(url) {
+  if (!url) return null;
+  const u = String(url).toLowerCase();
+  const hit = SIZE_TOKEN_RES.find(([, re]) => re.test(u));
+  return hit ? hit[0] : null;
+}
+
+/** Variante de la familia cuya medida coincide con el token de path; null si no hay. */
+export function variantOfSize(variants, sizeToken) {
+  if (!sizeToken) return null;
+  return (variants || []).find((v) => FORMATO_PATH_TOKEN[v.formato] === sizeToken) || null;
 }
 
 // Productos Race fantasma del esquema viejo que quedaron en la DB de

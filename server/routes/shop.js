@@ -714,9 +714,8 @@ async function migrate() {
   // bocas con el arte de color (bandera + auto F1). Pasa a ser la imagen
   // PRIMARIA de esos SKUs; la botella con la palanca (PART + medida) queda
   // como segunda foto de la galería. Bidones 5/10/20L no cambian.
-  // 500ml sólo tiene tarro verde y celeste → R3/R4 reusan el arte 250
-  // (mismo tarro, la medida no se ve en el render). R3 Part A y B comparten
-  // arte violeta (la distinción A/B vive en la botella con palanca).
+  // R3 Part A y B comparten arte violeta (la distinción A/B vive en la
+  // botella con palanca, 2ª foto de la galería).
   // Corre DESPUÉS del repoint F1 (pisa la primaria con el tarro). Idempotente.
   await safeQuery(`
     UPDATE product_images pi SET url = v.url, alt = v.alt
@@ -728,9 +727,9 @@ async function migrate() {
       ('race-4-micro-magnesio-250ml',   '/imagenes-web/productos/linea-race/250ml/race-4-rosa-tarro.webp',       'Race 4 Micro + Magnesio — tarro dosificador (rosa)'),
       ('race-1-npk-500ml',              '/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp','Race 1 NPK — tarro dosificador (verde)'),
       ('race-2-calcio-nitrogeno-500ml', '/imagenes-web/productos/linea-race/500ml/race-2-celeste-tarro-500ml.webp','Race 2 Calcio + Nitrógeno — tarro dosificador (celeste)'),
-      ('race-3-pk-1-500ml',             '/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp',    'Race 3 PK 1ª parte — tarro dosificador (violeta)'),
-      ('race-3-pk-2-500ml',             '/imagenes-web/productos/linea-race/250ml/race-3-violeta-tarro.webp',    'Race 3 PK 2ª parte — tarro dosificador (violeta)'),
-      ('race-4-micro-magnesio-500ml',   '/imagenes-web/productos/linea-race/250ml/race-4-rosa-tarro.webp',       'Race 4 Micro + Magnesio — tarro dosificador (rosa)'),
+      ('race-3-pk-1-500ml',             '/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp','Race 3 PK 1ª parte — tarro dosificador (violeta)'),
+      ('race-3-pk-2-500ml',             '/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp','Race 3 PK 2ª parte — tarro dosificador (violeta)'),
+      ('race-4-micro-magnesio-500ml',   '/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp', 'Race 4 Micro + Magnesio — tarro dosificador (rosa)'),
       ('race-1-npk-1l',                 '/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp',      'Race 1 NPK — tarro dosificador 1L (verde)'),
       ('race-2-calcio-nitrogeno-1l',    '/imagenes-web/productos/linea-race/1l/race-2-celeste-tarro-1l.webp',    'Race 2 Calcio + Nitrógeno — tarro dosificador 1L (celeste)'),
       ('race-3-pk-1-1l',                '/imagenes-web/productos/linea-race/1l/race-3-violeta-tarro-1l.webp',    'Race 3 PK 1ª parte — tarro dosificador 1L (violeta)'),
@@ -828,6 +827,36 @@ async function migrate() {
       SELECT 1 FROM product_images WHERE product_id = p.id AND url = v.url
     )
   `, "elite/pro kit gallery: completar línea");
+  // La primaria del kit Pro en DBs viejas quedó en el render suelto de Flora
+  // 1kg (el seed nuevo usa la foto familia pro-unificado.png, pero su WHERE
+  // NOT EXISTS por producto nunca re-aplica). Guard por el estado viejo
+  // exacto → no pisa una primaria que el admin haya elegido después.
+  // Corre DESPUÉS de la consolidación /imagenes-web/ (compara URLs nuevas).
+  await safeQuery(`
+    INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+    SELECT p.id, '/imagenes-web/productos/linea-pro/1kg/pro-unificado.png',
+           'Línea Pro completa — 4 etapas', 0, FALSE
+    FROM products p
+    WHERE p.slug = 'linea-pro'
+      AND EXISTS (SELECT 1 FROM product_images
+                   WHERE product_id = p.id AND is_primary = TRUE
+                     AND url = '/imagenes-web/productos/linea-pro/1kg/flora-1kg-1.png')
+      AND NOT EXISTS (SELECT 1 FROM product_images
+                   WHERE product_id = p.id
+                     AND url = '/imagenes-web/productos/linea-pro/1kg/pro-unificado.png')
+  `, "pro kit: foto familia en galería");
+  await safeQuery(`
+    UPDATE product_images pi
+       SET is_primary = (pi.url = '/imagenes-web/productos/linea-pro/1kg/pro-unificado.png')
+      FROM products p
+     WHERE p.slug = 'linea-pro' AND pi.product_id = p.id
+       AND EXISTS (SELECT 1 FROM product_images
+                    WHERE product_id = p.id AND is_primary = TRUE
+                      AND url = '/imagenes-web/productos/linea-pro/1kg/flora-1kg-1.png')
+       AND EXISTS (SELECT 1 FROM product_images
+                    WHERE product_id = p.id
+                      AND url = '/imagenes-web/productos/linea-pro/1kg/pro-unificado.png')
+  `, "pro kit: foto familia como primaria");
 
   // ═══ Catálogo real (2026-06-06): medidas, precios y modelo Elite ══════════
   // Auditoría contra la tienda WooCommerce viva del cliente (hgrowshop.com).

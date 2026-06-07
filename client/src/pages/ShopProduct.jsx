@@ -11,7 +11,10 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
-import { fixImageUrl, isStaleProduct, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
+import {
+  fixImageUrl, isStaleProduct, PRODUCT_FALLBACK_IMG,
+  sizeTokenFromUrl, variantOfSize,
+} from "../lib/shopImages.js";
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
 import "../styles/shop-product.css";
 
@@ -45,18 +48,24 @@ function normalizeProduct(p) {
       }
     : p.bundle;
 
-  // Galería de kit COMPLETA: la interna de una línea tiene que mostrar todos
-  // los envases que la componen. Si el backend (sin redeploy) manda menos
-  // imágenes que familias+1, sumamos la foto de cada familia del bundle.
+  // Galería de kit COMPLETA y de UNA MISMA MEDIDA: la interna de una línea
+  // muestra todos los envases que la componen. Si el backend (sin redeploy)
+  // manda menos imágenes que familias+1, sumamos la foto de cada familia que
+  // falte EN LA MEDIDA que ya usa la galería (los potes de 1kg se complementan
+  // con potes de 1kg, no con los de 25g — pedido del cliente 2026-06-07).
   // Cuando el server nuevo deploye ya manda la galería completa → no-op.
   let galleryImages = images;
   const fams = bundle?.includes || [];
   if (p.meta?.bundle && fams.length > 0 && images.length < fams.length + 1) {
+    const kitSize = images.map((im) => sizeTokenFromUrl(im.url)).find(Boolean) || null;
     const seen = new Set(images.map((im) => im.url));
     const extras = [];
     for (const fam of fams) {
-      const v = fam.variants.find((x) => x.primary_image);
-      if (!v || seen.has(v.primary_image)) continue;
+      // Sin variante de esa medida (familias con formatos dispares) caemos a
+      // la primera con foto; si la URL ya está en la galería, la familia ya
+      // está representada (ej. tarro violeta compartido por R3 A y B) → skip.
+      const v = variantOfSize(fam.variants, kitSize) || fam.variants.find((x) => x.primary_image);
+      if (!v?.primary_image || seen.has(v.primary_image)) continue;
       seen.add(v.primary_image);
       extras.push({
         id: `fam-${fam.group}`, url: v.primary_image, alt: fam.name,
@@ -257,6 +266,11 @@ export default function ShopProduct() {
   const images = product.images?.length
     ? product.images
     : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
+  // Medida que muestra la galería del kit (para que la foto de cada familia
+  // del bundle acompañe la misma medida: potes de 1kg con potes de 1kg).
+  const kitSize = product.meta?.bundle
+    ? images.map((im) => sizeTokenFromUrl(im.url)).find(Boolean) || null
+    : null;
   const inStock = product.stock == null || product.stock > 0;
   const _lk = lineKeyFor(product);
   const details = _lk ? lineDetails[_lk] : null;
@@ -431,17 +445,36 @@ export default function ShopProduct() {
               )}
               <div className="sp-bundle-grid">
                 {product.bundle.includes.map((f) => {
-                  const v0 = f.variants?.[0];
+                  // Foto de la familia en la medida de la galería del kit
+                  // (los potes de 1kg ilustrados con el render de 1kg).
+                  const v0 = variantOfSize(f.variants, kitSize) || f.variants?.[0];
                   return (
-                    <Link key={f.group} to={v0 ? `/shop/${v0.slug}` : "/shop"} className="sp-bundle-item">
-                      {v0?.primary_image && <img src={v0.primary_image} alt={f.name} loading="lazy" />}
-                      <div>
+                    <div key={f.group} className="sp-bundle-item">
+                      <Link
+                        to={v0 ? `/shop/${v0.slug}` : "/shop"}
+                        className="sp-bundle-item-head"
+                        aria-label={`Ver ${f.name}`}
+                      >
+                        {v0?.primary_image && <img src={v0.primary_image} alt={f.name} loading="lazy" />}
                         <div className="sp-bundle-item-name">{f.name}</div>
-                        <div className="sp-bundle-item-meta">
-                          {f.variants.length > 1 ? `${f.variants.length} medidas` : v0?.label}
+                      </Link>
+                      {/* Cualquier variedad en cualquier medida, elegible desde
+                          el kit (pedido del cliente 2026-06-07). */}
+                      {f.variants?.length > 0 && (
+                        <div className="sp-bundle-sizes" aria-label={`Medidas de ${f.name}`}>
+                          {f.variants.map((v) => (
+                            <Link
+                              key={v.slug}
+                              to={`/shop/${v.slug}`}
+                              className="sp-bundle-size"
+                              title={`${f.name} ${v.label}${v.price_formatted ? ` — ${v.price_formatted}` : ""}`}
+                            >
+                              {v.label}
+                            </Link>
+                          ))}
                         </div>
-                      </div>
-                    </Link>
+                      )}
+                    </div>
                   );
                 })}
               </div>

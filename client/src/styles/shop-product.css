@@ -359,18 +359,39 @@
   display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px;
 }
 .sp-bundle-item {
-  display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 11px; padding: 14px 16px;
   border-radius: 16px; border: 1px solid var(--c-border-2); background: var(--c-surface);
-  text-decoration: none; color: inherit;
+  color: inherit;
   transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
 }
 .sp-bundle-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--c-accent); }
+.sp-bundle-item-head {
+  display: flex; align-items: center; gap: 14px;
+  text-decoration: none; color: inherit;
+}
 .sp-bundle-item img {
   width: 54px; height: 54px; object-fit: contain; flex-shrink: 0;
   background: var(--c-surface-2); border-radius: 10px; padding: 5px;
 }
 .sp-bundle-item-name { font-size: 13.5px; font-weight: 800; line-height: 1.25; letter-spacing: -0.01em; }
-.sp-bundle-item-meta { font-size: 12px; color: var(--c-text-3); margin-top: 3px; }
+/* Chips de medida: cualquier variedad del kit elegible en cualquier formato */
+.sp-bundle-sizes { display: flex; flex-wrap: wrap; gap: 6px; }
+.sp-bundle-size {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.03em;
+  padding: 4px 11px; border-radius: 999px; text-decoration: none;
+  border: 1px solid var(--c-border-2); background: var(--c-surface);
+  color: var(--c-text-2);
+  transition: border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+}
+.sp-bundle-size:hover {
+  border-color: var(--c-accent); color: var(--c-accent-2); background: var(--c-accent-soft);
+}
+.sp-bundle-size:focus-visible,
+.sp-bundle-item-head:focus-visible {
+  outline: 2px solid var(--c-accent); outline-offset: 2px;
+}
 .sp-separate { margin-top: 22px; font-size: 14px; color: var(--c-text-2); }
 .sp-separate a { font-weight: 800; color: var(--c-accent-2); text-decoration: none; }
 .sp-separate a:hover { text-decoration: underline; }
