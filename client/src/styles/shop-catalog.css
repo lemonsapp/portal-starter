@@ -123,16 +123,19 @@
   border-color: rgba(var(--c-accent-rgb), 0.4);
   box-shadow: var(--shadow-lg);
 }
+/* Panel OSCURO editorial (2026-06-07): los renders de producto son botellas
+   blancas — sobre fondo claro se fundían y "desaparecían" (queja del cliente,
+   ver ultimos-cambios/store-ejemplo.png). El plinto oscuro las hace leer. */
 .cat-card-imgwrap {
   width: 100%; aspect-ratio: 1 / 1; padding: 11%;
   display: grid; place-items: center; overflow: hidden;
   background:
-    radial-gradient(70% 70% at 50% 35%, rgba(var(--c-accent-rgb), 0.08), transparent 70%),
-    linear-gradient(160deg, #ffffff, var(--c-surface-2));
+    radial-gradient(70% 70% at 50% 32%, rgba(var(--c-accent-rgb), 0.14), transparent 70%),
+    linear-gradient(160deg, #1a1d23, #0e1014);
 }
 .cat-card-imgwrap img {
   width: 100%; height: 100%; object-fit: contain; display: block;
-  filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55));
   transition: transform var(--dur-slow) var(--ease-out);
 }
 .cat-card:hover .cat-card-imgwrap img { transform: scale(1.07); }

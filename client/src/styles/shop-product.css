@@ -72,9 +72,10 @@
   overflow: hidden;
   display: grid; place-items: center;
   padding: 9%;
+  /* Panel oscuro: las botellas blancas no leían sobre fondo claro (2026-06-07) */
   background:
-    radial-gradient(80% 80% at 50% 30%, rgba(var(--c-accent-rgb), 0.10), transparent 70%),
-    linear-gradient(160deg, #ffffff 0%, var(--c-surface-2) 100%);
+    radial-gradient(80% 80% at 50% 30%, rgba(var(--c-accent-rgb), 0.16), transparent 70%),
+    linear-gradient(160deg, #1a1d23 0%, #0e1014 100%);
   box-shadow: var(--shadow-lg);
 }
 /* línea de acento superior — detalle editorial */
@@ -85,7 +86,7 @@
 }
 .sp-stage img {
   width: 100%; height: 100%; object-fit: contain; display: block;
-  filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.16));
+  filter: drop-shadow(0 24px 44px rgba(0, 0, 0, 0.6));
   transition: transform var(--dur-slow, 400ms) var(--ease-out);
 }
 .sp-stage:hover img { transform: scale(1.035); }
@@ -389,7 +390,7 @@
 .sp-cross-imgwrap {
   width: 100%; aspect-ratio: 1 / 1; padding: 13%;
   display: grid; place-items: center;
-  background: linear-gradient(160deg, #fff, var(--c-surface-2));
+  background: linear-gradient(160deg, #1a1d23, #0e1014); /* plinto oscuro: botellas blancas */
 }
 .sp-cross-imgwrap img { width: 100%; height: 100%; object-fit: contain; }
 .sp-cross-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
@@ -465,7 +466,7 @@
 .sp-related-imgwrap {
   width: 100%; aspect-ratio: 1 / 1; padding: 15%;
   display: grid; place-items: center;
-  background: linear-gradient(160deg, #fff, var(--c-surface-2));
+  background: linear-gradient(160deg, #1a1d23, #0e1014); /* plinto oscuro: botellas blancas */
 }
 .sp-related-imgwrap img { width: 100%; height: 100%; object-fit: contain; }
 .sp-related-body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 6px; }

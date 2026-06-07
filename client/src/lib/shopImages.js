@@ -33,6 +33,24 @@ const IMG_FIXES = {
   "/img/productos/linea-elite/elite-unificado.png": "/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png",
   "/img/productos/linea-elite/500gr/parte-1-lateral.png": "/img/productos/linea-elite/elite-part-1.png",
   "/img/productos/elite-max/a-5-lts-perspectiva-2.png": "/img/productos/elite-max/b-5-lts-perspectiva-1.png",
+
+  // Renders F1 (2026-06-07): mientras el server no redeploye su migración
+  // (repoint en routes/shop.js), la DB sigue devolviendo los paths viejos de
+  // Race. Acá los mapeamos a los renders F1 nuevos de costado. Race 1 y 4 en
+  // 500ml no tienen F1 → conservan su render viejo. Cuando el server
+  // redeploye, devuelve los paths -f1.webp directo y estas keys no matchean.
+  "/img/productos/linea-race/250ml/race-1-verde.png":         "/imagenes-web/productos/linea-race/250ml/race-1-verde-f1.webp",
+  "/img/productos/linea-race/250ml/race-2-celeste.png":       "/imagenes-web/productos/linea-race/250ml/race-2-celeste-f1.webp",
+  "/img/productos/linea-race/250ml/race-3-violeta-a.png":     "/imagenes-web/productos/linea-race/250ml/race-3-violeta-a-f1.webp",
+  "/img/productos/linea-race/250ml/race-3-violeta-b.png":     "/imagenes-web/productos/linea-race/250ml/race-3-violeta-b-f1.webp",
+  "/img/productos/linea-race/250ml/race-4-rosa.png":          "/imagenes-web/productos/linea-race/250ml/race-4-rosa-f1.webp",
+  "/img/productos/linea-race/500ml/race-2-celeste-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-2-celeste-500ml-f1.webp",
+  "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-3-violeta-a-500ml-f1.webp",
+  "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-3-violeta-b-500ml-f1.webp",
+  // El kit linea-race en prod tiene como primaria la botella R1 500ml suelta
+  // → mostramos la foto familia (los 5 potes). Efecto colateral menor: el SKU
+  // race-1-npk-500ml comparte URL y muestra la familia hasta el redeploy.
+  "/img/productos/linea-race/500ml/race-1-verde-500ml.png":   "/imagenes-web/productos/linea-race/500ml/race-unificado.png",
 };
 
 // SVG on-brand para productos sin imagen (ej. packs de puntos en backend viejo).
