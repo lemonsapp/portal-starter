@@ -528,15 +528,10 @@ export const productDetails = {
             { title: "Combinable con Bio",    body: "Aplicar Bio Estimulante en el agua del propagador potencia la respuesta.",          emoji: "♥" },
             { title: "Trazable",              body: "Lote y fecha en cada tubo. Sabés exactamente con qué estás trabajando.",            emoji: "○" },
         ],
-        // Sin foto del tubo Cloner aún → mostramos los assets de la
-        // esquejera (proceso real del clonado: corte, gel, sustrato).
-        // Un solo "format" rompía visualmente este bloque, así que
-        // exponemos 3 vistas del mismo flujo de uso.
-        formats: [
-            { name: "USO",        size: "Paso a paso",      image: "/imagenes-web/productos/esquejera/uso-barrita-pasos-sin-fondo.png" },
-            { name: "ESQUEJERA",  size: "Vista superior",   image: "/imagenes-web/productos/esquejera/superior-sin-fondo.png" },
-            { name: "BARRITAS",   size: "En sustrato",      image: "/imagenes-web/productos/esquejera/4-perspectiva-barritas-colocadas-editado.png" },
-        ],
+        // Sección "Elegí el formato" removida por pedido del cliente
+        // (2026-06-07): mostraba la esquejera como workaround y confundía
+        // (Cloner viene en un solo formato). Vacío → el bloque no se monta.
+        formats: [],
         system: {
             title: "Donde nace la próxima cosecha.",
             body: "Cloner es el punto de entrada del ciclo. Aplicalo junto a Bio Estimulante en el agua del propagador y entrá a vegetativo con plantas vigorosas listas para Elite o Pro.",
