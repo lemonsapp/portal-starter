@@ -22,10 +22,55 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\
 function normalizeProduct(p) {
   if (!p) return p;
   const fixedPrimary = fixImageUrl(p.primary_image);
+  const images = (p.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) }));
+
+  // Bundle: fix de imágenes + filtrado de familias fantasma (en prod sin
+  // redeploy, "incluye la línea completa" llega con los SKUs Race viejos —
+  // Race 1 Vegetativo, Race 2 Floración A/B, Race 3 PK rosa. Al filtrar sus
+  // variantes la familia queda vacía y se descarta entera).
+  const bundle = p.bundle
+    ? {
+        ...p.bundle,
+        includes: (p.bundle.includes || [])
+          .map((f) => ({
+            ...f,
+            variants: (f.variants || [])
+              .filter((v) => !isStaleProduct(v.slug))
+              .map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
+          }))
+          .filter((f) => f.variants.length > 0)
+          // Orden estable (Race 1 → Race 4): el backend viejo manda las
+          // familias en orden de query. El server nuevo ya las ordena igual.
+          .sort((a, b) => (a.name || "").localeCompare(b.name || "", "es")),
+      }
+    : p.bundle;
+
+  // Galería de kit COMPLETA: la interna de una línea tiene que mostrar todos
+  // los envases que la componen. Si el backend (sin redeploy) manda menos
+  // imágenes que familias+1, sumamos la foto de cada familia del bundle.
+  // Cuando el server nuevo deploye ya manda la galería completa → no-op.
+  let galleryImages = images;
+  const fams = bundle?.includes || [];
+  if (p.meta?.bundle && fams.length > 0 && images.length < fams.length + 1) {
+    const seen = new Set(images.map((im) => im.url));
+    const extras = [];
+    for (const fam of fams) {
+      const v = fam.variants.find((x) => x.primary_image);
+      if (!v || seen.has(v.primary_image)) continue;
+      seen.add(v.primary_image);
+      extras.push({
+        id: `fam-${fam.group}`, url: v.primary_image, alt: fam.name,
+        sort_order: 90 + extras.length, is_primary: false,
+      });
+    }
+    galleryImages = [...images, ...extras];
+  }
+
   return {
     ...p,
     primary_image: fixedPrimary || (p.meta?.points_pack ? PRODUCT_FALLBACK_IMG : p.primary_image),
-    images: (p.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) })),
+    images: galleryImages,
+    bundle,
     variants: (p.variants || [])
       .filter((v) => !isStaleProduct(v.slug))
       .map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
