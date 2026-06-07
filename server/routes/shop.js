@@ -145,15 +145,14 @@ async function migrate() {
     INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
     SELECT p.id, v.url, v.alt, v.sort, v.is_primary
     FROM (VALUES
-      -- Kit Race: foto familia + los 4 tarros dosificadores de costado
-      -- (Race 3 A y B comparten tarro violeta) + las 2 botellas PART A/B.
+      -- Kit Race: foto familia + los potes 500ml de costado ("costado 2",
+      -- etiqueta con banderas + auto F1). Race 3 1ª y 2ª comparten el tarro
+      -- violeta. Sin botellas PART (pedido del cliente 2026-06-07).
       ('linea-race',     '/imagenes-web/productos/linea-race/500ml/race-unificado.png',                    'Línea Race completa — todos los potes',   0, TRUE),
-      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp',               'Race 1 — NPK (tarro verde)',            1, FALSE),
-      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-2-celeste-tarro-1l.webp',             'Race 2 — Calcio + Nitrógeno (tarro celeste)', 2, FALSE),
-      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-3-violeta-tarro-1l.webp',             'Race 3 — PK en 2 partes (tarro violeta)', 3, FALSE),
-      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-4-rosa-tarro-1l.webp',                'Race 4 — Micro + Magnesio (tarro rosa)', 4, FALSE),
-      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp',              'Race 3 — PK 1ª parte (botella)',  5, FALSE),
-      ('linea-race',     '/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp',              'Race 3 — PK 2ª parte (botella)',  6, FALSE),
+      ('linea-race',     '/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp',         'Race 1 — NPK (tarro verde)',            1, FALSE),
+      ('linea-race',     '/imagenes-web/productos/linea-race/500ml/race-2-celeste-tarro-500ml.webp',       'Race 2 — Calcio + Nitrógeno (tarro celeste)', 2, FALSE),
+      ('linea-race',     '/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp',       'Race 3 — PK en 2 partes (tarro violeta)', 3, FALSE),
+      ('linea-race',     '/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp',          'Race 4 — Micro + Magnesio (tarro rosa)', 4, FALSE),
       -- Kit Elite: foto familia + las 2 partes.
       ('linea-elite',    '/imagenes-web/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png',                     'Línea Elite completa — Part 1 + Part 2',  0, TRUE),
       ('linea-elite',    '/imagenes-web/productos/linea-elite/elite-part-1.png',                           'Elite Parte 1',                   1, FALSE),
@@ -773,34 +772,34 @@ async function migrate() {
        AND short_description = 'Sistema de 4 fertilizantes para el ciclo completo indoor y outdoor.'
   `, "race kit: 5 fertilizantes");
 
-  // ─── Galerías de los kits de línea (2026-06-06) ────────────────────────────
+  // ─── Galerías de los kits de línea (2026-06-06, ajustada 2026-06-07) ──────
   // El pedido del cliente: la interna de cada "línea completa" tiene que
   // mostrar TODOS los envases que la componen, no 1 o 2 sueltos.
-  // · linea-race: familia + 5 botellas F1 (incluye Race 3 A y B) → reset
-  //   completo (la galería vieja tenía renders del esquema viejo).
+  // · linea-race: familia + los potes 500ml de costado (foto "costado 2",
+  //   etiqueta banderas + auto F1; R3 1ª y 2ª comparten tarro violeta; SIN
+  //   botellas PART) → reset completo. El set 1L intermedio nunca llegó a
+  //   correr en prod, así que el marker nuevo lo cubre igual.
   // · linea-elite / linea-pro: inserts aditivos de lo que falte (no borra
   //   imágenes que el admin haya subido).
-  // Idempotencia: el reset de Race sólo corre si falta el marker F1; los
-  // inserts aditivos chequean NOT EXISTS por URL.
+  // Idempotencia: el reset de Race sólo corre si falta el marker (tarro
+  // verde 500ml); los inserts aditivos chequean NOT EXISTS por URL.
   try {
     const { rows: raceKit } = await db.query(`
       SELECT p.id,
              EXISTS (SELECT 1 FROM product_images
                       WHERE product_id = p.id
-                        AND url = '/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp') AS has_f1
+                        AND url = '/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp') AS has_marker
       FROM products p WHERE p.slug = 'linea-race'
     `);
-    if (raceKit[0] && !raceKit[0].has_f1) {
+    if (raceKit[0] && !raceKit[0].has_marker) {
       const pid = raceKit[0].id;
       await db.query(`DELETE FROM product_images WHERE product_id = $1`, [pid]);
       const gallery = [
-        ['/imagenes-web/productos/linea-race/500ml/race-unificado.png',        'Línea Race completa — todos los potes',        0, true],
-        ['/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp',   'Race 1 — NPK (tarro verde)',                   1, false],
-        ['/imagenes-web/productos/linea-race/1l/race-2-celeste-tarro-1l.webp', 'Race 2 — Calcio + Nitrógeno (tarro celeste)',  2, false],
-        ['/imagenes-web/productos/linea-race/1l/race-3-violeta-tarro-1l.webp', 'Race 3 — PK en 2 partes (tarro violeta)',      3, false],
-        ['/imagenes-web/productos/linea-race/1l/race-4-rosa-tarro-1l.webp',    'Race 4 — Micro + Magnesio (tarro rosa)',       4, false],
-        ['/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp',  'Race 3 — PK 1ª parte (botella)',               5, false],
-        ['/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp',  'Race 3 — PK 2ª parte (botella)',               6, false],
+        ['/imagenes-web/productos/linea-race/500ml/race-unificado.png',              'Línea Race completa — todos los potes',        0, true],
+        ['/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp',   'Race 1 — NPK (tarro verde)',                   1, false],
+        ['/imagenes-web/productos/linea-race/500ml/race-2-celeste-tarro-500ml.webp', 'Race 2 — Calcio + Nitrógeno (tarro celeste)',  2, false],
+        ['/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp', 'Race 3 — PK en 2 partes (tarro violeta)',      3, false],
+        ['/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp',    'Race 4 — Micro + Magnesio (tarro rosa)',       4, false],
       ];
       for (const [url, alt, sort, primary] of gallery) {
         await db.query(

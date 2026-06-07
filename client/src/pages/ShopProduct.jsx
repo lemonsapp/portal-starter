@@ -12,7 +12,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
 import {
-  fixImageUrl, isStaleProduct, PRODUCT_FALLBACK_IMG,
+  fixImageUrl, isStaleProduct, KIT_FAMILY_SHOTS, PRODUCT_FALLBACK_IMG,
   sizeTokenFromUrl, variantOfSize,
 } from "../lib/shopImages.js";
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
@@ -24,8 +24,19 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\
 // y el fallback de packs de puntos sin imagen. Espeja la reconciliación del server.
 function normalizeProduct(p) {
   if (!p) return p;
-  const fixedPrimary = fixImageUrl(p.primary_image);
-  const images = (p.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) }));
+  let fixedPrimary = fixImageUrl(p.primary_image);
+  let images = (p.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) }));
+
+  // Interna de un kit de línea: la primaria es SIEMPRE la foto familia
+  // ("unificado", todos los potes juntos). Reemplaza la entrada primaria de
+  // la galería en vez de mapear por URL global (que pisaba SKUs sueltos).
+  const familyShot = p.meta?.bundle ? KIT_FAMILY_SHOTS[p.meta.bundle_line] : null;
+  if (familyShot && fixedPrimary !== familyShot) {
+    fixedPrimary = familyShot;
+    images = images.some((im) => im.is_primary)
+      ? images.map((im) => (im.is_primary ? { ...im, url: familyShot, alt: p.name } : im))
+      : [{ id: "family-shot", url: familyShot, alt: p.name, sort_order: -1, is_primary: true }, ...images];
+  }
 
   // Bundle: fix de imágenes + filtrado de familias fantasma (en prod sin
   // redeploy, "incluye la línea completa" llega con los SKUs Race viejos —

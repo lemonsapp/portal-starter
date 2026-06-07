@@ -24,7 +24,9 @@ const IMG_FIXES = {
   // 500ml
   "/img/productos/linea-race/500ml/race-2-part-a-500ml.png": "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png",
   "/img/productos/linea-race/500ml/race-2-part-b-500ml.png": "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png",
-  "/img/productos/linea-race/500ml/race-3-rosa-500ml.png": "/img/productos/linea-race/500ml/race-4-rosa-500ml.png",
+  // Path del esquema viejo (es la 2ª foto del kit Race en prod) → tarro rosa,
+  // así la galería del kit queda familia + potes de costado (sin botellas).
+  "/img/productos/linea-race/500ml/race-3-rosa-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp",
   // Ídem 250ml: path vivo del SKU R4 500ml en prod → tarro directo.
   "/img/productos/linea-race/500ml/race-4-celeste-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp",
   // Cloner: render viejo (cloner2) → render holográfico del home
@@ -52,10 +54,19 @@ const IMG_FIXES = {
   "/img/productos/linea-race/500ml/race-3-violeta-a-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp",
   "/img/productos/linea-race/500ml/race-3-violeta-b-500ml.png": "/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp",
   "/img/productos/linea-race/500ml/race-4-rosa-500ml.png":    "/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp",
-  // El kit linea-race en prod tiene como primaria la botella R1 500ml suelta
-  // → mostramos la foto familia (los 5 potes). Efecto colateral menor: el SKU
-  // race-1-npk-500ml comparte URL y muestra la familia hasta el redeploy.
-  "/img/productos/linea-race/500ml/race-1-verde-500ml.png":   "/imagenes-web/productos/linea-race/500ml/race-unificado.png",
+  // R1 500ml al tarro verde como sus hermanos (antes iba a la foto familia
+  // para cubrir la primaria del kit; eso ahora lo hace KIT_FAMILY_SHOTS por
+  // bundle, sin colateral sobre el SKU race-1-npk-500ml).
+  "/img/productos/linea-race/500ml/race-1-verde-500ml.png":   "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp",
+};
+
+// Foto familia ("unificado") de cada línea: primaria de la interna del kit.
+// normalizeProduct la fuerza sobre la entrada primaria del bundle — así no
+// dependemos de mapear por URL global (que pisaba SKUs individuales).
+export const KIT_FAMILY_SHOTS = {
+  race:  "/imagenes-web/productos/linea-race/500ml/race-unificado.png",
+  pro:   "/imagenes-web/productos/linea-pro/1kg/pro-unificado.png",
+  elite: "/imagenes-web/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png",
 };
 
 // SVG on-brand para productos sin imagen (ej. packs de puntos en backend viejo).
