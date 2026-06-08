@@ -190,9 +190,13 @@ export default function TopNav() {
 
     const isAnon = !getToken();
     const role = me?.role || "client";
-    // Si es anónimo, nav reducida (Tienda + Inicio) sin admin / puntos / chat
+    // Si es anónimo, nav reducida (Inicio + Tienda) sin admin / puntos / chat.
+    // Inicio anónimo va al HOME DE LA WEB (landing en la raíz del dominio "/"),
+    // no a /inicio (que es el home del portal y requiere login). external:true
+    // → se renderiza como <a> para hacer navegación real fuera del SPA.
     const nav = useMemo(() => {
         if (isAnon) return [
+            { path: "/", label: "Inicio", icon: "home", external: true },
             { path: "/shop", label: "Tienda", icon: "shop" },
         ];
         return NAV_BY_ROLE[role] || NAV_BY_ROLE.client;
@@ -216,27 +220,29 @@ export default function TopNav() {
         <>
             <header style={S.shell}>
                 <div style={S.inner}>
-                    {/* Brand — logo del landing (negro sobre barra blanca, tal cual la web) */}
-                    <Link to="/inicio" style={S.brand} aria-label="Inicio">
-                        <img src="/imagenes-web/marca/logo.svg" alt="Holistic" style={S.logoImg} width="32" height="32" />
-                    </Link>
+                    {/* Brand — logo del landing (negro sobre barra blanca, tal cual la web).
+                        Anónimo → home de la web ("/"); logueado → home del portal. */}
+                    {isAnon ? (
+                        <a href="/" style={S.brand} aria-label="Inicio">
+                            <img src="/imagenes-web/marca/logo.svg" alt="Holistic" style={S.logoImg} width="32" height="32" />
+                        </a>
+                    ) : (
+                        <Link to="/inicio" style={S.brand} aria-label="Inicio">
+                            <img src="/imagenes-web/marca/logo.svg" alt="Holistic" style={S.logoImg} width="32" height="32" />
+                        </Link>
+                    )}
 
                     {/* Desktop nav — TODOS los links son pills mint iguales a la de
                         Tienda (idénticas a .header__link--shop de la web). La página
                         activa lleva un anillo blanco interior para distinguirla. */}
                     <nav className="topnav-nav" style={S.nav} aria-label="Navegación principal">
                         {nav.map((item) => {
-                            const active = location.pathname === item.path
-                                || (item.path !== "/inicio" && location.pathname.startsWith(item.path));
+                            const active = !item.external && (location.pathname === item.path
+                                || (item.path !== "/inicio" && location.pathname.startsWith(item.path)));
                             const showBadge = item.path === "/chat" && unreadChat > 0;
-                            return (
-                                <Link
-                                    key={item.path}
-                                    to={item.path}
-                                    style={S.pill}
-                                    className={active ? "topnav-pill topnav-pill--active" : "topnav-pill"}
-                                    aria-current={active ? "page" : undefined}
-                                >
+                            const cls = active ? "topnav-pill topnav-pill--active" : "topnav-pill";
+                            const inner = (
+                                <>
                                     <span style={S.pillIcon}><Icon name={item.icon} size={14} /></span>
                                     {item.label}
                                     {showBadge && (
@@ -244,6 +250,22 @@ export default function TopNav() {
                                             {unreadChat > 9 ? "9+" : unreadChat}
                                         </span>
                                     )}
+                                </>
+                            );
+                            // external → home de la web (fuera del SPA): <a> con full nav.
+                            return item.external ? (
+                                <a key={item.path} href={item.path} style={S.pill} className={cls}>
+                                    {inner}
+                                </a>
+                            ) : (
+                                <Link
+                                    key={item.path}
+                                    to={item.path}
+                                    style={S.pill}
+                                    className={cls}
+                                    aria-current={active ? "page" : undefined}
+                                >
+                                    {inner}
                                 </Link>
                             );
                         })}
@@ -407,12 +429,10 @@ export default function TopNav() {
                 </div>
                 <nav style={S.mobileNav}>
                     {nav.map((item) => {
-                        const active = location.pathname === item.path;
-                        return (
-                            <Link key={item.path} to={item.path} style={{
-                                ...S.mobileNavLink,
-                                ...(active ? S.mobileNavLinkActive : {}),
-                            }}>
+                        const active = !item.external && location.pathname === item.path;
+                        const style = { ...S.mobileNavLink, ...(active ? S.mobileNavLinkActive : {}) };
+                        const inner = (
+                            <>
                                 <Icon name={item.icon} size={20} />
                                 <span>{item.label}</span>
                                 {item.path === "/chat" && unreadChat > 0 && (
@@ -420,7 +440,12 @@ export default function TopNav() {
                                         {unreadChat > 9 ? "9+" : unreadChat}
                                     </span>
                                 )}
-                            </Link>
+                            </>
+                        );
+                        return item.external ? (
+                            <a key={item.path} href={item.path} style={style}>{inner}</a>
+                        ) : (
+                            <Link key={item.path} to={item.path} style={style}>{inner}</Link>
                         );
                     })}
                     <hr style={S.mobileDivider} />
