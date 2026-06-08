@@ -619,8 +619,8 @@ export const productDetails = {
             { title: "Validado en cultivo",     body: "Probado en variedades indoor/outdoor con resultado consistente.",                emoji: "✓" },
         ],
         formats: [
-            { name: "GRANDE", size: "Standard",   image: "/imagenes-web/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png" },
-            { name: "LATERAL", size: "Display",   image: "/imagenes-web/productos/day-0/lateral-grande-amarillo-sin-fondo.png" },
+            { name: "250ML", size: "250 ml", image: "/imagenes-web/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png" },
+            { name: "500ML", size: "500 ml", image: "/imagenes-web/productos/day-0/lateral-grande-amarillo-sin-fondo.png" },
         ],
         system: {
             title: "El cierre del catálogo.",
