@@ -21,11 +21,13 @@
 // no agregar una URL acá sin que el archivo exista en landing/public.
 
 // Subí este número cuando cambie el set de imágenes → re-author en el próximo deploy.
-const IMAGE_SET_VERSION = 1;
+// v2 (2026-06-08): packs de puntos pasan a usar la moneda Holistic dorada.
+const IMAGE_SET_VERSION = 2;
 
 const P = "/imagenes-web/productos";
 const FP = "/imagenes-web/fotos-productos";
 const UC = "/imagenes-web/ultimos-cambios";
+const COIN = "/imagenes-web/coins/moneda-holistic.webp";
 
 /** Una fila de imagen: [url, alt, sort_order, is_primary]. */
 const row = (url, alt, sort, primary) => [url, alt, sort, primary];
@@ -189,9 +191,9 @@ SET["day-0-250ml"] = [row(`${FP}/day0250ml-1.jpg`, "Day-0 250ml", 0, true)];
 // ─── Cloner ────────────────────────────────────────────────────────────────
 SET["cloner"] = [row(`${UC}/POTE-CLONER-HOME.png`, "Cloner — gel enraizante", 0, true)];
 
-// ─── Packs de puntos — SVG on-brand (no hay foto) ──────────────────────────
-for (const slug of ["pack-50-puntos", "pack-100-puntos", "pack-250-puntos"]) {
-  SET[slug] = [row(`${P}/puntos/pack-puntos.svg`, slug.replace(/-/g, " "), 0, true)];
+// ─── Packs de puntos — moneda Holistic dorada (la misma de coins/topnav) ───
+for (const n of [50, 100, 250]) {
+  SET[`pack-${n}-puntos`] = [row(COIN, `Pack ${n} puntos Holistic`, 0, true)];
 }
 
 /**
