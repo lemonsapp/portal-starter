@@ -196,8 +196,8 @@ export const productDetails = {
         ],
         system: {
             title: "Encaja con todo el catálogo.",
-            body: "Pro es la opción técnica del cultivador que mide. Mezclable con Bio Estimulante en arranque y con Day-0 al cierre.",
-            chips: ["+ Bio Estimulante", "+ Day-0"],
+            body: "Pro es la opción técnica del cultivador que mide. Mezclable con Bio Estimulante en arranque, con Race para acelerar floración y con Day-0 al cierre.",
+            chips: ["+ Bio Estimulante", "+ Day-0", "+ Race"],
         },
         // Pullquote removido por pedido del cliente — antes decía
         // "Si lo podés pesar, lo podés repetir...". ProductDeepDive
