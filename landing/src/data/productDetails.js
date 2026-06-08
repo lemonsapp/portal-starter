@@ -178,9 +178,9 @@ export const productDetails = {
             body: "Enraizante · Vegetativo · Preflora · Flora. Cada fórmula concentra el ratio NPK ideal para esa etapa — sin compromisos de mezcla universal.",
         },
         features: [
-            { title: "Estabilidad total",     body: "Sin agua = sin caducidad acelerada. Vida útil 36 meses sin pérdida de actividad.",          emoji: "♢" },
+            { title: "Estabilidad total",     body: "Sin agua = sin caducidad acelerada. Vida útil garantizada, sin pérdida de actividad.",          emoji: "♢" },
             { title: "Sin almacenamiento frío",body: "Conservalo donde quieras. No requiere heladera ni rangos estrictos.",                       emoji: "✦" },
-            { title: "EC programable",         body: "Ajustá la EC final al exacto valor que tu cultivo necesita por gramos disueltos.",          emoji: "⚖" },
+            { title: "pH ideal",               body: "Cada Pro trabaja en el rango óptimo del cultivo sin shock de pH.",                            emoji: "⚖" },
             { title: "Mezcla limpia",          body: "Disuelve completo en agua tibia sin residuos — sin filtros que limpiar.",                   emoji: "○" },
             { title: "Compatible NFT/DWC",     body: "El sólido disuelto se comporta como un líquido premium en cualquier sistema.",              emoji: "↯" },
             { title: "Trazabilidad por lote",  body: "Cada bolsa impresa con lote y composición exacta del análisis.",                            emoji: "✓" },
@@ -219,7 +219,7 @@ export const productDetails = {
     "linea-race": {
         hero: {
             kicker: "LÍNEA RACE",
-            headline: "Sistema completo de fertilizantes\npara cultivo indoor y outdoor.",
+            headline: "Sistema adaptable de fertilizantes\npara cultivo indoor y outdoor.",
             claim: "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cinco fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
             ctaPrimary:   { label: "COMPRAR RACE",        href: "/shop?categoria=race" },
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
@@ -439,7 +439,7 @@ export const productDetails = {
             { title: "Defensas naturales",     body: "Activa la respuesta inmune endógena de la planta sin químicos.",            emoji: "♥" },
             { title: "Resistencia a estrés",   body: "Plantas más tolerantes a transplante, calor, sequía y poda.",                emoji: "◆" },
             { title: "Mejora absorción",       body: "Sinergia con cualquier nutriente — no es un reemplazo, es un potenciador.",  emoji: "⚡" },
-            { title: "Aplicación foliar",      body: "Spray foliar para hojas, raíces y corteza con un solo producto.",            emoji: "○" },
+            { title: "Apto fertiriego",        body: "Esquejes, transplantes y crecimiento con un solo producto.",                emoji: "○" },
             { title: "Producción local",       body: "Fabricado en Argentina con tecnología de biorreactor industrial.",           emoji: "✓" },
         ],
         formats: [
@@ -457,7 +457,7 @@ export const productDetails = {
         // entera (texto + imagen decorativa) cuando es falsy.
         pullquote: "",
         techSpecs: [
-            { label: "Composición",     value: "Microorganismos benéficos + metabolitos secundarios" },
+            { label: "Composición",     value: "Ácidos húmicos, ácidos fúlvicos, ácidos carboxílicos, grupos fenoles y potasio soluble" },
             { label: "Forma",            value: "Líquido orgánico" },
             { label: "CFU",              value: "≥10^9 UFC/ml (cepas seleccionadas)" },
             { label: "Aplicación",       value: "Riego, esquejes y transplante" },
@@ -526,7 +526,7 @@ export const productDetails = {
             { title: "Adherencia premium",    body: "Permanece en el corte hasta que el esqueje desarrolla raíces propias.",             emoji: "◆" },
             { title: "Espectro amplio",       body: "Funciona en esquejes herbáceos, leñosos y semi-leñosos.",                          emoji: "↯" },
             { title: "Combinable con Bio",    body: "Aplicar Bio Estimulante en el agua del propagador potencia la respuesta.",          emoji: "♥" },
-            { title: "Trazable",              body: "Lote y fecha en cada tubo. Sabés exactamente con qué estás trabajando.",            emoji: "○" },
+            { title: "Trazable",              body: "Sabés exactamente con qué estás trabajando.",                                       emoji: "○" },
         ],
         // Sección "Elegí el formato" removida por pedido del cliente
         // (2026-06-07): mostraba la esquejera como workaround y confundía
