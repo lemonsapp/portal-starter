@@ -19,6 +19,7 @@ import { useUser } from "../context/UserContext.jsx";
 import FriendsPanel from "../components/FriendsPanel.jsx";
 import Stories from "../components/Stories.jsx";
 import BuyCTA from "../components/BuyCTA.jsx";
+import RotatingAuthBg from "../components/RotatingAuthBg.jsx";
 import { useFeatureFlag } from "../lib/branding.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -134,7 +135,11 @@ export default function HomeClient() {
         .hc-root {
           flex: 1;
           min-height: 100vh;
+          /* Fondo rotativo del login (RotatingAuthBg, montado abajo): base
+             transparente para que la foto + velo se vean detrás del contenido.
+             #06070A queda de fallback por si las imágenes no cargan. */
           background: var(--c-bg, #06070A);
+          background-color: transparent;
           color: var(--c-text, #F5F2EB);
           font-family: var(--f-body, 'Gotham', sans-serif);
           position: relative;
@@ -406,6 +411,10 @@ export default function HomeClient() {
           padding: 8px 0;
         }
       `}</style>
+
+      {/* Fondo rotativo compartido con el login (2 fotos + velo oscuro).
+          Va detrás de todo: .hc-page y .hc-ticker ya están en z-index:1. */}
+      <RotatingAuthBg />
 
       {/* TICKER */}
       {tickerAnn.length > 0 && (
