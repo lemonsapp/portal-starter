@@ -12,7 +12,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
 import {
-  fixImageUrl, isStaleProduct, isWhiteBgImage, KIT_FAMILY_SHOTS, PRODUCT_FALLBACK_IMG,
+  fixImageUrl, isStaleProduct, KIT_FAMILY_SHOTS, PRODUCT_FALLBACK_IMG,
   sizeTokenFromUrl, variantOfSize,
 } from "../lib/shopImages.js";
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
@@ -321,7 +321,7 @@ export default function ShopProduct() {
         <div className="sp-hero">
           {/* GALERÍA */}
           <div className="sp-gallery sp-reveal" data-d="1">
-            <div className={`sp-stage${isWhiteBgImage(images[activeImg]?.url) ? " is-photo" : ""}`}>
+            <div className="sp-stage">
               {images[activeImg]?.url ? (
                 <img src={images[activeImg].url} alt={images[activeImg].alt || product.name} />
               ) : (
@@ -335,7 +335,7 @@ export default function ShopProduct() {
                   <button
                     key={i}
                     onClick={() => setActiveImg(i)}
-                    className={`sp-thumb${i === activeImg ? " is-active" : ""}${isWhiteBgImage(img.url) ? " is-photo" : ""}`}
+                    className={`sp-thumb${i === activeImg ? " is-active" : ""}`}
                     aria-label={`Ver imagen ${i + 1}`}
                   >
                     <img src={img.url} alt={img.alt || ""} />

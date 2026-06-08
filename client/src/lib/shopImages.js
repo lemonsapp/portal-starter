@@ -82,16 +82,6 @@ const PREFIX_MOVES = [
   ["/ultimos-cambios/",   "/imagenes-web/ultimos-cambios/"],
 ];
 
-// Fotos reales con fondo BLANCO (no son renders sin-fondo): las del cliente en
-// /fotos-productos/*.jpg (Elite 250/500/Max, Bio 250, Day-0 250). Sobre el
-// plinto oscuro del catálogo/interna salían como un cuadrado blanco; con esto
-// el tile que las contiene se pone en blanco y la foto se funde.
-/** true si la URL es una foto con fondo blanco (no un render transparente). */
-export function isWhiteBgImage(url) {
-  if (!url) return false;
-  return /\/fotos-productos\//.test(url) || /\.jpe?g(\?|#|$)/i.test(url);
-}
-
 /** Devuelve la URL corregida (path viejo → render real → carpeta nueva). */
 export function fixImageUrl(url) {
   if (!url) return url;
