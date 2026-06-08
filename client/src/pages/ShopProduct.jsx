@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
-import { useCart } from "../lib/useCart.js";
+import { useCart, formatARS } from "../lib/useCart.js";
 import {
   fixImageUrl, isStaleProduct, KIT_FAMILY_SHOTS, PRODUCT_FALLBACK_IMG,
   sizeTokenFromUrl, variantOfSize,
@@ -173,6 +173,8 @@ export default function ShopProduct() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [toast, setToast] = useState("");
+  // Medida elegida del kit (sólo productos bundle: linea-race/pro/elite).
+  const [kitSel, setKitSel] = useState(null);
 
   // Barra de compra fija (mobile): visible sólo cuando el CTA principal
   // salió del viewport, para que precio + "Agregar" siempre estén a mano.
@@ -234,11 +236,55 @@ export default function ShopProduct() {
     })();
   }, [slug]);
 
+  // ── KIT por medida (bundle): el cliente elige una medida y compra TODAS las
+  // partes de la línea en esa medida. Usa los SKUs individuales que ya existen.
+  const bundleIncludes = product?.bundle?.includes || [];
+  // Medidas disponibles del kit = unión de formatos de todas las familias.
+  const kitSizes = (() => {
+    const m = new Map();
+    for (const f of bundleIncludes)
+      for (const v of f.variants || [])
+        if (v.formato && !m.has(v.formato))
+          m.set(v.formato, { formato: v.formato, label: v.label, order: v.order ?? 99 });
+    return [...m.values()].sort((a, b) => a.order - b.order);
+  })();
+  const isKit = !!product?.bundle && kitSizes.length > 0;
+  // Partes del kit en la medida elegida (la variante de cada familia en esa medida).
+  const kitParts = kitSel
+    ? bundleIncludes.map((f) => (f.variants || []).find((v) => v.formato === kitSel)).filter(Boolean)
+    : [];
+  const kitTotalCents = kitParts.reduce((a, v) => a + (v.price_cents || 0), 0);
+  const kitSelLabel = kitSizes.find((s) => s.formato === kitSel)?.label || "";
+
+  // Default: la medida que ilustra la foto del kit; si no, la primera.
+  useEffect(() => {
+    if (!kitSizes.length) { setKitSel(null); return; }
+    const galleryTok = (product?.images || []).map((im) => sizeTokenFromUrl(im.url)).find(Boolean);
+    const match = galleryTok && kitSizes.find((s) => s.formato.toLowerCase() === galleryTok);
+    setKitSel((match || kitSizes[0]).formato);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product]);
+
   function addToCart() {
     if (!product) return;
     addItem(product, Math.max(1, Number(quantity) || 1));
     window.dispatchEvent(new CustomEvent("holistic-cart-open"));
     setToast(`Agregado al carrito — ${quantity} ${quantity > 1 ? "unidades" : "unidad"}`);
+    setTimeout(() => setToast(""), 2500);
+  }
+
+  // Agrega todas las partes del kit en la medida elegida (n SKUs de una).
+  function addKit() {
+    if (!kitParts.length) return;
+    const q = Math.max(1, Number(quantity) || 1);
+    kitParts.forEach((v) =>
+      addItem(
+        { id: v.id, slug: v.slug, name: v.name, price_cents: v.price_cents, primary_image: v.primary_image, stock: v.stock },
+        q
+      )
+    );
+    window.dispatchEvent(new CustomEvent("holistic-cart-open"));
+    setToast(`Kit agregado — ${kitParts.length} productos${kitSelLabel ? ` · ${kitSelLabel}` : ""}`);
     setTimeout(() => setToast(""), 2500);
   }
 
@@ -356,9 +402,34 @@ export default function ShopProduct() {
             {product.short_description && <p className="sp-tagline">{product.short_description}</p>}
 
             <div className="sp-pricerow">
-              <span className="sp-price">{product.price_formatted}</span>
-              {product.sku && <span className="sp-sku">SKU: {product.sku}</span>}
+              <span className="sp-price">{isKit ? formatARS(kitTotalCents) : product.price_formatted}</span>
+              {isKit
+                ? <span className="sp-sku">El kit · {kitParts.length} {kitParts.length === 1 ? "producto" : "productos"}</span>
+                : (product.sku && <span className="sp-sku">SKU: {product.sku}</span>)}
             </div>
+
+            {/* Selector de medida del KIT — comprá las N partes en esa medida */}
+            {isKit && (
+              <div className="sp-field">
+                <span className="sp-field-label">Medida del kit</span>
+                <div className="sp-pills">
+                  {kitSizes.map((s) => {
+                    const active = s.formato === kitSel;
+                    return (
+                      <button
+                        key={s.formato}
+                        onClick={() => setKitSel(s.formato)}
+                        className={`sp-pill${active ? " is-active" : ""}`}
+                        aria-pressed={active}
+                        title={`Kit completo en ${s.label}`}
+                      >
+                        <span className="sp-pill-label">{s.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Selector de medida */}
             {product.variants?.length > 1 && (
@@ -410,12 +481,12 @@ export default function ShopProduct() {
             )}
 
             {/* CTA */}
-            <button ref={ctaRef} className="sp-cta" disabled={!inStock} onClick={addToCart} aria-label={`Agregar ${product.name} al carrito`}>
+            <button ref={ctaRef} className="sp-cta" disabled={!inStock} onClick={isKit ? addKit : addToCart} aria-label={isKit ? `Agregar el kit ${kitSelLabel} al carrito` : `Agregar ${product.name} al carrito`}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="9" cy="20" r="1.4" /><circle cx="18" cy="20" r="1.4" />
                 <path d="M2.5 3h2.7l2.5 12.4a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L21 7H6" />
               </svg>
-              <span>{inStock ? "Agregar al carrito" : "Sin stock"}</span>
+              <span>{!inStock ? "Sin stock" : isKit ? `Agregar el kit${kitSelLabel ? ` · ${kitSelLabel}` : ""}` : "Agregar al carrito"}</span>
             </button>
 
             {toast && <div className="sp-toast">✓ {toast}</div>}
@@ -449,11 +520,9 @@ export default function ShopProduct() {
           {product.bundle && product.bundle.includes?.length > 0 && (
             <section className="sp-section">
               <SectionHead pre="Incluye" em="la línea completa" />
-              {product.bundle.discount_pct > 0 && (
-                <p className="sp-savings">
-                  Comprándolo junto ahorrás ~{product.bundle.discount_pct}% vs comprar cada producto por separado.
-                </p>
-              )}
+              <p className="sp-savings">
+                Elegí la medida arriba y llevás {kitParts.length > 0 ? `las ${kitParts.length} partes` : "todas las partes"} de la línea en una sola compra. ¿Querés sólo algunas? Entrá a cada una abajo.
+              </p>
               <div className="sp-bundle-grid">
                 {product.bundle.includes.map((f) => {
                   // Foto de la familia en la medida de la galería del kit
@@ -604,14 +673,14 @@ export default function ShopProduct() {
       {inStock && (
         <div className={`sp-sticky-buy${!ctaInView ? " is-visible" : ""}`} aria-hidden={ctaInView}>
           <div className="sp-sticky-info">
-            <span className="sp-sticky-name">{product.name}</span>
-            <span className="sp-sticky-price">{product.price_formatted}</span>
+            <span className="sp-sticky-name">{product.name}{isKit && kitSelLabel ? ` · ${kitSelLabel}` : ""}</span>
+            <span className="sp-sticky-price">{isKit ? formatARS(kitTotalCents) : product.price_formatted}</span>
           </div>
           <button
             className="sp-sticky-cta"
-            onClick={addToCart}
+            onClick={isKit ? addKit : addToCart}
             tabIndex={ctaInView ? -1 : 0}
-            aria-label={`Agregar ${product.name} al carrito`}
+            aria-label={isKit ? `Agregar el kit ${kitSelLabel} al carrito` : `Agregar ${product.name} al carrito`}
           >
             Agregar
           </button>
