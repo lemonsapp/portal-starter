@@ -970,16 +970,23 @@ async function migrate() {
     ) AS v(slug, url, alt, old_url), products p
     WHERE p.slug = v.slug AND pi.product_id = p.id AND pi.url = v.old_url
   `, "elite max fotos par");
-  // Partes sueltas y bidones "Parte B" fuera del catálogo (no se venden así).
+  // Bidones "Parte B" industriales fuera del catálogo (no se venden sueltos).
   // Desactivación, no DELETE: pueden estar en orders viejas.
   await safeQuery(`
     UPDATE products SET active = FALSE
     WHERE active = TRUE AND slug IN (
-      'elite-parte-1-500ml','elite-parte-1-1l',
-      'elite-parte-2-500ml','elite-parte-2-1l',
       'elite-max-5l-b','elite-max-10l-b'
     )
-  `, "deactivate elite partes sueltas");
+  `, "deactivate elite bidones parte B");
+  // Elite Parte 1 y Parte 2 SE VENDEN SUELTAS (pedido cliente 2026-06-08).
+  // Re-activación explícita para DBs donde la migración anterior las apagó.
+  await safeQuery(`
+    UPDATE products SET active = TRUE
+    WHERE active = FALSE AND slug IN (
+      'elite-parte-1-500ml','elite-parte-1-1l',
+      'elite-parte-2-500ml','elite-parte-2-1l'
+    )
+  `, "reactivate elite partes sueltas");
 
   // 3) Precios reales (hgrowshop.com, jun 2026). Guard por placeholder.
   await safeQuery(`
