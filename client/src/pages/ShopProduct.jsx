@@ -265,6 +265,9 @@ export default function ShopProduct() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
+  // Al cambiar la medida del kit, la galería cambia → volvemos a la 1ra foto.
+  useEffect(() => { setActiveImg(0); }, [kitSel]);
+
   function addToCart() {
     if (!product) return;
     addItem(product, Math.max(1, Number(quantity) || 1));
@@ -320,14 +323,30 @@ export default function ShopProduct() {
     );
   }
 
-  const images = product.images?.length
-    ? product.images
-    : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
-  // Medida que muestra la galería del kit (para que la foto de cada familia
-  // del bundle acompañe la misma medida: potes de 1kg con potes de 1kg).
-  const kitSize = product.meta?.bundle
-    ? images.map((im) => sizeTokenFromUrl(im.url)).find(Boolean) || null
-    : null;
+  // Galería del KIT reactiva a la medida elegida: foto familia (unificado) +
+  // cada parte en la medida seleccionada. Cambiar el selector cambia las fotos.
+  const kitGallery = isKit
+    ? (() => {
+        const imgs = [];
+        const seen = new Set();
+        if (product.primary_image) {
+          imgs.push({ url: product.primary_image, alt: product.name, is_primary: true });
+          seen.add(product.primary_image);
+        }
+        for (const v of kitParts) {
+          if (v.primary_image && !seen.has(v.primary_image)) {
+            seen.add(v.primary_image);
+            imgs.push({ url: v.primary_image, alt: v.name });
+          }
+        }
+        return imgs;
+      })()
+    : [];
+  const images = isKit && kitGallery.length
+    ? kitGallery
+    : product.images?.length
+      ? product.images
+      : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
   const inStock = product.stock == null || product.stock > 0;
   const _lk = lineKeyFor(product);
   const details = _lk ? lineDetails[_lk] : null;
@@ -527,7 +546,7 @@ export default function ShopProduct() {
                 {product.bundle.includes.map((f) => {
                   // Foto de la familia en la medida de la galería del kit
                   // (los potes de 1kg ilustrados con el render de 1kg).
-                  const v0 = variantOfSize(f.variants, kitSize) || f.variants?.[0];
+                  const v0 = f.variants?.find((v) => v.formato === kitSel) || f.variants?.[0];
                   return (
                     <div key={f.group} className="sp-bundle-item">
                       <Link
