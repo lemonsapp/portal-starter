@@ -668,6 +668,20 @@ async function migrate() {
     )
   `, "deactivate stale race products");
 
+  // ─── Fix meta drifteada de Race 4 (2026-06-08) ────────────────────────────
+  // En prod, race-4-micro-magnesio-250ml/500ml quedaron con meta de un esquema
+  // viejo (etapa "finalizador", color "celeste") en vez de micro/rosa. Como el
+  // seed usa ON CONFLICT DO NOTHING, nunca corrige la meta de productos
+  // existentes → variantGroup daba "race-finalizador" y partía la familia Race 4
+  // en dos en el selector (250/500 por un lado, 1L+ por otro). La realineamos a
+  // los valores canónicos. Guard por etapa != micro → idempotente.
+  await safeQuery(`
+    UPDATE products
+       SET meta = meta || '{"etapa":"micro","color":"rosa"}'::jsonb
+     WHERE slug IN ('race-4-micro-magnesio-250ml','race-4-micro-magnesio-500ml')
+       AND meta->>'etapa' IS DISTINCT FROM 'micro'
+  `, "fix race-4 meta drift");
+
   // ─── Race formatos grandes (2026-06-05): presentaciones del kit ───────────
   // El seed del kit linea-race usa ON CONFLICT DO NOTHING, así que en DBs ya
   // sembradas el meta viejo (sólo 250ml/500ml) no se actualiza. Idempotente:
@@ -1626,6 +1640,25 @@ function publicRouter() {
           .filter((x) => variantGroup(x.row.meta) === grp)
           .map((x) => variantSummary(x.row, x.img))
           .sort((a, b) => a.order - b.order);
+      }
+
+      // Producto "base" sin formato propio (ej. bio-estimulante, day-0) que
+      // tiene variantes-hijas por medida (bio-estimulante-250ml/500ml/1l).
+      // Sin esto, su página queda sin selector de medida. Las adjuntamos para
+      // que ofrezca las mismas medidas que la familia (cada pill navega al SKU).
+      if (!grp && !meta.bundle && !variants.length) {
+        const { rows: kids } = await db.query(
+          `SELECT * FROM products
+             WHERE active = TRUE AND slug LIKE $1 AND meta ? 'formato'`,
+          [`${product.slug}-%`]
+        );
+        if (kids.length) {
+          const kidImgs = await loadImagesFor(kids.map((k) => k.id));
+          variants = kids
+            .map((k) => variantSummary(k, primaryUrl(kidImgs, k.id)))
+            .filter((v) => v.formato)
+            .sort((a, b) => a.order - b.order);
+        }
       }
 
       // Bundle: si este producto es el "kit" de la línea, listamos las familias incluidas.
