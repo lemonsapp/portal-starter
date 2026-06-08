@@ -83,7 +83,7 @@ export const capitulos = [
 
         // SEO meta — v4 (2026-05-23): indoor + outdoor, Race 4 = Micro + Magnesio,
         // Race 3 dividida en 1ª y 2ª parte PK de crecimiento y maduración.
-        seoTitle: "Línea Race — Sistema Completo de Fertilizantes para Indoor y Outdoor | Holistic",
+        seoTitle: "Línea Race — Sistema Adaptable de Fertilizantes para Indoor y Outdoor | Holistic",
         seoDescription:
             "Línea Race Holistic: 5 fertilizantes para el ciclo completo de cultivo indoor y outdoor. Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en 2 partes) y Race 4 (Micro + Magnesio). Envío gratis.",
         keywords: ["sistema de fertilizantes", "cultivo indoor", "cultivo outdoor", "fertilizante NPK", "fertilizante PK", "calcio y nitrógeno", "micro y magnesio", "autoflorecientes", "ciclo completo"],
