@@ -90,6 +90,14 @@
   transition: transform var(--dur-slow, 400ms) var(--ease-out);
 }
 .sp-stage:hover img { transform: scale(1.035); }
+/* Foto con fondo blanco (jpg del cliente): panel en blanco para que la foto se
+   funda en vez de salir como cuadrado blanco sobre el plinto oscuro. */
+.sp-stage.is-photo {
+  background: #fff;
+  border-color: var(--c-border);
+}
+.sp-stage.is-photo img { filter: none; }
+.sp-thumb.is-photo { background: #fff; }
 .sp-stage-empty {
   width: 100%; height: 100%; border-radius: 12px; background: var(--c-surface-2);
 }

@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
-import { fixImageUrl, isStaleProduct, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
+import { fixImageUrl, isStaleProduct, isWhiteBgImage, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
 import "../styles/shop-catalog.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -269,7 +269,7 @@ function ShopCard({ family, onAdd }) {
       {family.featured && <span className="cat-badge cat-badge-featured">⭐ Destacado</span>}
       {multi && <span className="cat-badge cat-badge-sizes">{family.variant_count} medidas</span>}
 
-      <div className="cat-card-imgwrap">
+      <div className={`cat-card-imgwrap${isWhiteBgImage(family.primary_image) ? " is-photo" : ""}`}>
         {family.primary_image ? (
           <img src={family.primary_image} alt={family.name} loading="lazy" />
         ) : (
