@@ -141,6 +141,18 @@ const { getBranding } = require("./lib/branding");
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
+// Versión desplegada: Render expone RENDER_GIT_COMMIT en runtime. Sirve para
+// verificar de afuera qué commit corre la API (ej. tras un "Deploy latest
+// commit"): curl https://<api>/api/version. Si dice "unknown", o no está este
+// endpoint, la API corre código anterior a este commit.
+app.get("/api/version", (_req, res) =>
+  res.json({
+    commit: process.env.RENDER_GIT_COMMIT || "unknown",
+    branch: process.env.RENDER_GIT_BRANCH || null,
+    service: process.env.RENDER_SERVICE_NAME || null,
+  })
+);
+
 app.get("/privacy", (_req, res) => {
   res.set("Content-Type", "text/html; charset=utf-8");
   const today = new Date().toISOString().slice(0, 10);
