@@ -58,6 +58,11 @@ const IMG_FIXES = {
   // para cubrir la primaria del kit; eso ahora lo hace KIT_FAMILY_SHOTS por
   // bundle, sin colateral sobre el SKU race-1-npk-500ml).
   "/img/productos/linea-race/500ml/race-1-verde-500ml.png":   "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp",
+  // Packs de puntos: la moneda Holistic dorada en vez del SVG genérico.
+  // El server ya manda la moneda tras su re-author v2 (image_set v2); mientras
+  // Render no redeploye seguimos recibiendo el SVG, así que lo mapeamos acá.
+  // Cuando el server mande la moneda directa, esta key deja de matchear sola.
+  "/imagenes-web/productos/puntos/pack-puntos.svg": "/imagenes-web/coins/moneda-holistic.webp",
 };
 
 // Foto familia ("unificado") de cada línea: primaria de la interna del kit.
@@ -69,8 +74,8 @@ export const KIT_FAMILY_SHOTS = {
   elite: "/imagenes-web/ultimos-cambios/POTE-ELITE-UNIFICADO-INTERNA.png",
 };
 
-// SVG on-brand para productos sin imagen (ej. packs de puntos en backend viejo).
-export const PRODUCT_FALLBACK_IMG = "/imagenes-web/productos/puntos/pack-puntos.svg";
+// Fallback para packs de puntos sin imagen propia: la moneda Holistic dorada.
+export const PRODUCT_FALLBACK_IMG = "/imagenes-web/coins/moneda-holistic.webp";
 
 // Consolidación 2026-06-06: TODAS las imágenes servidas viven ahora en
 // landing/public/imagenes-web/. La DB de producción puede seguir devolviendo
