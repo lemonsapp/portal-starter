@@ -354,7 +354,7 @@
   margin: -10px 0 24px; font-size: 14px; font-weight: 700; color: var(--c-accent-2);
 }
 .sp-bundle-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 12px;
 }
 .sp-bundle-item {
   display: flex; flex-direction: column; gap: 11px; padding: 14px 16px;
@@ -397,7 +397,7 @@
 /* cross-sell */
 .sp-hint { margin: -12px 0 24px; font-size: 14px; color: var(--c-text-2); max-width: 54ch; }
 .sp-cross-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 16px;
 }
 .sp-cross-card {
   display: flex; flex-direction: column;
@@ -428,7 +428,7 @@
 .sp-cross-add:hover { background: var(--c-accent); color: #fff; transform: translateY(-1px); }
 
 /* beneficios */
-.sp-benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.sp-benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
 .sp-benefit {
   background: var(--c-surface); border: 1px solid var(--c-border-2);
   border-radius: 18px; padding: 24px 22px;
@@ -444,7 +444,7 @@
 .sp-benefit-body { font-size: 13.5px; line-height: 1.6; color: var(--c-text-2); }
 
 /* características */
-.sp-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 22px 28px; }
+.sp-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 22px 28px; }
 .sp-feature { display: flex; gap: 14px; align-items: flex-start; }
 .sp-feature-ico {
   display: grid; place-items: center; flex-shrink: 0;
@@ -457,7 +457,7 @@
 
 /* datos técnicos */
 .sp-specs {
-  margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
   border: 1px solid var(--c-border-2); border-radius: 18px; overflow: hidden;
   background: var(--c-surface);
 }
@@ -474,7 +474,7 @@
 .sp-spec-val { font-size: 14px; font-weight: 600; color: var(--c-text); }
 
 /* relacionados */
-.sp-related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.sp-related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; }
 .sp-related-card {
   display: flex; flex-direction: column; text-decoration: none; color: inherit;
   border: 1px solid var(--c-border-2); border-radius: 18px; overflow: hidden;

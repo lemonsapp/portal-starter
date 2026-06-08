@@ -192,7 +192,7 @@ function SpinModal({ onClose, onWin }) {
           </div>
         )}
         {result && !errorMsg ? (
-          <div style={{ textAlign:"center",background:result.coins>0?"linear-gradient(135deg,rgba(var(--brand-primary-rgb),0.2),rgba(var(--brand-primary-rgb),0.08))":"linear-gradient(135deg,rgba(100,116,139,0.1),transparent)",border:`2px solid ${result.coins>0?"var(--brand-primary)":"#334155"}`,borderRadius:20,padding:"24px 48px",animation:"popInBounce 0.7s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:result.coins>0?"0 0 60px var(--brand-primary)33":"none" }}>
+          <div style={{ textAlign:"center",background:result.coins>0?"linear-gradient(135deg,rgba(var(--brand-primary-rgb),0.2),rgba(var(--brand-primary-rgb),0.08))":"linear-gradient(135deg,rgba(100,116,139,0.1),transparent)",border:`2px solid ${result.coins>0?"var(--brand-primary)":"#334155"}`,borderRadius:20,padding:"clamp(16px,4vw,24px) clamp(20px,6vw,48px)",animation:"popInBounce 0.7s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:result.coins>0?"0 0 60px var(--brand-primary)33":"none" }}>
             <div style={{ fontSize:52,marginBottom:8 }}>{result.coins>0?"🎉":"😢"}</div>
             {result.coins>0 ? <>
               <div style={{ color:"var(--brand-primary)",fontSize:12,marginBottom:4,letterSpacing:2,fontWeight:800,textTransform:"uppercase" }}>¡Ganaste!</div>
@@ -204,7 +204,7 @@ function SpinModal({ onClose, onWin }) {
             </>}
           </div>
         ) : !errorMsg && !canSpin && timeLeft ? (
-          <div style={{ textAlign:"center",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:20,padding:"20px 40px" }}>
+          <div style={{ textAlign:"center",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:20,padding:"clamp(14px,3vw,20px) clamp(20px,6vw,40px)" }}>
             <div style={{ fontSize:32,marginBottom:6 }}>⏳</div>
             <div style={{ fontWeight:800,fontSize:15,color:"#94a3b8",marginBottom:4 }}>Próximo giro en</div>
             <div style={{ fontWeight:900,fontSize:36,color:"var(--brand-primary)",fontVariantNumeric:"tabular-nums",textShadow:"0 0 20px var(--brand-primary)66" }}>{timeLeft}</div>
@@ -214,7 +214,7 @@ function SpinModal({ onClose, onWin }) {
         )}
 
         <button onClick={spin} disabled={!canSpin||spinning}
-          style={{ background:canSpin&&!spinning?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent))":"rgba(255,255,255,0.04)",backgroundSize:"200% 200%",color:canSpin&&!spinning?"#000":"#334155",border:"none",borderRadius:16,padding:"18px 64px",fontWeight:900,fontSize:20,cursor:canSpin&&!spinning?"pointer":"not-allowed",transition:"all .3s",boxShadow:canSpin&&!spinning?"0 8px 40px var(--brand-primary)66,0 0 0 1px var(--brand-primary)33":"none",letterSpacing:2,textTransform:"uppercase",animation:canSpin&&!spinning?"btnPulse 2s ease-in-out infinite":"none" }}
+          style={{ background:canSpin&&!spinning?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent))":"rgba(255,255,255,0.04)",backgroundSize:"200% 200%",color:canSpin&&!spinning?"#000":"#334155",border:"none",borderRadius:16,padding:"clamp(14px,3vw,18px) clamp(28px,10vw,64px)",fontWeight:900,fontSize:20,maxWidth:"100%",cursor:canSpin&&!spinning?"pointer":"not-allowed",transition:"all .3s",boxShadow:canSpin&&!spinning?"0 8px 40px var(--brand-primary)66,0 0 0 1px var(--brand-primary)33":"none",letterSpacing:2,textTransform:"uppercase",animation:canSpin&&!spinning?"btnPulse 2s ease-in-out infinite":"none" }}
           onMouseEnter={e=>{ if(canSpin&&!spinning){e.currentTarget.style.transform="scale(1.05)";e.currentTarget.style.boxShadow="0 12px 60px var(--brand-primary)88,0 0 0 2px var(--brand-primary)55";}}}
           onMouseLeave={e=>{ e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=canSpin&&!spinning?"0 8px 40px var(--brand-primary)66,0 0 0 1px var(--brand-primary)33":"none"; }}>
           {spinning?"⚡ Girando...":canSpin?"🎰 GIRAR":"Ya giraste hoy"}
@@ -295,7 +295,7 @@ function Store({ balance, onBuy }) {
         ))}
       </div>
 
-      <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(230px,1fr))",gap:16 }}>
+      <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,230px),1fr))",gap:16 }}>
         {filtered.map((item,idx)=>{
           const canAfford=balance>=item.cost;
           const isOpen=expanded===item.id;
@@ -527,7 +527,7 @@ function Missions({ onClaim }) {
               </div>
             </div>
 
-            <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:12 }}>
+            <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,240px),1fr))",gap:12 }}>
               {gm.map(m => {
                 const done2=!!m.completed_at, claimed=!!m.claimed_at;
                 const pct=Math.min(100,((m.progress||0)/Math.max(1,m.requirement_value))*100);
@@ -831,13 +831,13 @@ function Canjes({ balance, userId, onRedeem }) {
       ) : (
         <>
           <div style={{ fontWeight: 900, fontSize: 18, color: "#fff", margin: "0 0 14px" }}>🎟️ Descuentos</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 14, marginBottom: 36 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,230px),1fr))", gap: 14, marginBottom: 36 }}>
             {descuentos.map(rw => <Card key={rw.slug} rw={rw} />)}
           </div>
 
           {premios.length > 0 && <>
             <div style={{ fontWeight: 900, fontSize: 18, color: "#fff", margin: "0 0 14px" }}>🎁 Premios físicos</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 14, marginBottom: 36 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,230px),1fr))", gap: 14, marginBottom: 36 }}>
               {premios.map(rw => <Card key={rw.slug} rw={rw} />)}
             </div>
           </>}
@@ -912,7 +912,7 @@ function Instagram() {
 
       {msg && <div style={{ background: msg.ok ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", border: `1px solid ${msg.ok ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.4)"}`, borderRadius: 12, padding: "12px 18px", color: msg.ok ? "#22c55e" : "#ef4444", fontWeight: 700, fontSize: 14, marginBottom: 18 }}>{msg.text}</div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 14, marginBottom: 36 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,260px),1fr))", gap: 14, marginBottom: 36 }}>
         {actions.map(a => (
           <div key={a.key} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: "16px 18px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
@@ -1059,14 +1059,14 @@ export default function Coins() {
         </div>
 
         {/* CONTENIDO */}
-        <div style={{ flex:1,overflowY:"auto",padding:"28px 32px 48px" }}>
+        <div style={{ flex:1,overflowY:"auto",padding:"clamp(16px,4vw,28px) clamp(14px,4vw,32px) 48px" }}>
 
           <div style={{ marginBottom:24 }}>
             <BuyCTA variant="inline" label="COMPRAR" />
           </div>
 
           {/* HERO EDITORIAL */}
-          <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"32px 36px",marginBottom:28,overflow:"hidden",display:"block" }}>
+          <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"clamp(20px,5vw,32px) clamp(16px,5vw,36px)",marginBottom:28,overflow:"hidden",display:"block" }}>
             <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--lemon),var(--orange),transparent)" }}/>
             <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px)",backgroundSize:"48px 48px",pointerEvents:"none",opacity:.7 }}/>
             <div style={{ position:"absolute",right:-30,bottom:-50,fontFamily:"'Gotham', sans-serif",fontSize:"clamp(140px,18vw,260px)",lineHeight:.78,letterSpacing:"-6px",color:"transparent",WebkitTextStroke:"1px rgba(var(--brand-primary-rgb),.04)",pointerEvents:"none",userSelect:"none" }}>PUNTOS</div>

@@ -252,7 +252,13 @@ html, body {
   font-family: var(--h-font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Safety net mobile: nada desborda horizontalmente la pantalla. */
+  overflow-x: hidden;
+  max-width: 100%;
 }
+
+/* Medios nunca desbordan su contenedor en celular. */
+img, svg, video, canvas { max-width: 100%; }
 
 a { color: inherit; text-decoration: none; }
 .muted { color: var(--ghost); }
