@@ -493,6 +493,14 @@ export default function Login() {
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
           }
+          /* La foto del login tiene los personajes en las esquinas y el centro
+             vacío: en portrait, "cover + center" recortaba justo el centro
+             (se veía negro). Anclamos a la izquierda para que entren los
+             personajes y suavizamos el velo para que la foto se lea. */
+          .lg-root .auth-bg-img { background-position: left center; }
+          .lg-root .auth-bg-veil {
+            background: linear-gradient(180deg, rgba(6,7,10,.55) 0%, rgba(6,7,10,.5) 45%, rgba(6,7,10,.72) 100%);
+          }
         }
         @media (max-width: 600px) {
           .lg-form-title { font-size: 34px; }

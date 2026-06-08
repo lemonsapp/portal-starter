@@ -415,6 +415,13 @@ export default function Register() {
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
           }
+          /* Personajes en las esquinas + centro vacío: en portrait el crop
+             central se veía negro. Anclamos a la izquierda y suavizamos el
+             velo para que la foto se lea (mismo criterio que Login). */
+          .rg-root .auth-bg-img { background-position: left center; }
+          .rg-root .auth-bg-veil {
+            background: linear-gradient(180deg, rgba(6,7,10,.55) 0%, rgba(6,7,10,.5) 45%, rgba(6,7,10,.72) 100%);
+          }
         }
         @media (max-width: 600px) {
           .rg-title { font-size: 32px; }
