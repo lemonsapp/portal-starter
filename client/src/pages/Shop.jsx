@@ -246,7 +246,11 @@ export default function Shop() {
 function ShopCard({ family, onAdd }) {
   // Si la familia tiene una sola medida → quick-add directo. Si tiene varias →
   // la card lleva a la interna para elegir la medida.
-  const multi = (family.variant_count || 1) > 1;
+  // Los kits "sistema completo" (bundle) se arman por medida en la interna, así
+  // que en el catálogo muestran "desde …" y mandan a elegir medida (no quick-add
+  // a precio fijo), igual que las familias multi-medida.
+  const isBundle = !!family.meta?.bundle;
+  const multi = isBundle || (family.variant_count || 1) > 1;
   const single = !multi && family.variants?.length ? family.variants[0] : null;
   const priceText = multi
     ? `desde ${family.from_price_formatted}`
@@ -267,7 +271,7 @@ function ShopCard({ family, onAdd }) {
   return (
     <Link to={`/shop/${family.slug}`} className="cat-card" aria-label={`Ver ${family.name}`}>
       {family.featured && <span className="cat-badge cat-badge-featured">⭐ Destacado</span>}
-      {multi && <span className="cat-badge cat-badge-sizes">{family.variant_count} medidas</span>}
+      {(family.variant_count || 1) > 1 && <span className="cat-badge cat-badge-sizes">{family.variant_count} medidas</span>}
 
       <div className="cat-card-imgwrap">
         {family.primary_image ? (
