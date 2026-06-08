@@ -231,7 +231,34 @@ export default function ShopProduct() {
           setErr("Producto no encontrado");
         } else {
           const d = await r.json();
-          setProduct(normalizeProduct(d.product || null));
+          let normalized = normalizeProduct(d.product || null);
+          // Espejo client-side: producto "base" sin variantes propias (ej.
+          // bio-estimulante, day-0) → le adjuntamos sus variantes-hijas por
+          // medida desde la familia agrupada, así su página tiene selector de
+          // medida igual que el resto. Espeja el attach del server
+          // (routes/shop.js, commit 1680baa); cuando deploye, ya vienen y esto
+          // no encuentra nada nuevo (la familia ya está cubierta).
+          if (
+            normalized && !normalized.variants?.length && !normalized.bundle &&
+            !normalized.meta?.formato && !normalized.meta?.points_pack
+          ) {
+            try {
+              const gr = await fetch(`${API}/api/shop/products?grouped=1&limit=200`).then((x) => x.json());
+              const base = normalized.slug;
+              const fam = (gr.families || []).find((f) =>
+                (f.variants || []).some((v) => v.slug?.startsWith(`${base}-`))
+              );
+              if (fam?.variants?.length) {
+                normalized = {
+                  ...normalized,
+                  variants: fam.variants
+                    .filter((v) => !isStaleProduct(v.slug))
+                    .map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
+                };
+              }
+            } catch { /* sin red / sin grouped: la página queda sin selector, ok */ }
+          }
+          setProduct(normalized);
           if (d.product?.category?.slug) {
             fetch(`${API}/api/shop/products?category=${d.product.category.slug}&limit=8`)
               .then((r) => r.json())
