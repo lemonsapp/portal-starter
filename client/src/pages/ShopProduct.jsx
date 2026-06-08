@@ -43,20 +43,37 @@ function normalizeProduct(p) {
   // Race 1 Vegetativo, Race 2 Floración A/B, Race 3 PK rosa. Al filtrar sus
   // variantes la familia queda vacía y se descarta entera).
   const bundle = p.bundle
-    ? {
-        ...p.bundle,
-        includes: (p.bundle.includes || [])
+    ? (() => {
+        const cleaned = (p.bundle.includes || [])
           .map((f) => ({
             ...f,
             variants: (f.variants || [])
               .filter((v) => !isStaleProduct(v.slug))
               .map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
           }))
-          .filter((f) => f.variants.length > 0)
-          // Orden estable (Race 1 → Race 4): el backend viejo manda las
-          // familias en orden de query. El server nuevo ya las ordena igual.
-          .sort((a, b) => (a.name || "").localeCompare(b.name || "", "es")),
-      }
+          .filter((f) => f.variants.length > 0);
+        // Unifica familias DUPLICADAS por nombre. En prod (sin redeploy del
+        // server) "Race 4 — Micro + Magnesio" llega partido en 2 familias por
+        // meta drifteada (etapa finalizador vs micro) → se ven "dos Race 4".
+        // Las juntamos en una sola con todas sus medidas. Espeja el fix del
+        // server (1680baa); cuando deploye, llega ya unificado → no-op.
+        const byName = new Map();
+        for (const f of cleaned) {
+          const key = f.name || f.group;
+          if (!byName.has(key)) {
+            byName.set(key, { ...f, variants: [...f.variants] });
+          } else {
+            const ex = byName.get(key);
+            const seen = new Set(ex.variants.map((v) => v.slug));
+            for (const v of f.variants) if (!seen.has(v.slug)) ex.variants.push(v);
+          }
+        }
+        const includes = [...byName.values()]
+          .map((f) => ({ ...f, variants: f.variants.sort((a, b) => (a.order ?? 99) - (b.order ?? 99)) }))
+          // Orden estable de familias (Race 1 → Race 4).
+          .sort((a, b) => (a.name || "").localeCompare(b.name || "", "es"));
+        return { ...p.bundle, includes };
+      })()
     : p.bundle;
 
   // Galería de kit COMPLETA y de UNA MISMA MEDIDA: la interna de una línea
