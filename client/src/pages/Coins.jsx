@@ -144,7 +144,7 @@ function SpinModal({ onClose, onWin }) {
     <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.95)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)" }}
       onClick={e=>e.target===e.currentTarget&&!spinning&&onClose()}>
       <ConfettiExplosion active={showConfetti} />
-      <div style={{ background:"linear-gradient(145deg,#0d0d0d,#1a0a00)",border:"2px solid var(--brand-primary)44",borderRadius:32,padding:"40px",display:"flex",flexDirection:"column",alignItems:"center",gap:20,boxShadow:"0 0 100px var(--brand-primary)22, inset 0 1px 0 var(--brand-primary)22",maxWidth:"95vw",position:"relative" }}>
+      <div style={{ background:"linear-gradient(145deg,#0d0d0d,#1a0a00)",border:"2px solid var(--brand-primary)44",borderRadius:32,padding:"clamp(20px,5vw,40px)",display:"flex",flexDirection:"column",alignItems:"center",gap:20,boxShadow:"0 0 100px var(--brand-primary)22, inset 0 1px 0 var(--brand-primary)22",width:"min(420px, 95vw)",maxHeight:"92vh",overflowY:"auto",position:"relative" }}>
         <div style={{ position:"absolute",inset:0,borderRadius:32,background:"radial-gradient(ellipse at top,var(--brand-primary)08,transparent 60%)",pointerEvents:"none" }}/>
         <button onClick={onClose} disabled={spinning} style={{ position:"absolute",top:16,right:16,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",color:"#666",cursor:spinning?"not-allowed":"pointer",fontSize:18,borderRadius:10,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s" }}
           onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
@@ -155,11 +155,9 @@ function SpinModal({ onClose, onWin }) {
           <div style={{ fontSize:26,fontWeight:900,color:"#fff",textShadow:"0 0 30px var(--brand-primary)66",display:"flex",alignItems:"center",justifyContent:"center",gap:8 }}>Girá y Ganás <Coin size={26} /></div>
         </div>
 
-        <div style={{ position:"relative",width:SIZE+200,height:SIZE+60,display:"flex",alignItems:"center",justifyContent:"center" }}>
-          {/* Moneda Holistic acompañando la rueda (antes iba el limón /icons/icon.svg) */}
-          <img src={COIN_IMG} alt="" style={{ position:"absolute",left:-30,bottom:0,width:170,height:170,objectFit:"contain",filter:"drop-shadow(0 0 24px rgba(245,166,34,.55))",zIndex:10,pointerEvents:"none" }}/>
-          <div style={{ position:"absolute",width:SIZE+40,height:SIZE+40,borderRadius:"50%",background:"conic-gradient(#f5a62233,var(--brand-primary)22,var(--brand-accent)22,#f5a62233)",animation:"rotateSlow 4s linear infinite",filter:"blur(16px)" }}/>
-          <svg width={SIZE} height={SIZE} style={{ transform:`rotate(${rotation}deg)`,transition:spinning?`transform 6.5s cubic-bezier(0.08,0.82,0.17,1)`:"none",filter:"drop-shadow(0 0 40px var(--brand-primary)33)",zIndex:2 }}>
+        <div style={{ position:"relative",width:"100%",maxWidth:SIZE,aspectRatio:"1 / 1",margin:"6px 0 14px",display:"flex",alignItems:"center",justifyContent:"center" }}>
+          <div style={{ position:"absolute",width:"100%",height:"100%",borderRadius:"50%",background:"conic-gradient(#f5a62233,var(--brand-primary)22,var(--brand-accent)22,#f5a62233)",animation:"rotateSlow 4s linear infinite",filter:"blur(16px)" }}/>
+          <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width="100%" height="100%" style={{ transform:`rotate(${rotation}deg)`,transition:spinning?`transform 6.5s cubic-bezier(0.08,0.82,0.17,1)`:"none",filter:"drop-shadow(0 0 40px var(--brand-primary)33)",zIndex:2 }}>
             {PRIZES.map((p,i) => {
               const a1=(i*360/n-90)*Math.PI/180, a2=((i+1)*360/n-90)*Math.PI/180;
               const x1=cx+R*Math.cos(a1),y1=cy+R*Math.sin(a1),x2=cx+R*Math.cos(a2),y2=cy+R*Math.sin(a2);
