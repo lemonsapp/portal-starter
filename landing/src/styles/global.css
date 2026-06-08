@@ -401,6 +401,14 @@ button {
     color: var(--c-black);
     transition: background 0.2s var(--ease), color 0.2s var(--ease);
 }
+/* Área de toque ~44px en celular sin agrandar el círculo visual ni mover
+   el layout del header (mejora la tappeabilidad). */
+.header__icon::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+}
 
 .header__icon:hover {
     background: var(--c-gray);
