@@ -16,6 +16,7 @@
 const express = require("express");
 const { z } = require("zod");
 const db = require("../db");
+const { reauthorProductImages } = require("./shopImageSet");
 
 // Helper para que un fallo en un INSERT no aborte el resto del migrate.
 // Imprime el error y sigue. Solo lo aplicamos a INSERT seed (las CREATE
@@ -1037,6 +1038,21 @@ async function migrate() {
     WHERE p.slug IN ('pack-50-puntos','pack-100-puntos','pack-250-puntos')
       AND NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `, "img packs puntos");
+
+  // ─── Re-author autoritativo de imágenes (2026-06-08) ──────────────────────
+  // Última palabra sobre product_images: para cada slug del set canónico
+  // (routes/shopImageSet.js) borra sus filas y reinserta el set correcto.
+  // Resuelve de raíz el problema de las imágenes rotas en prod (la DB quedó
+  // con URLs que ningún bloque de reconciliación matcheaba por old_url exacto).
+  // Corre UNA vez por IMAGE_SET_VERSION (marcador en shop_migrations): el
+  // próximo deploy de Render arregla todo y los boots siguientes son no-op
+  // (no pisa lo que el admin edite después). Subir la versión re-aplica.
+  try {
+    const res = await reauthorProductImages(db);
+    if (res.applied) console.log(`[SHOP MIGRATE] re-author imágenes: ${res.slugs} productos`);
+  } catch (e) {
+    console.error("[SHOP MIGRATE reauthor images]", e.message || e);
+  }
 
   // ═════════════════════════════════════════════════════════════════════════
   // F2: ORDERS — carrito + checkout + MercadoPago
