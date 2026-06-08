@@ -185,15 +185,13 @@ export const productDetails = {
             { title: "Compatible NFT/DWC",     body: "El sólido disuelto se comporta como un líquido premium en cualquier sistema.",              emoji: "↯" },
             { title: "Trazabilidad por lote",  body: "Cada bolsa impresa con lote y composición exacta del análisis.",                            emoji: "✓" },
         ],
-        // 4 etapas (Vegetativo, Preflora, Flora, Enraizante) en
-        // distintos gramajes. Mostramos una por etapa para que el
-        // selector cuente la historia del ciclo, no sólo del peso.
+        // 4 etapas del ciclo en presentación 100gr (pedido cliente
+        // 2026-06-08: los potes 1kg se reemplazan por los de 100gr).
+        // Orden: Enraizante · Vegetativo · Pre floración · Floración.
         formats: [
-            { name: "VEGETATIVO",  size: "1kg",   image: "/imagenes-web/productos/linea-pro/1kg/pro-vegetativo.png" },
-            { name: "PREFLORA",    size: "1kg",   image: "/imagenes-web/productos/linea-pro/1kg/pro-preflora.png" },
-            { name: "FLORA",       size: "1kg",   image: "/imagenes-web/productos/linea-pro/1kg/pro-flora.png" },
-            { name: "ENRAIZANTE",  size: "1kg",   image: "/imagenes-web/productos/linea-pro/1kg/pro-enraizante.png" },
-            { name: "FLORA",       size: "500g",  image: "/imagenes-web/productos/linea-pro/500gr/flora-500gr-1.png" },
+            { name: "ENRAIZANTE",  size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/enraizante-100gr-1.png" },
+            { name: "VEGETATIVO",  size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/vegetativo-100gr-1.png" },
+            { name: "PREFLORA",    size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/pre-floracion-100gr-1.png" },
             { name: "FLORACIÓN",   size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/floracion-100gr-1.png" },
         ],
         system: {
@@ -354,7 +352,7 @@ export const productDetails = {
         system: {
             title: "El motor del catálogo.",
             body: "Race es la línea más enfocada en performance. Combinable con Elite (sustrato inerte) o Pro (hidrosoluble) según preferencia. Day-0 al final, siempre.",
-            chips: ["+ Elite", "+ Pro", "+ Day-0"],
+            chips: ["+ Elite", "+ Pro", "+ Day-0", "+ Bio Estimulante"],
         },
         // Pullquote removido por pedido del cliente — antes decía
         // "La velocidad sin control es ruido...". El componente
@@ -374,8 +372,8 @@ export const productDetails = {
 
     "bio-estimulante": {
         hero: {
-            kicker: "BIO ESTIMULANTE · ORGÁNICO PARA CULTIVO INDOOR",
-            headline: "Bioestimulante orgánico\npara cultivo indoor.",
+            kicker: "BIO ESTIMULANTE · ORGÁNICO PARA CULTIVO INDOOR & OUTDOOR",
+            headline: "Bioestimulante orgánico\npara cultivo indoor y outdoor.",
             claim: "Bioestimulante 100% orgánico para cultivo indoor y outdoor, fabricado en biorreactor industrial con materias primas seleccionadas. Hasta 70% más efectivo que micorrizas tradicionales. Estimula el desarrollo radicular, potencia la absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo: Línea Pro, Línea Elite y Línea Race.",
             ctaPrimary:   { label: "COMPRAR BIO",           href: "/shop?categoria=bio" },
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
@@ -443,8 +441,8 @@ export const productDetails = {
             { title: "Producción local",       body: "Fabricado en Argentina con tecnología de biorreactor industrial.",           emoji: "✓" },
         ],
         formats: [
-            { name: "GRANDE", size: "Standard", image: "/imagenes-web/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png" },
-            { name: "LATERAL", size: "Display", image: "/imagenes-web/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png" },
+            { name: "250ML", size: "250 ml", image: "/imagenes-web/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png" },
+            { name: "500ML", size: "500 ml", image: "/imagenes-web/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png" },
         ],
         system: {
             title: "El primer paso del ciclo.",
