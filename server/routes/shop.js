@@ -1060,6 +1060,42 @@ async function migrate() {
       AND NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `, "img packs puntos");
 
+  // ─── Accesorios (2026-06-08): importados de hgrowshop.com (tienda real) ─────
+  // Productos que la tienda WooCommerce de Holistic tiene y el portal no traía.
+  // Precios de hgrowshop.com (jun 2026); el cliente los ajusta desde el admin.
+  // Idempotente: categoría + productos con ON CONFLICT DO NOTHING, imágenes con
+  // NOT EXISTS (no pisa lo que el admin edite después). Sólo AGREGA — no toca
+  // ningún producto/categoría existente.
+  await safeQuery(
+    `INSERT INTO product_categories (slug, name, description, sort_order)
+     VALUES ('accesorios', 'Accesorios', 'Accesorios para cultivo', 10)
+     ON CONFLICT (slug) DO NOTHING`, "cat accesorios");
+  await safeQuery(`
+    INSERT INTO products (slug, name, short_description, price_cents, sku, category_id, featured, sort_order, meta)
+    SELECT v.slug, v.name, v.short, v.price, v.sku, c.id, FALSE, v.sort, v.meta::jsonb
+    FROM (VALUES
+      ('croper-simple-x10',    'Croper Simple x10 unidades',    'Croppers simples para guiado de ramas. Pack x10.',     736100,  'ACC-CROP-S10', 'accesorios', 60, '{"accesorio":true}'),
+      ('croper-regulable-x10', 'Croper Regulable x10 unidades', 'Croppers regulables para guiado de ramas. Pack x10.',  1200600, 'ACC-CROP-R10', 'accesorios', 61, '{"accesorio":true}'),
+      ('tutores-x10',          'Tutores x10 unidades',          'Tutores de sostén para plantas. Pack x10.',            1134400, 'ACC-TUT-10',   'accesorios', 62, '{"accesorio":true}'),
+      ('maceta-x10',           'Maceta x10 unidades',           'Macetas para cultivo. Pack x10.',                      2159000, 'ACC-MAC-10',   'accesorios', 63, '{"accesorio":true}'),
+      ('filtro-de-agua',       'Filtro de agua',                'Filtro de agua para riego.',                           8142000, 'ACC-FILTRO',   'accesorios', 64, '{"accesorio":true}')
+    ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
+    JOIN product_categories c ON c.slug = v.cat_slug
+    ON CONFLICT (slug) DO NOTHING`, "seed accesorios");
+  await safeQuery(`
+    INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+    SELECT p.id, v.url, p.name, 0, TRUE
+    FROM (VALUES
+      ('croper-simple-x10',    '/imagenes-web/productos/accesorios/croper-simple-x10.jpg'),
+      ('croper-regulable-x10', '/imagenes-web/productos/accesorios/croper-regulable-x10.png'),
+      ('tutores-x10',          '/imagenes-web/productos/accesorios/tutores-x10.jpg'),
+      ('maceta-x10',           '/imagenes-web/productos/accesorios/maceta-x10.png'),
+      ('filtro-de-agua',       '/imagenes-web/productos/accesorios/filtro-de-agua.jpg')
+    ) AS v(slug, url)
+    JOIN products p ON p.slug = v.slug
+    WHERE NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
+  `, "img accesorios");
+
   // ─── Re-author autoritativo de imágenes (2026-06-08) ──────────────────────
   // Última palabra sobre product_images: para cada slug del set canónico
   // (routes/shopImageSet.js) borra sus filas y reinserta el set correcto.
