@@ -371,7 +371,12 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
                         data-pdd-format-card
                         data-index={i}
                     >
-                        <img src={f.image} alt={f.name} loading="lazy" />
+                        <img
+                            src={f.image}
+                            alt={f.name}
+                            loading="lazy"
+                            style={f.imgScale ? `transform: scale(${f.imgScale}); transform-origin: center;` : undefined}
+                        />
                     </div>
                 ))}
             </div>

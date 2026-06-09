@@ -315,7 +315,7 @@ export const productDetails = {
             { name: "1 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp" },
             { name: "5 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp" },
             { name: "10 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/10l/race-1-verde-10l-f1.webp" },
-            { name: "20 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp" },
+            { name: "20 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp", imgScale: 0.7 },
         ],
         system: {
             title: "El motor del catálogo.",
