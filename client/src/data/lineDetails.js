@@ -66,7 +66,7 @@ export const lineDetails = {
       },
       {
         "label": "Aplicación",
-        "value": "Hidroponía, sustratos inertes, coco, lana de roca, sustratos orgánicos"
+        "value": "Hidroponía, sustratos inertes, coco, turba, lana de roca, sustratos orgánicos"
       },
       {
         "label": "Dosis vegetativo",
@@ -100,7 +100,7 @@ export const lineDetails = {
       },
       {
         "title": "Más cosechas por kilo.",
-        "body": "Más concentrado que líquidos: menor costo por dosis y menor logística (1 kg sólido = ~5 L líquido)."
+        "body": "Más concentrado que líquidos: menor costo por dosis y menor logística."
       }
     ],
     "features": [
@@ -125,7 +125,7 @@ export const lineDetails = {
         "emoji": "○"
       },
       {
-        "title": "Compatible NFT/DWC",
+        "title": "Compatible con fertirriego",
         "body": "El sólido disuelto se comporta como un líquido premium en cualquier sistema.",
         "emoji": "↯"
       },
@@ -268,7 +268,7 @@ export const lineDetails = {
       },
       {
         "title": "100% orgánico, 100% inocuo.",
-        "body": "Sin metales pesados, sin sintéticos. Apto para cultivos de consumo y para todo el ciclo."
+        "body": "Sin metales pesados, sin sintéticos, para todo el ciclo."
       }
     ],
     "features": [
@@ -293,11 +293,6 @@ export const lineDetails = {
         "emoji": "⚡"
       },
       {
-        "title": "Aplicación foliar",
-        "body": "Spray foliar para hojas, raíces y corteza con un solo producto.",
-        "emoji": "○"
-      },
-      {
         "title": "Producción local",
         "body": "Fabricado en Argentina con tecnología de biorreactor industrial.",
         "emoji": "✓"
@@ -311,10 +306,6 @@ export const lineDetails = {
       {
         "label": "Forma",
         "value": "Líquido orgánico"
-      },
-      {
-        "label": "CFU",
-        "value": "≥10^9 UFC/ml (cepas seleccionadas)"
       },
       {
         "label": "Aplicación",
@@ -394,7 +385,7 @@ export const lineDetails = {
       },
       {
         "label": "Principio activo",
-        "value": "IBA + NAA en vehículo protector"
+        "value": "Ácidos carboxílicos, ácidos húmicos, ácidos fúlvicos, enzimas enraizantes"
       },
       {
         "label": "Aplicación",
@@ -416,7 +407,7 @@ export const lineDetails = {
     "pullquote": "El comienzo del ciclo define la calidad del resultado final."
   },
   "day-0": {
-    "intro": "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Limpieza profunda del sistema radicular, pulido del sabor, aroma y textura del resultado final. Lo que diferencia una cosecha buena de una perfecta. Se usa junto a Race 4 o como cierre exclusivo de cualquier sistema Holistic.",
+    "intro": "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Se usa junto a Race, Pro o Elite, como cierre de cualquier sistema Holistic.",
     "benefits": [
       {
         "title": "El detalle que se nota.",
@@ -433,19 +424,9 @@ export const lineDetails = {
     ],
     "features": [
       {
-        "title": "Activa metabolitos",
-        "body": "Estimula la conversión final de azúcares y aceites esenciales.",
-        "emoji": "✦"
-      },
-      {
         "title": "Sin shock",
         "body": "Transición suave del nutriente principal a la fase de cierre.",
         "emoji": "◇"
-      },
-      {
-        "title": "Mejora aromas",
-        "body": "Las plantas tratadas con Day-0 muestran perfil aromático más definido.",
-        "emoji": "♥"
       },
       {
         "title": "Compatibilidad total",

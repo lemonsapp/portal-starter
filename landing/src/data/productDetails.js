@@ -18,7 +18,7 @@ export const productDetails = {
     "linea-elite": {
         hero: {
             kicker: "LÍNEA ELITE · FERTILIZANTE PARA HIDROPONÍA Y SUSTRATOS",
-            headline: "Fertilizante premium\npara hidroponía y sustratos.",
+            headline: "Fertilizante equilibrado\npara hidroponía y sustratos.",
             claim: "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de hidroponía, NFT, DWC, coco y sustratos. Concentración máxima de NPK en cada riego, pH auto-buffer, resultados consistentes cosecha tras cosecha.",
             ctaPrimary:   { label: "COMPRAR ELITE",        href: "/shop?categoria=elite" },
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
@@ -108,7 +108,7 @@ export const productDetails = {
         techSpecs: [
             { label: "Composición",      value: "Parte 1: aporta NPK y calcio · Parte 2: aporta magnesio y micro" },
             { label: "Forma",             value: "Líquido concentrado" },
-            { label: "Aplicación",        value: "Hidroponía, sustratos inertes, coco, lana de roca, sustratos orgánicos" },
+            { label: "Aplicación",        value: "Hidroponía, sustratos inertes, coco, turba, lana de roca, sustratos orgánicos" },
             { label: "Dosis vegetativo",  value: "0.5 a 5 ml/L de cada parte" },
             { label: "Dosis floración",   value: "2 a 5 ml/L de cada parte" },
             { label: "Conservación",      value: "Bajo techo, 5–25°C, 24 meses" },
@@ -142,7 +142,7 @@ export const productDetails = {
                 kicker: "FÓRMULA POR ETAPA",
                 title: "Una para cada momento.",
                 body: "Enraizante, Vegetativo, Preflora y Flora. Cada una desarrollada para el perfil nutricional exacto que la planta necesita en esa fase.",
-                image: "/imagenes-web/ultimos-cambios/VEGETATIVO-ENRRAIZANTE.png",
+                image: "/imagenes-web/productos/linea-pro/100gr/enraizante-100gr-1.png",
                 color: "#F5948A",
                 stat: "01",
             },
@@ -150,7 +150,7 @@ export const productDetails = {
                 kicker: "FORMATO SÓLIDO",
                 title: "Sin agua, sin alcohol, sin conservantes.",
                 body: "100% materia activa. El fertilizante sólido no pierde potencia con el calor ni con el tiempo: 36 meses de vida útil garantizados.",
-                image: "/imagenes-web/ultimos-cambios/vegetativo-vege2.png",
+                image: "/imagenes-web/productos/linea-pro/100gr/vegetativo-100gr-1.png",
                 color: "#FFB39B",
                 stat: "02",
             },
@@ -158,15 +158,15 @@ export const productDetails = {
                 kicker: "DOSIS EXACTA",
                 title: "Al gramo.",
                 body: "Balanceá tu reservorio con precisión de laboratorio. Misma cucharita, misma EC, mismo resultado.",
-                image: "/imagenes-web/ultimos-cambios/VEGETATIVO-PREFLORA.png",
+                image: "/imagenes-web/productos/linea-pro/100gr/pre-floracion-100gr-1.png",
                 color: "#E87C70",
                 stat: "03",
             },
             {
                 kicker: "ECONÓMICO",
                 title: "Más cosechas por kilo.",
-                body: "Más concentrado que líquidos: menor costo por dosis y menor logística (1 kg sólido = ~5 L líquido).",
-                image: "/imagenes-web/ultimos-cambios/VEGETATIVO-FLORACION.png",
+                body: "Más concentrado que líquidos: menor costo por dosis y menor logística.",
+                image: "/imagenes-web/productos/linea-pro/100gr/floracion-100gr-1.png",
                 color: "#FF8A7A",
                 stat: "04",
             },
@@ -182,17 +182,18 @@ export const productDetails = {
             { title: "Sin almacenamiento frío",body: "Conservalo donde quieras. No requiere heladera ni rangos estrictos.",                       emoji: "✦" },
             { title: "pH ideal",               body: "Cada Pro trabaja en el rango óptimo del cultivo sin shock de pH.",                            emoji: "⚖" },
             { title: "Mezcla limpia",          body: "Disuelve completo en agua tibia sin residuos — sin filtros que limpiar.",                   emoji: "○" },
-            { title: "Compatible NFT/DWC",     body: "El sólido disuelto se comporta como un líquido premium en cualquier sistema.",              emoji: "↯" },
+            { title: "Compatible con fertirriego", body: "El sólido disuelto se comporta como un líquido premium en cualquier sistema.",              emoji: "↯" },
             { title: "Trazabilidad por lote",  body: "Cada bolsa impresa con lote y composición exacta del análisis.",                            emoji: "✓" },
         ],
-        // 4 etapas del ciclo en presentación 100gr (pedido cliente
-        // 2026-06-08: los potes 1kg se reemplazan por los de 100gr).
-        // Orden: Enraizante · Vegetativo · Pre floración · Floración.
+        // Selector de FORMATO por tamaño (pedido cliente 2026-06-09): en
+        // vez de las 4 etapas, mostramos el pote de Pro en sus 4 medidas
+        // 25g · 100g · 500g · 1kg. Cada tab muestra la foto del pote
+        // correspondiente a ese tamaño.
         formats: [
-            { name: "ENRAIZANTE",  size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/enraizante-100gr-1.png" },
-            { name: "VEGETATIVO",  size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/vegetativo-100gr-1.png" },
-            { name: "PREFLORA",    size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/pre-floracion-100gr-1.png" },
-            { name: "FLORACIÓN",   size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/floracion-100gr-1.png" },
+            { name: "25 G",   size: "25g",   image: "/imagenes-web/productos/linea-pro/25gr/vegetativo-25gr-1.png" },
+            { name: "100 G",  size: "100g",  image: "/imagenes-web/productos/linea-pro/100gr/vegetativo-100gr-1.png" },
+            { name: "500 G",  size: "500g",  image: "/imagenes-web/productos/linea-pro/500gr/vegetativo-500gr-1.png" },
+            { name: "1 KG",   size: "1kg",   image: "/imagenes-web/productos/linea-pro/1kg/vegetativo-1kg-1.png" },
         ],
         system: {
             title: "Encaja con todo el catálogo.",
@@ -351,7 +352,7 @@ export const productDetails = {
         ],
         system: {
             title: "El motor del catálogo.",
-            body: "Race es la línea más enfocada en performance. Combinable con Elite (sustrato inerte) o Pro (hidrosoluble) según preferencia. Day-0 al final, siempre.",
+            body: "Race es la línea más enfocada en performance. Combinable con Elite o Pro (hidrosoluble) según preferencia. Day-0 al final, siempre.",
             chips: ["+ Elite", "+ Pro", "+ Day-0", "+ Bio Estimulante"],
         },
         // Pullquote removido por pedido del cliente — antes decía
@@ -396,8 +397,7 @@ export const productDetails = {
                 kicker: "BIORREACTOR",
                 title: "Producido en biorreactor industrial.",
                 body: "No es un té de compost casero: es un bioestimulante orgánico producido en fermentadores industriales controlados.",
-                image: "/video/internas/bio-estimulante/highlight-01.mp4",
-                mediaType: "video",
+                image: "/imagenes-web/fotos-productos/BIOESTIMULANTE-SLIDER.png",
                 color: "#E8A5B1",
                 stat: "01",
             },
@@ -420,7 +420,7 @@ export const productDetails = {
             {
                 kicker: "SEGURIDAD",
                 title: "100% orgánico, 100% inocuo.",
-                body: "Sin metales pesados, sin sintéticos. Apto para cultivos de consumo y para todo el ciclo.",
+                body: "Sin metales pesados, sin sintéticos, para todo el ciclo.",
                 image: "/imagenes-web/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png",
                 color: "#D67D92",
                 stat: "04",
@@ -457,7 +457,6 @@ export const productDetails = {
         techSpecs: [
             { label: "Composición",     value: "Ácidos húmicos, ácidos fúlvicos, ácidos carboxílicos, grupos fenoles y potasio soluble" },
             { label: "Forma",            value: "Líquido orgánico" },
-            { label: "CFU",              value: "≥10^9 UFC/ml (cepas seleccionadas)" },
             { label: "Aplicación",       value: "Riego, esquejes y transplante" },
             { label: "Conservación",     value: "Bajo techo, 5–25°C, 12 meses" },
             { label: "Compatibilidad",   value: "Todos los productos del catálogo + sustratos minerales" },
@@ -540,7 +539,7 @@ export const productDetails = {
         pullquote: "",
         techSpecs: [
             { label: "Forma",             value: "Gel de alta viscosidad" },
-            { label: "Principio activo",  value: "IBA + NAA en vehículo protector" },
+            { label: "Principio activo",  value: "Ácidos carboxílicos, ácidos húmicos, ácidos fúlvicos, enzimas enraizantes" },
             { label: "Aplicación",        value: "Sumergir base del esqueje 2-3 cm" },
             { label: "Tasa típica",       value: ">90% en condiciones controladas" },
             { label: "Tipo de esquejes",  value: "Herbáceos, leñosos, semi-leñosos" },
@@ -552,7 +551,7 @@ export const productDetails = {
         hero: {
             kicker: "DAY 0 · FINALIZADOR DE COSECHA",
             headline: "Finalizador de cosecha.\nLa última decisión que define todo.",
-            claim: "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Diferencia una cosecha buena de una perfecta. Se usa junto a Race 4 o como cierre exclusivo de cualquier sistema Holistic.",
+            claim: "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Se usa junto a Race, Pro o Elite, como cierre de cualquier sistema Holistic.",
             ctaPrimary:   { label: "COMPRAR DAY-0",          href: "/shop?categoria=day0" },
             ctaSecondary: { label: "VER GUÍA DE USO",   href: "#specs" },
             color: "#C9A34E",
@@ -611,9 +610,7 @@ export const productDetails = {
             body: "Programá el último riego de Day-0 cinco días antes del corte estimado. La planta usa esos días para metabolizar reservas internas y entregar el sabor final más limpio posible.",
         },
         features: [
-            { title: "Activa metabolitos",     body: "Ácidos cítricos.",                emoji: "✦" },
             { title: "Sin shock",               body: "Transición suave del nutriente principal a la fase de cierre.",                  emoji: "◇" },
-            { title: "Mejora aromas",           body: "Las plantas tratadas con Day-0 muestran perfil aromático más definido.",         emoji: "♥" },
             { title: "Compatibilidad total",    body: "Después de cualquier línea Holistic — Elite, Pro, Race.",                       emoji: "↯" },
             { title: "Aplicación simple",       body: "Una sola dosis por riego en los últimos 5 días. Sin escalones complejos.",   emoji: "○" },
             { title: "Validado en cultivo",     body: "Probado en variedades indoor/outdoor con resultado consistente.",                emoji: "✓" },
