@@ -207,7 +207,7 @@ export const productDetails = {
         techSpecs: [
             { label: "Composición",     value: "NPK + Mg + S + micronutrientes" },
             { label: "Forma",            value: "Sólido cristalino hidrosoluble" },
-            { label: "Solubilidad",      value: "100% en agua >18°C" },
+            { label: "Solubilidad",      value: "100% en agua" },
             { label: "Dosis",            value: "0.5 – 1.5 g/L según etapa" },
             { label: "Conservación",     value: "Lugar seco, hasta 36 meses" },
             { label: "Presentaciones",   value: "25 g · 100 g · 500 g · 1 kg" },

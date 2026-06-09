@@ -146,7 +146,7 @@ export const lineDetails = {
       },
       {
         "label": "Solubilidad",
-        "value": "100% en agua >18°C"
+        "value": "100% en agua"
       },
       {
         "label": "Dosis",
