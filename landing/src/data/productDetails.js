@@ -304,24 +304,18 @@ export const productDetails = {
         // animadas — cuando slug=linea-race el ProductDeepDive omite
         // su sección de formats y monta el showcase.
         // Selector "Elegí el formato" genérico (pdd__formats) por MEDIDA:
-        // tabs 250 ML / 500 ML (pedido del cliente 2026-06-09). Imagen = el
-        // TARRO DOSIFICADOR DE COSTADO en esa medida (los mismos del shop), así
-        // el render cambia visiblemente al clickear. Race 1 verde como
-        // representativo; el sublabel aclara que las 5 fórmulas vienen en esa
-        // medida (no hay un render "familia" en 250ml, sólo en 500ml).
+        // las 6 presentaciones reales del shop (250ml · 500ml · 1L · 5L · 10L ·
+        // 20L — ver server/routes/shop.js presentaciones). Imagen = el mismo
+        // render que usa el shop por medida (shopImageSet.js): tarro de costado
+        // para 250/500/1L, bidón -f1 para 5/10/20L. Race 1 verde como
+        // representativo; sublabel "Las 5 fórmulas" (son 5 sistemas).
         formats: [
-            {
-                name: "250 ML",
-                size: "Las 5 fórmulas",
-                image: "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp",
-                color: "#3DA86E",
-            },
-            {
-                name: "500 ML",
-                size: "Las 5 fórmulas",
-                image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp",
-                color: "#3DA86E",
-            },
+            { name: "250 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp" },
+            { name: "500 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp" },
+            { name: "1 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp" },
+            { name: "5 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp" },
+            { name: "10 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/10l/race-1-verde-10l-f1.webp" },
+            { name: "20 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp" },
         ],
         system: {
             title: "El motor del catálogo.",
