@@ -6131,6 +6131,15 @@ html.is-loading body {
     display: grid;
     place-items: center;
     will-change: transform, opacity;
+    /* Fallback: solo la card activa visible. El JS (GSAP autoAlpha) maneja la
+       animación con estilos inline que pisan esto; sin/antes-de JS evita que
+       las N botellas se apilen visibles (el "quedó mal" de Race). */
+    opacity: 0;
+    visibility: hidden;
+}
+.pdd__format-card.is-active {
+    opacity: 1;
+    visibility: visible;
 }
 .pdd__format-card img {
     max-width: 92%;

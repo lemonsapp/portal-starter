@@ -303,11 +303,16 @@ export const productDetails = {
         // genérico para Race con stage central + partículas + tabs
         // animadas — cuando slug=linea-race el ProductDeepDive omite
         // su sección de formats y monta el showcase.
+        // Selector "Elegí el formato" genérico (pdd__formats). Imágenes:
+        // los TARROS DOSIFICADORES DE COSTADO 500ml — los mismos que usa el
+        // shop (pedido del cliente 2026-06-07/09), no los renders frontales -f1.
+        // size = medidas reales de cada fórmula (250 ml · 500 ml). R3 A y B
+        // comparten el tarro violeta.
         formats: [
             {
                 name: "RACE 1",
-                size: "Todo el ciclo",
-                image: "/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp",
+                size: "250 · 500 ml",
+                image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp",
                 color: "#3DA86E",
                 tagline: "NPK concentrado.",
                 description:
@@ -315,8 +320,8 @@ export const productDetails = {
             },
             {
                 name: "RACE 2",
-                size: "Estructura",
-                image: "/imagenes-web/productos/linea-race/1l/race-2-celeste-1l-f1.webp",
+                size: "250 · 500 ml",
+                image: "/imagenes-web/productos/linea-race/500ml/race-2-celeste-tarro-500ml.webp",
                 color: "#3FB5CB",
                 tagline: "Calcio + Nitrógeno.",
                 description:
@@ -324,8 +329,8 @@ export const productDetails = {
             },
             {
                 name: "RACE 3 - A",
-                size: "Crecimiento y Maduración",
-                image: "/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp",
+                size: "250 · 500 ml",
+                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp",
                 color: "#8E24AA",
                 tagline: "PK · parte 1.",
                 description:
@@ -333,8 +338,8 @@ export const productDetails = {
             },
             {
                 name: "RACE 3 - B",
-                size: "Crecimiento y Maduración",
-                image: "/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp",
+                size: "250 · 500 ml",
+                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp",
                 color: "#8E24AA",
                 tagline: "PK · parte 2.",
                 description:
@@ -342,8 +347,8 @@ export const productDetails = {
             },
             {
                 name: "RACE 4",
-                size: "Micro + Magnesio",
-                image: "/imagenes-web/productos/linea-race/1l/race-4-rosa-1l-f1.webp",
+                size: "250 · 500 ml",
+                image: "/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp",
                 color: "#F472B6",
                 tagline: "Micro + Magnesio.",
                 description:
