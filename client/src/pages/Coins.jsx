@@ -367,7 +367,10 @@ function ReferralCard() {
   return (
     <FadeUp style={{ background: "linear-gradient(135deg,rgba(167,139,250,.07),rgba(236,72,153,.04))", border: "1px solid rgba(167,139,250,.25)", borderRadius: 18, padding: "20px 24px", position: "relative", overflow: "hidden", display: "block", marginBottom: 22 }}>
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,transparent,#a78bfa,#ec4899,#a78bfa,transparent)", backgroundSize: "200% 100%", animation: "shimmerLoad 3s linear infinite" }} />
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
+      {/* Moneda decorativa gigante, asimétrica — desbordando la esquina sup. derecha */}
+      <img src={COIN_IMG} alt="" aria-hidden="true" draggable="false"
+        style={{ position: "absolute", top: -64, right: -52, width: 248, height: 248, transform: "rotate(18deg)", opacity: 0.18, pointerEvents: "none", userSelect: "none", filter: "drop-shadow(0 10px 30px rgba(167,139,250,.45))", zIndex: 0 }} />
+      <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
         <div>
           <div style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: "2.5px", textTransform: "uppercase", color: "#a78bfa", fontWeight: 600, marginBottom: 6, display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ width: 18, height: 1, background: "#a78bfa" }} />Programa de referidos
@@ -396,7 +399,7 @@ function ReferralCard() {
       </div>
 
       {link ? (
-        <div style={{ display: "flex", gap: 8, alignItems: "center", padding: "12px 14px", background: "rgba(0,0,0,.4)", border: "1px solid rgba(167,139,250,.3)", borderRadius: 10 }}>
+        <div style={{ position: "relative", zIndex: 1, display: "flex", gap: 8, alignItems: "center", padding: "12px 14px", background: "rgba(0,0,0,.4)", border: "1px solid rgba(167,139,250,.3)", borderRadius: 10 }}>
           <code style={{ flex: 1, fontFamily: "'Gotham', monospace", fontSize: 12, color: "#a78bfa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{link}</code>
           <Pop as="button" onClick={copy}
             style={{ padding: "8px 14px", background: copied ? "#22c55e" : "linear-gradient(135deg,#a78bfa,#ec4899)", color: "#000", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0 }}>
