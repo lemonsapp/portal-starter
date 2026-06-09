@@ -32,11 +32,9 @@ const detail = getProductDetail(cap.slug);
 const isRace = cap.slug === "linea-race";
 const useRaceFormats = isRace;
 // La sección "Cinco fórmulas · Un ciclo entero" (RaceFormatsShowcase, fondo
-// oscuro + imágenes) fue removida por pedido del cliente. Dejamos el flag en
-// false para no montarla. useRaceFormats sigue en true, así el selector de
-// formatos genérico tampoco aparece → Race queda sin sección de formatos.
-// El componente sigue existiendo en components/ por si se reactiva.
-const showRaceFormats = false;
+// oscuro + imágenes) — el cliente la había sacado y pidió volver a colocarla
+// (2026-06-09). Reactivada: Race muestra de nuevo su selector de formatos.
+const showRaceFormats = true;
 const useProductHighlights = !!(detail?.highlights?.[0]?.image);
 
 // Eyebrow por producto para el HUD del top del showcase.
