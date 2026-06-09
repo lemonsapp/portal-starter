@@ -29,12 +29,13 @@ const detail = getProductDetail(cap.slug);
 //     Si no, fallback al pdd__highlights genérico.
 //   - useRaceFormats: solo Race usa el RaceFormatsShowcase con stage
 //     central, partículas y tabs animadas.
-const isRace = cap.slug === "linea-race";
-const useRaceFormats = isRace;
-// La sección "Cinco fórmulas · Un ciclo entero" (RaceFormatsShowcase, fondo
-// oscuro + imágenes) — el cliente la había sacado y pidió volver a colocarla
-// (2026-06-09). Reactivada: Race muestra de nuevo su selector de formatos.
-const showRaceFormats = true;
+// El cliente pidió que Race muestre el selector genérico "Elegí el formato"
+// (mismo que el resto de las internas), no el showcase cinematográfico de Race
+// ("Cinco fórmulas · Un ciclo entero"). 2026-06-09. Por eso useRaceFormats=false
+// → se monta la sección genérica pdd__formats. El RaceFormatsShowcase queda en
+// components/ por si se quiere volver (necesita ambos flags en true).
+const useRaceFormats = false;
+const showRaceFormats = false;
 const useProductHighlights = !!(detail?.highlights?.[0]?.image);
 
 // Eyebrow por producto para el HUD del top del showcase.
