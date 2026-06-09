@@ -214,7 +214,7 @@ export const lineDetails = {
       },
       {
         "title": "Velocidad real",
-        "body": "Diseñado para cultivos donde el tiempo importa: indoor, ciclos cortos, autoflorecientes.",
+        "body": "Indoor, outdoor, ciclos cortos, autoflorecientes y fotoperiódicas.",
         "emoji": "⚡"
       },
       {

@@ -294,7 +294,7 @@ export const productDetails = {
             { title: "pH ideal",               body: "Cada Race trabaja en el rango óptimo del cultivo sin shock de pH.",                     emoji: "⚖" },
             { title: "Estabilidad en mezcla",  body: "Fórmulas mezclables sin precipitar, en el orden indicado.",                             emoji: "✦" },
             { title: "Compatible con Elite",   body: "Race se puede usar con Elite como booster de floración.",                              emoji: "↯" },
-            { title: "Velocidad real",         body: "Diseñado para cultivos donde el tiempo importa: indoor, ciclos cortos, autoflorecientes.",emoji: "⚡" },
+            { title: "Velocidad real",         body: "Indoor, outdoor, ciclos cortos, autoflorecientes y fotoperiódicas.",emoji: "⚡" },
             { title: "Soporte de uso",         body: "Tabla de dosificación clara. Variantes para indoor/outdoor incluidas.",                  emoji: "♥" },
         ],
         // 4 fórmulas con imágenes editoriales (5528, 5529, 5530, 5531)
@@ -571,7 +571,7 @@ export const productDetails = {
         highlights: [
             {
                 kicker: "LIMPIEZA",
-                title: "Cierra con calidad.",
+                title: "Cierre limpio.",
                 body: "Aplicado en los últimos riegos antes del corte, ayuda a vaciar los reservorios internos de la planta de excesos minerales y mejora el bouquet final.",
                 image: "/video/internas/day-0/highlight-01.mp4",
                 mediaType: "video",
