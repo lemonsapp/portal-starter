@@ -145,13 +145,15 @@
   color: var(--c-text);
 }
 .sp-tagline {
-  margin: 18px 0 0;
-  font-family: var(--f-italic, "Fraunces", Georgia, serif);
-  font-style: italic; font-weight: 400;
-  font-size: clamp(1.05rem, 1.6vw, 1.35rem);
-  line-height: 1.5;
+  margin: 16px 0 0;
+  /* Cliente pidió Gotham mayúscula (sin Fraunces italic) — 2026-06-09 */
+  font-family: var(--f-display, "Gotham", sans-serif);
+  font-style: normal; font-weight: 700;
+  font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+  line-height: 1.45; letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--c-text-2);
-  max-width: 46ch;
+  max-width: 48ch;
 }
 
 .sp-pricerow {
