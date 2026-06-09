@@ -303,56 +303,24 @@ export const productDetails = {
         // genérico para Race con stage central + partículas + tabs
         // animadas — cuando slug=linea-race el ProductDeepDive omite
         // su sección de formats y monta el showcase.
-        // Selector "Elegí el formato" genérico (pdd__formats). Imágenes:
-        // los TARROS DOSIFICADORES DE COSTADO 500ml — los mismos que usa el
-        // shop (pedido del cliente 2026-06-07/09), no los renders frontales -f1.
-        // size = medidas reales de cada fórmula (250 ml · 500 ml). R3 A y B
-        // comparten el tarro violeta.
+        // Selector "Elegí el formato" genérico (pdd__formats) por MEDIDA:
+        // tabs 250 ML / 500 ML (pedido del cliente 2026-06-09). Imagen = el
+        // TARRO DOSIFICADOR DE COSTADO en esa medida (los mismos del shop), así
+        // el render cambia visiblemente al clickear. Race 1 verde como
+        // representativo; el sublabel aclara que las 5 fórmulas vienen en esa
+        // medida (no hay un render "familia" en 250ml, sólo en 500ml).
         formats: [
             {
-                name: "RACE 1",
-                size: "250 · 500 ml",
+                name: "250 ML",
+                size: "Las 5 fórmulas",
+                image: "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp",
+                color: "#3DA86E",
+            },
+            {
+                name: "500 ML",
+                size: "Las 5 fórmulas",
                 image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp",
                 color: "#3DA86E",
-                tagline: "NPK concentrado.",
-                description:
-                    "N, P y K en alta concentración: crecimiento vegetativo, raíces fuertes y metabolismo regulado. Se usa durante todo el ciclo.",
-            },
-            {
-                name: "RACE 2",
-                size: "250 · 500 ml",
-                image: "/imagenes-web/productos/linea-race/500ml/race-2-celeste-tarro-500ml.webp",
-                color: "#3FB5CB",
-                tagline: "Calcio + Nitrógeno.",
-                description:
-                    "Paredes celulares fuertes, más raíces y brotes, y mayor resistencia ante plagas y sequías.",
-            },
-            {
-                name: "RACE 3 - A",
-                size: "250 · 500 ml",
-                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp",
-                color: "#8E24AA",
-                tagline: "PK · parte 1.",
-                description:
-                    "Primera de las 2 partes PK. Activa la translocación de azúcares y agranda flores en el pico productivo.",
-            },
-            {
-                name: "RACE 3 - B",
-                size: "250 · 500 ml",
-                image: "/imagenes-web/productos/linea-race/500ml/race-3-violeta-tarro-500ml.webp",
-                color: "#8E24AA",
-                tagline: "PK · parte 2.",
-                description:
-                    "Segunda parte PK. Aplicada en secuencia (1ª → 2ª), sostiene flores densas hasta el cierre del ciclo.",
-            },
-            {
-                name: "RACE 4",
-                size: "250 · 500 ml",
-                image: "/imagenes-web/productos/linea-race/500ml/race-4-rosa-tarro-500ml.webp",
-                color: "#F472B6",
-                tagline: "Micro + Magnesio.",
-                description:
-                    "Microelementos (Fe, Zn, B, Mn, Cu, Mo) y magnesio: activan enzimas, fotosíntesis y división celular.",
             },
         ],
         system: {
