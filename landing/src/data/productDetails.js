@@ -86,16 +86,13 @@ export const productDetails = {
             { title: "Trazabilidad de lote",   body: "Sabés exactamente qué materia prima entró en tu botella.",                                                    emoji: "✓" },
         ],
         // Render por medida, en progresión ascendente real (no a escala):
-        //   • 250ml/500ml → frasco chico (Part 1 / Part 2, mismo formato físico).
-        //     No hay asset propio de 500ml, así que se usa el Part 2 del frasco
-        //     chico para diferenciarlo del 250 (Part 1).
-        //   • 1L → frasco de 1 litro (perspectiva, Part 1).
+        //   • 250ml/500ml/1L → renders "unificado" (2026-06-10, fotos nuevas del cliente).
         //   • 5L/10L/20L → bidón ELITE MAX (perspectiva single, mismo estilo que
         //     5L) para que las medidas crezcan de forma consistente.
         formats: [
-            { name: "250 ML",   size: "250ml",  image: "/imagenes-web/productos/linea-elite/elite-part-1.png" },
-            { name: "500 ML",   size: "500ml",  image: "/imagenes-web/productos/linea-elite/elite-part-2.png" },
-            { name: "1 LITRO",  size: "1L",     image: "/imagenes-web/productos/linea-elite/1l/parte-1-perspectiva-1l.png" },
+            { name: "250 ML",   size: "250ml",  image: "/imagenes-web/productos/linea-elite/elite-250ml-unificado.png" },
+            { name: "500 ML",   size: "500ml",  image: "/imagenes-web/productos/linea-elite/elite-500ml-unificado.png" },
+            { name: "1 LITRO",  size: "1L",     image: "/imagenes-web/productos/linea-elite/elite-1l-unificado.png" },
             { name: "5 LITROS", size: "5L",     image: "/imagenes-web/productos/elite-max/a-5-lts-perspectiva-1.png" },
             { name: "10 LITROS",size: "10L",    image: "/imagenes-web/productos/elite-max/a-10-lts-perspectiva-1.png" },
             { name: "20 LITROS",size: "20L",    image: "/imagenes-web/productos/elite-max/a-20-lts-perspectiva-1.png" },
