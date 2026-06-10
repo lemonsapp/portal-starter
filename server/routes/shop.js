@@ -1032,8 +1032,9 @@ async function migrate() {
        WHERE slug='linea-elite' AND NOT (meta ? 'bundle')`, "bundle elite");
 
   // ─── Packs de puntos (F3.2): comprar puntos como producto del shop ─────────
-  // Precio = puntos × buy_price ($1.600/pto). Al pagar, onOrderPaid acredita
-  // meta.points_pack como compra_puntos (ver shopNotify.creditOrderPoints).
+  // Precio = puntos × buy_price ($3.600/pto, Sistema de Puntos v1.0). Al pagar,
+  // onOrderPaid acredita meta.points_pack como compra_puntos (ver
+  // shopNotify.creditOrderPoints).
   await safeQuery(
     `INSERT INTO product_categories (slug, name, description, sort_order)
      VALUES ('puntos', 'Puntos', 'Comprá puntos Holistic y canjealos por descuentos o premios', 50)
@@ -1042,12 +1043,20 @@ async function migrate() {
     INSERT INTO products (slug, name, short_description, price_cents, sku, category_id, featured, sort_order, meta)
     SELECT v.slug, v.name, v.short, v.price, v.sku, c.id, FALSE, v.sort, v.meta::jsonb
     FROM (VALUES
-      ('pack-50-puntos',  'Pack 50 puntos',  'Sumá 50 puntos a tu cuenta (se acreditan al pagar).',   8000000,  'PACK-PTS-50',  'puntos', 50, '{"points_pack":50}'),
-      ('pack-100-puntos', 'Pack 100 puntos', 'Sumá 100 puntos a tu cuenta (se acreditan al pagar).',  16000000, 'PACK-PTS-100', 'puntos', 51, '{"points_pack":100}'),
-      ('pack-250-puntos', 'Pack 250 puntos', 'Sumá 250 puntos a tu cuenta (se acreditan al pagar).',  40000000, 'PACK-PTS-250', 'puntos', 52, '{"points_pack":250}')
+      ('pack-50-puntos',  'Pack 50 puntos',  'Sumá 50 puntos a tu cuenta (se acreditan al pagar).',   18000000, 'PACK-PTS-50',  'puntos', 50, '{"points_pack":50}'),
+      ('pack-100-puntos', 'Pack 100 puntos', 'Sumá 100 puntos a tu cuenta (se acreditan al pagar).',  36000000, 'PACK-PTS-100', 'puntos', 51, '{"points_pack":100}'),
+      ('pack-250-puntos', 'Pack 250 puntos', 'Sumá 250 puntos a tu cuenta (se acreditan al pagar).',  90000000, 'PACK-PTS-250', 'puntos', 52, '{"points_pack":250}')
     ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
     JOIN product_categories c ON c.slug = v.cat_slug
     ON CONFLICT (slug) DO NOTHING`, "packs puntos");
+  // Migración v1.0: re-precio de packs a $3.600/pto en deploys que aún tengan el
+  // precio previo ($1.600/pto). Acotado al valor viejo → no pisa un precio que el
+  // admin haya cambiado a mano.
+  await safeQuery(`
+    UPDATE products SET price_cents=18000000 WHERE slug='pack-50-puntos'  AND price_cents=8000000;
+    UPDATE products SET price_cents=36000000 WHERE slug='pack-100-puntos' AND price_cents=16000000;
+    UPDATE products SET price_cents=90000000 WHERE slug='pack-250-puntos' AND price_cents=40000000;
+  `, "repricing packs puntos v1.0");
 
   // Imagen de los packs de puntos: no hay render fotográfico, usamos un SVG
   // on-brand (💎 Puntos Holistic) servido desde landing/public. NOT EXISTS para
@@ -1074,10 +1083,6 @@ async function migrate() {
     INSERT INTO products (slug, name, short_description, price_cents, sku, category_id, featured, sort_order, meta)
     SELECT v.slug, v.name, v.short, v.price, v.sku, c.id, FALSE, v.sort, v.meta::jsonb
     FROM (VALUES
-      ('croper-simple-x10',    'Croper Simple x10 unidades',    'Croppers simples para guiado de ramas. Pack x10.',     736100,  'ACC-CROP-S10', 'accesorios', 60, '{"accesorio":true}'),
-      ('croper-regulable-x10', 'Croper Regulable x10 unidades', 'Croppers regulables para guiado de ramas. Pack x10.',  1200600, 'ACC-CROP-R10', 'accesorios', 61, '{"accesorio":true}'),
-      ('tutores-x10',          'Tutores x10 unidades',          'Tutores de sostén para plantas. Pack x10.',            1134400, 'ACC-TUT-10',   'accesorios', 62, '{"accesorio":true}'),
-      ('maceta-x10',           'Maceta x10 unidades',           'Macetas para cultivo. Pack x10.',                      2159000, 'ACC-MAC-10',   'accesorios', 63, '{"accesorio":true}'),
       ('filtro-de-agua',       'Filtro de agua',                'Filtro de agua para riego.',                           8142000, 'ACC-FILTRO',   'accesorios', 64, '{"accesorio":true}')
     ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
     JOIN product_categories c ON c.slug = v.cat_slug
@@ -1086,15 +1091,20 @@ async function migrate() {
     INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
     SELECT p.id, v.url, p.name, 0, TRUE
     FROM (VALUES
-      ('croper-simple-x10',    '/imagenes-web/productos/accesorios/croper-simple-x10.jpg'),
-      ('croper-regulable-x10', '/imagenes-web/productos/accesorios/croper-regulable-x10.png'),
-      ('tutores-x10',          '/imagenes-web/productos/accesorios/tutores-x10.jpg'),
-      ('maceta-x10',           '/imagenes-web/productos/accesorios/maceta-x10.png'),
       ('filtro-de-agua',       '/imagenes-web/productos/accesorios/filtro-de-agua.jpg')
     ) AS v(slug, url)
     JOIN products p ON p.slug = v.slug
     WHERE NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `, "img accesorios");
+  // Croper / Tutores / Maceta fuera del catálogo (pedido cliente 2026-06-10).
+  // Desactivación, no DELETE: pueden estar en orders viejas (FK ON DELETE SET NULL,
+  // pero conservamos la fila para el historial). Idempotente por el guard active=TRUE.
+  await safeQuery(`
+    UPDATE products SET active = FALSE
+    WHERE active = TRUE AND slug IN (
+      'croper-simple-x10','croper-regulable-x10','tutores-x10','maceta-x10'
+    )
+  `, "deactivate croper/tutores/maceta");
 
   // ─── Re-author autoritativo de imágenes (2026-06-08) ──────────────────────
   // Última palabra sobre product_images: para cada slug del set canónico
