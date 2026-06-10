@@ -66,7 +66,13 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
       CREATE TABLE IF NOT EXISTS point_config (
         key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )`);
-    await db.query(`INSERT INTO point_config (key, value) VALUES ('peso_per_point','2000'),('buy_price','1600') ON CONFLICT (key) DO NOTHING`);
+    await db.query(`INSERT INTO point_config (key, value) VALUES ('peso_per_point','4000'),('buy_price','3600') ON CONFLICT (key) DO NOTHING`);
+    // Sistema de Puntos v1.0: la tasa de cambio pasó a 1 punto = $4.000 de valor
+    // de canje, y comprar 1 punto cuesta $3.600 (10% de beneficio). Migrar deploys
+    // que aún tengan los valores previos (2000/1600), sin pisar un valor que el
+    // admin haya customizado a propósito.
+    await db.query(`UPDATE point_config SET value='4000', updated_at=NOW() WHERE key='peso_per_point' AND value='2000'`);
+    await db.query(`UPDATE point_config SET value='3600', updated_at=NOW() WHERE key='buy_price' AND value='1600'`);
     // Backfill: asignar customer_code a usuarios que no tengan (bounded).
     const pend = await db.query(`SELECT id FROM users WHERE customer_code IS NULL LIMIT 5000`);
     for (const u of pend.rows) { await ensureCustomerCode(u.id); }
@@ -122,22 +128,42 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_point_redemptions_user ON point_redemptions(user_id, created_at DESC)`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_point_redemptions_status ON point_redemptions(status, created_at DESC)`);
 
-    // Seed del catálogo (valores del documento Holistic). Idempotente por slug.
+    // Seed del catálogo (valores del documento Holistic v1.0). Idempotente por slug.
+    // Descuentos: §5.2 — 5%=150 … 40%=1.250. Premios: §5.1 — Pack/Tensores/Gel=200,
+    // Dije Don Rouch=500 (premio aspiracional máximo, valor de referencia $420.000).
     await db.query(`
       INSERT INTO point_rewards (slug, kind, label, description, cost_points, discount_pct, market_value_cents, stock, sort_order) VALUES
-        ('disc-5',  'descuento', '5% de descuento',  'Cupón de 5% off en tu próximo pedido',  50,  5,  NULL, NULL, 1),
-        ('disc-10', 'descuento', '10% de descuento', 'Cupón de 10% off en tu próximo pedido', 88,  10, NULL, NULL, 2),
-        ('disc-15', 'descuento', '15% de descuento', 'Cupón de 15% off en tu próximo pedido', 125, 15, NULL, NULL, 3),
-        ('disc-20', 'descuento', '20% de descuento', 'Cupón de 20% off en tu próximo pedido', 175, 20, NULL, NULL, 4),
-        ('disc-25', 'descuento', '25% de descuento', 'Cupón de 25% off en tu próximo pedido', 225, 25, NULL, NULL, 5),
-        ('disc-30', 'descuento', '30% de descuento', 'Cupón de 30% off en tu próximo pedido', 300, 30, NULL, NULL, 6),
-        ('disc-35', 'descuento', '35% de descuento', 'Cupón de 35% off en tu próximo pedido', 400, 35, NULL, NULL, 7),
-        ('disc-40', 'descuento', '40% de descuento', 'Cupón de 40% off — premio máximo',       500, 40, NULL, NULL, 8),
-        ('premio-pack',     'premio', 'Pack Accesorios Holistic', 'Pack de accesorios de marca',          22, NULL, 3500000,  NULL, 20),
-        ('premio-tensores', 'premio', 'Tensores de red',          'Tensores de red para cultivo',         22, NULL, 3500000,  NULL, 21),
-        ('premio-gel',      'premio', 'Gel Cloner Holistic',      'Gel enraizante de la línea Holistic',  25, NULL, 4000000,  NULL, 22),
-        ('premio-dije',     'premio', 'Dije Don Rouch',           'Joya exclusiva de la marca',           88, NULL, 14000000, NULL, 23)
+        ('disc-5',  'descuento', '5% de descuento',  'Cupón de 5% off en tu próximo pedido',  150,  5,  NULL, NULL, 1),
+        ('disc-10', 'descuento', '10% de descuento', 'Cupón de 10% off en tu próximo pedido', 250,  10, NULL, NULL, 2),
+        ('disc-15', 'descuento', '15% de descuento', 'Cupón de 15% off en tu próximo pedido', 350,  15, NULL, NULL, 3),
+        ('disc-20', 'descuento', '20% de descuento', 'Cupón de 20% off en tu próximo pedido', 480,  20, NULL, NULL, 4),
+        ('disc-25', 'descuento', '25% de descuento', 'Cupón de 25% off en tu próximo pedido', 620,  25, NULL, NULL, 5),
+        ('disc-30', 'descuento', '30% de descuento', 'Cupón de 30% off en tu próximo pedido', 800,  30, NULL, NULL, 6),
+        ('disc-35', 'descuento', '35% de descuento', 'Cupón de 35% off en tu próximo pedido', 1000, 35, NULL, NULL, 7),
+        ('disc-40', 'descuento', '40% de descuento', 'Cupón de 40% off — premio máximo',       1250, 40, NULL, NULL, 8),
+        ('premio-pack',     'premio', 'Pack Accesorios Holistic', 'Pack de accesorios de marca',          200, NULL, 3500000,  NULL, 20),
+        ('premio-tensores', 'premio', 'Tensores de red',          'Tensores de red para cultivo',         200, NULL, 3500000,  NULL, 21),
+        ('premio-gel',      'premio', 'Gel Cloner Holistic',      'Gel enraizante de la línea Holistic',  200, NULL, 4000000,  NULL, 22),
+        ('premio-dije',     'premio', 'Dije Don Rouch',           'Joya exclusiva de la marca',           500, NULL, 42000000, NULL, 23)
       ON CONFLICT (slug) DO NOTHING`);
+
+    // Migración v1.0: actualizar deploys existentes a los nuevos costos. Cada UPDATE
+    // está acotado al valor previo conocido → idempotente y sin pisar ediciones que
+    // el admin haya hecho a propósito desde el panel de canjes.
+    await db.query(`
+      UPDATE point_rewards SET cost_points=150  WHERE slug='disc-5'         AND cost_points=50;
+      UPDATE point_rewards SET cost_points=250  WHERE slug='disc-10'        AND cost_points=88;
+      UPDATE point_rewards SET cost_points=350  WHERE slug='disc-15'        AND cost_points=125;
+      UPDATE point_rewards SET cost_points=480  WHERE slug='disc-20'        AND cost_points=175;
+      UPDATE point_rewards SET cost_points=620  WHERE slug='disc-25'        AND cost_points=225;
+      UPDATE point_rewards SET cost_points=800  WHERE slug='disc-30'        AND cost_points=300;
+      UPDATE point_rewards SET cost_points=1000 WHERE slug='disc-35'        AND cost_points=400;
+      UPDATE point_rewards SET cost_points=1250 WHERE slug='disc-40'        AND cost_points=500;
+      UPDATE point_rewards SET cost_points=200  WHERE slug='premio-pack'     AND cost_points=22;
+      UPDATE point_rewards SET cost_points=200  WHERE slug='premio-tensores' AND cost_points=22;
+      UPDATE point_rewards SET cost_points=200  WHERE slug='premio-gel'      AND cost_points=25;
+      UPDATE point_rewards SET cost_points=500, market_value_cents=42000000 WHERE slug='premio-dije' AND cost_points=88;
+    `);
     console.log("[MIGRATION] canjes ready (point_rewards + point_redemptions)");
   } catch (e) { console.error("[MIGRATION canjes ERROR]", e.message); }
 
@@ -164,7 +190,7 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
 })();
 
 // Catálogo de acciones de Instagram (puntos + límite, según el documento).
-// Todas requieren mencionar @hgrowshop en la publicación.
+// Todas requieren mencionar @holistic.arg en la publicación.
 const IG_ACTIONS = [
   { key: "like",          label: "Like a publicación oficial",       points: 5,   limit: "Máx 1 por día" },
   { key: "comment",       label: "Comentario en publicación",        points: 15,  limit: "Máx 1 por publicación" },

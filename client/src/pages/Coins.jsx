@@ -910,7 +910,7 @@ function Instagram() {
     <div>
       <div style={{ background: "linear-gradient(135deg,rgba(236,72,153,0.08),rgba(167,139,250,0.05))", border: "1px solid rgba(236,72,153,0.25)", borderRadius: 16, padding: "16px 20px", marginBottom: 22 }}>
         <div style={{ fontWeight: 900, fontSize: 16, color: "#fff", marginBottom: 4 }}>📸 Ganá puntos con Instagram</div>
-        <div style={{ fontSize: 13, color: "#aaa", lineHeight: 1.5 }}>Mencioná <b style={{ color: "#ec4899" }}>@hgrowshop</b> en tu publicación, enviá la evidencia (link o captura) y sumás puntos cuando la aprobamos.</div>
+        <div style={{ fontSize: 13, color: "#aaa", lineHeight: 1.5 }}>Mencioná <b style={{ color: "#ec4899" }}>@holistic.arg</b> en tu publicación, enviá la evidencia (link o captura) y sumás puntos cuando la aprobamos.</div>
       </div>
 
       {msg && <div style={{ background: msg.ok ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", border: `1px solid ${msg.ok ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.4)"}`, borderRadius: 12, padding: "12px 18px", color: msg.ok ? "#22c55e" : "#ef4444", fontWeight: 700, fontSize: 14, marginBottom: 18 }}>{msg.text}</div>}
