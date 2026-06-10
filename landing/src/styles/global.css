@@ -6152,6 +6152,12 @@ html.is-loading body {
 .pdd__format-card.is-active img {
     filter: drop-shadow(0 48px 72px rgba(0, 0, 0, 0.30));
 }
+/* Elite: renders un poco más chicos en "Elegí el formato" (pedido cliente
+   2026-06-10). Scope por data-slug → no afecta a Pro/Race/Bio/Day-0/Cloner. */
+[data-slug="linea-elite"] .pdd__format-card img {
+    max-width: 76%;
+    max-height: 80%;
+}
 .pdd__formats-tabs {
     width: min(1100px, 92vw);
     margin: clamp(30px, 4vh, 50px) auto 0;
