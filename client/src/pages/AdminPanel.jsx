@@ -170,7 +170,7 @@ export default function AdminPanel() {
 function PuntosManualTab() {
   const [code, setCode] = useState("");
   const [customer, setCustomer] = useState(null);   // { id, name, email, customer_code, balance }
-  const [pesoPerPoint, setPesoPerPoint] = useState(2000);
+  const [earnPerPoint, setEarnPerPoint] = useState(12000);
   const [looking, setLooking] = useState(false);
   const [lookupErr, setLookupErr] = useState("");
 
@@ -190,7 +190,7 @@ function PuntosManualTab() {
       const r = await fetch(`${API}/coins/lookup/${encodeURIComponent(c)}`, { headers: authHdr() });
       const d = await r.json();
       if (!r.ok) setLookupErr(d.error || "Cliente no encontrado");
-      else { setCustomer(d.user); setPesoPerPoint(d.peso_per_point || 2000); }
+      else { setCustomer(d.user); setEarnPerPoint(d.earn_per_point || 12000); }
     } catch { setLookupErr("Error de conexión"); }
     setLooking(false);
   }
@@ -198,7 +198,7 @@ function PuntosManualTab() {
   const pesos = Math.max(0, Math.floor(Number(amount) || 0));
   const previewPoints = override !== ""
     ? Math.max(0, Math.floor(Number(override) || 0))
-    : Math.floor(pesos / (pesoPerPoint || 2000));
+    : Math.floor(pesos / (earnPerPoint || 12000));
 
   async function submit() {
     if (!customer || previewPoints <= 0) return;
@@ -284,7 +284,7 @@ function PuntosManualTab() {
             <span style={{ fontWeight: 900, fontSize: 20, color: "var(--brand-primary, #3B82F6)" }}>+{previewPoints} pts</span>
           </div>
           <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 6 }}>
-            1 punto = ${pesoPerPoint.toLocaleString("es-AR")} · redondeo hacia abajo.
+            1 punto cada ${earnPerPoint.toLocaleString("es-AR")} · redondeo hacia abajo.
           </div>
 
           {err && <p style={{ color: "#fca5a5", fontSize: 13, marginTop: 10 }}>{err}</p>}

@@ -970,7 +970,7 @@ export default function Coins() {
   const [showSpin, setShowSpin] = useState(false);
   const [particles, setParticles] = useState([]);
   const [customerCode, setCustomerCode] = useState("");
-  const [pesoPerPoint, setPesoPerPoint] = useState(2000);
+  const [pesoPerPoint, setPesoPerPoint] = useState(4000);
   const [copiedCode, setCopiedCode] = useState(false);
   const [userId, setUserId] = useState(null);
 
@@ -980,11 +980,11 @@ export default function Coins() {
       if (d.user) {
         setLevel(d.user.level||"bronze");
         setUserId(d.user.id||null);
-        // Sistema de Puntos: traer código de cliente + valor del punto.
+        // Sistema de Puntos: traer código de cliente + valor de canje del punto.
         if (d.user.id) {
           fetch(`${API}/coins/${d.user.id}`,{headers:hdrs()})
             .then(r=>r.json())
-            .then(c=>{ setCustomerCode(c.customer_code||""); setPesoPerPoint(c.peso_per_point||2000); })
+            .then(c=>{ setCustomerCode(c.customer_code||""); setPesoPerPoint(c.peso_per_point||4000); })
             .catch(()=>{});
         }
       }

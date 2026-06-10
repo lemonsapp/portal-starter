@@ -66,13 +66,18 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
       CREATE TABLE IF NOT EXISTS point_config (
         key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )`);
-    await db.query(`INSERT INTO point_config (key, value) VALUES ('peso_per_point','4000'),('buy_price','3600') ON CONFLICT (key) DO NOTHING`);
-    // Sistema de Puntos v1.0: la tasa de cambio pasó a 1 punto = $4.000 de valor
-    // de canje, y comprar 1 punto cuesta $3.600 (10% de beneficio). Migrar deploys
-    // que aún tengan los valores previos (2000/1600), sin pisar un valor que el
-    // admin haya customizado a propósito.
+    await db.query(`INSERT INTO point_config (key, value) VALUES ('peso_per_point','4000'),('buy_price','3600'),('earn_per_point','12000') ON CONFLICT (key) DO NOTHING`);
+    // Sistema de Puntos v9: se separa la TASA DE ACUMULACIÓN del VALOR DE CANJE.
+    //   • earn_per_point = $12.000 → se gana 1 punto cada $12.000 gastados (compra web/externa).
+    //   • peso_per_point = $4.000  → valor de canje de cada punto (equivalencia en $ del saldo).
+    //   • buy_price      = $3.600  → costo de comprar 1 punto directo (10% off vs el valor de canje).
+    // Migraciones acotadas al valor previo conocido → idempotentes y sin pisar
+    // ediciones que el admin haya hecho a propósito desde el panel.
     await db.query(`UPDATE point_config SET value='4000', updated_at=NOW() WHERE key='peso_per_point' AND value='2000'`);
     await db.query(`UPDATE point_config SET value='3600', updated_at=NOW() WHERE key='buy_price' AND value='1600'`);
+    // v1.0 → v9: en v1.0 la acumulación usaba peso_per_point ($4.000). Ahora la
+    // acumulación tiene su propia clave earn_per_point ($12.000); el INSERT de arriba
+    // ya la crea en deploys existentes (peso_per_point queda como valor de canje).
     // Backfill: asignar customer_code a usuarios que no tengan (bounded).
     const pend = await db.query(`SELECT id FROM users WHERE customer_code IS NULL LIMIT 5000`);
     for (const u of pend.rows) { await ensureCustomerCode(u.id); }
@@ -410,9 +415,9 @@ router.get("/:userId", authRequired, async (req, res) => {
     const nextLevel   = [...LEVELS].reverse().find(l => l.min > coins.balance) ?? null;
     const coinsToNext = nextLevel ? nextLevel.min - coins.balance : null;
 
-    // Sistema de Puntos: código de cliente (lazy) + valor del punto en $.
+    // Sistema de Puntos: código de cliente (lazy) + valor de canje del punto en $.
     const customerCode = await ensureCustomerCode(userId);
-    const pesoPerPoint = await getPointConfig("peso_per_point", 2000);
+    const pesoPerPoint = await getPointConfig("peso_per_point", 4000);
 
     // Sprint 4: removida tabla shipments (legacy). Las queries no
     // joinen más; shipment_code queda como undefined en el response (los
@@ -581,8 +586,9 @@ router.get("/lookup/:code", authRequired, requireRole(["operator", "admin"]), as
       [code]
     );
     if (!uq.rows[0]) return res.status(404).json({ error: "Cliente no encontrado" });
-    const pesoPerPoint = await getPointConfig("peso_per_point", 2000);
-    res.json({ user: uq.rows[0], peso_per_point: pesoPerPoint });
+    // Tasa de ACUMULACIÓN (no la de canje): el panel previsualiza puntos por compra externa.
+    const earnPerPoint = await getPointConfig("earn_per_point", 12000);
+    res.json({ user: uq.rows[0], earn_per_point: earnPerPoint });
   } catch (e) {
     console.error("COINS LOOKUP ERROR:", e);
     res.status(500).json({ error: e.message });
@@ -591,7 +597,7 @@ router.get("/lookup/:code", authRequired, requireRole(["operator", "admin"]), as
 
 // ── POST /coins/manual-credit — carga manual de puntos por compra externa ─────
 // Body: { customer_code, amount_pesos?, canal?, descripcion?, points_override? }
-// Puntos = floor(amount_pesos / peso_per_point), o points_override si se envía.
+// Puntos = floor(amount_pesos / earn_per_point), o points_override si se envía.
 router.post("/manual-credit", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
   try {
     const { customer_code, amount_pesos, canal, descripcion, points_override } = req.body;
@@ -602,13 +608,13 @@ router.post("/manual-credit", authRequired, requireRole(["operator", "admin"]), 
     const u = uq.rows[0];
     if (!u) return res.status(404).json({ error: "Cliente no encontrado" });
 
-    const pesoPerPoint = await getPointConfig("peso_per_point", 2000);
+    const earnPerPoint = await getPointConfig("earn_per_point", 12000);
     const pesos = Math.max(0, Math.floor(Number(amount_pesos) || 0));
     let points;
     if (points_override !== undefined && points_override !== null && points_override !== "") {
       points = Math.max(0, Math.floor(Number(points_override)));
     } else {
-      points = Math.floor(pesos / pesoPerPoint); // redondeo hacia abajo (regla del spec)
+      points = Math.floor(pesos / earnPerPoint); // 1 punto cada $12.000, redondeo hacia abajo (spec v9)
     }
     if (points <= 0) return res.status(400).json({ error: "Los puntos a acreditar dan 0 — revisá el monto." });
 

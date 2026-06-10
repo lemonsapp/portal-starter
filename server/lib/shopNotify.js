@@ -375,7 +375,7 @@ async function addPoints(userId, points, type, reason, canal, amountCents) {
 // F3: acreditación automática de puntos al confirmarse el pago de una orden web.
 // Idempotente (orders.points_credited). Solo para compras de usuarios logueados.
 // Excluye envío y descuento. Detecta "packs de puntos" (product.meta.points_pack)
-// y los acredita aparte como compra_puntos (sin ganar 1pt/$2000 sobre ese ítem).
+// y los acredita aparte como compra_puntos (sin ganar 1pt/$12.000 sobre ese ítem).
 async function creditOrderPoints(order) {
   if (!order?.user_id || !order?.id) return;
   try {
@@ -397,15 +397,16 @@ async function creditOrderPoints(order) {
       if (pp > 0) { packPoints += pp * it.quantity; packCents += it.line_total_cents; }
     }
 
-    let pesoPerPoint = 2000;
+    // Tasa de acumulación (Sistema de Puntos v9): 1 punto cada $12.000 gastados.
+    let earnPerPoint = 12000;
     try {
-      const cfg = await db.query(`SELECT value FROM point_config WHERE key='peso_per_point'`);
+      const cfg = await db.query(`SELECT value FROM point_config WHERE key='earn_per_point'`);
       const v = parseInt(cfg.rows[0]?.value, 10);
-      if (Number.isFinite(v) && v > 0) pesoPerPoint = v;
+      if (Number.isFinite(v) && v > 0) earnPerPoint = v;
     } catch (_) {}
 
     const baseCents = Math.max(0, (order.subtotal_cents || 0) - (order.discount_cents || 0) - packCents);
-    const earnPoints = Math.floor((baseCents / 100) / pesoPerPoint);
+    const earnPoints = Math.floor((baseCents / 100) / earnPerPoint);
 
     if (packPoints > 0) {
       await addPoints(order.user_id, packPoints, "compra_puntos",

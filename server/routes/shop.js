@@ -1032,9 +1032,9 @@ async function migrate() {
        WHERE slug='linea-elite' AND NOT (meta ? 'bundle')`, "bundle elite");
 
   // ─── Packs de puntos (F3.2): comprar puntos como producto del shop ─────────
-  // Precio = puntos × buy_price ($3.600/pto, Sistema de Puntos v1.0). Al pagar,
-  // onOrderPaid acredita meta.points_pack como compra_puntos (ver
-  // shopNotify.creditOrderPoints).
+  // Precio = puntos × buy_price ($3.600/pto). Lineup según spec v9 §11.4:
+  // 10 / 25 / 50 / 100 puntos. Al pagar, onOrderPaid acredita meta.points_pack
+  // como compra_puntos (ver shopNotify.creditOrderPoints).
   await safeQuery(
     `INSERT INTO product_categories (slug, name, description, sort_order)
      VALUES ('puntos', 'Puntos', 'Comprá puntos Holistic y canjealos por descuentos o premios', 50)
@@ -1043,9 +1043,10 @@ async function migrate() {
     INSERT INTO products (slug, name, short_description, price_cents, sku, category_id, featured, sort_order, meta)
     SELECT v.slug, v.name, v.short, v.price, v.sku, c.id, FALSE, v.sort, v.meta::jsonb
     FROM (VALUES
-      ('pack-50-puntos',  'Pack 50 puntos',  'Sumá 50 puntos a tu cuenta (se acreditan al pagar).',   18000000, 'PACK-PTS-50',  'puntos', 50, '{"points_pack":50}'),
-      ('pack-100-puntos', 'Pack 100 puntos', 'Sumá 100 puntos a tu cuenta (se acreditan al pagar).',  36000000, 'PACK-PTS-100', 'puntos', 51, '{"points_pack":100}'),
-      ('pack-250-puntos', 'Pack 250 puntos', 'Sumá 250 puntos a tu cuenta (se acreditan al pagar).',  90000000, 'PACK-PTS-250', 'puntos', 52, '{"points_pack":250}')
+      ('pack-10-puntos',  'Pack 10 puntos',  'Sumá 10 puntos a tu cuenta (se acreditan al pagar).',    3600000, 'PACK-PTS-10',  'puntos', 50, '{"points_pack":10}'),
+      ('pack-25-puntos',  'Pack 25 puntos',  'Sumá 25 puntos a tu cuenta (se acreditan al pagar).',    9000000, 'PACK-PTS-25',  'puntos', 51, '{"points_pack":25}'),
+      ('pack-50-puntos',  'Pack 50 puntos',  'Sumá 50 puntos a tu cuenta (se acreditan al pagar).',   18000000, 'PACK-PTS-50',  'puntos', 52, '{"points_pack":50}'),
+      ('pack-100-puntos', 'Pack 100 puntos', 'Sumá 100 puntos a tu cuenta (se acreditan al pagar).',  36000000, 'PACK-PTS-100', 'puntos', 53, '{"points_pack":100}')
     ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
     JOIN product_categories c ON c.slug = v.cat_slug
     ON CONFLICT (slug) DO NOTHING`, "packs puntos");
@@ -1055,8 +1056,14 @@ async function migrate() {
   await safeQuery(`
     UPDATE products SET price_cents=18000000 WHERE slug='pack-50-puntos'  AND price_cents=8000000;
     UPDATE products SET price_cents=36000000 WHERE slug='pack-100-puntos' AND price_cents=16000000;
-    UPDATE products SET price_cents=90000000 WHERE slug='pack-250-puntos' AND price_cents=40000000;
   `, "repricing packs puntos v1.0");
+  // Alineación v9 §11.4: lineup 10/25/50/100. Reordenar los packs que ya existían
+  // y desactivar pack-250 (no DELETE: puede estar en orders viejas). Idempotente.
+  await safeQuery(`
+    UPDATE products SET sort_order=52 WHERE slug='pack-50-puntos'  AND sort_order=50;
+    UPDATE products SET sort_order=53 WHERE slug='pack-100-puntos' AND sort_order=51;
+    UPDATE products SET active=FALSE  WHERE slug='pack-250-puntos' AND active=TRUE;
+  `, "lineup packs puntos v9");
 
   // Imagen de los packs de puntos: no hay render fotográfico, usamos un SVG
   // on-brand (💎 Puntos Holistic) servido desde landing/public. NOT EXISTS para
@@ -1065,7 +1072,7 @@ async function migrate() {
     INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
     SELECT p.id, '/imagenes-web/productos/puntos/pack-puntos.svg', p.name, 0, TRUE
     FROM products p
-    WHERE p.slug IN ('pack-50-puntos','pack-100-puntos','pack-250-puntos')
+    WHERE p.slug IN ('pack-10-puntos','pack-25-puntos','pack-50-puntos','pack-100-puntos')
       AND NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `, "img packs puntos");
 
