@@ -212,7 +212,7 @@ export const productDetails = {
             { label: "Composición",     value: "NPK + Mg + S + micronutrientes" },
             { label: "Forma",            value: "Sólido cristalino hidrosoluble" },
             { label: "Solubilidad",      value: "100% en agua" },
-            { label: "Dosis",            value: "0.5 – 1.5 g/L según etapa" },
+            { label: "Dosis",            value: "0,25 a 1 g/L según etapa" },
             { label: "Conservación",     value: "Lugar seco, hasta 36 meses" },
             { label: "Presentaciones",   value: "25 g · 100 g · 500 g · 1 kg" },
             { label: "Etapas",           value: "Enraizante · Vegetativo · Preflora · Flora" },
@@ -483,10 +483,10 @@ export const productDetails = {
             },
         ],
         bigStat: {
-            num: 90,
+            num: 100,
             suffix: "%+",
             label: "PRENDIMIENTO",
-            body: "Tasa de prendimiento promedio en condiciones controladas (humedad >70%, temperatura 22-26°C, sustrato fresco). Validado en ensayos con esquejes de variedades comerciales.",
+            body: "Tasa de prendimiento promedio en condiciones controladas (humedad >70%, temperatura 22-26°C). Validado en ensayos con esquejes de variedades comerciales.",
         },
         features: [
             { title: "Auxinas activas",      body: "Combinación IBA + NAA en concentración óptima para inducir raíz adventicia.",     emoji: "✦" },

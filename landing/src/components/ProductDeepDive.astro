@@ -489,7 +489,7 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
         <section class="pdd__guides" id="guias" data-pdd-guides>
             <div class="pdd__guides-head">
                 <p class="pdd__section-eyebrow">GUÍA DE USO</p>
-                <h2 class="pdd__section-title">Cómo usar {cap.nombreDestacado}.</h2>
+                <h2 class="pdd__section-title">Cómo usar {cap.usoNombre || cap.nombreDestacado}.</h2>
             </div>
             <div class="pdd__guides-grid">
                 {guides.map((g) => (

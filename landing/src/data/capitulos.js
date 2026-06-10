@@ -171,6 +171,8 @@ export const capitulos = [
         kicker: "ETAPA 06 · COSECHA",
         nombreCorto: "DAY",
         nombreDestacado: "0",
+        // Para títulos donde "0" solo queda ambiguo (ej: "Cómo usar Day 0").
+        usoNombre: "Day 0",
 
         // SEO meta — v3 §7
         seoTitle: "Finalizador de Cosecha para Cultivo Indoor | Day 0 — Holistic",
