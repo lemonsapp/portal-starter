@@ -21,7 +21,7 @@ export const productDetails = {
             headline: "Fertilizante equilibrado\npara hidroponía y sustratos.",
             claim: "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de hidroponía, NFT, DWC, coco y sustratos. Concentración máxima de NPK en cada riego, pH auto-buffer, resultados consistentes cosecha tras cosecha.",
             ctaPrimary:   { label: "COMPRAR ELITE",        href: "/shop?categoria=elite" },
-            ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO", href: "#guias" },
             color: "#C9A34E",
             colorSoft: "#F7F3EA",
             // Hero BANNER (tormenta/rayos) — reemplaza al video por pedido
@@ -126,7 +126,7 @@ export const productDetails = {
             headline: "Fertilizante hidrosoluble\npara sustratos compuestos.",
             claim: "Cuatro fertilizantes etapa-específicos en formato sólido hidrosoluble para sustratos compuestos. Enraizante, Vegetativo, Preflora y Flora: cada uno con el ratio NPK exacto para esa fase. Pesás, disolvés, regás. EC programable, pH estable, mismo resultado en cada lote. Compatible con autoflorecientes y fotoperiódicas.",
             ctaPrimary:   { label: "COMPRAR PRO",            href: "/shop?categoria=pro" },
-            ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO", href: "#guias" },
             color: "#F5948A",
             colorSoft: "#FFE3DE",
             // Hero BANNER nuevo (potes flotando, fondo oscuro dramático,
@@ -225,7 +225,7 @@ export const productDetails = {
             headline: "Sistema adaptable de fertilizantes\npara cultivo indoor y outdoor.",
             claim: "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cinco fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
             ctaPrimary:   { label: "COMPRAR RACE",        href: "/shop?categoria=race" },
-            ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO", href: "#guias" },
             color: "#2E8F6E",
             colorSoft: "#C7F0DD",
             // Hero BANNER: imagen del slider full HD como hero limpio (imagen
@@ -348,7 +348,7 @@ export const productDetails = {
             headline: "Bioestimulante orgánico\npara cultivo indoor y outdoor.",
             claim: "Bioestimulante 100% orgánico para cultivo indoor y outdoor, fabricado en biorreactor industrial con materias primas seleccionadas. Hasta 70% más efectivo que micorrizas tradicionales. Estimula el desarrollo radicular, potencia la absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo: Línea Pro, Línea Elite y Línea Race.",
             ctaPrimary:   { label: "COMPRAR BIO",           href: "/shop?categoria=bio" },
-            ctaSecondary: { label: "VER GUÍA DE USO", href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO", href: "#guias" },
             color: "#E8A5B1",
             colorSoft: "#F7D6DC",
             // Hero BANNER nuevo (corales rosados, fondo claro, 2026-06-05).
@@ -441,7 +441,7 @@ export const productDetails = {
             headline: "Gel enraizante para esquejes.\nEl primer paso del ciclo.",
             claim: "Cloner es el gel enraizante de alta adherencia de Holistic para esquejes y plantines. Fórmula de contacto rápido que acelera el prendimiento radicular con mínima manipulación. El comienzo del ciclo que define la calidad del resultado final. Compatible con todo el catálogo Holistic.",
             ctaPrimary:   { label: "COMPRAR CLONER",         href: "/shop?categoria=cloner" },
-            ctaSecondary: { label: "VER GUÍA DE USO",   href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO",   href: "#guias" },
             color: "#6B3BAF",
             colorSoft: "#E4D5F2",
             // Hero BANNER (2026-06-06). Mobile usa la versión 9:16 "celu".
@@ -524,7 +524,7 @@ export const productDetails = {
             headline: "Finalizador de cosecha.\nLa última decisión que define todo.",
             claim: "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Se usa junto a Race, Pro o Elite, como cierre de cualquier sistema Holistic.",
             ctaPrimary:   { label: "COMPRAR DAY-0",          href: "/shop?categoria=day0" },
-            ctaSecondary: { label: "VER GUÍA DE USO",   href: "#specs" },
+            ctaSecondary: { label: "VER GUÍA DE USO",   href: "#guias" },
             color: "#C9A34E",
             colorSoft: "#F9E79B",
             // Hero BANNER nuevo (splash de agua, fondo blanco, 2026-06-05).

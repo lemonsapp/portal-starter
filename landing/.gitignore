@@ -22,3 +22,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Guías de uso originales (sin optimizar). Pesan ~400MB y 3 PDFs superan
+# el límite de 100MB de GitHub. Las versiones servidas viven en public/guias/.
+Guias-Holistic/

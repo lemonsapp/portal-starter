@@ -6341,6 +6341,82 @@ html.is-loading body {
 }
 
 /* ---------- 8) TECH SPECS ---------- */
+/* ---------- Guía de uso (PDFs por producto) ---------- */
+.pdd__guides {
+    position: relative;
+    padding: clamp(70px, 11vh, 130px) 0;
+    background: #f6f5f1;
+    overflow: hidden;
+}
+.pdd__guides-head {
+    width: min(1100px, 92vw);
+    margin: 0 auto clamp(30px, 5vh, 56px);
+    text-align: center;
+}
+.pdd__guides-grid {
+    width: min(1100px, 92vw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 16px;
+}
+.pdd__guide-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 22px;
+    background: #ffffff;
+    border: 1px solid rgba(26, 26, 26, 0.08);
+    border-radius: 16px;
+    text-decoration: none;
+    color: #1a1a1a;
+    box-shadow: 0 1px 2px rgba(26, 26, 26, 0.04);
+    transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s ease, border-color .25s ease;
+    will-change: transform;
+}
+.pdd__guide-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 34px rgba(26, 26, 26, 0.12);
+    border-color: var(--pdd-color, rgba(26, 26, 26, 0.25));
+}
+.pdd__guide-icon {
+    display: grid;
+    place-items: center;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    color: var(--pdd-color, #1a1a1a);
+    background: color-mix(in srgb, var(--pdd-color, #1a1a1a) 12%, #ffffff);
+}
+.pdd__guide-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+}
+.pdd__guide-label {
+    font-family: var(--f-title);
+    font-weight: 700;
+    font-size: clamp(1rem, 1.15vw, 1.12rem);
+    line-height: 1.25;
+    color: #1a1a1a;
+}
+.pdd__guide-meta {
+    font-family: 'Gotham', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.5);
+}
+.pdd__guide-arrow {
+    flex-shrink: 0;
+    color: var(--pdd-color, #1a1a1a);
+    transition: transform .25s ease;
+}
+.pdd__guide-card:hover .pdd__guide-arrow { transform: translateX(4px); }
+
 .pdd__specs {
     position: relative;
     padding: clamp(70px, 11vh, 130px) 0;

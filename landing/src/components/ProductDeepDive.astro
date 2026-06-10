@@ -63,6 +63,36 @@ const ELEMENTO_BY_SLUG = {
 };
 const elemento = ELEMENTO_BY_SLUG[cap.slug] || null;
 
+// Guías de uso (PDF) por producto. Los PDFs viven en public/guias/<slug>/ y se
+// sirven optimizados para web (Ghostscript /ebook). Los productos con varias
+// guías muestran todas las tarjetas; el resto, una sola.
+const GUIDES_BY_SLUG = {
+    "linea-elite": [
+        { label: "Guía Elite · Parte 1", file: "/guias/linea-elite/elite-1.pdf" },
+        { label: "Guía Elite · Parte 2", file: "/guias/linea-elite/elite-2.pdf" },
+    ],
+    "linea-pro": [
+        { label: "Pro · Fotoperiódicas", file: "/guias/linea-pro/pro-fotoperiodicas.pdf" },
+        { label: "Pro · Automáticas",    file: "/guias/linea-pro/pro-automatica.pdf" },
+        { label: "Pro · Exterior",       file: "/guias/linea-pro/pro-exterior.pdf" },
+    ],
+    "linea-race": [
+        { label: "Guía de uso en sustrato",     file: "/guias/linea-race/race-sustrato.pdf" },
+        { label: "Sustrato inerte y compuesto", file: "/guias/linea-race/race-inerte-compuesto.pdf" },
+        { label: "Recomendaciones de uso",      file: "/guias/linea-race/race-recomendaciones.pdf" },
+    ],
+    "bio-estimulante": [
+        { label: "Guía Bio Estimulante", file: "/guias/bio-estimulante/bio-estimulante.pdf" },
+    ],
+    "cloner": [
+        { label: "Guía Cloner", file: "/guias/cloner/cloner.pdf" },
+    ],
+    "day-0": [
+        { label: "Lavado de raíces", file: "/guias/day-0/day-0-lavado-raices.pdf" },
+    ],
+};
+const guides = GUIDES_BY_SLUG[cap.slug] || [];
+
 // Fallback: si no hay detalle definido, generamos contenido mínimo desde cap.
 const d = detail || {
     hero: {
@@ -70,7 +100,7 @@ const d = detail || {
         headline: `${cap.nombreCorto} ${cap.nombreDestacado}`,
         claim: cap.descripcion,
         ctaPrimary:   { label: "COMPRAR",                href: `/shop?categoria=${cap.slug}` },
-        ctaSecondary: { label: "VER GUÍA DE USO",        href: "#specs" },
+        ctaSecondary: { label: "VER GUÍA DE USO",        href: "#guias" },
         color: cap.accentColor || cap.bgColor,
         colorSoft: cap.bgColor,
     },
@@ -449,6 +479,44 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
                     data-pdd-elemento-side="right"
                 />
             )}
+        </section>
+    )}
+
+    {guides.length > 0 && (
+        <!-- ============================================================
+             7G) GUÍA DE USO — PDFs de uso por producto (público en /guias)
+             ============================================================ -->
+        <section class="pdd__guides" id="guias" data-pdd-guides>
+            <div class="pdd__guides-head">
+                <p class="pdd__section-eyebrow">GUÍA DE USO</p>
+                <h2 class="pdd__section-title">Cómo usar {cap.nombreDestacado}.</h2>
+            </div>
+            <div class="pdd__guides-grid">
+                {guides.map((g) => (
+                    <a
+                        class="pdd__guide-card"
+                        href={g.file}
+                        target="_blank"
+                        rel="noopener"
+                        data-cursor="hover"
+                        data-pdd-guide-card
+                    >
+                        <span class="pdd__guide-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/>
+                            </svg>
+                        </span>
+                        <span class="pdd__guide-info">
+                            <span class="pdd__guide-label">{g.label}</span>
+                            <span class="pdd__guide-meta">PDF · Abrir guía</span>
+                        </span>
+                        <svg class="pdd__guide-arrow" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                ))}
+            </div>
         </section>
     )}
 
