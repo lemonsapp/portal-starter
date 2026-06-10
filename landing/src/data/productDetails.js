@@ -85,16 +85,20 @@ export const productDetails = {
             { title: "Soporte técnico",        body: "Acompañamiento humano en arranque, ajustes y diagnóstico. Sin call centers.",                                emoji: "♥" },
             { title: "Trazabilidad de lote",   body: "Sabés exactamente qué materia prima entró en tu botella.",                                                    emoji: "✓" },
         ],
-        // Cubre el rango completo: pequeñas (250ml–1L PNG con alpha),
-        // intermedias (5L) y grandes industriales (10L y 20L apilados).
-        // Las imágenes "apiladas" comunican volumen y nivel pro.
+        // Render por medida, en progresión ascendente real (no a escala):
+        //   • 250ml/500ml → frasco chico (Part 1 / Part 2, mismo formato físico).
+        //     No hay asset propio de 500ml, así que se usa el Part 2 del frasco
+        //     chico para diferenciarlo del 250 (Part 1).
+        //   • 1L → frasco de 1 litro (perspectiva, Part 1).
+        //   • 5L/10L/20L → bidón ELITE MAX (perspectiva single, mismo estilo que
+        //     5L) para que las medidas crezcan de forma consistente.
         formats: [
-            { name: "250 ML",   size: "250ml",  image: "/imagenes-web/productos/linea-elite/elite-unificado.png" },
+            { name: "250 ML",   size: "250ml",  image: "/imagenes-web/productos/linea-elite/elite-part-1.png" },
             { name: "500 ML",   size: "500ml",  image: "/imagenes-web/productos/linea-elite/elite-part-2.png" },
-            { name: "1 LITRO",  size: "1L",     image: "/imagenes-web/productos/linea-elite/elite-part-1.png" },
+            { name: "1 LITRO",  size: "1L",     image: "/imagenes-web/productos/linea-elite/1l/parte-1-perspectiva-1l.png" },
             { name: "5 LITROS", size: "5L",     image: "/imagenes-web/productos/elite-max/a-5-lts-perspectiva-1.png" },
-            { name: "10 LITROS",size: "10L",    image: "/imagenes-web/productos/elite-max/10-litros-apilados.png" },
-            { name: "20 LITROS",size: "20L",    image: "/imagenes-web/productos/elite-max/20-litros-apilados.png" },
+            { name: "10 LITROS",size: "10L",    image: "/imagenes-web/productos/elite-max/a-10-lts-perspectiva-1.png" },
+            { name: "20 LITROS",size: "20L",    image: "/imagenes-web/productos/elite-max/a-20-lts-perspectiva-1.png" },
         ],
         system: {
             title: "Diseñado para integrar el sistema Holistic.",
@@ -310,12 +314,12 @@ export const productDetails = {
         // para 250/500/1L, bidón -f1 para 5/10/20L. Race 1 verde como
         // representativo; sublabel "Las 5 fórmulas" (son 5 sistemas).
         formats: [
-            { name: "250 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp" },
-            { name: "500 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp" },
-            { name: "1 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp" },
-            { name: "5 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp" },
-            { name: "10 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/10l/race-1-verde-10l-f1.webp" },
-            { name: "20 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp", imgScale: 0.7 },
+            { name: "250 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp",        imgScale: 0.85 },
+            { name: "500 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp", imgScale: 0.85 },
+            { name: "1 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp",        imgScale: 0.85 },
+            { name: "5 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp",          imgScale: 0.85 },
+            { name: "10 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/10l/race-1-verde-10l-f1.webp",        imgScale: 0.85 },
+            { name: "20 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp",        imgScale: 0.6 },
         ],
         system: {
             title: "El motor del catálogo.",
