@@ -6372,11 +6372,14 @@ html.is-loading body {
     gap: 16px;
     padding: 20px 22px;
     background: #ffffff;
-    border: 1px solid rgba(26, 26, 26, 0.08);
+    border: 1px solid rgba(26, 26, 26, 0.10);
+    /* Acento por color de producto → la card se despega del fondo gris y se
+       lee de un vistazo qué línea es. */
+    border-left: 4px solid var(--pdd-color, #c9a34e);
     border-radius: 16px;
     text-decoration: none;
     color: #1a1a1a;
-    box-shadow: 0 1px 2px rgba(26, 26, 26, 0.04);
+    box-shadow: 0 4px 16px rgba(26, 26, 26, 0.07);
     transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s ease, border-color .25s ease;
     will-change: transform;
 }
@@ -6393,7 +6396,7 @@ html.is-loading body {
     flex-shrink: 0;
     border-radius: 12px;
     color: var(--pdd-color, #1a1a1a);
-    background: color-mix(in srgb, var(--pdd-color, #1a1a1a) 12%, #ffffff);
+    background: color-mix(in srgb, var(--pdd-color, #1a1a1a) 16%, #ffffff);
 }
 .pdd__guide-info {
     display: flex;
@@ -6422,6 +6425,33 @@ html.is-loading body {
     transition: transform .25s ease;
 }
 .pdd__guide-card:hover .pdd__guide-arrow { transform: translateX(4px); }
+
+/* Guía de uso — mobile: cards más compactas, legibles y con buen tap target.
+   Antes no tenía reglas propias → texto chico y aire de más en pantallas chicas. */
+@media (max-width: 700px) {
+    .pdd__guides { padding: clamp(46px, 8vh, 72px) 0; }
+    .pdd__guides-head { margin-bottom: clamp(22px, 4vh, 34px); }
+    .pdd__guides-grid {
+        width: 92vw;
+        gap: 12px;
+        grid-template-columns: 1fr;
+    }
+    .pdd__guide-card {
+        padding: 16px 16px;
+        gap: 14px;
+        border-radius: 14px;
+        min-height: 64px;            /* tap target cómodo */
+    }
+    .pdd__guide-icon { width: 46px; height: 46px; border-radius: 11px; }
+    .pdd__guide-label { font-size: 1.02rem; line-height: 1.3; }
+    .pdd__guide-meta { font-size: 0.68rem; }
+    .pdd__guide-arrow { width: 20px; height: 20px; }
+    /* En touch no hay hover-lift: feedback al tocar. */
+    .pdd__guide-card:active {
+        transform: scale(0.985);
+        box-shadow: 0 2px 8px rgba(26, 26, 26, 0.10);
+    }
+}
 
 .pdd__specs {
     position: relative;
