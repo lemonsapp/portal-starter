@@ -178,6 +178,17 @@ function specValue(key, value) {
   return SPEC_VALUES[s.toLowerCase()] || s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+// "Puntos a medida" (producto con meta.points_custom): el cliente elige cuántos
+// puntos comprar. 1 punto = 1 unidad del producto → el carrito/checkout calculan
+// el total y shopNotify acredita la cantidad. Tope alto (2000) acotado en server.
+const POINTS_MIN = 1;
+const POINTS_MAX = 2000;
+const POINTS_PRESETS = [10, 25, 50, 100, 200, 500];
+function clampPoints(n) {
+  const v = Math.floor(Number(n) || 0);
+  return Math.max(POINTS_MIN, Math.min(POINTS_MAX, v));
+}
+
 export default function ShopProduct() {
   useBranding();
   const { slug } = useParams();
@@ -187,6 +198,8 @@ export default function ShopProduct() {
   const [related, setRelated] = useState([]);
   const [activeImg, setActiveImg] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  // "Puntos a medida" (meta.points_custom): el cliente elige cuántos puntos.
+  const [pointsQty, setPointsQty] = useState(50);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [toast, setToast] = useState("");
@@ -314,6 +327,14 @@ export default function ShopProduct() {
 
   function addToCart() {
     if (!product) return;
+    if (product.meta?.points_custom) {
+      const q = clampPoints(pointsQty);
+      addItem(product, q);
+      window.dispatchEvent(new CustomEvent("holistic-cart-open"));
+      setToast(`Agregado al carrito — ${q} ${q > 1 ? "puntos" : "punto"}`);
+      setTimeout(() => setToast(""), 2500);
+      return;
+    }
     addItem(product, Math.max(1, Number(quantity) || 1));
     window.dispatchEvent(new CustomEvent("holistic-cart-open"));
     setToast(`Agregado al carrito — ${quantity} ${quantity > 1 ? "unidades" : "unidad"}`);
@@ -392,6 +413,8 @@ export default function ShopProduct() {
       ? product.images
       : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
   const inStock = product.stock == null || product.stock > 0;
+  const isCustomPoints = !!product.meta?.points_custom;
+  const customPointsTotal = product.price_cents * clampPoints(pointsQty);
   const _lk = lineKeyFor(product);
   const details = _lk ? lineDetails[_lk] : null;
 
@@ -465,8 +488,14 @@ export default function ShopProduct() {
             {product.short_description && <p className="sp-tagline">{product.short_description}</p>}
 
             <div className="sp-pricerow">
-              <span className="sp-price">{isKit ? formatARS(kitTotalCents) : product.price_formatted}</span>
-              {isKit
+              <span className="sp-price">{
+                isCustomPoints ? formatARS(customPointsTotal)
+                  : isKit ? formatARS(kitTotalCents)
+                  : product.price_formatted
+              }</span>
+              {isCustomPoints
+                ? <span className="sp-sku">{clampPoints(pointsQty)} puntos · {product.price_formatted} por punto</span>
+                : isKit
                 ? <span className="sp-sku">El kit · {kitParts.length} {kitParts.length === 1 ? "producto" : "productos"}</span>
                 : (product.sku && <span className="sp-sku">SKU: {product.sku}</span>)}
             </div>
@@ -531,8 +560,43 @@ export default function ShopProduct() {
               )}
             </div>
 
-            {/* Cantidad */}
-            {inStock && (
+            {/* Puntos a medida: el cliente elige cuántos puntos quiere */}
+            {isCustomPoints ? (
+              <div className="sp-field">
+                <span className="sp-field-label">¿Cuántos puntos querés?</span>
+                <div className="sp-pills">
+                  {POINTS_PRESETS.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setPointsQty(n)}
+                      className={`sp-pill${clampPoints(pointsQty) === n ? " is-active" : ""}`}
+                      aria-pressed={clampPoints(pointsQty) === n}
+                    >
+                      <span className="sp-pill-label">{n} pts</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="sp-qty-row" style={{ marginTop: 12 }}>
+                  <span className="sp-field-label">O ingresá la cantidad</span>
+                  <div className="sp-qty">
+                    <button className="sp-qty-btn" onClick={() => setPointsQty((q) => clampPoints(clampPoints(q) - 1))} aria-label="Restar un punto">−</button>
+                    <input
+                      className="sp-qty-num"
+                      type="number"
+                      min={POINTS_MIN}
+                      max={POINTS_MAX}
+                      value={pointsQty}
+                      onChange={(e) => setPointsQty(e.target.value === "" ? "" : clampPoints(e.target.value))}
+                      onBlur={() => setPointsQty((q) => clampPoints(q || POINTS_MIN))}
+                      aria-label="Cantidad de puntos"
+                      style={{ width: 72, textAlign: "center", border: "none", background: "transparent", font: "inherit" }}
+                    />
+                    <button className="sp-qty-btn" onClick={() => setPointsQty((q) => clampPoints(clampPoints(q) + 1))} aria-label="Sumar un punto">+</button>
+                  </div>
+                </div>
+              </div>
+            ) : inStock && (
               <div className="sp-qty-row">
                 <span className="sp-field-label">Cantidad</span>
                 <div className="sp-qty">

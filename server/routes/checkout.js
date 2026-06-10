@@ -268,7 +268,9 @@ const checkoutSchema = z.object({
   }),
   items: z.array(z.object({
     product_id: z.number().int().positive(),
-    quantity: z.number().int().positive().max(99),
+    // Tope alto para soportar "puntos a medida" (1 punto = 1 unidad). El handler
+    // re-acota a 99 los productos que NO son packs de puntos.
+    quantity: z.number().int().positive().max(2000),
   })).min(1).max(40),
   // F5: código de promoción opcional
   promo_code: z.string().trim().max(40).optional().nullable(),
@@ -309,6 +311,13 @@ function publicRouter() {
         if (!p) {
           await client.query("ROLLBACK");
           return res.status(400).json({ error: `Producto ${reqItem.product_id} no disponible` });
+        }
+        // Solo los packs de puntos admiten cantidades grandes (1 unidad = 1 punto).
+        // El resto de los productos sigue acotado a 99 por línea.
+        const isPointsPack = !!(p.meta && (p.meta.points_pack || p.meta.points_custom));
+        if (!isPointsPack && reqItem.quantity > 99) {
+          await client.query("ROLLBACK");
+          return res.status(400).json({ error: `Cantidad máxima por producto: 99 (${p.name})` });
         }
         if (p.stock != null && p.stock < reqItem.quantity) {
           await client.query("ROLLBACK");

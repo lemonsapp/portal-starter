@@ -192,10 +192,11 @@ SET["day-0-250ml"] = [row(`${FP}/day0250ml-1.jpg`, "Day-0 250ml", 0, true)];
 SET["cloner"] = [row(`${UC}/POTE-CLONER-HOME.png`, "Cloner — gel enraizante", 0, true)];
 
 // ─── Packs de puntos — moneda Holistic dorada (la misma de coins/topnav) ───
-// Lineup v9 §11.4: 10/25/50/100. (250 queda por compat con orders viejas.)
+// Lineup v9 §11.4: 10/25/50/100 + cantidad libre. (250 queda por compat con orders viejas.)
 for (const n of [10, 25, 50, 100, 250]) {
   SET[`pack-${n}-puntos`] = [row(COIN, `Pack ${n} puntos Holistic`, 0, true)];
 }
+SET["puntos-custom"] = [row(COIN, "Puntos Holistic — elegí cuántos", 0, true)];
 
 /**
  * Re-author determinístico: por cada slug del SET, borra sus product_images y

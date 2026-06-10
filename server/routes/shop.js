@@ -1033,8 +1033,10 @@ async function migrate() {
 
   // ─── Packs de puntos (F3.2): comprar puntos como producto del shop ─────────
   // Precio = puntos × buy_price ($3.600/pto). Lineup según spec v9 §11.4:
-  // 10 / 25 / 50 / 100 puntos. Al pagar, onOrderPaid acredita meta.points_pack
-  // como compra_puntos (ver shopNotify.creditOrderPoints).
+  // 10 / 25 / 50 / 100 puntos + "cantidad libre". Al pagar, onOrderPaid acredita
+  // meta.points_pack × quantity como compra_puntos (ver shopNotify.creditOrderPoints).
+  // "Cantidad libre" (puntos-custom): producto unitario de 1 punto ($3.600). El
+  // cliente elige N en la ficha → carrito quantity=N → se acreditan N puntos.
   await safeQuery(
     `INSERT INTO product_categories (slug, name, description, sort_order)
      VALUES ('puntos', 'Puntos', 'Comprá puntos Holistic y canjealos por descuentos o premios', 50)
@@ -1043,6 +1045,7 @@ async function migrate() {
     INSERT INTO products (slug, name, short_description, price_cents, sku, category_id, featured, sort_order, meta)
     SELECT v.slug, v.name, v.short, v.price, v.sku, c.id, FALSE, v.sort, v.meta::jsonb
     FROM (VALUES
+      ('puntos-custom',   'Puntos Holistic', 'Elegí cuántos querés · 1 punto = $3.600 · se acreditan al pagar.', 360000, 'PACK-PTS-CUSTOM', 'puntos', 49, '{"points_pack":1,"points_custom":true}'),
       ('pack-10-puntos',  'Pack 10 puntos',  'Sumá 10 puntos a tu cuenta (se acreditan al pagar).',    3600000, 'PACK-PTS-10',  'puntos', 50, '{"points_pack":10}'),
       ('pack-25-puntos',  'Pack 25 puntos',  'Sumá 25 puntos a tu cuenta (se acreditan al pagar).',    9000000, 'PACK-PTS-25',  'puntos', 51, '{"points_pack":25}'),
       ('pack-50-puntos',  'Pack 50 puntos',  'Sumá 50 puntos a tu cuenta (se acreditan al pagar).',   18000000, 'PACK-PTS-50',  'puntos', 52, '{"points_pack":50}'),
@@ -1072,7 +1075,7 @@ async function migrate() {
     INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
     SELECT p.id, '/imagenes-web/productos/puntos/pack-puntos.svg', p.name, 0, TRUE
     FROM products p
-    WHERE p.slug IN ('pack-10-puntos','pack-25-puntos','pack-50-puntos','pack-100-puntos')
+    WHERE p.slug IN ('puntos-custom','pack-10-puntos','pack-25-puntos','pack-50-puntos','pack-100-puntos')
       AND NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `, "img packs puntos");
 
