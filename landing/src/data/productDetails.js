@@ -291,7 +291,7 @@ export const productDetails = {
             body: "Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración, 1ª y 2ª parte) y Race 4 (Micro + Magnesio). Cinco fertilizantes para el ciclo completo, indoor y outdoor.",
         },
         features: [
-            { title: "Concentración alta",     body: "1 ml/L típicamente. Menos plástico, más nutriente por riego.",                          emoji: "◆" },
+            { title: "Concentración alta",     body: "Menos plástico, más nutriente por riego.",                          emoji: "◆" },
             { title: "pH ideal",               body: "Cada Race trabaja en el rango óptimo del cultivo sin shock de pH.",                     emoji: "⚖" },
             { title: "Estabilidad en mezcla",  body: "Fórmulas mezclables sin precipitar, en el orden indicado.",                             emoji: "✦" },
             { title: "Compatible con Elite",   body: "Race se puede usar con Elite como booster de floración.",                              emoji: "↯" },
@@ -480,13 +480,12 @@ export const productDetails = {
             },
         ],
         bigStat: {
-            num: 100,
+            num: 90,
             suffix: "%+",
             label: "PRENDIMIENTO",
             body: "Tasa de prendimiento promedio en condiciones controladas (humedad >70%, temperatura 22-26°C). Validado en ensayos con esquejes de variedades comerciales.",
         },
         features: [
-            { title: "Auxinas activas",      body: "Combinación IBA + NAA en concentración óptima para inducir raíz adventicia.",     emoji: "✦" },
             { title: "Sin contaminación",     body: "Tubo individual previene contaminación cruzada entre lotes.",                       emoji: "✓" },
             { title: "Adherencia premium",    body: "Permanece en el corte hasta que el esqueje desarrolla raíces propias.",             emoji: "◆" },
             { title: "Espectro amplio",       body: "Funciona en esquejes herbáceos, leñosos y semi-leñosos.",                          emoji: "↯" },
@@ -575,7 +574,7 @@ export const productDetails = {
             num: 5,
             suffix: " días",
             label: "PROTOCOLO DE CIERRE",
-            body: "Programá el último riego de Day-0 cinco días antes del corte estimado. La planta usa esos días para metabolizar reservas internas y entregar el sabor final más limpio posible.",
+            body: "Programá el último riego de Day-0 cinco días antes del corte estimado. La planta usa esos días para metabolizar reservas internas.",
         },
         features: [
             { title: "Sin shock",               body: "Transición suave del nutriente principal a la fase de cierre.",                  emoji: "◇" },
