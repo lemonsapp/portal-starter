@@ -20,6 +20,9 @@ export const capitulos = [
         kicker: "ETAPA 01 · DESPERTAR",
         nombreCorto: "BIO",
         nombreDestacado: "Estimulante",
+        // Solo afecta el título "Cómo usar {usoNombre}" de la sección de guías;
+        // el hero sigue destacando "Estimulante" (nombreDestacado).
+        usoNombre: "Bioestimulante",
 
         // SEO meta — v3 §5
         seoTitle: "Bioestimulante Orgánico para Cultivo Indoor | Holistic Growshop",
