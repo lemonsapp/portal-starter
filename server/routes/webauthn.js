@@ -13,13 +13,50 @@ const {
 } = require("@simplewebauthn/server");
 
 // ── Configuración WebAuthn ───────────────────────────────────────────────────
-const RP_ID = process.env.WEBAUTHN_RP_ID || "localhost";
+// El RP_ID (dominio del passkey) y el origin esperado se derivan de APP_URL si
+// no se setean explícitamente. Así, para que Face ID / Touch ID anden en
+// producción alcanza con tener APP_URL=https://tu-dominio.com; en local caen a
+// localhost:5173 igual que antes (cero config en dev).
+function deriveWebAuthnConfig() {
+  const appUrl = process.env.APP_URL || "http://localhost:5173";
+  try {
+    const u = new URL(appUrl);
+    return { host: u.hostname, origin: u.origin }; // host: sin esquema ni puerto
+  } catch {
+    console.warn(`[WEBAUTHN] APP_URL inválida ("${appUrl}"), usando localhost.`);
+    return { host: "localhost", origin: "http://localhost:5173" };
+  }
+}
+const _wa = deriveWebAuthnConfig();
+
+// RP_ID = dominio registrable del passkey. Un passkey emitido para el apex
+// ("hgrowshop.com") sirve también en sus subdominios ("www."), no al revés —
+// por eso conviene apuntar APP_URL al apex. Override explícito: WEBAUTHN_RP_ID.
+const RP_ID = process.env.WEBAUTHN_RP_ID || _wa.host;
+
+// Orígenes aceptados en la verificación. Lista separada por comas para cubrir
+// apex + www (u otros) cuando ambos sirven la app. Default = origin de APP_URL.
+const EXPECTED_ORIGINS = (process.env.WEBAUTHN_ORIGIN || _wa.origin)
+  .split(",")
+  .map((s) => s.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+console.log(`[WEBAUTHN] RP_ID=${RP_ID} · orígenes=${EXPECTED_ORIGINS.join(", ")}`);
+// En producción, RP_ID=localhost significa que falta setear APP_URL/WEBAUTHN_RP_ID
+// → el login biométrico va a fallar en todos los browsers. Lo gritamos en logs
+// (no tiramos el proceso: biométrico es UNA feature, no vale tumbar toda la API).
+if (process.env.NODE_ENV === "production" && RP_ID === "localhost") {
+  console.error(
+    "[WEBAUTHN] ⚠️ RP_ID=localhost en producción — Face ID/Touch ID NO va a funcionar. " +
+    "Seteá APP_URL=https://tu-dominio.com (o WEBAUTHN_RP_ID + WEBAUTHN_ORIGIN) en el backend."
+  );
+}
+
 // RP_NAME se lee dinámicamente del branding (configStore + branding.json) en
 // cada request — así, cuando el admin cambia el nombre desde el wizard, los
 // prompts del browser ("Registrar passkey en {RP_NAME}") muestran el nombre
 // actualizado sin necesidad de redeploy ni reinicio.
 async function getRpName() { return (await getBranding()).name; }
-const EXPECTED_ORIGIN = (process.env.WEBAUTHN_ORIGIN || "http://localhost:5173").replace(/\/$/, "");
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 min
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 if (!process.env.JWT_SECRET) {
@@ -138,7 +175,7 @@ router.post("/register/verify", authRequired, async (req, res) => {
         // pero la seguridad real proviene de consumeChallenge (DB) + verificación de firma
         // que hace simplewebauthn internamente. La comparación string es redundante pero inofensiva.
         expectedChallenge: challenge,
-        expectedOrigin: EXPECTED_ORIGIN,
+        expectedOrigin: EXPECTED_ORIGINS,
         expectedRPID: RP_ID,
         requireUserVerification: true,
       });
@@ -285,7 +322,7 @@ router.post("/login/verify", async (req, res) => {
         // Misma observación que en register/verify: expectedChallenge=challenge es
         // tautológico, la seguridad real viene de consumeChallenge + firma.
         expectedChallenge: challenge,
-        expectedOrigin: EXPECTED_ORIGIN,
+        expectedOrigin: EXPECTED_ORIGINS,
         expectedRPID: RP_ID,
         credential: {
           id: cred.credential_id,
