@@ -136,6 +136,9 @@ const LINE_NAMES = { race: "Race", pro: "Pro", elite: "Elite" };
 const META_HIDDEN = new Set([
   "linea", "bundle", "bundle_discount_pct", "points_pack", "variant_of",
   "family", "grupo", "group", "order", "orden",
+  // Contenido editorial curado por el admin (beneficios, features, specs,
+  // cross-sell, bundle): tiene su propia sección, no es ficha técnica cruda.
+  "editorial",
 ]);
 function visibleSpecs(meta) {
   return Object.entries(meta).filter(
@@ -270,6 +273,28 @@ export default function ShopProduct() {
                 };
               }
             } catch { /* sin red / sin grouped: la página queda sin selector, ok */ }
+          }
+          // Espejo client-side de "Sumá para acompañar": si el admin eligió los
+          // productos (meta.editorial.cross_sell_slugs) los resolvemos del
+          // catálogo y pisamos lo que mandó el server, así la elección se ve YA
+          // sin esperar el redeploy del backend (cuando deploye, manda lo mismo).
+          const csSlugs = normalized?.meta?.editorial?.cross_sell_slugs;
+          if (normalized && Array.isArray(csSlugs) && csSlugs.length) {
+            try {
+              const cat = await fetch(`${API}/api/shop/products?limit=100`).then((x) => x.json());
+              const bySlug = new Map((cat.products || []).map((p) => [p.slug, p]));
+              const resolved = csSlugs
+                .filter((s) => s && s !== normalized.slug && !isStaleProduct(s))
+                .map((s) => bySlug.get(s))
+                .filter(Boolean)
+                .map((p) => ({
+                  slug: p.slug,
+                  name: p.name,
+                  price_formatted: p.price_formatted,
+                  primary_image: fixImageUrl(p.primary_image),
+                }));
+              if (resolved.length) normalized = { ...normalized, cross_sell: resolved };
+            } catch { /* sin red: queda el cross_sell que mandó el server */ }
           }
           setProduct(normalized);
           if (d.product?.category?.slug) {
@@ -417,6 +442,22 @@ export default function ShopProduct() {
   const customPointsTotal = product.price_cents * clampPoints(pointsQty);
   const _lk = lineKeyFor(product);
   const details = _lk ? lineDetails[_lk] : null;
+
+  // Contenido editorial curado por el admin (meta.editorial). Cada sección que
+  // el admin define pisa el default por línea de lineDetails.js; lo que deja
+  // vacío cae al default (cero regresión en productos sin editar).
+  const editorial = (product.meta && product.meta.editorial) || {};
+  const benefits = (Array.isArray(editorial.benefits) && editorial.benefits.length)
+    ? editorial.benefits
+    : (details?.benefits || []);
+  const features = (Array.isArray(editorial.features) && editorial.features.length)
+    ? editorial.features
+    : (details?.features || []);
+  // Datos técnicos: si el admin cargó una lista propia {label,value}, se usa
+  // esa; si no, se traducen las keys crudas de meta como hasta ahora.
+  const techSpecs = (Array.isArray(editorial.specs) && editorial.specs.length)
+    ? editorial.specs.filter((s) => s && s.label && s.value).map((s) => [s.label, s.value, true])
+    : visibleSpecs(product.meta || {}).map(([k, v]) => [k, v, false]);
 
   // Bundle de la línea: si este producto es individual de Race/Pro/Elite,
   // ofrecemos el kit. Si ES el kit (product.bundle), mostramos qué incluye.
@@ -726,11 +767,11 @@ export default function ShopProduct() {
           )}
 
           {/* Por qué elegirlo (beneficios) */}
-          {details && details.benefits.length > 0 && (
+          {benefits.length > 0 && (
             <section className="sp-section">
               <SectionHead pre="Por qué" em="elegirlo" />
               <div className="sp-benefits-grid">
-                {details.benefits.map((b, i) => (
+                {benefits.map((b, i) => (
                   <div key={i} className="sp-benefit">
                     <div className="sp-benefit-title">{b.title}</div>
                     <div className="sp-benefit-body">{b.body}</div>
@@ -741,11 +782,11 @@ export default function ShopProduct() {
           )}
 
           {/* Características clave */}
-          {details && details.features.length > 0 && (
+          {features.length > 0 && (
             <section className="sp-section">
               <SectionHead pre="Características" em="clave" />
               <div className="sp-features">
-                {details.features.map((f, i) => (
+                {features.map((f, i) => (
                   <div key={i} className="sp-feature">
                     <span className="sp-feature-ico">{f.emoji || "◆"}</span>
                     <div>
@@ -759,14 +800,14 @@ export default function ShopProduct() {
           )}
 
           {/* Datos técnicos */}
-          {product.meta && visibleSpecs(product.meta).length > 0 && (
+          {techSpecs.length > 0 && (
             <section className="sp-section">
               <SectionHead pre="Datos" em="técnicos" />
               <dl className="sp-specs">
-                {visibleSpecs(product.meta).map(([k, v]) => (
-                  <div key={k} className="sp-spec-row">
-                    <dt className="sp-spec-key">{specLabel(k)}</dt>
-                    <dd className="sp-spec-val">{specValue(k, v)}</dd>
+                {techSpecs.map(([k, v, raw], i) => (
+                  <div key={`${k}-${i}`} className="sp-spec-row">
+                    <dt className="sp-spec-key">{raw ? k : specLabel(k)}</dt>
+                    <dd className="sp-spec-val">{raw ? v : specValue(k, v)}</dd>
                   </div>
                 ))}
               </dl>

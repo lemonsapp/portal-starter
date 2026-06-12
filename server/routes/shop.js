@@ -1724,15 +1724,33 @@ function publicRouter() {
         }
       }
 
+      // Contenido editorial curado por el admin desde el panel (meta.editorial).
+      // Lo que el admin no defina cae al comportamiento automático de siempre.
+      const editorial = (meta.editorial && typeof meta.editorial === "object") ? meta.editorial : {};
+
       // Bundle: si este producto es el "kit" de la línea, listamos las familias incluidas.
       let bundle = null;
       if (meta.bundle) {
+        // Override del admin: lista explícita de slugs ("Incluye la línea
+        // completa" editable). Se agrupan por familia para conservar el
+        // selector de medidas; si no hay override, se deriva de la línea.
+        const manual = Array.isArray(editorial.bundle_includes_slugs)
+          ? editorial.bundle_includes_slugs.filter((s) => s && s !== product.slug)
+          : [];
         const fams = new Map();
-        for (const x of lineRows) {
-          const g = variantGroup(x.row.meta);
-          if (!g) continue;
-          if (!fams.has(g)) fams.set(g, { group: g, name: familyName(x.row.name), variants: [] });
-          fams.get(g).variants.push(variantSummary(x.row, x.img));
+        if (manual.length) {
+          for (const x of await fetchRowsBySlugs(manual)) {
+            const g = variantGroup(x.row.meta) || x.row.slug;
+            if (!fams.has(g)) fams.set(g, { group: g, name: familyName(x.row.name), variants: [] });
+            fams.get(g).variants.push(variantSummary(x.row, x.img));
+          }
+        } else {
+          for (const x of lineRows) {
+            const g = variantGroup(x.row.meta);
+            if (!g) continue;
+            if (!fams.has(g)) fams.set(g, { group: g, name: familyName(x.row.name), variants: [] });
+            fams.get(g).variants.push(variantSummary(x.row, x.img));
+          }
         }
         const includes = [...fams.values()];
         includes.forEach((f) => f.variants.sort((a, b) => a.order - b.order));
@@ -1747,9 +1765,13 @@ function publicRouter() {
         };
       }
 
-      // Cross-sell: complementarios curados por línea (excluye el propio producto).
+      // Cross-sell: "Sumá para acompañar". El admin elige los slugs desde el
+      // panel (editorial.cross_sell_slugs); sin eso, cae al set curado por línea.
+      const csSlugs = (Array.isArray(editorial.cross_sell_slugs) && editorial.cross_sell_slugs.length)
+        ? editorial.cross_sell_slugs
+        : crossSellSlugsFor(meta);
       const csRows = await fetchRowsBySlugs(
-        crossSellSlugsFor(meta).filter((s) => s !== product.slug)
+        csSlugs.filter((s) => s && s !== product.slug)
       );
       const cross_sell = csRows.map((x) => variantSummary(x.row, x.img));
 

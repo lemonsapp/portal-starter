@@ -1117,6 +1117,7 @@ function ProductsTab() {
         <ProductModal
           product={editing === "new" ? null : editing}
           categories={categories}
+          allProducts={products}
           onClose={() => setEditing(null)}
           onSaved={() => { setEditing(null); load(); }}
         />
@@ -1125,9 +1126,111 @@ function ProductsTab() {
   );
 }
 
+// ── Editor de lista repetible (beneficios / características / datos técnicos) ──
+// `fields` = [{ key, placeholder, wide?, textarea? }]. Cada fila es un objeto.
+function RepeatList({ title, hint, rows, fields, onAdd, onChange, onRemove, addLabel }) {
+  return (
+    <div style={{ marginTop: 16 }}>
+      <label style={styles.label}>{title}</label>
+      {hint && <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", margin: "2px 0 8px" }}>{hint}</div>}
+      <div style={{ display: "grid", gap: 8 }}>
+        {rows.map((row, i) => (
+          <div key={i} style={{ display: "flex", gap: 6, alignItems: "flex-start", background: "rgba(255,255,255,.03)", borderRadius: 6, padding: 8 }}>
+            <div style={{ flex: 1, display: "grid", gap: 6 }}>
+              {fields.map((f) => (
+                f.textarea ? (
+                  <textarea
+                    key={f.key}
+                    style={{ ...styles.input, minHeight: 54, resize: "vertical" }}
+                    value={row[f.key] || ""}
+                    onChange={(e) => onChange(i, f.key, e.target.value)}
+                    placeholder={f.placeholder}
+                  />
+                ) : (
+                  <input
+                    key={f.key}
+                    style={{ ...styles.input, ...(f.wide ? {} : {}) }}
+                    value={row[f.key] || ""}
+                    onChange={(e) => onChange(i, f.key, e.target.value)}
+                    placeholder={f.placeholder}
+                  />
+                )
+              ))}
+            </div>
+            <button style={{ ...styles.btn(false, true), padding: "4px 10px" }} onClick={() => onRemove(i)} title="Quitar">×</button>
+          </div>
+        ))}
+      </div>
+      <button style={{ ...styles.btn(), alignSelf: "start", marginTop: 8 }} onClick={onAdd}>
+        {addLabel || "+ Agregar"}
+      </button>
+    </div>
+  );
+}
+
+// ── Selector múltiple de productos (cross-sell / "incluye la línea") ──
+function ProductPicker({ title, hint, options, selected, onToggle }) {
+  const [q, setQ] = useState("");
+  const needle = q.trim().toLowerCase();
+  const filtered = needle
+    ? options.filter((o) => o.name.toLowerCase().includes(needle) || (o.slug || "").includes(needle))
+    : options;
+  const bySlug = new Map(options.map((o) => [o.slug, o]));
+  return (
+    <div style={{ marginTop: 16 }}>
+      <label style={styles.label}>{title}</label>
+      {hint && <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", margin: "2px 0 8px" }}>{hint}</div>}
+      {selected.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+          {selected.map((slug) => (
+            <span key={slug} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, background: "rgba(245,224,58,.15)", border: "1px solid rgba(245,224,58,.35)", borderRadius: 999, padding: "3px 10px" }}>
+              {bySlug.get(slug)?.name || slug}
+              <button onClick={() => onToggle(slug)} style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 14, lineHeight: 1 }} title="Quitar">×</button>
+            </span>
+          ))}
+        </div>
+      )}
+      <input style={styles.input} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar producto por nombre o slug…" />
+      <div style={{ maxHeight: 200, overflowY: "auto", marginTop: 8, border: "1px solid rgba(255,255,255,.08)", borderRadius: 6 }}>
+        {filtered.length === 0 ? (
+          <div style={{ padding: 10, fontSize: 12, color: "rgba(237,233,224,.4)" }}>Sin resultados.</div>
+        ) : filtered.map((o) => {
+          const on = selected.includes(o.slug);
+          return (
+            <label key={o.slug} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,.04)", background: on ? "rgba(245,224,58,.08)" : "transparent" }}>
+              <input type="checkbox" checked={on} onChange={() => onToggle(o.slug)} />
+              {o.primary_image
+                ? <img src={o.primary_image} alt="" style={{ width: 26, height: 26, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
+                : <div style={{ width: 26, height: 26, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />}
+              <span style={{ flex: 1, fontSize: 13 }}>{o.name}</span>
+              <span style={{ fontSize: 11, color: "rgba(237,233,224,.45)" }}>{o.price_formatted || ""}</span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Modal: crear/editar producto ────────────────────────────────────────────
-function ProductModal({ product, categories, onClose, onSaved }) {
+function ProductModal({ product, categories, allProducts = [], onClose, onSaved }) {
   const isNew = !product;
+  // meta completo del producto: lo preservamos tal cual y sólo reescribimos la
+  // sub-clave `editorial`. Así NO pisamos linea/etapa/formato/bundle/etc.
+  const metaBase = product?.meta && typeof product.meta === "object" ? product.meta : {};
+  const ed0 = (metaBase.editorial && typeof metaBase.editorial === "object") ? metaBase.editorial : {};
+  // Secciones editoriales de la interna (todas opcionales; vacío = default).
+  const [benefits, setBenefits] = useState(() =>
+    Array.isArray(ed0.benefits) ? ed0.benefits.map((b) => ({ title: b.title || "", body: b.body || "" })) : []);
+  const [features, setFeatures] = useState(() =>
+    Array.isArray(ed0.features) ? ed0.features.map((f) => ({ emoji: f.emoji || "", title: f.title || "", body: f.body || "" })) : []);
+  const [specs, setSpecs] = useState(() =>
+    Array.isArray(ed0.specs) ? ed0.specs.map((s) => ({ label: s.label || "", value: s.value || "" })) : []);
+  const [crossSlugs, setCrossSlugs] = useState(() =>
+    Array.isArray(ed0.cross_sell_slugs) ? ed0.cross_sell_slugs.filter(Boolean) : []);
+  const [bundleSlugs, setBundleSlugs] = useState(() =>
+    Array.isArray(ed0.bundle_includes_slugs) ? ed0.bundle_includes_slugs.filter(Boolean) : []);
+  const isBundle = metaBase.bundle === true;
   const [name, setName] = useState(product?.name || "");
   const [slug, setSlug] = useState(product?.slug || "");
   const [shortDesc, setShortDesc] = useState(product?.short_description || "");
@@ -1179,6 +1282,40 @@ function ProductModal({ product, categories, onClose, onSaved }) {
     });
   }
 
+  // ── Editores de listas repetibles (beneficios / características / specs) ──
+  const mkRow = (setter, blank) => () => setter((arr) => [...arr, { ...blank }]);
+  const setField = (setter) => (i, field, value) =>
+    setter((arr) => arr.map((row, idx) => (idx === i ? { ...row, [field]: value } : row)));
+  const delRow = (setter) => (i) => setter((arr) => arr.filter((_, idx) => idx !== i));
+
+  // ── Selector de productos (cross-sell / bundle): toggle por slug ──
+  function toggleSlug(setter, slug) {
+    setter((arr) => (arr.includes(slug) ? arr.filter((s) => s !== slug) : [...arr, slug]));
+  }
+
+  // Arma el `meta` final: preserva todo el meta existente y sólo reescribe la
+  // sub-clave `editorial` con lo que el admin cargó (omitiendo lo vacío).
+  function buildMeta() {
+    const clean = (arr, fields) =>
+      arr
+        .map((row) => fields.reduce((o, f) => ({ ...o, [f]: String(row[f] ?? "").trim() }), {}))
+        .filter((row) => fields.some((f) => row[f]));
+    const editorial = {};
+    const b = clean(benefits, ["title", "body"]);
+    const f = clean(features, ["emoji", "title", "body"]);
+    const s = clean(specs, ["label", "value"]);
+    if (b.length) editorial.benefits = b;
+    if (f.length) editorial.features = f;
+    if (s.length) editorial.specs = s;
+    if (crossSlugs.length) editorial.cross_sell_slugs = crossSlugs;
+    if (bundleSlugs.length) editorial.bundle_includes_slugs = bundleSlugs;
+
+    const next = { ...metaBase };
+    if (Object.keys(editorial).length) next.editorial = editorial;
+    else delete next.editorial;
+    return next;
+  }
+
   async function save() {
     setErr("");
     setSaving(true);
@@ -1201,6 +1338,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
           sort_order: idx,
           is_primary: !!i.is_primary,
         })),
+      meta: buildMeta(),
     };
 
     try {
@@ -1316,6 +1454,75 @@ function ProductModal({ product, categories, onClose, onSaved }) {
           ))}
           <button style={{ ...styles.btn(), alignSelf: "start", marginTop: 4 }} onClick={addImage}>+ Agregar imagen</button>
         </div>
+
+        {/* ───── Contenido de la interna (todo editable, todo opcional) ───── */}
+        <div style={{ marginTop: 26, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,.1)" }}>
+          <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>Contenido de la página del producto</h4>
+          <div style={{ fontSize: 12, color: "rgba(237,233,224,.5)" }}>
+            Lo que cargues acá pisa el contenido por defecto. Si dejás una sección vacía, se usa el texto por defecto de la línea.
+          </div>
+        </div>
+
+        <RepeatList
+          title='Por qué elegirlo (beneficios)'
+          hint='Tarjetas de "Por qué elegirlo". Título corto + descripción.'
+          rows={benefits}
+          fields={[
+            { key: "title", placeholder: "Título del beneficio (ej: Para ciclos completos)" },
+            { key: "body", placeholder: "Descripción del beneficio", textarea: true },
+          ]}
+          onAdd={mkRow(setBenefits, { title: "", body: "" })}
+          onChange={setField(setBenefits)}
+          onRemove={delRow(setBenefits)}
+          addLabel="+ Agregar beneficio"
+        />
+
+        <RepeatList
+          title="Características clave"
+          hint="Lista con ícono (emoji) + título + descripción."
+          rows={features}
+          fields={[
+            { key: "emoji", placeholder: "Emoji / ícono (ej: ⚖)" },
+            { key: "title", placeholder: "Título (ej: pH auto-buffer)" },
+            { key: "body", placeholder: "Descripción", textarea: true },
+          ]}
+          onAdd={mkRow(setFeatures, { emoji: "", title: "", body: "" })}
+          onChange={setField(setFeatures)}
+          onRemove={delRow(setFeatures)}
+          addLabel="+ Agregar característica"
+        />
+
+        <RepeatList
+          title="Datos técnicos"
+          hint="Ficha técnica: dato + valor (ej: Composición → NPK 5-3-7)."
+          rows={specs}
+          fields={[
+            { key: "label", placeholder: "Dato (ej: Composición)" },
+            { key: "value", placeholder: "Valor (ej: NPK 5-3-7 + micros)" },
+          ]}
+          onAdd={mkRow(setSpecs, { label: "", value: "" })}
+          onChange={setField(setSpecs)}
+          onRemove={delRow(setSpecs)}
+          addLabel="+ Agregar dato técnico"
+        />
+
+        <ProductPicker
+          title='Sumá para acompañar (cross-sell)'
+          hint="Elegí qué productos aparecen como complementarios en la interna."
+          options={allProducts.filter((o) => o.slug !== slug)}
+          selected={crossSlugs}
+          onToggle={(s) => toggleSlug(setCrossSlugs, s)}
+        />
+
+        <ProductPicker
+          title="Incluye la línea completa"
+          hint={isBundle
+            ? "Productos que componen este kit/línea. Vacío = se arma solo con la familia."
+            : "Sólo aplica a productos marcados como kit/línea (meta.bundle). En otros no se muestra."}
+          options={allProducts.filter((o) => o.slug !== slug)}
+          selected={bundleSlugs}
+          onToggle={(s) => toggleSlug(setBundleSlugs, s)}
+        />
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
           <button style={styles.btn()} onClick={onClose} disabled={saving}>Cancelar</button>
