@@ -6164,6 +6164,15 @@ html.is-loading body {
     max-width: 76%;
     max-height: 80%;
 }
+/* Mobile: sin la sombra bajo los renders del selector de formato (pedido
+   cliente 2026-06-12). En desktop la sombra "flota" la botella; en mobile,
+   con el stage chico, quedaba un manchón oscuro debajo del render. */
+@media (max-width: 768px) {
+    .pdd__format-card img,
+    .pdd__format-card.is-active img {
+        filter: none;
+    }
+}
 .pdd__formats-tabs {
     width: min(1100px, 92vw);
     margin: clamp(30px, 4vh, 50px) auto 0;
