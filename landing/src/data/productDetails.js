@@ -481,7 +481,7 @@ export const productDetails = {
         ],
         bigStat: {
             num: 90,
-            suffix: "%+",
+            suffix: "%",
             label: "PRENDIMIENTO",
             body: "Tasa de prendimiento promedio en condiciones controladas (humedad >70%, temperatura 22-26°C). Validado en ensayos con esquejes de variedades comerciales.",
         },
