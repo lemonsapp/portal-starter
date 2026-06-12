@@ -15,8 +15,22 @@
 
 const express = require("express");
 const { z } = require("zod");
+const multer = require("multer");
 const db = require("../db");
 const { reauthorProductImages } = require("./shopImageSet");
+// Upload de imágenes de producto: mismo patrón probado que profile.js (avatar)
+// y chat.js (emojis) — multer en memoria + Cloudinary configurado por request
+// leyendo las creds de configStore (DB encriptada via wizard /admin/setup).
+const { configureCloudinary } = require("../lib/cloudinaryConfig");
+
+const uploadImage = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Solo se permiten imágenes"));
+  },
+});
 
 // Helper para que un fallo en un INSERT no aborte el resto del migrate.
 // Imprime el error y sigue. Solo lo aplicamos a INSERT seed (las CREATE
@@ -1863,6 +1877,38 @@ function build({ authRequired, requireRole }) {
       res.status(500).json({ error: "Error al listar categorías" });
     }
   });
+
+  // ── POST /api/admin/shop/products/upload-image — subir imagen a Cloudinary
+  // Recibe un archivo (campo `image`, multipart) y devuelve { ok, url }. El
+  // cliente pega esa url en la fila de imagen del producto y guarda como siempre.
+  // El error de multer (tipo / tamaño) se devuelve limpio en vez de tirar 500.
+  router.post(
+    "/products/upload-image",
+    ...writeMw,
+    (req, res, next) => {
+      uploadImage.single("image")(req, res, (err) => {
+        if (err) return res.status(400).json({ error: err.message });
+        next();
+      });
+    },
+    async (req, res) => {
+      try {
+        if (!req.file) return res.status(400).json({ error: "No se recibió ninguna imagen" });
+        const cloudinary = await configureCloudinary();
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "portal-shop", resource_type: "image" },
+            (error, out) => { if (error) reject(error); else resolve(out); }
+          );
+          stream.end(req.file.buffer);
+        });
+        res.json({ ok: true, url: result.secure_url });
+      } catch (e) {
+        console.error("[SHOP IMAGE UPLOAD]", e.message);
+        res.status(500).json({ error: e.message });
+      }
+    }
+  );
 
   // ── POST /api/admin/shop/products — crear
   router.post("/products", ...writeMw, async (req, res) => {

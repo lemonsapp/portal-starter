@@ -1253,6 +1253,8 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   );
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  // Índice de la fila de imagen que se está subiendo (-1 = ninguna).
+  const [uploadingIdx, setUploadingIdx] = useState(-1);
 
   // Auto-slug a partir del nombre cuando es nuevo y el slug está vacío.
   function maybeAutoSlug(v) {
@@ -1280,6 +1282,33 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       if (next.length && !next.some((img) => img.is_primary)) next[0].is_primary = true;
       return next.length ? next : [{ url: "", alt: "", is_primary: true }];
     });
+  }
+  // Sube un archivo a Cloudinary (via el server) y completa la url de la fila i.
+  // FormData → el browser pone el Content-Type multipart con boundary solo;
+  // por eso usamos authHdr() (sin el Content-Type json) y NO jsonHdr().
+  async function uploadImageFile(i, file) {
+    if (!file) return;
+    setUploadingIdx(i);
+    setErr("");
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const r = await fetch(`${API}/api/admin/shop/products/upload-image`, {
+        method: "POST",
+        headers: authHdr(),
+        body: fd,
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        setErr(d.error || "Error al subir la imagen");
+        return;
+      }
+      updateImage(i, "url", d.url);
+    } catch (e) {
+      setErr("Error de red al subir la imagen");
+    } finally {
+      setUploadingIdx(-1);
+    }
   }
 
   // ── Editores de listas repetibles (beneficios / características / specs) ──
@@ -1435,16 +1464,29 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
           </label>
         </div>
 
-        <label style={{ ...styles.label, marginTop: 18 }}>Imágenes (URL)</label>
+        <label style={{ ...styles.label, marginTop: 18 }}>Imágenes</label>
+        <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: -2, marginBottom: 6 }}>
+          Subí un archivo con "Subir" o pegá una URL (ej: /imagenes-web/productos/race/...).
+        </div>
         <div style={{ display: "grid", gap: 8 }}>
           {images.map((img, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1fr 1fr auto auto", gap: 6, alignItems: "center" }}>
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1.3fr 1fr auto auto auto", gap: 6, alignItems: "center" }}>
               {img.url
                 ? <img src={img.url} alt="" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
                 : <div style={{ width: 32, height: 32, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />
               }
-              <input style={styles.input} value={img.url} onChange={(e) => updateImage(i, "url", e.target.value)} placeholder="URL de la imagen (ej: /imagenes-web/productos/race/...)" />
+              <input style={styles.input} value={img.url} onChange={(e) => updateImage(i, "url", e.target.value)} placeholder="URL de la imagen" />
               <input style={styles.input} value={img.alt} onChange={(e) => updateImage(i, "alt", e.target.value)} placeholder="Alt text (a11y)" />
+              <label style={{ ...styles.btn(), padding: "4px 10px", cursor: uploadingIdx === i ? "wait" : "pointer", whiteSpace: "nowrap", opacity: uploadingIdx === i ? 0.6 : 1 }}>
+                {uploadingIdx === i ? "Subiendo…" : "Subir"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  disabled={uploadingIdx === i}
+                  onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadImageFile(i, f); }}
+                />
+              </label>
               <label style={{ fontSize: 11, color: "rgba(237,233,224,.6)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
                 <input type="radio" name="primary" checked={img.is_primary} onChange={() => setPrimary(i)} />
                 Principal
