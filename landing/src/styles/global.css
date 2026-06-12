@@ -3679,13 +3679,19 @@ html.is-loading body {
 }
 
 .footer__brand {
-    font-family: var(--f-title);
-    font-size: clamp(4rem, 18vw, 14rem);
-    line-height: 1;
-    letter-spacing: -0.04em;
     text-align: center;
     padding-top: 40px;
-    color: var(--c-white);
+}
+
+/* Wordmark del footer como imagen (white logo). Mantiene el peso visual del
+   texto grande anterior: ancho ~full hasta un tope, centrado, alto auto por
+   aspect-ratio (2000x408) → sin layout shift. */
+.footer__brand-img {
+    display: block;
+    width: 100%;
+    max-width: clamp(280px, 82vw, 1080px);
+    height: auto;
+    margin: 0 auto;
 }
 
 .footer__reg {
