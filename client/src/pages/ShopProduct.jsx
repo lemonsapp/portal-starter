@@ -27,11 +27,13 @@ function normalizeProduct(p) {
   let fixedPrimary = fixImageUrl(p.primary_image);
   let images = (p.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) }));
 
-  // Interna de un kit de línea: la primaria es SIEMPRE la foto familia
-  // ("unificado", todos los potes juntos). Reemplaza la entrada primaria de
-  // la galería en vez de mapear por URL global (que pisaba SKUs sueltos).
+  // Interna de un kit de línea: la foto familia ("unificado", todos los potes
+  // juntos) es sólo un FALLBACK cuando el producto no trae primaria propia.
+  // Antes se forzaba SIEMPRE y pisaba la imagen que el admin sube/edita desde el
+  // panel (la foto subida se guardaba pero no se mostraba en la interna). Ahora
+  // el server deploya y el admin controla la imagen → su elección manda.
   const familyShot = p.meta?.bundle ? KIT_FAMILY_SHOTS[p.meta.bundle_line] : null;
-  if (familyShot && fixedPrimary !== familyShot) {
+  if (familyShot && !fixedPrimary) {
     fixedPrimary = familyShot;
     images = images.some((im) => im.is_primary)
       ? images.map((im) => (im.is_primary ? { ...im, url: familyShot, alt: p.name } : im))
