@@ -425,6 +425,21 @@ export default function ShopProduct() {
           imgs.push({ url: product.primary_image, alt: product.name, is_primary: true });
           seen.add(product.primary_image);
         }
+        // Imágenes extra cargadas por el admin desde el panel (ej: subidas a
+        // Cloudinary). Las fotos de las PARTES ya las arma kitParts por medida,
+        // así que las excluimos (están en bundle.includes[].variants); todo lo
+        // demás en product.images es un extra del admin y debe verse acá.
+        const partUrls = new Set();
+        for (const fam of (product.bundle?.includes || [])) {
+          for (const v of (fam.variants || [])) {
+            if (v.primary_image) partUrls.add(v.primary_image);
+          }
+        }
+        for (const im of (product.images || [])) {
+          if (!im.url || seen.has(im.url) || partUrls.has(im.url)) continue;
+          seen.add(im.url);
+          imgs.push({ url: im.url, alt: im.alt || product.name });
+        }
         for (const v of kitParts) {
           if (v.primary_image && !seen.has(v.primary_image)) {
             seen.add(v.primary_image);
