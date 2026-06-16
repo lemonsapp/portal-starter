@@ -1828,7 +1828,10 @@ const productSchema = z.object({
   active: z.boolean().optional(),
   featured: z.boolean().optional(),
   sort_order: z.number().int().optional(),
-  meta: z.record(z.any()).optional(),
+  // Zod v4: z.record() exige (keySchema, valueSchema). Con un solo argumento
+  // (forma de Zod v3) tira un TypeError al parsear un meta con claves, que el
+  // catch reporta como un "Datos inválidos" sin detalle. meta es un mapa libre.
+  meta: z.record(z.string(), z.any()).optional(),
   images: z.array(z.object({
     url: z.string().trim().min(1).max(1000),
     alt: z.string().trim().max(300).optional().nullable(),
