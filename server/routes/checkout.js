@@ -287,7 +287,7 @@ function publicRouter() {
   router.post("/checkout", async (req, res) => {
     let body;
     try { body = checkoutSchema.parse(req.body); }
-    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.issues }); }
 
     const client = await db.connect();
     try {
@@ -921,7 +921,7 @@ function adminRouter({ authRequired, requireRole }) {
   router.post("/promo-codes", ...writeMw, async (req, res) => {
     let body;
     try { body = promoCodeSchema.parse(req.body); }
-    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.issues }); }
 
     // Validar value según kind
     if (body.kind === "percent" && (body.value < 1 || body.value > 100)) {
@@ -950,7 +950,7 @@ function adminRouter({ authRequired, requireRole }) {
     if (!id) return res.status(400).json({ error: "ID inválido" });
     let body;
     try { body = promoCodeSchema.partial().parse(req.body); }
-    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.issues }); }
 
     const sets = ["updated_at = NOW()"];
     const params = [];
@@ -1073,7 +1073,7 @@ function adminRouter({ authRequired, requireRole }) {
   router.post("/campaigns", ...writeMw, async (req, res) => {
     let body;
     try { body = campaignSchema.parse(req.body); }
-    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.issues }); }
     try {
       const { rows } = await db.query(
         `INSERT INTO email_campaigns
@@ -1098,7 +1098,7 @@ function adminRouter({ authRequired, requireRole }) {
     const id = parseInt(req.params.id, 10);
     let body;
     try { body = campaignSchema.partial().parse(req.body); }
-    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.issues }); }
     try {
       const cur = await db.query(`SELECT status FROM email_campaigns WHERE id=$1`, [id]);
       if (!cur.rows[0]) return res.status(404).json({ error: "No encontrada" });

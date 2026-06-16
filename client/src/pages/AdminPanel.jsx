@@ -1381,7 +1381,15 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       });
       const d = await r.json();
       if (!r.ok) {
-        setErr(d.error || "Error al guardar");
+        // El server (zod) devuelve `issues` con el detalle por campo. Lo
+        // mostramos para que un 400 de validación sea accionable en vez de un
+        // genérico "Datos inválidos" — ej: "short_description: máx 500".
+        const detail = Array.isArray(d.issues)
+          ? d.issues
+              .map((it) => `${(it.path || []).join(".") || "campo"}: ${it.message}`)
+              .join(" · ")
+          : "";
+        setErr([d.error || "Error al guardar", detail].filter(Boolean).join(" — "));
         setSaving(false);
         return;
       }

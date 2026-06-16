@@ -1914,7 +1914,7 @@ function build({ authRequired, requireRole }) {
   router.post("/products", ...writeMw, async (req, res) => {
     let body;
     try { body = productSchema.parse(req.body); }
-    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.issues }); }
 
     const client = await db.connect();
     try {
@@ -1974,7 +1974,7 @@ function build({ authRequired, requireRole }) {
 
     let body;
     try { body = productSchema.partial({ slug: true }).parse(req.body); }
-    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.issues }); }
 
     const client = await db.connect();
     try {
@@ -2068,7 +2068,7 @@ function build({ authRequired, requireRole }) {
     });
     let body;
     try { body = schema.parse(req.body); }
-    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.errors }); }
+    catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.issues }); }
 
     try {
       const { rows } = await db.query(
