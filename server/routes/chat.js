@@ -45,6 +45,10 @@ const upload = multer({
     await db.query(`ALTER TABLE chat_private_messages ADD COLUMN IF NOT EXISTS reply_to_story_id INT`);
     await db.query(`ALTER TABLE chat_private_messages ADD COLUMN IF NOT EXISTS reply_story_image_url TEXT`);
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ`);
+    // notifications.actor_id: el feed (GET /api/notifications) hace JOIN con
+    // users por actor_id y los INSERT de story_like/reply lo escriben. Schema
+    // viejo (init-db sin actor_id) tiraba "column n.actor_id does not exist".
+    await db.query(`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS actor_id INT REFERENCES users(id) ON DELETE SET NULL`);
     // Seed sala default 'general' para que el chat funcione out-of-the-box
     // (init-db.sql ya la incluye, pero esto cubre tenants migrados desde antes).
     await db.query(`

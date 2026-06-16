@@ -303,6 +303,7 @@ CREATE TABLE IF NOT EXISTS webauthn_challenges (
 CREATE TABLE IF NOT EXISTS notifications (
   id          SERIAL PRIMARY KEY,
   user_id     INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  actor_id    INT REFERENCES users(id) ON DELETE SET NULL,  -- quién la disparó (NULL = del sistema)
   type        TEXT NOT NULL,           -- friend_request | message | post_like | comment | system
   title       TEXT,
   body        TEXT,
