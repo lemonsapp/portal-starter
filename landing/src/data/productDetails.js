@@ -19,7 +19,7 @@ export const productDetails = {
         hero: {
             kicker: "LÍNEA ELITE · FERTILIZANTE PARA HIDROPONÍA Y SUSTRATOS",
             headline: "Fertilizante equilibrado\npara hidroponía y sustratos.",
-            claim: "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de hidroponía, NFT, DWC, coco y sustratos. Concentración máxima de NPK en cada riego, pH auto-buffer, resultados consistentes cosecha tras cosecha.",
+            claim: "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de coco, sustratos inertes y compuestos. Concentración máxima de NPK en cada riego, pH auto-buffer, resultados consistentes cosecha tras cosecha.",
             ctaPrimary:   { label: "COMPRAR ELITE",        href: "/shop?categoria=elite" },
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#guias" },
             color: "#C9A34E",
@@ -99,7 +99,7 @@ export const productDetails = {
         ],
         system: {
             title: "Diseñado para integrar el sistema Holistic.",
-            body: "Elite es el corazón del catálogo. Combiná con Race para acelerar floración, con Bio Estimulante en el arranque, con Day-0 para el cierre. Un solo equipo técnico atrás de todos los productos.",
+            body: "Elite es el corazón del catálogo. Combiná con Race 3 para acelerar floración, con Bio Estimulante en el arranque, con Day-0 para el cierre. Un solo equipo técnico atrás de todos los productos.",
             chips: ["+ Bio Estimulante", "+ Race", "+ Day-0"],
         },
         // Pullquote removido por pedido del cliente — antes decía
@@ -182,7 +182,7 @@ export const productDetails = {
             { title: "Estabilidad total",     body: "Sin agua = sin caducidad acelerada. Vida útil garantizada, sin pérdida de actividad.",          emoji: "♢" },
             { title: "Sin almacenamiento frío",body: "Conservalo donde quieras. No requiere heladera ni rangos estrictos.",                       emoji: "✦" },
             { title: "pH ideal",               body: "Cada Pro trabaja en el rango óptimo del cultivo sin shock de pH.",                            emoji: "⚖" },
-            { title: "Mezcla limpia",          body: "Disuelve completo en agua tibia sin residuos — sin filtros que limpiar.",                   emoji: "○" },
+            { title: "Mezcla limpia",          body: "Disuelve completo en agua sin residuos — sin filtros que limpiar.",                   emoji: "○" },
             { title: "Compatible con fertirriego", body: "El sólido disuelto se comporta como un líquido premium en cualquier sistema.",              emoji: "↯" },
             { title: "Trazabilidad por lote",  body: "Cada bolsa impresa con lote y composición exacta del análisis.",                            emoji: "✓" },
         ],
@@ -198,7 +198,7 @@ export const productDetails = {
         ],
         system: {
             title: "Encaja con todo el catálogo.",
-            body: "Pro es la opción técnica del cultivador que mide. Mezclable con Bio Estimulante en arranque, con Race para acelerar floración y con Day-0 al cierre.",
+            body: "Pro es la opción concentrada para el cultivador. Mezclable con Bio Estimulante en el arranque, con Race 2 y 4 para un extra de calcio, magnesio y micro. Siempre Day-0 en el cierre.",
             chips: ["+ Bio Estimulante", "+ Day-0", "+ Race"],
         },
         // Pullquote removido por pedido del cliente — antes decía
@@ -220,7 +220,7 @@ export const productDetails = {
         hero: {
             kicker: "LÍNEA RACE",
             headline: "Sistema adaptable de fertilizantes\npara cultivo indoor y outdoor.",
-            claim: "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cinco fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
+            claim: "Línea Race es el sistema de Holistic pensado para adaptar cada nutriente al ADN de tu cultivo y sacar lo mejor de cada genética, sin límites, sin promedios, solo el máximo potencial de lo que plantás. Cinco fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
             ctaPrimary:   { label: "COMPRAR RACE",        href: "/shop?categoria=race" },
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#guias" },
             color: "#2E8F6E",
@@ -246,7 +246,7 @@ export const productDetails = {
             {
                 kicker: "TODO EL CICLO",
                 title: "Race 1 — NPK concentrado.",
-                body: "Nitrógeno: motor del crecimiento vegetativo — hojas, tallos y clorofila. Fósforo: raíces fuertes y transferencia de energía. Potasio: regula el metabolismo, fortalece tallos y sube la resistencia a plagas y estrés.",
+                body: "NPK: motor del crecimiento vegetativo — hojas, tallos y clorofila. Raíces fuertes y transferencia de energía. Regula el metabolismo, fortalece tallos y sube la resistencia a plagas y estrés.",
                 image: "/imagenes-web/productos/linea-race/1l/race-1-verde-1l-f1.webp",
                 color: "#3DA86E",
                 stat: "01",
@@ -380,7 +380,7 @@ export const productDetails = {
             {
                 kicker: "VERSÁTIL",
                 title: "Para todo el ciclo.",
-                body: "Una sola botella para activar raíces, mejorar foliage y reforzar defensas naturales. Multifunción real.",
+                body: "Mejora la estructura del suelo para un mejor desarrollo radicular. Mayor retención de humedad entre riegos. Estimula los microorganismos benéficos que nutren y protegen la planta.",
                 image: "/imagenes-web/race/root-detail.jpg",
                 color: "#F091A5",
                 stat: "03",
@@ -580,7 +580,7 @@ export const productDetails = {
             { title: "Sin shock",               body: "Transición suave del nutriente principal a la fase de cierre.",                  emoji: "◇" },
             { title: "Compatibilidad total",    body: "Después de cualquier línea Holistic — Elite, Pro, Race.",                       emoji: "↯" },
             { title: "Aplicación simple",       body: "Una sola dosis por riego en los últimos 5 días. Sin escalones complejos.",   emoji: "○" },
-            { title: "Validado en cultivo",     body: "Probado en variedades indoor/outdoor con resultado consistente.",                emoji: "✓" },
+            { title: "Validado en cultivo",     body: "Remueve minerales excedentes adheridos a las raíces.",                emoji: "✓" },
         ],
         formats: [
             { name: "250ML", size: "250 ml", image: "/imagenes-web/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png" },
