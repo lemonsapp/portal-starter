@@ -320,8 +320,8 @@ export const productDetails = {
         ],
         system: {
             title: "El motor del catálogo.",
-            body: "Race es la línea más enfocada en performance. Combinable con Elite o Pro (hidrosoluble) según preferencia. Day-0 al final, siempre.",
-            chips: ["+ Elite", "+ Pro", "+ Day-0", "+ Bio Estimulante"],
+            body: "Race es la línea más enfocada en performance. Combinable con bio estimulante y day-0 al final.",
+            chips: ["+ Day-0", "+ Bio Estimulante"],
         },
         // Pullquote removido por pedido del cliente — antes decía
         // "La velocidad sin control es ruido...". El componente
