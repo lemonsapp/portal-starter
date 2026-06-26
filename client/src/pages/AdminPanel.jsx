@@ -1245,6 +1245,9 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   const [active, setActive] = useState(product?.active !== false);
   const [featured, setFeatured] = useState(product?.featured === true);
   const [sortOrder, setSortOrder] = useState(product?.sort_order ?? 0);
+  // Galería fija: si está activo, la interna muestra SOLO las fotos subidas acá
+  // (la destacada primero) en vez de armar la galería por medida (kits).
+  const [galleryFixed, setGalleryFixed] = useState(metaBase.gallery_fixed === true);
   // Imágenes como lista de { url, alt, is_primary }
   const [images, setImages] = useState(
     product?.images?.length ? product.images.map((i) => ({
@@ -1342,6 +1345,9 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     const next = { ...metaBase };
     if (Object.keys(editorial).length) next.editorial = editorial;
     else delete next.editorial;
+    // Galería fija (solo fotos subidas, sin armado por medida).
+    if (galleryFixed) next.gallery_fixed = true;
+    else delete next.gallery_fixed;
     return next;
   }
 
@@ -1476,6 +1482,15 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
         <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: -2, marginBottom: 6 }}>
           Subí un archivo con "Subir" o pegá una URL (ej: /imagenes-web/productos/race/...).
         </div>
+        <label style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", fontSize: 13, margin: "0 0 10px", padding: "8px 10px", border: "1px solid rgba(255,255,255,.1)", borderRadius: 6, background: "rgba(255,255,255,.03)" }}>
+          <input type="checkbox" checked={galleryFixed} onChange={(e) => setGalleryFixed(e.target.checked)} style={{ marginTop: 2 }} />
+          <span>
+            Usar solo estas fotos en la galería
+            <span style={{ display: "block", fontSize: 11, color: "rgba(237,233,224,.5)", marginTop: 2 }}>
+              Si lo activás, la página muestra exactamente las fotos de acá (la destacada primero) y no se agregan fotos al cambiar de medida. Si lo dejás apagado, en los kits la galería se arma por medida (comportamiento actual).
+            </span>
+          </span>
+        </label>
         <div style={{ display: "grid", gap: 8 }}>
           {images.map((img, i) => (
             <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1.3fr 1fr auto auto auto", gap: 6, alignItems: "center" }}>

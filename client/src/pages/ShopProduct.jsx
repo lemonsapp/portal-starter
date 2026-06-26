@@ -138,6 +138,8 @@ const LINE_NAMES = { race: "Race", pro: "Pro", elite: "Elite" };
 const META_HIDDEN = new Set([
   "linea", "bundle", "bundle_discount_pct", "points_pack", "variant_of",
   "family", "grupo", "group", "order", "orden",
+  // Control de galería: si la interna fija las fotos del admin o las arma por medida.
+  "gallery_fixed",
   // Contenido editorial curado por el admin (beneficios, features, specs,
   // cross-sell, bundle): tiene su propia sección, no es ficha técnica cruda.
   "editorial",
@@ -415,9 +417,26 @@ export default function ShopProduct() {
     );
   }
 
+  // Galería fija: el admin marcó "usar solo mis fotos" (meta.gallery_fixed). En
+  // ese caso la interna muestra EXACTAMENTE las fotos subidas, con la destacada
+  // (is_primary) primero, y NO se inyectan fotos de las partes por medida.
+  const galleryFixed = product.meta?.gallery_fixed === true;
+  const adminImages = (() => {
+    const list = (product.images || []).filter((i) => i && i.url);
+    if (!list.length) return [];
+    // Orden estable: la destacada al frente, el resto en su sort_order original.
+    const primaryFirst = [...list].sort(
+      (a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0)
+    );
+    return primaryFirst.map((i) => ({
+      url: i.url, alt: i.alt || product.name, is_primary: !!i.is_primary,
+    }));
+  })();
+
   // Galería del KIT reactiva a la medida elegida: foto familia (unificado) +
   // cada parte en la medida seleccionada. Cambiar el selector cambia las fotos.
-  const kitGallery = isKit
+  // Si galleryFixed está activo, no se arma (manda adminImages).
+  const kitGallery = isKit && !galleryFixed
     ? (() => {
         const imgs = [];
         const seen = new Set();
@@ -449,11 +468,13 @@ export default function ShopProduct() {
         return imgs;
       })()
     : [];
-  const images = isKit && kitGallery.length
-    ? kitGallery
-    : product.images?.length
-      ? product.images
-      : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
+  const images = galleryFixed && adminImages.length
+    ? adminImages
+    : isKit && kitGallery.length
+      ? kitGallery
+      : product.images?.length
+        ? product.images
+        : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
   const inStock = product.stock == null || product.stock > 0;
   const isCustomPoints = !!product.meta?.points_custom;
   const customPointsTotal = product.price_cents * clampPoints(pointsQty);
