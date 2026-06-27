@@ -1351,7 +1351,7 @@ function MedidaImageEditor({ variant }) {
             <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploadingIdx === i} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadFile(i, f); }} />
           </label>
           <label style={{ fontSize: 11, color: "rgba(237,233,224,.6)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-            <input type="radio" name={`prim-${variant.id}`} checked={img.is_primary} onChange={() => setPrim(i)} /> Principal
+            <input type="radio" name={`prim-${variant.id}`} checked={img.is_primary} onChange={() => setPrim(i)} /> Destacada
           </label>
           <button style={{ ...styles.btn(false, true), padding: "4px 10px" }} onClick={() => del(i)}>×</button>
         </div>
@@ -1727,7 +1727,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
               </label>
               <label style={{ fontSize: 11, color: "rgba(237,233,224,.6)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
                 <input type="radio" name="primary" checked={img.is_primary} onChange={() => setPrimary(i)} />
-                Principal
+                Destacada
               </label>
               <button style={{ ...styles.btn(false, true), padding: "4px 10px" }} onClick={() => removeImage(i)}>×</button>
             </div>
