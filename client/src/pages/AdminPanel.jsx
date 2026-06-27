@@ -1410,17 +1410,23 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     typeof metaBase.medida_destacada === "string" ? metaBase.medida_destacada : ""
   );
   const [isMedidaDestacada, setIsMedidaDestacada] = useState(metaBase.medida_destacada === true);
-  // Medidas hermanas (misma familia) para editar las imágenes de cada una acá.
+  // Variantes para editar las imágenes de cada medida acá mismo.
+  //  • Producto de familia (Race/Pro/Bio/Elite individual): sus medidas hermanas.
+  //  • Kit / línea (bundle): TODAS las variantes de la línea, ordenadas por medida
+  //    (es la publicación donde se ven las medidas, pero no tiene formato propio).
   const [expandedMedida, setExpandedMedida] = useState(null);
+  const ordFmt = (f) => { const i = FORMATO_ORDER.indexOf(f); return i === -1 ? 99 : i; };
   const familyKey = famKeyOf(metaBase);
+  const lineKey = isBundle ? (metaBase.bundle_line || metaBase.linea) : null;
   const medidaSiblings = familyKey
     ? allProducts
         .filter((p) => famKeyOf(p.meta) === familyKey)
-        .sort((a, b) => {
-          const ia = FORMATO_ORDER.indexOf(a.meta?.formato); const ib = FORMATO_ORDER.indexOf(b.meta?.formato);
-          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-        })
-    : [];
+        .sort((a, b) => ordFmt(a.meta?.formato) - ordFmt(b.meta?.formato))
+    : lineKey
+      ? allProducts
+          .filter((p) => p.meta?.linea === lineKey && p.meta?.formato && !p.meta?.bundle)
+          .sort((a, b) => ordFmt(a.meta?.formato) - ordFmt(b.meta?.formato) || String(a.name).localeCompare(String(b.name), "es"))
+      : [];
   // Imágenes como lista de { url, alt, is_primary }
   const [images, setImages] = useState(
     product?.images?.length ? product.images.map((i) => ({
@@ -1734,7 +1740,9 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
           <div style={{ marginTop: 22, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,.1)" }}>
             <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>Imágenes por medida</h4>
             <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)", marginBottom: 10 }}>
-              Editá las fotos de cada medida de esta familia sin salir de acá. Cada medida se guarda por separado.
+              {isBundle
+                ? "Editá las fotos de cada producto de la línea, ordenados por medida. Cada uno se guarda por separado."
+                : "Editá las fotos de cada medida de esta familia sin salir de acá. Cada medida se guarda por separado."}
             </div>
             <div style={{ display: "grid", gap: 8 }}>
               {medidaSiblings.map((sib) => {
@@ -1751,8 +1759,11 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                       {sib.primary_image
                         ? <img src={sib.primary_image} alt="" style={{ width: 30, height: 30, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
                         : <div style={{ width: 30, height: 30, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />}
+                      {sib.meta?.formato && (
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "var(--brand-primary, #f5e03a)", background: "rgba(245,224,58,.1)", border: "1px solid rgba(245,224,58,.25)", borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" }}>{sib.meta.formato}</span>
+                      )}
                       <span style={{ fontWeight: 700, fontSize: 13 }}>
-                        {sib.meta?.formato || sib.name}
+                        {sib.name}
                         {isThis && <span style={{ color: "rgba(237,233,224,.5)", fontWeight: 400 }}> · esta</span>}
                       </span>
                       <span style={{ fontSize: 11, color: "rgba(237,233,224,.45)" }}>{n} {n === 1 ? "foto" : "fotos"}</span>
