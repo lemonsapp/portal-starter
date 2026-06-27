@@ -1,0 +1,263 @@
+---
+// HolisticPoints — sección de la home que promociona el Sistema de Puntos
+// (Holistic Points, v9). Autocontenida: estilos scopeados por Astro, sin tocar
+// global.css. Paleta mint sobre fondo oscuro para emparentar con FinalCTA.
+//
+// Números alineados al documento SISTEMADEPUNTOS9 (= lo que ya corre el portal):
+//  • 1 punto cada $12.000 gastados (cualquier canal).
+//  • 1 punto = $4.000 de valor de canje.
+//  • Descuentos del 5% al 40% · premios físicos (Pack, Gel Cloner, Dije Don Rouch).
+import { PORTAL } from "../data/contacto.js";
+
+const pilares = [
+    {
+        n: "01",
+        kicker: "Comprá",
+        title: "Cada compra suma",
+        copy: "Ganás 1 punto cada $12.000, compres donde compres: web, WhatsApp, MercadoLibre o efectivo. Con tu código de cliente, cualquier pedido acumula.",
+    },
+    {
+        n: "02",
+        kicker: "Mostrá",
+        title: "Tu cultivo vale puntos",
+        copy: "Mostrá tus plantas con productos Holistic y mencioná @holistic.arg. Sumás puntos extra por likes, fotos y ciclos completos documentados.",
+    },
+    {
+        n: "03",
+        kicker: "Canjeá",
+        title: "Descuentos y premios",
+        copy: "Canjeá por 5% a 40% de descuento en tu próximo pedido, o por premios físicos exclusivos de la marca. Tus puntos no vencen.",
+    },
+];
+
+const premios = [
+    { label: "Hasta 40% OFF", sub: "en tu próximo pedido" },
+    { label: "Pack Accesorios", sub: "200 puntos" },
+    { label: "Gel Cloner", sub: "200 puntos" },
+    { label: "Dije Don Rouch", sub: "500 puntos · aspiracional" },
+];
+---
+<section class="hpoints" aria-labelledby="hpoints-title">
+    <div class="hpoints__inner">
+        <p class="hpoints__eyebrow">
+            <span class="hpoints__dot" aria-hidden="true"></span>
+            HOLISTIC POINTS · PROGRAMA DE FIDELIZACIÓN
+        </p>
+
+        <h2 id="hpoints-title" class="hpoints__title">
+            Cultivá. Mostrá.
+            <span class="hpoints__title-hl">Canjeá.</span>
+        </h2>
+
+        <p class="hpoints__lead">
+            Un solo programa que premia tus compras y tu cultivo. Sumás puntos en
+            cualquier canal y los convertís en descuentos o premios de Holistic.
+        </p>
+
+        <div class="hpoints__grid">
+            {pilares.map((p) => (
+                <article class="hpoints__card">
+                    <span class="hpoints__num" aria-hidden="true">{p.n}</span>
+                    <p class="hpoints__kicker">{p.kicker}</p>
+                    <h3 class="hpoints__card-title">{p.title}</h3>
+                    <p class="hpoints__copy">{p.copy}</p>
+                </article>
+            ))}
+        </div>
+
+        <div class="hpoints__rewards" role="list" aria-label="Premios destacados">
+            {premios.map((r) => (
+                <div class="hpoints__reward" role="listitem">
+                    <span class="hpoints__reward-label">{r.label}</span>
+                    <span class="hpoints__reward-sub">{r.sub}</span>
+                </div>
+            ))}
+        </div>
+
+        <p class="hpoints__fine">
+            1 punto = <strong>$4.000</strong> de valor de canje · acumulás 1 punto cada
+            <strong>$12.000</strong> · los puntos no vencen.
+        </p>
+
+        <div class="hpoints__cta">
+            <a class="hpoints__btn hpoints__btn--primary" href={PORTAL.register}>Sumate gratis</a>
+            <a class="hpoints__btn hpoints__btn--ghost" href={PORTAL.coins}>Ver mis puntos →</a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .hpoints {
+        background: radial-gradient(120% 100% at 50% 0%, #10231b 0%, #0a0a0a 60%);
+        color: #f2f4f3;
+        padding: clamp(4.5rem, 3rem + 8vw, 9rem) clamp(1.25rem, 4vw, 3rem);
+        font-family: 'Gotham', system-ui, sans-serif;
+        overflow: hidden;
+    }
+    .hpoints__inner {
+        max-width: 1180px;
+        margin: 0 auto;
+    }
+    .hpoints__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: #A7F5C8;
+        margin: 0 0 1.4rem;
+    }
+    .hpoints__dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #A7F5C8;
+        box-shadow: 0 0 12px #A7F5C8;
+    }
+    .hpoints__title {
+        font-size: clamp(2.6rem, 1.2rem + 6vw, 6rem);
+        line-height: 0.95;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+        margin: 0 0 1.2rem;
+    }
+    .hpoints__title-hl {
+        color: #A7F5C8;
+        display: inline-block;
+    }
+    .hpoints__lead {
+        max-width: 46ch;
+        font-size: clamp(1rem, 0.95rem + 0.4vw, 1.2rem);
+        line-height: 1.55;
+        color: rgba(242, 244, 243, 0.72);
+        margin: 0 0 clamp(2.5rem, 2rem + 3vw, 4rem);
+    }
+    .hpoints__grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(1rem, 0.5rem + 1.5vw, 1.75rem);
+        margin-bottom: clamp(2.5rem, 2rem + 3vw, 4rem);
+    }
+    .hpoints__card {
+        position: relative;
+        padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+        border: 1px solid rgba(167, 245, 200, 0.16);
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(167, 245, 200, 0.05), rgba(255, 255, 255, 0.01));
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+    }
+    .hpoints__card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(167, 245, 200, 0.4);
+    }
+    .hpoints__num {
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        color: rgba(167, 245, 200, 0.55);
+    }
+    .hpoints__kicker {
+        font-size: 1.45rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: -0.01em;
+        margin: 0.5rem 0 0.1rem;
+        color: #A7F5C8;
+    }
+    .hpoints__card-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        margin: 0 0 0.7rem;
+        color: #fff;
+    }
+    .hpoints__copy {
+        font-size: 0.94rem;
+        line-height: 1.55;
+        color: rgba(242, 244, 243, 0.68);
+        margin: 0;
+    }
+    .hpoints__rewards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.6rem;
+    }
+    .hpoints__reward {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 0.75rem 1.1rem;
+        border-radius: 12px;
+        background: rgba(167, 245, 200, 0.08);
+        border: 1px solid rgba(167, 245, 200, 0.18);
+    }
+    .hpoints__reward-label {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #fff;
+    }
+    .hpoints__reward-sub {
+        font-size: 0.72rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgba(167, 245, 200, 0.75);
+    }
+    .hpoints__fine {
+        font-size: 0.86rem;
+        color: rgba(242, 244, 243, 0.55);
+        margin: 0 0 clamp(2rem, 1.5rem + 2vw, 3rem);
+    }
+    .hpoints__fine strong {
+        color: #A7F5C8;
+        font-weight: 800;
+    }
+    .hpoints__cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.9rem;
+        align-items: center;
+    }
+    .hpoints__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.95rem 1.7rem;
+        border-radius: 999px;
+        font-size: 0.95rem;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        text-decoration: none;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+    .hpoints__btn--primary {
+        background: linear-gradient(135deg, #A7F5C8 0%, #2E8F6E 100%);
+        color: #0a1a12;
+        box-shadow: 0 8px 30px rgba(167, 245, 200, 0.25);
+    }
+    .hpoints__btn--primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 38px rgba(167, 245, 200, 0.4);
+    }
+    .hpoints__btn--ghost {
+        color: #A7F5C8;
+        border: 1px solid rgba(167, 245, 200, 0.4);
+    }
+    .hpoints__btn--ghost:hover {
+        background: rgba(167, 245, 200, 0.1);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 860px) {
+        .hpoints__grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .hpoints__card,
+        .hpoints__btn {
+            transition: none;
+        }
+    }
+</style>
