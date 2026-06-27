@@ -1410,6 +1410,10 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     typeof metaBase.medida_destacada === "string" ? metaBase.medida_destacada : ""
   );
   const [isMedidaDestacada, setIsMedidaDestacada] = useState(metaBase.medida_destacada === true);
+  // KIT: destacada (hero) elegida por el admin para CADA medida. Se ve arriba en
+  // la interna al seleccionar esa medida. { "250ml": url, ... } en meta.hero_por_medida.
+  const [heroPorMedida, setHeroPorMedida] = useState(() => ({ ...(metaBase.hero_por_medida || {}) }));
+  const setHero = (m, url) => setHeroPorMedida((prev) => ({ ...prev, [m]: url }));
   // Variantes para editar las imágenes de cada medida acá mismo.
   //  • Producto de familia (Race/Pro/Bio/Elite individual): sus medidas hermanas.
   //  • Kit / línea (bundle): TODAS las variantes de la línea, ordenadas por medida
@@ -1427,6 +1431,8 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
           .filter((p) => p.meta?.linea === lineKey && p.meta?.formato && !p.meta?.bundle)
           .sort((a, b) => ordFmt(a.meta?.formato) - ordFmt(b.meta?.formato) || String(a.name).localeCompare(String(b.name), "es"))
       : [];
+  // Imágenes candidatas a hero para una medida del kit: las de las variantes de
+  // la línea en esa medida + las propias del kit. (Definida acá porque usa `images`.)
   // Imágenes como lista de { url, alt, is_primary }
   const [images, setImages] = useState(
     product?.images?.length ? product.images.map((i) => ({
@@ -1437,6 +1443,19 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   const [err, setErr] = useState("");
   // Índice de la fila de imagen que se está subiendo (-1 = ninguna).
   const [uploadingIdx, setUploadingIdx] = useState(-1);
+
+  // Candidatas a hero del kit en una medida: imágenes de las variantes de la
+  // línea en esa medida + las propias del kit.
+  const heroCandidates = (m) => {
+    const urls = [];
+    for (const v of allProducts) {
+      if (v.meta?.linea === lineKey && v.meta?.formato === m && !v.meta?.bundle) {
+        for (const im of (v.images || [])) if (im.url && !urls.includes(im.url)) urls.push(im.url);
+      }
+    }
+    for (const im of images) if (im.url && !urls.includes(im.url)) urls.push(im.url);
+    return urls;
+  };
 
   // Auto-slug a partir del nombre cuando es nuevo y el slug está vacío.
   function maybeAutoSlug(v) {
@@ -1527,6 +1546,12 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     // Galería fija (solo fotos subidas, sin armado por medida).
     if (galleryFixed) next.gallery_fixed = true;
     else delete next.gallery_fixed;
+    // Destacada (hero) del kit por medida.
+    if (isBundle) {
+      const hpm = Object.fromEntries(Object.entries(heroPorMedida).filter(([, v]) => v));
+      if (Object.keys(hpm).length) next.hero_por_medida = hpm;
+      else delete next.hero_por_medida;
+    }
     // Medida destacada (con la que abre la interna / la familia).
     if (isBundle) {
       if (medidaDestacada) next.medida_destacada = medidaDestacada;
@@ -1677,6 +1702,47 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
             </select>
             <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 4 }}>
               Al entrar a la interna del kit se ve esta medida (sus potes y su precio). Cambiala cuando quieras (ej: hoy 10L, mañana 250ml).
+            </div>
+          </div>
+        )}
+        {/* Destacada (hero) del kit por medida: foto grande al elegir cada medida. */}
+        {isBundle && kitMedidas.length > 0 && (
+          <div style={{ marginTop: 14 }}>
+            <label style={styles.label}>Foto destacada del kit por medida</label>
+            <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", margin: "2px 0 8px" }}>
+              Elegí qué foto se ve grande arriba al seleccionar cada medida en la interna. Si dejás "Automática", usa la foto unificada del kit.
+            </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              {kitMedidas.map((m) => {
+                const cands = heroCandidates(m);
+                const sel = heroPorMedida[m] || "";
+                return (
+                  <div key={m} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--brand-primary, #f5e03a)" }}>{m}</span>
+                    <button
+                      type="button"
+                      onClick={() => setHero(m, "")}
+                      style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, cursor: "pointer", background: sel === "" ? "rgba(245,224,58,.15)" : "rgba(255,255,255,.04)", color: sel === "" ? "var(--brand-primary, #f5e03a)" : "rgba(237,233,224,.7)", border: `1px solid ${sel === "" ? "rgba(245,224,58,.4)" : "rgba(255,255,255,.12)"}` }}
+                    >
+                      Automática
+                    </button>
+                    {cands.map((u) => (
+                      <button
+                        key={u}
+                        type="button"
+                        onClick={() => setHero(m, u)}
+                        title="Usar como destacada de esta medida"
+                        style={{ padding: 2, borderRadius: 6, cursor: "pointer", background: "transparent", border: `2px solid ${sel === u ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.12)"}` }}
+                      >
+                        <img src={u} alt="" style={{ width: 40, height: 40, objectFit: "contain", display: "block", borderRadius: 3, background: "rgba(255,255,255,.04)" }} />
+                      </button>
+                    ))}
+                    {cands.length === 0 && (
+                      <span style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>— sin fotos cargadas para esta medida —</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

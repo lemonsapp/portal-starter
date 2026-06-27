@@ -454,9 +454,14 @@ export default function ShopProduct() {
     ? (() => {
         const imgs = [];
         const seen = new Set();
-        if (product.primary_image) {
-          imgs.push({ url: product.primary_image, alt: product.name, is_primary: true });
-          seen.add(product.primary_image);
+        // Hero del kit: el admin puede fijar una destacada POR medida
+        // (meta.hero_por_medida[formato]). Si no hay para la medida activa,
+        // cae a la foto unificada del kit (product.primary_image).
+        const heroByMedida = product.meta?.hero_por_medida || {};
+        const hero = (kitSel && heroByMedida[kitSel]) || product.primary_image;
+        if (hero) {
+          imgs.push({ url: hero, alt: product.name, is_primary: true });
+          seen.add(hero);
         }
         for (const v of kitParts) {
           if (v.primary_image && !seen.has(v.primary_image)) {
