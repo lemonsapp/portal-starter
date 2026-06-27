@@ -440,31 +440,19 @@ export default function ShopProduct() {
     }));
   })();
 
-  // Galería del KIT reactiva a la medida elegida: foto familia (unificado) +
-  // cada parte en la medida seleccionada. Cambiar el selector cambia las fotos.
-  // Si galleryFixed está activo, no se arma (manda adminImages).
-  const kitGallery = isKit && !galleryFixed
+  // Galería del KIT reactiva a la medida elegida: foto unificada (hero) + UN
+  // pote por familia EN la medida seleccionada. Apretar un chip de medida
+  // recambia los potes (no acumula). Tiene prioridad sobre gallery_fixed: en un
+  // kit el cliente quiere ver los envases de la medida, no fotos estáticas.
+  // (Antes se volcaba todo product.images + las partes → se mezclaban medidas y
+  // aparecían 6-8 fotos para una línea con 3 subidas.)
+  const kitGallery = isKit
     ? (() => {
         const imgs = [];
         const seen = new Set();
         if (product.primary_image) {
           imgs.push({ url: product.primary_image, alt: product.name, is_primary: true });
           seen.add(product.primary_image);
-        }
-        // Imágenes extra cargadas por el admin desde el panel (ej: subidas a
-        // Cloudinary). Las fotos de las PARTES ya las arma kitParts por medida,
-        // así que las excluimos (están en bundle.includes[].variants); todo lo
-        // demás en product.images es un extra del admin y debe verse acá.
-        const partUrls = new Set();
-        for (const fam of (product.bundle?.includes || [])) {
-          for (const v of (fam.variants || [])) {
-            if (v.primary_image) partUrls.add(v.primary_image);
-          }
-        }
-        for (const im of (product.images || [])) {
-          if (!im.url || seen.has(im.url) || partUrls.has(im.url)) continue;
-          seen.add(im.url);
-          imgs.push({ url: im.url, alt: im.alt || product.name });
         }
         for (const v of kitParts) {
           if (v.primary_image && !seen.has(v.primary_image)) {
@@ -475,10 +463,10 @@ export default function ShopProduct() {
         return imgs;
       })()
     : [];
-  const images = galleryFixed && adminImages.length
-    ? adminImages
-    : isKit && kitGallery.length
-      ? kitGallery
+  const images = isKit && kitGallery.length
+    ? kitGallery
+    : galleryFixed && adminImages.length
+      ? adminImages
       : product.images?.length
         ? product.images
         : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
