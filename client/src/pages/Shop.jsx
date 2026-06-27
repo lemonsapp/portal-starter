@@ -154,7 +154,7 @@ export default function Shop() {
           <div className="cat-eyebrow">Fertilizantes superiores para cultivo</div>
           <h1 className="cat-display">
             Fertilizantes
-            <span className="cat-em">premium</span>
+            <span className="cat-em">de precisión</span>
             para cultivo
             <span className="cat-em">indoor &amp; outdoor</span>
           </h1>
