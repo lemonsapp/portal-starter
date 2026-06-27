@@ -27,13 +27,20 @@ function normalizeProduct(p) {
   let fixedPrimary = fixImageUrl(p.primary_image);
   let images = (p.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) }));
 
+  // Galería fija: el admin marcó "usar solo estas fotos" (meta.gallery_fixed).
+  // Cuando está activo, las imágenes subidas SON la galería y no se las toca:
+  // ni se inyecta la foto familia como fallback ni se completan los envases que
+  // faltan por medida. Sin este guard, los bloques de abajo contaminaban
+  // product.images (ej: línea Elite con 3 fotos subidas terminaba mostrando 6).
+  const galleryFixed = p.meta?.gallery_fixed === true;
+
   // Interna de un kit de línea: la foto familia ("unificado", todos los potes
   // juntos) es sólo un FALLBACK cuando el producto no trae primaria propia.
   // Antes se forzaba SIEMPRE y pisaba la imagen que el admin sube/edita desde el
   // panel (la foto subida se guardaba pero no se mostraba en la interna). Ahora
   // el server deploya y el admin controla la imagen → su elección manda.
   const familyShot = p.meta?.bundle ? KIT_FAMILY_SHOTS[p.meta.bundle_line] : null;
-  if (familyShot && !fixedPrimary) {
+  if (familyShot && !fixedPrimary && !galleryFixed) {
     fixedPrimary = familyShot;
     images = images.some((im) => im.is_primary)
       ? images.map((im) => (im.is_primary ? { ...im, url: familyShot, alt: p.name } : im))
@@ -86,7 +93,7 @@ function normalizeProduct(p) {
   // Cuando el server nuevo deploye ya manda la galería completa → no-op.
   let galleryImages = images;
   const fams = bundle?.includes || [];
-  if (p.meta?.bundle && fams.length > 0 && images.length < fams.length + 1) {
+  if (!galleryFixed && p.meta?.bundle && fams.length > 0 && images.length < fams.length + 1) {
     const kitSize = images.map((im) => sizeTokenFromUrl(im.url)).find(Boolean) || null;
     const seen = new Set(images.map((im) => im.url));
     const extras = [];
