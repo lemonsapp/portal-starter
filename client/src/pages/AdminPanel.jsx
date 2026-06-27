@@ -1248,6 +1248,16 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   // Galería fija: si está activo, la interna muestra SOLO las fotos subidas acá
   // (la destacada primero) en vez de armar la galería por medida (kits).
   const [galleryFixed, setGalleryFixed] = useState(metaBase.gallery_fixed === true);
+  // Medida destacada (con la que abre la interna). Dos formas según el producto:
+  //  • Kit (bundle): string con el formato elegido (ej "250ml") de meta.presentaciones.
+  //  • Variante individual (meta.formato): booleano → esta variante es la cabecera
+  //    de la familia (la que abre desde el catálogo).
+  const kitMedidas = Array.isArray(metaBase.presentaciones) ? metaBase.presentaciones.filter(Boolean) : [];
+  const isVariant = !isBundle && typeof metaBase.formato === "string" && !!metaBase.formato;
+  const [medidaDestacada, setMedidaDestacada] = useState(
+    typeof metaBase.medida_destacada === "string" ? metaBase.medida_destacada : ""
+  );
+  const [isMedidaDestacada, setIsMedidaDestacada] = useState(metaBase.medida_destacada === true);
   // Imágenes como lista de { url, alt, is_primary }
   const [images, setImages] = useState(
     product?.images?.length ? product.images.map((i) => ({
@@ -1348,6 +1358,14 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     // Galería fija (solo fotos subidas, sin armado por medida).
     if (galleryFixed) next.gallery_fixed = true;
     else delete next.gallery_fixed;
+    // Medida destacada (con la que abre la interna / la familia).
+    if (isBundle) {
+      if (medidaDestacada) next.medida_destacada = medidaDestacada;
+      else delete next.medida_destacada;
+    } else if (isVariant) {
+      if (isMedidaDestacada) next.medida_destacada = true;
+      else delete next.medida_destacada;
+    }
     return next;
   }
 
@@ -1477,6 +1495,34 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
             Destacado ⭐
           </label>
         </div>
+
+        {/* Medida destacada — KIT: con qué medida abre la interna del kit. */}
+        {isBundle && kitMedidas.length > 0 && (
+          <div style={{ marginTop: 14 }}>
+            <label style={styles.label}>Medida destacada (con la que abre la interna)</label>
+            <select style={styles.input} value={medidaDestacada} onChange={(e) => setMedidaDestacada(e.target.value)}>
+              <option value="">— Automática (la primera) —</option>
+              {kitMedidas.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 4 }}>
+              Al entrar a la interna del kit se ve esta medida (sus potes y su precio). Cambiala cuando quieras (ej: hoy 10L, mañana 250ml).
+            </div>
+          </div>
+        )}
+        {/* Medida destacada — VARIANTE individual: esta medida es la cabecera de la familia. */}
+        {isVariant && (
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", fontSize: 13, margin: "14px 0 0", padding: "8px 10px", border: "1px solid rgba(255,255,255,.1)", borderRadius: 6, background: "rgba(255,255,255,.03)" }}>
+            <input type="checkbox" checked={isMedidaDestacada} onChange={(e) => setIsMedidaDestacada(e.target.checked)} style={{ marginTop: 2 }} />
+            <span>
+              Medida destacada de la familia ({metaBase.formato})
+              <span style={{ display: "block", fontSize: 11, color: "rgba(237,233,224,.5)", marginTop: 2 }}>
+                Si lo activás, al entrar desde el catálogo la familia abre en esta medida (esta foto y este precio). Dejá solo una marcada por familia.
+              </span>
+            </span>
+          </label>
+        )}
 
         <label style={{ ...styles.label, marginTop: 18 }}>Imágenes</label>
         <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: -2, marginBottom: 6 }}>

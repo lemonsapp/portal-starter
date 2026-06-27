@@ -1556,7 +1556,10 @@ function groupIntoFamilies(products) {
   }
   const families = order.map((key) => {
     const items = buckets.get(key).slice().sort((a, b) => variantOrder(a.meta) - variantOrder(b.meta));
-    const head = items[0];
+    // Cabecera de la familia = la que ve el catálogo (slug, imagen, precio "desde").
+    // El admin puede fijar la "medida destacada" marcando una variante con
+    // meta.medida_destacada=true → esa abre desde el catálogo. Si no, la de menor orden.
+    const head = items.find((i) => i.meta?.medida_destacada === true) || items[0];
     const isFamily = !key.startsWith("solo:");
     const prices = items.map((i) => i.price_cents).filter((v) => v != null);
     return {

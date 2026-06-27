@@ -349,9 +349,13 @@ export default function ShopProduct() {
   const kitTotalCents = kitParts.reduce((a, v) => a + (v.price_cents || 0), 0);
   const kitSelLabel = kitSizes.find((s) => s.formato === kitSel)?.label || "";
 
-  // Default: la medida que ilustra la foto del kit; si no, la primera.
+  // Default al entrar: 1) la "medida destacada" que fijó el admin
+  // (meta.medida_destacada), 2) la que ilustra la foto del kit, 3) la primera.
   useEffect(() => {
     if (!kitSizes.length) { setKitSel(null); return; }
+    const destacada = product?.meta?.medida_destacada;
+    const pinned = typeof destacada === "string" && kitSizes.find((s) => s.formato === destacada);
+    if (pinned) { setKitSel(pinned.formato); return; }
     const galleryTok = (product?.images || []).map((im) => sizeTokenFromUrl(im.url)).find(Boolean);
     const match = galleryTok && kitSizes.find((s) => s.formato.toLowerCase() === galleryTok);
     setKitSel((match || kitSizes[0]).formato);
