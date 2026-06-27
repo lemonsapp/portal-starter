@@ -1024,6 +1024,8 @@ function ProductsTab() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);   // null = no modal | "new" | productObj
   const [err, setErr] = useState("");
+  const [migrating, setMigrating] = useState(false);
+  const [migrateMsg, setMigrateMsg] = useState("");
 
   async function load() {
     setLoading(true);
@@ -1052,12 +1054,54 @@ function ProductsTab() {
     else alert("Error al borrar");
   }
 
+  // One-shot: resube a Cloudinary las imágenes que todavía son archivos de
+  // carpeta y reapunta las filas, para poder editarlas desde el panel. El host
+  // = origin actual (de ahí Cloudinary baja los renders). Idempotente + backup.
+  async function migrateImages() {
+    if (!confirm(
+      "¿Subir todas las imágenes de producto a Cloudinary y dejarlas editables desde el panel?\n\n" +
+      "Es idempotente (saltea las que ya están en Cloudinary) y guarda un backup de las viejas. " +
+      "Puede tardar ~1 minuto."
+    )) return;
+    setMigrating(true); setMigrateMsg("");
+    try {
+      const r = await fetch(`${API}/api/admin/shop/migrate-images-to-cloudinary`, {
+        method: "POST", headers: jsonHdr(),
+        body: JSON.stringify({ host: window.location.origin }),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        setMigrateMsg("Error: " + (d.error || "falló la migración"));
+      } else {
+        setMigrateMsg(
+          `Listo · ${d.updated} filas migradas (${d.uploadedFiles} archivos subidos) · ` +
+          `${d.skipped} ya estaban en Cloudinary · ${d.failed} con error`
+        );
+        load();
+      }
+    } catch (e) {
+      setMigrateMsg("Error de red en la migración");
+    }
+    setMigrating(false);
+  }
+
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <h2 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>Productos del catálogo</h2>
-        <button style={styles.btn(true)} onClick={() => setEditing("new")}>+ Nuevo producto</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button style={styles.btn()} disabled={migrating} onClick={migrateImages} title="Sube a Cloudinary las imágenes que todavía son archivos de carpeta, para poder editarlas desde el panel">
+            {migrating ? "Migrando…" : "☁ Migrar imágenes a Cloudinary"}
+          </button>
+          <button style={styles.btn(true)} onClick={() => setEditing("new")}>+ Nuevo producto</button>
+        </div>
       </div>
+
+      {migrateMsg && (
+        <div style={{ ...styles.card, marginBottom: 12, fontSize: 13, color: migrateMsg.startsWith("Error") ? "#fca5a5" : "#a7f3d0", borderColor: migrateMsg.startsWith("Error") ? "rgba(239,68,68,.4)" : "rgba(16,185,129,.4)" }}>
+          {migrateMsg}
+        </div>
+      )}
 
       {err && <div style={{ ...styles.card, color: "#fca5a5", borderColor: "rgba(239,68,68,.4)" }}>{err}</div>}
 

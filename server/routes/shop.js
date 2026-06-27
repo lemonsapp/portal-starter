@@ -18,6 +18,7 @@ const { z } = require("zod");
 const multer = require("multer");
 const db = require("../db");
 const { reauthorProductImages } = require("./shopImageSet");
+const { migrateImagesToCloudinary } = require("./shopImageMigrate");
 // Upload de imágenes de producto: mismo patrón probado que profile.js (avatar)
 // y chat.js (emojis) — multer en memoria + Cloudinary configurado por request
 // leyendo las creds de configStore (DB encriptada via wizard /admin/setup).
@@ -1915,6 +1916,28 @@ function build({ authRequired, requireRole }) {
       }
     }
   );
+
+  // ── POST /api/admin/shop/migrate-images-to-cloudinary — one-shot
+  // Sube a Cloudinary las imágenes de producto que todavía son paths estáticos
+  // y reapunta las filas de product_images, para que el admin las controle de
+  // punta a punta. Idempotente (saltea las que ya son Cloudinary). El cliente
+  // manda { host } = window.location.origin (de donde Cloudinary baja los renders).
+  router.post("/migrate-images-to-cloudinary", ...writeMw, async (req, res) => {
+    try {
+      const cloudinary = await configureCloudinary();
+      const host =
+        (req.body && typeof req.body.host === "string" && req.body.host.trim()) ||
+        process.env.PUBLIC_ASSETS_URL || process.env.APP_URL;
+      if (!host) {
+        return res.status(400).json({ error: "Falta host (origen público de las imágenes)" });
+      }
+      const result = await migrateImagesToCloudinary(db, cloudinary, { host });
+      res.json({ ok: true, ...result });
+    } catch (e) {
+      console.error("[SHOP IMAGE MIGRATE]", e.message);
+      res.status(500).json({ error: e.message });
+    }
+  });
 
   // ── POST /api/admin/shop/products — crear
   router.post("/products", ...writeMw, async (req, res) => {
