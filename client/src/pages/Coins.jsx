@@ -725,6 +725,65 @@ function Gift({ balance, onGift }) {
   );
 }
 
+// ── CÓMO FUNCIONA / REGLAS (Sistema de Puntos v9, doc §3/§5/§8) ──────────────
+// Explica en lenguaje accesible cómo se ganan, cómo se canjean y las reglas
+// del programa. Los números reflejan SISTEMADEPUNTOS9 (= el config del server).
+function ComoFunciona({ pesoPerPoint = 4000, code }) {
+  const money = (n) => "$" + Number(n).toLocaleString("es-AR");
+  const ganar = [
+    { ic: "🛒", t: "Comprando en la web", d: `Ganás 1 punto cada ${money(12000)} de tu pedido. Se acreditan solos al completarse el pago.` },
+    { ic: "💬", t: "Comprando por otros canales", d: `Compras por WhatsApp, MercadoLibre o efectivo también suman: informá tu código de cliente${code ? ` (${code})` : ""} y el monto dentro de los 7 días.` },
+    { ic: "📸", t: "Mostrando tu cultivo", d: "Mencioná @holistic.arg en Instagram: likes, comentarios, fotos y ciclos completos suman puntos extra (pestaña Instagram)." },
+    { ic: "⚡", t: "Comprando puntos", d: "Si te faltan pocos para un premio, podés comprar puntos directos desde la tienda y se acreditan al instante." },
+  ];
+  const canjear = [
+    { ic: "🎟️", t: "Descuentos", d: "Del 5% al 40% off en tu próximo pedido. Generás un cupón de un solo uso que aplicás en el checkout." },
+    { ic: "🎁", t: "Premios físicos", d: "Pack Accesorios, Gel Cloner, Tensores de red y el Dije Don Rouch. Coordinamos el envío al canjear." },
+  ];
+  const reglas = [
+    `Cada punto vale ${money(pesoPerPoint)} de valor de canje. Comprarlos cuesta menos que ese valor.`,
+    "Los puntos no vencen: quedan en tu cuenta hasta que los canjees.",
+    "Son personales e intransferibles. No se suman entre cuentas ni se ceden.",
+    "Los descuentos no son acumulables con otras promociones y aplican sobre el subtotal (sin envío).",
+    "Una vez canjeados, los puntos no se revierten: el canje es definitivo.",
+    "El código de cliente es único y permanente — no cambia aunque actualices tus datos.",
+  ];
+  const Section = ({ title, items }) => (
+    <div style={{ marginBottom: 22 }}>
+      <div style={{ fontWeight: 900, fontSize: 16, color: "#fff", margin: "0 0 12px" }}>{title}</div>
+      <div style={{ display: "grid", gap: 10 }}>
+        {items.map((it, i) => (
+          <div key={i} style={{ display: "flex", gap: 12, padding: "12px 14px", background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 12 }}>
+            <span style={{ fontSize: 22, lineHeight: 1 }}>{it.ic}</span>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 14, color: "#fff", marginBottom: 2 }}>{it.t}</div>
+              <div style={{ fontSize: 13, color: "rgba(237,233,224,.65)", lineHeight: 1.5 }}>{it.d}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ animation: "slideDown .4s ease" }}>
+      <div style={{ fontWeight: 900, fontSize: 22, color: "#fff", marginBottom: 4 }}>Cómo funciona tu programa de puntos</div>
+      <div style={{ fontSize: 13, color: "rgba(237,233,224,.6)", marginBottom: 20, lineHeight: 1.5 }}>
+        Sumás puntos compres donde compres y mostrando tu cultivo. Los canjeás por descuentos o premios cuando quieras.
+      </div>
+      <Section title="Cómo ganás puntos" items={ganar} />
+      <Section title="Cómo los canjeás" items={canjear} />
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ fontWeight: 900, fontSize: 16, color: "#fff", margin: "0 0 12px" }}>Reglas claras</div>
+        <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 8 }}>
+          {reglas.map((r, i) => (
+            <li key={i} style={{ fontSize: 13, color: "rgba(237,233,224,.7)", lineHeight: 1.5 }}>{r}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 // ── CANJES (Sistema de Puntos) ───────────────────────────────────────────────
 function Canjes({ balance, userId, onRedeem }) {
   const [rewards, setRewards] = useState([]);
@@ -1014,6 +1073,7 @@ export default function Coins() {
 
   const TABS = [
     { id:"canjes",   icon:"🎟️", label:"Canjes",   color:"var(--brand-primary)" },
+    { id:"comofunciona", icon:"📖", label:"Cómo funciona", color:"#60a5fa" },
     { id:"instagram",icon:"📸", label:"Instagram",color:"#ec4899" },
     { id:"tienda",   icon:"🛍️", label:"Tienda",   color:"var(--brand-primary)" },
     { id:"ruleta",   icon:"🎰", label:"Ruleta",   color:"#a78bfa" },
@@ -1131,6 +1191,7 @@ export default function Coins() {
           <ReferralCard />
 
           {tab==="canjes"   && <Canjes balance={balance} userId={userId} onRedeem={c=>{ setBalance(b=>b-c); }} />}
+          {tab==="comofunciona" && <ComoFunciona pesoPerPoint={pesoPerPoint} code={customerCode} />}
           {tab==="instagram" && <Instagram />}
           {tab==="tienda"   && <Store balance={balance} onBuy={c=>{ setBalance(b=>b-c); spawn(6); }} />}
           {tab==="misiones" && <Missions onClaim={c=>{ setBalance(b=>b+c); spawn(14); }} />}
