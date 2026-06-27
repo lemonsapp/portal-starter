@@ -36,6 +36,10 @@ const { requireFeature } = require("./lib/featureFlags");        // 🚦 Toggle 
 
 const app = express();
 
+// Versión vigente de los documentos legales (Términos y Condiciones + Privacidad).
+// Se guarda junto a la aceptación de cada usuario como evidencia de qué texto aceptó.
+const TERMS_VERSION = "2026-06-27";
+
 // ── Seguridad: headers HTTP ──────────────────────────────────────────────────
 // CSP estricta para JSON API; SPA aparte
 app.use(helmet({
@@ -294,6 +298,16 @@ el wizard del Sprint 2/3 esté activo).
     await db.query(`CREATE INDEX IF NOT EXISTS users_last_seen_idx ON users(last_seen_at DESC NULLS LAST)`);
     console.log("[MIGRATION] users.last_seen_at ready");
   } catch (e) { console.error("[MIGRATION presence ERROR]", e.message); }
+})();
+
+// ── Auto-migración: aceptación de Términos y Privacidad (evidencia legal) ─────
+(async () => {
+  try {
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_version TEXT`);
+    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_ip TEXT`);
+    console.log("[MIGRATION] users.terms_accepted_* ready");
+  } catch (e) { console.error("[MIGRATION terms ERROR]", e.message); }
 })();
 
 // ── Auto-migración: tabla announcements ──────────────────────────────────────
@@ -933,11 +947,20 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
       email:       z.string().email(),
       password:    z.string().min(6),
       referrer:    z.string().min(2).max(40).optional(),  // username del que invitó
+      terms_accepted: z.boolean().optional(),             // aceptación de T&C + Privacidad
+      terms_version:  z.string().max(40).optional(),
     });
     const p = schema.safeParse(req.body);
     if (!p.success) return res.status(400).json({ error: "Datos inválidos" });
 
-    const { invite_code, name, email, password, referrer } = p.data;
+    const { invite_code, name, email, password, referrer, terms_accepted } = p.data;
+
+    // Aceptación de Términos y Condiciones + Privacidad: obligatoria para registrarse
+    if (terms_accepted !== true) {
+      return res.status(400).json({ error: "Tenés que aceptar los Términos y Condiciones y la Política de Privacidad para registrarte" });
+    }
+    const termsVersion = p.data.terms_version || TERMS_VERSION;
+    const termsIp = String(req.headers["x-forwarded-for"] || req.ip || "").split(",")[0].trim() || null;
 
     // Verificar código
     const codeQ = await db.query(
@@ -957,9 +980,11 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
     // Crear usuario
     const hash = await bcrypt.hash(password, 10);
     const userQ = await db.query(
-      `INSERT INTO users (client_number, name, email, password_hash, role, invite_code, email_verified)
-       VALUES ($1,$2,$3,$4,'client',$5,false) RETURNING id, client_number, name, email`,
-      [clientNumber, name.trim(), email.toLowerCase(), hash, invite_code.toUpperCase().trim()]
+      `INSERT INTO users (client_number, name, email, password_hash, role, invite_code, email_verified,
+                          terms_accepted_at, terms_version, terms_accepted_ip)
+       VALUES ($1,$2,$3,$4,'client',$5,false, NOW(), $6, $7)
+       RETURNING id, client_number, name, email`,
+      [clientNumber, name.trim(), email.toLowerCase(), hash, invite_code.toUpperCase().trim(), termsVersion, termsIp]
     );
     const user = userQ.rows[0];
 

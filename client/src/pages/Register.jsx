@@ -55,7 +55,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const body = { invite_code: form.invite_code, name: form.name, email: form.email, password: form.password };
+      const body = { invite_code: form.invite_code, name: form.name, email: form.email, password: form.password, terms_accepted: true, terms_version: "2026-06-27" };
       if (referrer) body.referrer = referrer;
       const r = await fetch(`${API}/auth/register`, {
         method: "POST",
