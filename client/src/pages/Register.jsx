@@ -11,7 +11,7 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const referrer = searchParams.get("r") || searchParams.get("ref") || "";
   const [step, setStep] = useState("form"); // form | success
-  const [form, setForm] = useState({ invite_code:"", name:"", email:"", password:"", confirm:"" });
+  const [form, setForm] = useState({ invite_code:"", name:"", email:"", password:"", confirm:"", terms:false });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resendStatus, setResendStatus] = useState("idle"); // idle | sending | sent | cooldown
@@ -51,6 +51,7 @@ export default function Register() {
     if (!form.email.trim()) return setError("Ingresá tu email");
     if (form.password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres");
     if (form.password !== form.confirm) return setError("Las contraseñas no coinciden");
+    if (!form.terms) return setError("Tenés que aceptar los Términos y Condiciones y la Política de Privacidad para registrarte");
 
     setLoading(true);
     try {
@@ -219,6 +220,13 @@ export default function Register() {
         }
         .rg-btn:active { transform: translateY(0); }
         .rg-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .rg-terms {
+          display: flex; align-items: flex-start; gap: 9px;
+          font-size: 12.5px; line-height: 1.45; color: rgba(255,255,255,.62);
+          margin: 4px 0 16px; cursor: pointer; user-select: none;
+        }
+        .rg-terms input { margin-top: 2px; width: 16px; height: 16px; flex: 0 0 auto; cursor: pointer; accent-color: var(--c-accent, #A7F5C8); }
+        .rg-terms a { color: var(--c-accent, #A7F5C8); text-decoration: underline; }
         .rg-btn .arr { transition: transform var(--dur-base, .24s) ease; }
         .rg-btn:hover .arr { transform: translateX(6px); }
 
@@ -491,7 +499,21 @@ export default function Register() {
                   onKeyDown={e => e.key === "Enter" && submit()} />
               </div>
 
-              <button onClick={submit} disabled={loading} className="rg-btn">
+              <label className="rg-terms">
+                <input
+                  type="checkbox"
+                  checked={form.terms}
+                  onChange={e => set("terms", e.target.checked)}
+                />
+                <span>
+                  Soy mayor de 18 años y acepto los{" "}
+                  <a href="/terminos" target="_blank" rel="noopener noreferrer">Términos y Condiciones</a>{" "}
+                  y la{" "}
+                  <a href="/privacidad" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>.
+                </span>
+              </label>
+
+              <button onClick={submit} disabled={loading || !form.terms} className="rg-btn">
                 <span>{loading ? "Creando cuenta..." : "Crear cuenta"}</span>
                 {!loading && <span className="arr">→</span>}
               </button>
