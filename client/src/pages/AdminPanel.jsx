@@ -1257,6 +1257,114 @@ function ProductPicker({ title, hint, options, selected, onToggle }) {
 }
 
 // ── Modal: crear/editar producto ────────────────────────────────────────────
+// Orden canónico de medidas (para listar las variantes de una familia).
+const FORMATO_ORDER = ["25g", "100g", "500g", "1kg", "250ml", "500ml", "1L", "5L", "10L", "20L"];
+
+// Clave de familia (espeja variantGroup del server): agrupa las variantes que
+// son "la misma cosa en otra medida". null = no es variante de familia (kit,
+// combo o producto sin formato).
+function famKeyOf(meta = {}) {
+  if (!meta || meta.bundle || meta.tipo === "combo") return null;
+  if (!meta.formato) return null;
+  const l = meta.linea;
+  if (l === "race")  return `race-${meta.etapa}${meta.parte ? "-" + meta.parte : ""}`;
+  if (l === "pro")   return `pro-${meta.etapa}`;
+  if (l === "elite") return meta.tipo === "bidon"
+        ? `elite-max-${String(meta.parte || "a").toLowerCase()}`
+        : `elite-parte-${meta.parte ?? "x"}`;
+  if (l) return `linea-${l}`;
+  return null;
+}
+
+// Editor de imágenes de UNA medida (variante). Reusa la UI de imágenes del modal
+// pero guarda solo esa variante vía el PUT existente (no toca el server). Cada
+// medida se guarda por separado: el admin edita y aprieta "Guardar".
+function MedidaImageEditor({ variant }) {
+  const [imgs, setImgs] = useState(() =>
+    variant.images?.length
+      ? variant.images.map((i) => ({ url: i.url, alt: i.alt || "", is_primary: !!i.is_primary }))
+      : [{ url: "", alt: "", is_primary: true }]);
+  const [uploadingIdx, setUploadingIdx] = useState(-1);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const upd = (i, f, v) => setImgs((a) => a.map((im, idx) => (idx === i ? { ...im, [f]: v } : im)));
+  const setPrim = (i) => setImgs((a) => a.map((im, idx) => ({ ...im, is_primary: idx === i })));
+  const add = () => setImgs((a) => [...a, { url: "", alt: "", is_primary: false }]);
+  const del = (i) => setImgs((a) => {
+    const n = a.filter((_, idx) => idx !== i);
+    if (n.length && !n.some((x) => x.is_primary)) n[0].is_primary = true;
+    return n.length ? n : [{ url: "", alt: "", is_primary: true }];
+  });
+  async function uploadFile(i, file) {
+    if (!file) return;
+    setUploadingIdx(i); setMsg("");
+    try {
+      const fd = new FormData(); fd.append("image", file);
+      const r = await fetch(`${API}/api/admin/shop/products/upload-image`, { method: "POST", headers: authHdr(), body: fd });
+      const d = await r.json();
+      if (!r.ok) { setMsg(d.error || "Error al subir"); return; }
+      upd(i, "url", d.url);
+    } catch { setMsg("Error de red al subir"); }
+    finally { setUploadingIdx(-1); }
+  }
+  async function save() {
+    setSaving(true); setMsg("");
+    const payload = {
+      slug: variant.slug,
+      name: variant.name,
+      short_description: variant.short_description || null,
+      long_description: variant.long_description || null,
+      price_cents: variant.price_cents ?? 0,
+      stock: variant.stock ?? null,
+      sku: variant.sku || null,
+      category_id: variant.category?.id ?? null,
+      active: variant.active !== false,
+      featured: variant.featured === true,
+      sort_order: variant.sort_order ?? 0,
+      images: imgs.filter((i) => i.url.trim()).map((i, idx) => ({
+        url: i.url.trim(), alt: i.alt.trim() || null, sort_order: idx, is_primary: !!i.is_primary,
+      })),
+      meta: variant.meta || {},
+    };
+    try {
+      const r = await fetch(`${API}/api/admin/shop/products/${variant.id}`, { method: "PUT", headers: jsonHdr(), body: JSON.stringify(payload) });
+      const d = await r.json();
+      if (!r.ok) {
+        const detail = Array.isArray(d.issues) ? d.issues.map((it) => `${(it.path || []).join(".")}: ${it.message}`).join(" · ") : "";
+        setMsg("Error: " + [d.error || "no se pudo guardar", detail].filter(Boolean).join(" — "));
+      } else { setMsg("✓ Imágenes guardadas"); variant.images = payload.images; }
+    } catch { setMsg("Error de red al guardar"); }
+    setSaving(false);
+  }
+  return (
+    <div style={{ display: "grid", gap: 8, padding: "10px 0" }}>
+      {imgs.map((img, i) => (
+        <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1.3fr 1fr auto auto auto", gap: 6, alignItems: "center" }}>
+          {img.url
+            ? <img src={img.url} alt="" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
+            : <div style={{ width: 32, height: 32, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />}
+          <input style={styles.input} value={img.url} onChange={(e) => upd(i, "url", e.target.value)} placeholder="URL de la imagen" />
+          <input style={styles.input} value={img.alt} onChange={(e) => upd(i, "alt", e.target.value)} placeholder="Alt text" />
+          <label style={{ ...styles.btn(), padding: "4px 10px", cursor: uploadingIdx === i ? "wait" : "pointer", whiteSpace: "nowrap", opacity: uploadingIdx === i ? 0.6 : 1 }}>
+            {uploadingIdx === i ? "Subiendo…" : "Subir"}
+            <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploadingIdx === i} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadFile(i, f); }} />
+          </label>
+          <label style={{ fontSize: 11, color: "rgba(237,233,224,.6)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+            <input type="radio" name={`prim-${variant.id}`} checked={img.is_primary} onChange={() => setPrim(i)} /> Principal
+          </label>
+          <button style={{ ...styles.btn(false, true), padding: "4px 10px" }} onClick={() => del(i)}>×</button>
+        </div>
+      ))}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 2 }}>
+        <button style={styles.btn()} onClick={add}>+ Agregar imagen</button>
+        <button style={styles.btn(true)} disabled={saving} onClick={save}>{saving ? "Guardando…" : "Guardar imágenes de esta medida"}</button>
+        {msg && <span style={{ fontSize: 12, color: msg.startsWith("Error") ? "#fca5a5" : "#a7f3d0" }}>{msg}</span>}
+      </div>
+    </div>
+  );
+}
+
 function ProductModal({ product, categories, allProducts = [], onClose, onSaved }) {
   const isNew = !product;
   // meta completo del producto: lo preservamos tal cual y sólo reescribimos la
@@ -1302,6 +1410,17 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     typeof metaBase.medida_destacada === "string" ? metaBase.medida_destacada : ""
   );
   const [isMedidaDestacada, setIsMedidaDestacada] = useState(metaBase.medida_destacada === true);
+  // Medidas hermanas (misma familia) para editar las imágenes de cada una acá.
+  const [expandedMedida, setExpandedMedida] = useState(null);
+  const familyKey = famKeyOf(metaBase);
+  const medidaSiblings = familyKey
+    ? allProducts
+        .filter((p) => famKeyOf(p.meta) === familyKey)
+        .sort((a, b) => {
+          const ia = FORMATO_ORDER.indexOf(a.meta?.formato); const ib = FORMATO_ORDER.indexOf(b.meta?.formato);
+          return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+        })
+    : [];
   // Imágenes como lista de { url, alt, is_primary }
   const [images, setImages] = useState(
     product?.images?.length ? product.images.map((i) => ({
@@ -1609,6 +1728,47 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
           ))}
           <button style={{ ...styles.btn(), alignSelf: "start", marginTop: 4 }} onClick={addImage}>+ Agregar imagen</button>
         </div>
+
+        {/* ───── Imágenes por medida: editar las fotos de cada medida de la familia ───── */}
+        {medidaSiblings.length > 1 && (
+          <div style={{ marginTop: 22, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,.1)" }}>
+            <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>Imágenes por medida</h4>
+            <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)", marginBottom: 10 }}>
+              Editá las fotos de cada medida de esta familia sin salir de acá. Cada medida se guarda por separado.
+            </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {medidaSiblings.map((sib) => {
+                const open = expandedMedida === sib.id;
+                const isThis = sib.id === product?.id;
+                const n = sib.images?.length || 0;
+                return (
+                  <div key={sib.id} style={{ border: "1px solid rgba(255,255,255,.1)", borderRadius: 8, overflow: "hidden" }}>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedMedida(open ? null : sib.id)}
+                      style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "rgba(255,255,255,.03)", border: "none", color: "#fff", cursor: "pointer", textAlign: "left" }}
+                    >
+                      {sib.primary_image
+                        ? <img src={sib.primary_image} alt="" style={{ width: 30, height: 30, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
+                        : <div style={{ width: 30, height: 30, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />}
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>
+                        {sib.meta?.formato || sib.name}
+                        {isThis && <span style={{ color: "rgba(237,233,224,.5)", fontWeight: 400 }}> · esta</span>}
+                      </span>
+                      <span style={{ fontSize: 11, color: "rgba(237,233,224,.45)" }}>{n} {n === 1 ? "foto" : "fotos"}</span>
+                      <span style={{ marginLeft: "auto", color: "rgba(237,233,224,.5)" }}>{open ? "▲" : "▼"}</span>
+                    </button>
+                    {open && (
+                      <div style={{ padding: "0 12px 6px" }}>
+                        <MedidaImageEditor key={sib.id} variant={sib} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* ───── Contenido de la interna (todo editable, todo opcional) ───── */}
         <div style={{ marginTop: 26, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,.1)" }}>
