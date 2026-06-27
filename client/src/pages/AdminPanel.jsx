@@ -1413,6 +1413,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   // KIT: destacada (hero) elegida por el admin para CADA medida. Se ve arriba en
   // la interna al seleccionar esa medida. { "250ml": url, ... } en meta.hero_por_medida.
   const [heroPorMedida, setHeroPorMedida] = useState(() => ({ ...(metaBase.hero_por_medida || {}) }));
+  const [uploadingHero, setUploadingHero] = useState(null);
   const setHero = (m, url) => setHeroPorMedida((prev) => ({ ...prev, [m]: url }));
   // Variantes para editar las imágenes de cada medida acá mismo.
   //  • Producto de familia (Race/Pro/Bio/Elite individual): sus medidas hermanas.
@@ -1509,6 +1510,25 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       setErr("Error de red al subir la imagen");
     } finally {
       setUploadingIdx(-1);
+    }
+  }
+
+  // Sube una imagen NUEVA y la fija como destacada (hero) de una medida del kit.
+  async function uploadHero(m, file) {
+    if (!file) return;
+    setUploadingHero(m);
+    setErr("");
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const r = await fetch(`${API}/api/admin/shop/products/upload-image`, { method: "POST", headers: authHdr(), body: fd });
+      const d = await r.json();
+      if (!r.ok) { setErr(d.error || "Error al subir la imagen"); return; }
+      setHero(m, d.url);
+    } catch (e) {
+      setErr("Error de red al subir la imagen");
+    } finally {
+      setUploadingHero(null);
     }
   }
 
@@ -1710,14 +1730,17 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
           <div style={{ marginTop: 14 }}>
             <label style={styles.label}>Foto destacada del kit por medida</label>
             <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", margin: "2px 0 8px" }}>
-              Elegí qué foto se ve grande arriba al seleccionar cada medida en la interna. Si dejás "Automática", usa la foto unificada del kit.
+              Por cada medida: subí tu propia foto destacada (botón "Subir") o elegí una de las existentes. Es la que se ve grande arriba al seleccionar esa medida. "Automática" = usa la foto unificada del kit.
             </div>
             <div style={{ display: "grid", gap: 10 }}>
               {kitMedidas.map((m) => {
                 const cands = heroCandidates(m);
                 const sel = heroPorMedida[m] || "";
+                // Mostrar también la elegida aunque sea subida (no esté entre las candidatas).
+                const thumbs = sel && !cands.includes(sel) ? [sel, ...cands] : cands;
+                const up = uploadingHero === m;
                 return (
-                  <div key={m} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <div key={m} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--brand-primary, #f5e03a)" }}>{m}</span>
                     <button
                       type="button"
@@ -1726,7 +1749,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                     >
                       Automática
                     </button>
-                    {cands.map((u) => (
+                    {thumbs.map((u) => (
                       <button
                         key={u}
                         type="button"
@@ -1737,9 +1760,10 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                         <img src={u} alt="" style={{ width: 40, height: 40, objectFit: "contain", display: "block", borderRadius: 3, background: "rgba(255,255,255,.04)" }} />
                       </button>
                     ))}
-                    {cands.length === 0 && (
-                      <span style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>— sin fotos cargadas para esta medida —</span>
-                    )}
+                    <label style={{ ...styles.btn(), padding: "4px 10px", fontSize: 11, cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, whiteSpace: "nowrap" }}>
+                      {up ? "Subiendo…" : "⬆ Subir"}
+                      <input type="file" accept="image/*" style={{ display: "none" }} disabled={up} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadHero(m, f); }} />
+                    </label>
                   </div>
                 );
               })}
