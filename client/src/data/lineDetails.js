@@ -2,14 +2,21 @@
 //
 // Info por línea REUSADA de la web (landing/src/data/productDetails.js) para
 // armar la interna de producto del shop por secciones: intro, beneficios,
-// características y especificaciones. Generado desde la fuente.
+// características y especificaciones.
+//
+// ⚠ GENERADO — no editar a mano. Corré:  node scripts/gen-line-details.mjs
+//   (la fuente de verdad es landing/src/data/productDetails.js)
 //
 // Keys: linea-race | linea-elite | linea-pro | bio-estimulante | cloner | day-0
 
 export const lineDetails = {
   "linea-elite": {
-    "intro": "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de hidroponía, NFT, DWC, coco y sustratos. Concentración máxima de NPK en cada riego, pH auto-buffer, resultados consistentes cosecha tras cosecha.",
+    "intro": "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de coco, sustratos inertes y compuestos. Concentración máxima de NPK en cada riego, pH auto-buffer, resultados consistentes cosecha tras cosecha.",
     "benefits": [
+      {
+        "title": "Dos botellas, un sistema completo.",
+        "body": "Parte 1: aporta NPK y calcio. Parte 2: aporta magnesio y micro. Aplicadas juntas en cada riego dan al cultivo todo lo que se necesita en su justa proporción — sin antagonismos químicos."
+      },
       {
         "title": "Para ciclos completos de cultivo.",
         "body": "Vegetativo, preflora, floración, finalizado. La misma fórmula con dosis ajustada por etapa. Menos productos para comprar, menos chances de equivocarse al dosar."
@@ -26,7 +33,7 @@ export const lineDetails = {
     "features": [
       {
         "title": "pH auto-buffer",
-        "body": "La fórmula mantiene el pH del solución entre 5.8 y 6.2 sin ajustes manuales constantes.",
+        "body": "La fórmula mantiene el pH de la solución, sin ajustes manuales constantes.",
         "emoji": "⚖"
       },
       {
@@ -40,7 +47,7 @@ export const lineDetails = {
         "emoji": "✦"
       },
       {
-        "title": "Concentración premium",
+        "title": "Concentración máxima",
         "body": "Más nutriente por ml — menos botellas, más densidad activa.",
         "emoji": "◆"
       },
@@ -84,12 +91,15 @@ export const lineDetails = {
         "label": "Presentaciones",
         "value": "250 ml · 500 ml · 1 L"
       }
-    ],
-    "pullquote": "Lo que separa una cosecha buena de una excelente está en el fertilizante que elegís. Línea Elite no deja márgenes de error."
+    ]
   },
   "linea-pro": {
     "intro": "Cuatro fertilizantes etapa-específicos en formato sólido hidrosoluble para sustratos compuestos. Enraizante, Vegetativo, Preflora y Flora: cada uno con el ratio NPK exacto para esa fase. Pesás, disolvés, regás. EC programable, pH estable, mismo resultado en cada lote. Compatible con autoflorecientes y fotoperiódicas.",
     "benefits": [
+      {
+        "title": "Una para cada momento.",
+        "body": "Enraizante, Vegetativo, Preflora y Flora. Cada una desarrollada para el perfil nutricional exacto que la planta necesita en esa fase."
+      },
       {
         "title": "Sin agua, sin alcohol, sin conservantes.",
         "body": "100% materia activa. El fertilizante sólido no pierde potencia con el calor ni con el tiempo: 36 meses de vida útil garantizados."
@@ -106,7 +116,7 @@ export const lineDetails = {
     "features": [
       {
         "title": "Estabilidad total",
-        "body": "Sin agua = sin caducidad acelerada. Vida útil 36 meses sin pérdida de actividad.",
+        "body": "Sin agua = sin caducidad acelerada. Vida útil garantizada, sin pérdida de actividad.",
         "emoji": "♢"
       },
       {
@@ -115,13 +125,13 @@ export const lineDetails = {
         "emoji": "✦"
       },
       {
-        "title": "EC programable",
-        "body": "Ajustá la EC final al exacto valor que tu cultivo necesita por gramos disueltos.",
+        "title": "pH ideal",
+        "body": "Cada Pro trabaja en el rango óptimo del cultivo sin shock de pH.",
         "emoji": "⚖"
       },
       {
         "title": "Mezcla limpia",
-        "body": "Disuelve completo en agua tibia sin residuos — sin filtros que limpiar.",
+        "body": "Disuelve completo en agua sin residuos — sin filtros que limpiar.",
         "emoji": "○"
       },
       {
@@ -138,7 +148,7 @@ export const lineDetails = {
     "specs": [
       {
         "label": "Composición",
-        "value": "NPK + Ca-Mg-Micro etapa-ajustado"
+        "value": "NPK + Mg + S + micronutrientes"
       },
       {
         "label": "Forma",
@@ -150,7 +160,7 @@ export const lineDetails = {
       },
       {
         "label": "Dosis",
-        "value": "0.5 – 1.5 g/L según etapa"
+        "value": "0,25 a 1 g/L según etapa"
       },
       {
         "label": "Conservación",
@@ -164,26 +174,25 @@ export const lineDetails = {
         "label": "Etapas",
         "value": "Enraizante · Vegetativo · Preflora · Flora"
       }
-    ],
-    "pullquote": "Si lo podés pesar, lo podés repetir. Con Línea Pro, cada cultivo indoor es mejor que el anterior."
+    ]
   },
   "linea-race": {
-    "intro": "Línea Race es el sistema de fertilizantes de Holistic para cultivadores que priorizan velocidad y rendimiento. Cinco fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
+    "intro": "Línea Race es el sistema de Holistic pensado para adaptar cada nutriente al ADN de tu cultivo y sacar lo mejor de cada genética, sin límites, sin promedios, solo el máximo potencial de lo que plantás. Para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
     "benefits": [
       {
         "title": "Race 1 — NPK concentrado.",
-        "body": "Nitrógeno: motor del crecimiento vegetativo — hojas, tallos y clorofila. Fósforo: raíces fuertes y transferencia de energía. Potasio: regula el metabolismo, fortalece tallos y sube la resistencia a plagas y estrés."
+        "body": "NPK: motor del crecimiento vegetativo — hojas, tallos y clorofila. Raíces fuertes y transferencia de energía. Regula el metabolismo, fortalece tallos y sube la resistencia a plagas y estrés."
       },
       {
         "title": "Race 2 — Calcio + Nitrógeno.",
         "body": "Forma paredes celulares fuertes, impulsa el crecimiento de raíces y brotes, y mejora la resistencia ante plagas y sequías."
       },
       {
-        "title": "Race 3 — 1ª parte PK.",
+        "title": "Race 3 (PK de crecimiento y maduración).",
         "body": "Son 2 partes PK de crecimiento y maduración. Activan la translocación de azúcares y agrandan flores en el pico productivo del ciclo."
       },
       {
-        "title": "Race 3 — 2ª parte PK.",
+        "title": "Race 3 (PK de crecimiento y maduración).",
         "body": "Son 2 partes PK de crecimiento y maduración. Aplicadas en secuencia, sostienen el desarrollo de flores densas hasta el cierre del ciclo."
       },
       {
@@ -194,7 +203,7 @@ export const lineDetails = {
     "features": [
       {
         "title": "Concentración alta",
-        "body": "1 ml/L típicamente. Menos plástico, más nutriente por riego.",
+        "body": "Menos plástico, más nutriente por riego.",
         "emoji": "◆"
       },
       {
@@ -234,11 +243,11 @@ export const lineDetails = {
       },
       {
         "label": "Dosis típica",
-        "value": "1.0 – 1.5 ml/L"
+        "value": "0,5ml – 4ml"
       },
       {
         "label": "Compatibilidad",
-        "value": "Sustratos inertes, coco, hidro, tierra premium · Indoor y outdoor"
+        "value": "Sustratos inertes, sustratos compuestos, coco, lana de roca, hidro, tierra — indoor y outdoor."
       },
       {
         "label": "Conservación",
@@ -252,19 +261,22 @@ export const lineDetails = {
         "label": "Variantes",
         "value": "5 fertilizantes para el ciclo completo"
       }
-    ],
-    "pullquote": "La velocidad sin control es ruido. Race es el fertilizante indoor que te da las dos cosas: velocidad y precisión."
+    ]
   },
   "bio-estimulante": {
-    "intro": "Bioestimulante 100% orgánico para cultivo indoor, fabricado en biorreactor industrial con cepas seleccionadas de Azospirillum y Azotobacter. Hasta 70% más efectivo que micorrizas tradicionales. Estimula el desarrollo radicular, potencia la absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo: Línea Pro, Línea Elite y Línea Race.",
+    "intro": "Bioestimulante 100% orgánico para cultivo indoor y outdoor, fabricado en biorreactor industrial con materias primas seleccionadas. Hasta 70% más efectivo que micorrizas tradicionales. Estimula el desarrollo radicular, potencia la absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo: Línea Pro, Línea Elite y Línea Race.",
     "benefits": [
+      {
+        "title": "Producido en biorreactor industrial.",
+        "body": "No es un té de compost casero: es un bioestimulante orgánico producido en fermentadores industriales controlados."
+      },
       {
         "title": "Acelera todo lo demás.",
         "body": "Aplicado junto a Elite, Pro o Race, multiplica la eficiencia de absorción radicular. La planta toma más nutrientes con menos input."
       },
       {
-        "title": "Riego, foliar, esquejes.",
-        "body": "Una sola botella para activar raíces, mejorar foliage y reforzar defensas naturales. Multifunción real."
+        "title": "Para todo el ciclo.",
+        "body": "Mejora la estructura del suelo para un mejor desarrollo radicular. Mayor retención de humedad entre riegos. Estimula los microorganismos benéficos que nutren y protegen la planta."
       },
       {
         "title": "100% orgánico, 100% inocuo.",
@@ -293,6 +305,11 @@ export const lineDetails = {
         "emoji": "⚡"
       },
       {
+        "title": "Apto fertiriego",
+        "body": "Esquejes, transplantes y crecimiento con un solo producto.",
+        "emoji": "○"
+      },
+      {
         "title": "Producción local",
         "body": "Fabricado en Argentina con tecnología de biorreactor industrial.",
         "emoji": "✓"
@@ -301,7 +318,7 @@ export const lineDetails = {
     "specs": [
       {
         "label": "Composición",
-        "value": "Microorganismos benéficos + metabolitos secundarios"
+        "value": "Ácidos húmicos, ácidos fúlvicos, ácidos carboxílicos, grupos fenoles y potasio soluble"
       },
       {
         "label": "Forma",
@@ -309,7 +326,7 @@ export const lineDetails = {
       },
       {
         "label": "Aplicación",
-        "value": "Riego, foliar, esquejes, transplante"
+        "value": "Riego, esquejes y transplante"
       },
       {
         "label": "Conservación",
@@ -323,8 +340,7 @@ export const lineDetails = {
         "label": "Certificación",
         "value": "Producción en biorreactor — sin metales pesados"
       }
-    ],
-    "pullquote": "La diferencia entre un cultivo indoor bueno y uno excelente arranca por la raíz. El Bio Estimulante es el primer paso."
+    ]
   },
   "cloner": {
     "intro": "Cloner es el gel enraizante de alta adherencia de Holistic para esquejes y plantines. Fórmula de contacto rápido que acelera el prendimiento radicular con mínima manipulación. El comienzo del ciclo que define la calidad del resultado final. Compatible con todo el catálogo Holistic.",
@@ -340,18 +356,9 @@ export const lineDetails = {
       {
         "title": "Pensado para producción profesional.",
         "body": "Esquejes seriados, batches grandes, propagación masiva: la consistencia del gel hace que todos arranquen al mismo tiempo."
-      },
-      {
-        "title": "Sumergir, plantar, regar.",
-        "body": "Sin polvos que se vuelan, sin diluciones a pesar. La curva de aprendizaje es casi cero."
       }
     ],
     "features": [
-      {
-        "title": "Auxinas activas",
-        "body": "Combinación IBA + NAA en concentración óptima para inducir raíz adventicia.",
-        "emoji": "✦"
-      },
       {
         "title": "Sin contaminación",
         "body": "Tubo individual previene contaminación cruzada entre lotes.",
@@ -374,7 +381,7 @@ export const lineDetails = {
       },
       {
         "title": "Trazable",
-        "body": "Lote y fecha en cada tubo. Sabés exactamente con qué estás trabajando.",
+        "body": "Sabés exactamente con qué estás trabajando.",
         "emoji": "○"
       }
     ],
@@ -403,19 +410,22 @@ export const lineDetails = {
         "label": "Conservación",
         "value": "Bajo techo, 5–25°C, 24 meses"
       }
-    ],
-    "pullquote": "El comienzo del ciclo define la calidad del resultado final."
+    ]
   },
   "day-0": {
     "intro": "Day 0 es el tratamiento finalizador de Holistic para los últimos días del ciclo indoor. Se usa junto a Race, Pro o Elite, como cierre de cualquier sistema Holistic.",
     "benefits": [
       {
+        "title": "Cierre limpio.",
+        "body": "Aplicado en los últimos riegos antes del corte, ayuda a vaciar los reservorios internos de la planta de excesos minerales y mejora el bouquet final."
+      },
+      {
         "title": "El detalle que se nota.",
-        "body": "Cosechas con sabor y aroma más limpios, sin notas químicas residuales. La diferencia entre una cosecha técnica y una excelente."
+        "body": "La diferencia entre una cosecha técnica y una excelente."
       },
       {
         "title": "Programable al día.",
-        "body": "10-14 días antes del corte estimado. La planta ajusta su metabolismo y el cultivador llega al día 0 con una flor pulida."
+        "body": "5 días antes del corte estimado. La planta ajusta su metabolismo y el cultivador llega al día 0 con una flor pulida."
       },
       {
         "title": "Compatible con cualquier sistema.",
@@ -435,12 +445,12 @@ export const lineDetails = {
       },
       {
         "title": "Aplicación simple",
-        "body": "Una sola dosis por riego en los últimos 10-14 días. Sin escalones complejos.",
+        "body": "Una sola dosis por riego en los últimos 5 días. Sin escalones complejos.",
         "emoji": "○"
       },
       {
         "title": "Validado en cultivo",
-        "body": "Probado en variedades indoor/outdoor con resultado consistente.",
+        "body": "Remueve minerales excedentes adheridos a las raíces.",
         "emoji": "✓"
       }
     ],
@@ -451,7 +461,7 @@ export const lineDetails = {
       },
       {
         "label": "Aplicación",
-        "value": "Últimos 10-14 días pre-cosecha"
+        "value": "Últimos 5 días pre-cosecha"
       },
       {
         "label": "Dosis",
@@ -473,12 +483,12 @@ export const lineDetails = {
         "label": "Presentaciones",
         "value": "250 ml"
       }
-    ],
-    "pullquote": "Lo que diferencia una cosecha buena de una perfecta se decide en los últimos días."
+    ]
   }
 };
 
-// Resuelve la key de lineDetails desde un producto del shop.
+// Resuelve la key de línea de un producto del shop (slug directo, meta.linea, o
+// prefijo del slug). Usado por ShopProduct.jsx para elegir el default correcto.
 export function lineKeyFor(product) {
   if (!product) return null;
   if (lineDetails[product.slug]) return product.slug;
