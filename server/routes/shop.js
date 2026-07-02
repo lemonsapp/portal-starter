@@ -1557,8 +1557,12 @@ function variantSummary(row, img) {
 
 // Cross-sell curado por línea (slugs sugeridos para "te olvidaste / acompañar").
 const CROSS_SELL_BY_LINE = {
-  race:  ["bio-estimulante-500ml", "day-0-500ml", "cloner"],
-  pro:   ["bio-estimulante-500ml", "day-0-500ml", "cloner"],
+  // Race → Race 3 PK 1ª y 2ª parte · Pro → Race 4 + Race 2 (pedido cliente
+  // 2026-07-02). El server self-filtra el producto actual (ver más abajo), así
+  // que en la ficha de pk1 sólo aparece pk2 y viceversa. El admin puede
+  // overridear con editorial.cross_sell_slugs.
+  race:  ["race-3-pk-1-500ml", "race-3-pk-2-500ml"],
+  pro:   ["race-4-micro-magnesio-500ml", "race-2-calcio-nitrogeno-500ml"],
   elite: ["bio-estimulante-500ml", "day-0-500ml", "cloner"],
   bio:   ["day-0-500ml", "cloner"],
   day0:  ["bio-estimulante-500ml", "cloner"],
