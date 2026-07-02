@@ -197,9 +197,12 @@
             linear-gradient(
                 180deg,
                 #050807 0%,
-                #0d2418 14%,
-                #1a4d35 28%,
-                #3da86e 45%,
+                #050807 8%,      /* banda negra PLANA 0%→8%: espeja el bottom de
+                                    HumanSupport (que termina en negro plano). La
+                                    costura queda dentro de un campo negro uniforme. */
+                #0d2418 18%,
+                #1a4d35 30%,
+                #3da86e 46%,
                 #a7f5c8 65%,
                 #e8f5ee 82%,
                 #ffffff 100%
@@ -218,26 +221,22 @@
         background:
             /* Halo mint intenso en el área transitoria (mid-section)
                donde converge dark→light. Realza los tallos contra el
-               emerald del gradient. */
+               emerald del gradient. Empieza en 38% para NO tocar el borde
+               superior — así el top del OC queda negro plano idéntico al
+               bottom de HumanSupport y la costura no se nota. */
             radial-gradient(
-                ellipse 90% 35% at 50% 38%,
+                ellipse 90% 35% at 50% 42%,
                 rgba(167, 245, 200, 0.30) 0%,
                 transparent 70%
-            ),
-            /* Luz cenital arriba — refuerza la sensación de "subida hacia
-               la copa" anti-gravity. */
-            radial-gradient(
-                ellipse 70% 30% at 50% 0%,
-                rgba(167, 245, 200, 0.18) 0%,
-                transparent 80%
             );
         pointer-events: none;
     }
-    /* Halo de fotosíntesis — top, opacity sube con scroll. Ahora más sutil
-       porque el bg dark→light ya da contraste por sí solo. */
+    /* Halo de fotosíntesis — opacity sube con scroll. Bajado a top:14% para que
+       su luz mint quede en la zona de plantas y NO toque la costura con
+       HumanSupport (que debe seguir negra uniforme aunque el halo se encienda). */
     .oc__halo {
         position: absolute;
-        top: -8%;
+        top: 14%;
         left: 0;
         right: 0;
         height: 65%;
