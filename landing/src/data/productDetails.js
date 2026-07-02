@@ -87,15 +87,16 @@ export const productDetails = {
         ],
         // Render por medida, en progresión ascendente real (no a escala):
         //   • 250ml/500ml/1L → renders "unificado" (2026-06-10, fotos nuevas del cliente).
-        //   • 5L/10L/20L → bidón ELITE MAX (perspectiva single, mismo estilo que
-        //     5L) para que las medidas crezcan de forma consistente.
+        //   • 5L/10L/20L → bidones DOBLES (Parte 1 + Parte 2 juntos), las mismas
+        //     fotos que usa el carrito del shop (elite-max-*juntos). Pedido cliente
+        //     2026-07-02: los bidones deben mostrarse como el combo doble.
         formats: [
             { name: "250 ML",   size: "250ml",  image: "/imagenes-web/productos/linea-elite/elite-250ml-unificado.png" },
             { name: "500 ML",   size: "500ml",  image: "/imagenes-web/productos/linea-elite/elite-500ml-unificado.png" },
             { name: "1 LITRO",  size: "1L",     image: "/imagenes-web/productos/linea-elite/elite-1l-unificado.png" },
-            { name: "5 LITROS", size: "5L",     image: "/imagenes-web/productos/elite-max/a-5-lts-perspectiva-1.png" },
-            { name: "10 LITROS",size: "10L",    image: "/imagenes-web/productos/elite-max/a-10-lts-perspectiva-1.png" },
-            { name: "20 LITROS",size: "20L",    image: "/imagenes-web/productos/elite-max/a-20-lts-perspectiva-1.png" },
+            { name: "5 LITROS", size: "5L",     image: "/imagenes-web/fotos-productos/5lts-juntos.jpg" },
+            { name: "10 LITROS",size: "10L",    image: "/imagenes-web/fotos-productos/10-litros-juntos.jpg" },
+            { name: "20 LITROS",size: "20L",    image: "/imagenes-web/fotos-productos/max20ltjuntos.jpg" },
         ],
         system: {
             title: "Diseñado para integrar el sistema Holistic.",
@@ -220,7 +221,7 @@ export const productDetails = {
         hero: {
             kicker: "LÍNEA RACE",
             headline: "Sistema adaptable de fertilizantes\npara cultivo indoor y outdoor.",
-            claim: "Línea Race es el sistema de Holistic pensado para adaptar cada nutriente al ADN de tu cultivo y sacar lo mejor de cada genética, sin límites, sin promedios, solo el máximo potencial de lo que plantás. Cinco fórmulas para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
+            claim: "Línea Race es el sistema de Holistic pensado para adaptar cada nutriente al ADN de tu cultivo y sacar lo mejor de cada genética, sin límites, sin promedios, solo el máximo potencial de lo que plantás. Para todo el ciclo indoor y outdoor: Race 1 (NPK que se usa durante todo el ciclo), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración en dos partes) y Race 4 (Micro + Magnesio).",
             ctaPrimary:   { label: "COMPRAR RACE",        href: "/shop?categoria=race" },
             ctaSecondary: { label: "VER GUÍA DE USO", href: "#guias" },
             color: "#2E8F6E",
@@ -264,7 +265,7 @@ export const productDetails = {
                 title: "Race 3 (PK de crecimiento y maduración).",
                 body: "Son 2 partes PK de crecimiento y maduración. Activan la translocación de azúcares y agrandan flores en el pico productivo del ciclo.",
                 image: "/imagenes-web/productos/linea-race/1l/race-3-violeta-a-1l-f1.webp",
-                color: "#8E24AA",
+                color: "#555555",
                 stat: "03",
             },
             {
@@ -272,7 +273,7 @@ export const productDetails = {
                 title: "Race 3 (PK de crecimiento y maduración).",
                 body: "Son 2 partes PK de crecimiento y maduración. Aplicadas en secuencia, sostienen el desarrollo de flores densas hasta el cierre del ciclo.",
                 image: "/imagenes-web/productos/linea-race/1l/race-3-violeta-b-1l-f1.webp",
-                color: "#8E24AA",
+                color: "#555555",
                 stat: "04",
             },
             {
@@ -284,11 +285,14 @@ export const productDetails = {
                 stat: "05",
             },
         ],
+        // bigStat con variante `text`: cuando existe, ProductDeepDive
+        // renderiza un statement editorial (palabras en máscara + regla
+        // accent) en vez del contador numérico compartido — sólo Race lo
+        // usa. La animación entra izquierda→derecha (product-detail.js).
         bigStat: {
-            num: 5,
-            suffix: " fertilizantes",
+            text: ["FÓRMULA", "ADAPTABLE"],
             label: "EL CICLO COMPLETO",
-            body: "Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración, 1ª y 2ª parte) y Race 4 (Micro + Magnesio). Cinco fertilizantes para el ciclo completo, indoor y outdoor.",
+            body: "Race 1 (NPK), Race 2 (Calcio + Nitrógeno), Race 3 (PK de crecimiento y maduración, 1ª y 2ª parte) y Race 4 (Micro + Magnesio). Un sistema que adapta cada nutriente a cada etapa del ciclo, indoor y outdoor.",
         },
         features: [
             { title: "Concentración alta",     body: "Menos plástico, más nutriente por riego.",                          emoji: "◆" },

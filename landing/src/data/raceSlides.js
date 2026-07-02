@@ -18,8 +18,8 @@ export const raceSlides = [
         nombre: "Race 2 · Floración",
         tagline: "Floración explosiva y vigor.",
         bg: "/imagenes-web/race-slider/violeta-2.png",
-        color: "#8E24AA",
-        textColor: "#4A148C",
+        color: "#555555",
+        textColor: "#333333",
     },
     {
         id: "celeste",

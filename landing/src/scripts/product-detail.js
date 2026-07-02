@@ -54,6 +54,10 @@ function initProductDetail() {
     const bigStatVal    = root.querySelector("[data-pdd-bigstat-value]");
     const bigStatLabel  = root.querySelector("[data-pdd-bigstat-label]");
     const bigStatBody   = root.querySelector("[data-pdd-bigstat-body]");
+    // Variante statement (Race): "FÓRMULA ADAPTABLE" con reveal L→R
+    const bigStatText   = root.querySelector("[data-pdd-bigstat-text]");
+    const bigStatWords  = Array.from(root.querySelectorAll("[data-pdd-bigstat-word]"));
+    const bigStatRule   = root.querySelector("[data-pdd-bigstat-rule]");
 
     // Bento
     const bentoCells    = Array.from(root.querySelectorAll("[data-pdd-bento-cell]"));
@@ -302,6 +306,53 @@ function initProductDetail() {
             // (no hay cross-fade scroll-driven).
             if (hlImgs.length > 1) {
                 hlImgs.forEach((img, i) => gsap.set(img, { autoAlpha: i === 0 ? 1 : 0 }));
+            }
+        }
+
+        // ============================================================
+        // 3-bis) BIG STAT variante statement (Race) — "FÓRMULA ADAPTABLE"
+        // Reveal editorial izquierda→derecha: cada palabra se descubre con
+        // clip-path (inset desde la derecha → 0) + un slide sutil en X, y la
+        // regla accent se dibuja del mismo lado (scaleX 0→1). Profesional,
+        // sin perder la colorimetría verde (--pdd-color en accent + regla).
+        // gsap-scrolltrigger: toggleActions (no scrub) para un reveal discreto.
+        // ============================================================
+        if (bigStatText) {
+            if (reduceMotion) {
+                // Sin motion: aseguramos estado final visible (la regla parte
+                // en scaleX:1 por CSS, así que no hay que tocar nada más).
+            } else {
+                gsap.set(bigStatWords, { xPercent: -6, clipPath: "inset(0 100% 0 0)" });
+                if (bigStatRule) gsap.set(bigStatRule, { scaleX: 0 });
+
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: bigStatText,
+                        start: "top 78%",
+                        toggleActions: "play none none reverse",
+                    },
+                });
+                tl.to(bigStatWords, {
+                    xPercent: 0,
+                    clipPath: "inset(0 0% 0 0)",
+                    duration: 0.9,
+                    ease: "power4.out",
+                    stagger: 0.14,
+                });
+                if (bigStatRule) {
+                    tl.to(bigStatRule, {
+                        scaleX: 1,
+                        duration: 0.7,
+                        ease: "power3.inOut",
+                    }, "-=0.55");
+                }
+                gsap.from([bigStatLabel, bigStatBody], {
+                    autoAlpha: 0, y: 30, duration: 0.8, stagger: 0.12, ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: bigStatText, start: "top 80%",
+                        toggleActions: "play none none reverse",
+                    },
+                });
             }
         }
 

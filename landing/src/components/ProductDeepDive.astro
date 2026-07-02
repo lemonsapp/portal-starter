@@ -347,9 +347,20 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
         <section class="pdd__bigstat" data-pdd-bigstat>
             <div class="pdd__bigstat-inner">
                 <p class="pdd__bigstat-label" data-pdd-bigstat-label>{d.bigStat.label}</p>
-                <p class="pdd__bigstat-num">
-                    <span class="pdd__bigstat-value" data-pdd-bigstat-value data-target={d.bigStat.num}>0</span><span class="pdd__bigstat-suffix">{d.bigStat.suffix}</span>
-                </p>
+                {d.bigStat.text ? (
+                    <p class="pdd__bigstat-text" data-pdd-bigstat-text>
+                        {d.bigStat.text.map((word, i) => (
+                            <span class:list={["pdd__bigstat-word", { "pdd__bigstat-word--accent": i === d.bigStat.text.length - 1 }]}>
+                                <span data-pdd-bigstat-word>{word}</span>
+                            </span>
+                        ))}
+                        <span class="pdd__bigstat-rule" data-pdd-bigstat-rule aria-hidden="true"></span>
+                    </p>
+                ) : (
+                    <p class="pdd__bigstat-num">
+                        <span class="pdd__bigstat-value" data-pdd-bigstat-value data-target={d.bigStat.num}>0</span><span class="pdd__bigstat-suffix">{d.bigStat.suffix}</span>
+                    </p>
+                )}
                 <p class="pdd__bigstat-body" data-pdd-bigstat-body>{d.bigStat.body}</p>
             </div>
         </section>
