@@ -1028,12 +1028,26 @@ async function migrate() {
     SELECT p.id, v.url, p.name, 0, TRUE
     FROM (VALUES
       ('elite-parte-1-250ml', '/imagenes-web/productos/linea-elite/elite-part-1.png'),
-      ('elite-parte-1-5l',    '/imagenes-web/productos/elite-max/a-5-lts-perspectiva-1.png'),
-      ('elite-parte-1-10l',   '/imagenes-web/productos/elite-max/a-10-lts-perspectiva-1.png')
+      -- 5L/10L: foto DOBLE (Parte 1 + Parte 2 juntas), la misma que el carrito
+      -- del shop y los formats de la interna (pedido cliente: los bidones se
+      -- muestran como el combo doble).
+      ('elite-parte-1-5l',    '/imagenes-web/fotos-productos/5lts-juntos.jpg'),
+      ('elite-parte-1-10l',   '/imagenes-web/fotos-productos/10-litros-juntos.jpg')
     ) AS v(slug, url)
     JOIN products p ON p.slug = v.slug
     WHERE NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `, "img elite parte 1 250/5/10");
+  // Migración: si los SKUs 5L/10L ya se seedearon con el render simple, se
+  // pasan a la foto DOBLE del carrito. Guard por old_url → idempotente, no pisa
+  // fotos custom del admin.
+  await safeQuery(`
+    UPDATE product_images pi SET url = v.url
+    FROM (VALUES
+      ('elite-parte-1-5l',  '/imagenes-web/fotos-productos/5lts-juntos.jpg',      '/imagenes-web/productos/elite-max/a-5-lts-perspectiva-1.png'),
+      ('elite-parte-1-10l', '/imagenes-web/fotos-productos/10-litros-juntos.jpg', '/imagenes-web/productos/elite-max/a-10-lts-perspectiva-1.png')
+    ) AS v(slug, url, old_url), products p
+    WHERE p.slug = v.slug AND pi.product_id = p.id AND pi.url = v.old_url
+  `, "elite parte 1 5l/10l → foto doble");
   // elite-max-5l/10l eran la representación "combo/par" (foto doble) de esas
   // mismas medidas que ahora vende Parte 1 sola → se desactivan para no
   // duplicar. No DELETE (pueden estar en orders viejas). Idempotente.
