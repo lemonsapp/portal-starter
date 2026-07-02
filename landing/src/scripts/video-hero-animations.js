@@ -55,7 +55,9 @@ function initVideoHero() {
     //   del final y seteamos currentTime a (duration - ~1 frame): el último
     //   frame queda renderizado y el reproductor nunca dispara `ended`.
     if (video) {
-        // MOBILE: servir la variante liviana (854×480, ~264KB vs 4.4MB).
+        // MOBILE: servir la variante vertical 1080×1920 (~1.8MB, CRF 25)
+        // en vez del clip WEB 1376×768 (~0.94MB). El vertical llena el
+        // viewport portrait sin barras; pesa más pero encuadra mejor.
         // Se swapea ANTES de cualquier load/play — preload="metadata" en el
         // HTML evita que el browser haya descargado el src desktop.
         const mobileSrc = video.dataset.srcMobile;
