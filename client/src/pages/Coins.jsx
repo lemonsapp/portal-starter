@@ -1151,7 +1151,7 @@ export default function Coins() {
                   <CountUp value={balance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
                     {loading?"—":Number(balance).toLocaleString()}
                   </CountUp>
-                  <span style={{ display:"inline-flex" }}><Coin size={30} /></span>
+                  <span style={{ display:"inline-flex", transform:"translateY(8px)" }}><Coin size={30} /></span>
                 </div>
                 {/* Equivalencia en $ (Sistema de Puntos: 1 punto = $peso_per_point) */}
                 <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:13,color:"var(--muted2)",marginBottom:14 }}>
