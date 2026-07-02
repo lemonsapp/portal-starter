@@ -195,15 +195,16 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
 })();
 
 // Catálogo de acciones de Instagram (puntos + límite, según el documento).
-// Todas requieren mencionar @holistic.arg en la publicación.
+// Puntos alineados al doc "holistic sistema puntos v9" — 9.2 Criterios
+// específicos por acción. Todas requieren mencionar @holistic.arg.
 const IG_ACTIONS = [
-  { key: "like",          label: "Like a publicación oficial",       points: 5,   limit: "Máx 1 por día" },
-  { key: "comment",       label: "Comentario en publicación",        points: 15,  limit: "Máx 1 por publicación" },
-  { key: "story",         label: "Compartir en stories",             points: 20,  limit: "Máx 1 por publicación" },
-  { key: "photo_product", label: "Foto del envase (sin planta)",     points: 50,  limit: "Máx 2 por mes" },
-  { key: "photo_plant",   label: "Foto con planta y producto",       points: 100, limit: "Máx 4 por mes" },
-  { key: "stage",         label: "Compartir una etapa del ciclo",    points: 150, limit: "Máx 1 por etapa" },
-  { key: "full_cycle",    label: "Ciclo completo documentado",       points: 500, limit: "1 por ciclo (mín. 4 fotos)" },
+  { key: "like",          label: "Like a publicación oficial",       points: 2,   limit: "Máx 1 por día" },
+  { key: "comment",       label: "Comentario en publicación",        points: 5,   limit: "Máx 1 por publicación" },
+  { key: "story",         label: "Compartir en stories",             points: 7,   limit: "Máx 1 por publicación" },
+  { key: "photo_product", label: "Foto del envase (sin planta)",     points: 17,  limit: "Máx 2 por mes" },
+  { key: "photo_plant",   label: "Foto con planta y producto",       points: 33,  limit: "Máx 4 por mes" },
+  { key: "stage",         label: "Compartir una etapa del ciclo",    points: 50,  limit: "Máx 1 por etapa" },
+  { key: "full_cycle",    label: "Ciclo completo documentado",       points: 167, limit: "1 por ciclo (mín. 4 fotos)" },
 ];
 const IG_ACTION_MAP = Object.fromEntries(IG_ACTIONS.map((a) => [a.key, a]));
 

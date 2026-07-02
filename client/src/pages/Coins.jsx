@@ -15,12 +15,17 @@ const AVATAR_EMOJI = { avatar_lemon:"💎", avatar_fire:"🔥", avatar_diamond:"
 // regalos). Los 💎 que son avatares o el power "Diamond" quedan como están.
 // BASE_URL: el portal vive bajo /portal/ en prod (regla de assets por string).
 export const COIN_IMG = `${import.meta.env.BASE_URL}imagenes-web/coins/moneda-holistic.webp`;
+// Escala global de la moneda inline: agranda TODAS las monedas de forma
+// proporcional (mantienen su ratio relativo) para que se noten más.
+// Pedido cliente 2026-07-02: "que se note la moneda".
+const COIN_SCALE = 1.4;
 export function Coin({ size = 16, style }) {
+  const s = Math.round(size * COIN_SCALE);
   return (
     <img
       src={COIN_IMG} alt="" aria-hidden="true"
-      style={{ width:size, height:size, objectFit:"contain", display:"inline-block",
-               verticalAlign:"-0.12em", filter:"drop-shadow(0 1px 4px rgba(0,0,0,.35))", ...style }}
+      style={{ width:s, height:s, objectFit:"contain", display:"inline-block",
+               verticalAlign:"-0.16em", filter:"drop-shadow(0 1px 4px rgba(0,0,0,.35))", ...style }}
     />
   );
 }
@@ -376,7 +381,7 @@ function ReferralCard() {
             <span style={{ width: 18, height: 1, background: "#a78bfa" }} />Programa de referidos
           </div>
           <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: 32, letterSpacing: "1px", color: "#fff", lineHeight: 1 }}>
-            Invitá amigos · ganá <span style={{ color: "var(--brand-primary)" }}>25 <Coin size={15} /></span>
+            Invitá amigos · ganá <span style={{ color: "var(--brand-primary)" }}>25 <Coin size={22} /></span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginTop: 6, lineHeight: 1.5 }}>
             Tu amigo recibe 25 <Coin size={13} /> al activar su cuenta. Vos también ganás 25 <Coin size={13} />.
@@ -1146,7 +1151,7 @@ export default function Coins() {
                   <CountUp value={balance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
                     {loading?"—":Number(balance).toLocaleString()}
                   </CountUp>
-                  <span style={{ display:"inline-flex" }}><Coin size={22} /></span>
+                  <span style={{ display:"inline-flex" }}><Coin size={30} /></span>
                 </div>
                 {/* Equivalencia en $ (Sistema de Puntos: 1 punto = $peso_per_point) */}
                 <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:13,color:"var(--muted2)",marginBottom:14 }}>
@@ -1199,7 +1204,7 @@ export default function Coins() {
           {tab==="regalar"  && <Gift balance={balance} onGift={a=>setBalance(b=>b-a)} />}
 
           <div style={{ marginTop:36 }}>
-            <BuyCTA variant="banner" label="Comprar fertilizantes" sublabel="Línea Elite, Pro y Race · Envío en 48 hs · Pagás seguro" />
+            <BuyCTA variant="banner" label="Comprar fertilizantes" sublabel="Línea Elite, Pro y Race · Despachamos en 24 hs · Pagás seguro" />
           </div>
         </div>
       </div>
