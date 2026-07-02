@@ -48,8 +48,8 @@
 }
 .cat-sub {
   margin: 26px auto 0; max-width: 600px;
-  font-family: var(--f-italic, "Fraunces", Georgia, serif);
-  font-style: italic; font-size: clamp(1rem, 1.4vw, 1.25rem);
+  font-family: var(--f-display, "Gotham", system-ui, sans-serif);
+  font-style: normal; font-size: clamp(1rem, 1.4vw, 1.25rem);
   line-height: 1.55; color: var(--c-text-2);
 }
 
