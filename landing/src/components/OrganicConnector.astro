@@ -185,25 +185,22 @@
         position: relative;
         width: 100%;
         min-height: 55vh;
-        /* Gradient continuo dark→white:
-           - 0% match HumanSupport (#050807 dark)
-           - 25% emerald deep (puente cromático)
-           - 60% mint pale
+        /* Gradient continuo verde→white:
+           - 0% match HumanSupport (#1f6b50 verde) → unión de un solo color, sin negro
+           - 30% emerald (puente cromático hacia las plantas)
+           - 62% mint pale
            - 100% match LineasEstrella (#ffffff)
-           El tallo emitido del CTA "Hablar con Holistic" arriba se sumerge
-           en el dark del top y los tallos del OC nacen de ese mismo dark.
-           El bottom termina en blanco puro = arranque seamless de LE. */
+           Los tallos del OC nacen del mismo verde que cierra HumanSupport, así el
+           empalme entre secciones no tiene degradé a negro ni corte visible.
+           El bottom termina en blanco puro = arranque seamless de LineasEstrella. */
         background:
             linear-gradient(
                 180deg,
-                #050807 0%,
-                #050807 8%,      /* banda negra PLANA 0%→8%: espeja el bottom de
-                                    HumanSupport (que termina en negro plano). La
-                                    costura queda dentro de un campo negro uniforme. */
-                #0d2418 18%,
-                #1a4d35 30%,
-                #3da86e 46%,
-                #a7f5c8 65%,
+                #1f6b50 0%,      /* MISMO verde que el bottom de HumanSupport — la unión
+                                    es un color uniforme, sin degradé a negro. */
+                #1f6b50 8%,      /* banda de verde plano que espeja el bottom de HS. */
+                #3da86e 30%,     /* de acá para abajo sube hacia el mint/blanco. */
+                #a7f5c8 62%,
                 #e8f5ee 82%,
                 #ffffff 100%
             );

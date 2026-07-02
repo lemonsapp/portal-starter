@@ -4083,16 +4083,14 @@ html.is-loading body {
     background:
         linear-gradient(
             180deg,
-            #050807 0%,            /* casi negro arriba */
+            #050807 0%,            /* casi negro arriba (entra desde el VideoHero) */
             #0a1410 18%,
-            #0f3527 46%,           /* verde Holistic muy oscuro mid */
+            #0f3527 44%,           /* verde Holistic muy oscuro mid */
             #1f6b50 70%,           /* verde saturado donde vive el CTA */
-            #123f2e 84%,
-            #050807 92%,           /* banda negra PLANA 92%→100%: idéntica al top del
-                                      OrganicConnector (que también arranca con negro
-                                      plano). La costura queda enterrada en un campo de
-                                      color uniforme → imposible de notar. */
-            #050807 100%
+            #1f6b50 100%           /* VERDE PLANO hasta el fondo — SIN degradé a negro.
+                                      El OrganicConnector arranca con este mismo verde,
+                                      así la unión es un color uniforme (pedido cliente:
+                                      "todo el mismo color, sin degrade de verde a negro"). */
         );
 }
 .hs__bg-radial {
