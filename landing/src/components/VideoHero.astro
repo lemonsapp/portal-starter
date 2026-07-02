@@ -243,10 +243,15 @@ const TOTAL_FORMULAS = 5;
     /* ====================================================================
        Video full-bleed
        ==================================================================== */
-    .vh__media { position: absolute; inset: 0; z-index: 0; }
+    /* Fondo blanco = el mismo del banner, así el letterbox de object-fit:contain
+       se funde con el banner (sin barras negras). */
+    .vh__media { position: absolute; inset: 0; z-index: 0; background: #ffffff; }
     .vh__video {
         width: 100%; height: 100%;
-        object-fit: cover; object-position: center;
+        /* contain (antes cover): muestra el banner COMPLETO en cualquier
+           viewport → no se pierden los potes de los costados. Pedido cliente
+           2026-07-02. */
+        object-fit: contain; object-position: center;
         display: block;
         /* Color grade para que el clip raw de iPhone se acople: bajamos
            saturación, subimos contraste, oscurecemos un toque. */
