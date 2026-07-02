@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart, formatARS } from "../lib/useCart.js";
 import { useBranding } from "../lib/branding.js";
+import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
 import "../styles/shop-checkout.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -257,10 +258,9 @@ export default function ShopCheckout() {
 
               {items.map((i) => (
                 <div key={i.id} className="co-item">
-                  {i.primary_image
-                    ? <img src={i.primary_image} alt="" className="co-item-img" />
-                    : <div className="co-item-img" />
-                  }
+                  {/* fixImageUrl mapea el SVG diamante viejo de los packs de
+                      puntos → moneda HOLISTIC oficial; sin foto cae a la moneda. */}
+                  <img src={i.primary_image ? fixImageUrl(i.primary_image) : PRODUCT_FALLBACK_IMG} alt="" className="co-item-img" />
                   <div>
                     <div className="co-item-name">{i.name}</div>
                     <div className="co-item-qty">Cantidad: {i.quantity}</div>
