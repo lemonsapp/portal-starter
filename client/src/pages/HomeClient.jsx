@@ -549,7 +549,7 @@ export default function HomeClient() {
           <BuyCTA
             variant="banner"
             label="Comprar fertilizantes"
-            sublabel="Línea Elite, Pro y Race · Envío en 48 hs · Pagás seguro"
+            sublabel="Línea Elite, Pro y Race · Despachamos en 24 hs · Pagás seguro"
           />
         </div>
 

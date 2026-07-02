@@ -19,7 +19,7 @@ const CartIcon = () => (
 /**
  * @param {{ variant?: "inline"|"banner", label?: string, sublabel?: string, style?: object }} props
  */
-export default function BuyCTA({ variant = "inline", label = "COMPRAR", sublabel = "Envío en 48 hs · Pagás seguro con MercadoPago", style }) {
+export default function BuyCTA({ variant = "inline", label = "COMPRAR", sublabel = "Despachamos en 24 hs · Pagás seguro con MercadoPago", style }) {
   const isBanner = variant === "banner";
   return (
     <Link

@@ -1210,7 +1210,7 @@ export default function ProfilePage() {
       </div>
 
           <div style={{maxWidth:1060,margin:"36px auto 0",padding:"0 16px"}}>
-            <BuyCTA variant="banner" label="Comprar fertilizantes" sublabel="Línea Elite, Pro y Race · Envío en 48 hs · Pagás seguro" />
+            <BuyCTA variant="banner" label="Comprar fertilizantes" sublabel="Línea Elite, Pro y Race · Despachamos en 24 hs · Pagás seguro" />
           </div>
         </div>
       </div>
