@@ -4085,10 +4085,13 @@ html.is-loading body {
             180deg,
             #050807 0%,            /* casi negro arriba */
             #0a1410 18%,
-            #0f3527 50%,           /* verde Holistic muy oscuro mid */
-            #1f6b50 78%,
-            #2E8F6E 92%,           /* verde holistic ya saturado bottom */
-            #f3ead8 100%           /* cream para empatar con OC bg al final */
+            #0f3527 48%,           /* verde Holistic muy oscuro mid */
+            #1f6b50 72%,           /* verde saturado donde vive el CTA */
+            #123f2e 90%,
+            #050807 100%           /* casi negro abajo = MATCH exacto con el 0% del
+                                      OrganicConnector (#050807) → empalme sin corte.
+                                      Antes terminaba en cream y el OC arranca oscuro,
+                                      lo que producía la línea de corte visible. */
         );
 }
 .hs__bg-radial {
