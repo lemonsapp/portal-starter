@@ -66,7 +66,7 @@ export const productDetails = {
                 kicker: "PUREZA",
                 title: "Nutrición concentrada.",
                 body: "Materias primas superiores. Cada lote pasa control de pureza, EC y pH antes de envasarse. Trazabilidad completa.",
-                image: "/imagenes-web/ultimos-cambios/POTE-20LT.png",
+                image: "/imagenes-web/ultimos-cambios/POTE-DOBLE-5LT.png",
                 color: "#D4B856",
                 stat: "04",
             },
