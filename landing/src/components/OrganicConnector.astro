@@ -207,8 +207,10 @@
         overflow: hidden;
         isolation: isolate;
         /* margin negativo para que el OC se "monte" sobre el bottom de
-           HumanSupport y elimine cualquier línea visible de unión. */
-        margin-top: -1px;
+           HumanSupport y elimine cualquier gap/línea sub-pixel de unión.
+           -2px cubre el redondeo a distintos niveles de zoom sin tapar el
+           HUD (SEGUIMOS/FASE) que está a >=18px del borde. */
+        margin-top: -2px;
         margin-bottom: -1px;
     }
     .oc__bg {

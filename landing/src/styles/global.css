@@ -4101,6 +4101,10 @@ html.is-loading body {
         radial-gradient(40% 30% at 20% 70%, rgba(167, 245, 200, 0.12) 0%, transparent 75%),
         radial-gradient(50% 35% at 80% 60%, rgba(46, 143, 110, 0.20) 0%, transparent 70%);
     mix-blend-mode: screen;
+    /* Se desvanece antes del fondo: el borde inferior de HS queda verde LISO
+       puro (#1f6b50) = idéntico al top del OrganicConnector, sin línea de corte. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 76%, transparent 94%);
+    mask-image: linear-gradient(to bottom, #000 76%, transparent 94%);
 }
 .hs__bg-grain {
     position: absolute;
@@ -4108,6 +4112,10 @@ html.is-loading body {
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.45 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
     opacity: 0.08;
     mix-blend-mode: overlay;
+    /* Ídem: la textura de ruido se apaga antes del borde para no cortar de golpe
+       contra el OC (que no tiene grain). */
+    -webkit-mask-image: linear-gradient(to bottom, #000 76%, transparent 94%);
+    mask-image: linear-gradient(to bottom, #000 76%, transparent 94%);
 }
 
 /* ---------- PARTICLES ---------- */
