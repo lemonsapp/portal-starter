@@ -27,9 +27,12 @@ const styles = {
     letterSpacing: "-0.02em",
   },
   sub: { color: "rgba(237,233,224,.55)", marginBottom: 22, fontSize: 14 },
-  tabs: { display: "flex", gap: 6, marginBottom: 18, borderBottom: "1px solid rgba(255,255,255,.08)" },
+  // overflowX auto + tabs que no encogen: en mobile la fila scrollea
+  // horizontalmente dentro del panel en vez de desbordar/cortarse.
+  tabs: { display: "flex", gap: 6, marginBottom: 18, borderBottom: "1px solid rgba(255,255,255,.08)", overflowX: "auto", WebkitOverflowScrolling: "touch" },
   tab: (active) => ({
     padding: "10px 18px",
+    flex: "0 0 auto", whiteSpace: "nowrap",
     cursor: "pointer",
     fontSize: 13, fontWeight: 700, letterSpacing: 0.5,
     color: active ? "var(--brand-primary, #3B82F6)" : "rgba(237,233,224,.55)",
@@ -75,8 +78,10 @@ const styles = {
     boxSizing: "border-box",
   },
   label: { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.45)", marginBottom: 5, marginTop: 12 },
-  modalBackdrop: { position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "grid", placeItems: "center", zIndex: 9000 },
-  modalCard: { background: "#0e0f15", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, padding: 24, width: "100%", maxWidth: 420 },
+  modalBackdrop: { position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "grid", placeItems: "center", zIndex: 9000, padding: 16, boxSizing: "border-box" },
+  // maxHeight + scroll: en celular los modales altos (editor de producto) no
+  // se salen del viewport; el contenido scrollea dentro de la card.
+  modalCard: { background: "#0e0f15", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, padding: 24, width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", boxSizing: "border-box" },
 };
 
 // Estructura de pestañas del admin. TIENDA y CONFIGURACIÓN agrupan sub-pestañas;
@@ -130,9 +135,12 @@ export default function AdminPanel() {
   const ActiveComp = activeSub ? activeSub.Comp : tab.Comp;
 
   return (
-    <div style={styles.shell}>
+    // data-staff-page activa staff-mobile.css (<=768px): tablas con scroll
+    // horizontal interno, grids a 1 columna, inputs capeados y root sin
+    // overflow — mismo tratamiento mobile que los demás paneles staff.
+    <div style={styles.shell} data-staff-page>
       <div style={styles.container}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <div>
             <h1 style={styles.h1}>Panel admin</h1>
             <div style={styles.sub}>Tienda, coins, clientes, campañas, códigos y configuración del portal.</div>
