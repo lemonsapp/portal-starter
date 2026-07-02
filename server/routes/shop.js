@@ -137,7 +137,7 @@ async function migrate() {
        'Bioestimulante orgánico producido en biorreactor industrial.',
        'Ácidos húmicos, fúlvicos, carboxílicos y grupos fenoles. Potasio soluble. Estimula raíces y absorción.',
        8500000, NULL::int, 'BIO-1L', 'bioestimulantes', TRUE, 4,
-       '{"presentaciones": ["500ml", "1L"]}'),
+       '{"presentaciones": ["500ml"]}'),
       ('cloner',
        'Cloner — Gel enraizante',
        'Gel enraizante de alta adherencia para esquejes y plantines.',
@@ -149,7 +149,7 @@ async function migrate() {
        'Tratamiento finalizador previo a cosecha.',
        'Aplicado en los últimos riegos antes del corte, limpia reservorios internos y pule sabor, aroma y textura final.',
        7500000, NULL::int, 'DAY0-500', 'finalizadores', TRUE, 6,
-       '{"presentaciones": ["500ml", "1L"]}')
+       '{"presentaciones": ["500ml"]}')
     ) AS v(slug, name, short, long, price, stock, sku, cat_slug, featured, sort, meta)
     LEFT JOIN product_categories c ON c.slug = v.cat_slug
     ON CONFLICT (slug) DO NOTHING
@@ -1083,16 +1083,34 @@ async function migrate() {
     UPDATE products SET active=FALSE  WHERE slug='pack-250-puntos' AND active=TRUE;
   `, "lineup packs puntos v9");
 
-  // Imagen de los packs de puntos: no hay render fotográfico, usamos un SVG
-  // on-brand (💎 Puntos Holistic) servido desde landing/public. NOT EXISTS para
-  // idempotencia (no pisa una imagen que el admin haya cargado después).
+  // Imagen de los packs de puntos: la MONEDA HOLISTIC oficial (pedido cliente
+  // 2026-07-02 — antes era un SVG 💎 genérico). Servida desde landing/public.
+  // NOT EXISTS para idempotencia (no pisa una imagen que el admin haya cargado).
   await safeQuery(`
     INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
-    SELECT p.id, '/imagenes-web/productos/puntos/pack-puntos.svg', p.name, 0, TRUE
+    SELECT p.id, '/imagenes-web/coins/moneda-holistic.webp', p.name, 0, TRUE
     FROM products p
     WHERE p.slug IN ('puntos-custom','pack-10-puntos','pack-25-puntos','pack-50-puntos','pack-100-puntos')
       AND NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
   `, "img packs puntos");
+  // Migración: los packs que ya tienen el SVG diamante viejo → moneda oficial.
+  // Sólo matchea la URL del SVG, así no pisa imágenes custom del admin. Idempotente.
+  await safeQuery(`
+    UPDATE product_images
+    SET url = '/imagenes-web/coins/moneda-holistic.webp'
+    WHERE url = '/imagenes-web/productos/puntos/pack-puntos.svg'
+  `, "packs puntos → moneda oficial");
+
+  // ─── Day-0 y Bio: sacar la presentación 1L (sin stock — cliente 2026-07-02) ──
+  // Desactivar los SKUs -1l (no DELETE: pueden estar en orders viejas) y limpiar
+  // meta.presentaciones de los kits base. jsonb_set preserva otras keys del meta.
+  // Idempotente (corre en prod y en instalaciones nuevas tras el seed).
+  await safeQuery(`
+    UPDATE products SET active = FALSE
+      WHERE active = TRUE AND slug IN ('bio-estimulante-1l','day-0-1l');
+    UPDATE products SET meta = jsonb_set(meta, '{presentaciones}', '["500ml"]'::jsonb)
+      WHERE slug IN ('bio-estimulante','day-0') AND meta ? 'presentaciones';
+  `, "sacar 1L de day-0 y bio");
 
   // ─── Accesorios (2026-06-08): importados de hgrowshop.com (tienda real) ─────
   // Productos que la tienda WooCommerce de Holistic tiene y el portal no traía.
