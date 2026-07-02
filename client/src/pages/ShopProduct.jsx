@@ -289,7 +289,19 @@ export default function ShopProduct() {
           // productos (meta.editorial.cross_sell_slugs) los resolvemos del
           // catálogo y pisamos lo que mandó el server, así la elección se ve YA
           // sin esperar el redeploy del backend (cuando deploye, manda lo mismo).
-          const csSlugs = normalized?.meta?.editorial?.cross_sell_slugs;
+          let csSlugs = normalized?.meta?.editorial?.cross_sell_slugs;
+          // Defaults por línea en "Sumá para acompañar" (pedido cliente
+          // 2026-07-02). El admin puede overridear con meta.editorial.
+          // cross_sell_slugs. El self-filter de abajo evita ofrecer el propio
+          // producto (ej. Race 3 PK 1ª no se ofrece a sí misma).
+          const LINE_CROSS_SELL = {
+            race: ["race-3-pk-1-500ml", "race-3-pk-2-500ml"],                    // Race 3 PK 1ª y 2ª parte
+            pro:  ["race-4-micro-magnesio-500ml", "race-2-calcio-nitrogeno-500ml"], // Race 4 + Race 2
+          };
+          if (normalized && (!Array.isArray(csSlugs) || !csSlugs.length)) {
+            const def = LINE_CROSS_SELL[normalized.meta?.linea];
+            if (def) csSlugs = def;
+          }
           if (normalized && Array.isArray(csSlugs) && csSlugs.length) {
             try {
               const cat = await fetch(`${API}/api/shop/products?limit=100`).then((x) => x.json());
