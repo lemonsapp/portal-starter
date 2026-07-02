@@ -11,7 +11,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useCart, formatARS } from "../lib/useCart.js";
 // fixImageUrl: corrige paths viejos snapshoteados en localStorage (ej. el
 // render viejo del Cloner) y las sugerencias que llegan crudas de la API.
-import { fixImageUrl } from "../lib/shopImages.js";
+import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -263,10 +263,9 @@ export default function CartDrawer() {
           ) : (
             items.map((i) => (
               <div key={i.id} style={styles.row}>
-                {i.primary_image
-                  ? <img src={fixImageUrl(i.primary_image)} alt={i.name} style={styles.rowImg} />
-                  : <div style={{ ...styles.rowImg, background: "var(--c-border)" }} />
-                }
+                {/* Packs de puntos y cualquier item sin foto caen a la moneda
+                    HOLISTIC oficial (PRODUCT_FALLBACK_IMG = moneda-holistic.webp). */}
+                <img src={i.primary_image ? fixImageUrl(i.primary_image) : PRODUCT_FALLBACK_IMG} alt={i.name} style={styles.rowImg} />
                 <div>
                   <div style={styles.rowName}>{i.name}</div>
                   <div style={styles.rowPrice}>{formatARS(i.price_cents)}</div>
@@ -289,9 +288,7 @@ export default function CartDrawer() {
               <div style={styles.sugTitle}>¿Te olvidaste algo?</div>
               {suggestToShow.map((s) => (
                 <div key={s.id} style={styles.sugRow}>
-                  {s.primary_image
-                    ? <img src={fixImageUrl(s.primary_image)} alt={s.name} style={styles.sugImg} />
-                    : <div style={{ ...styles.sugImg, background: "var(--c-border)" }} />}
+                  <img src={s.primary_image ? fixImageUrl(s.primary_image) : PRODUCT_FALLBACK_IMG} alt={s.name} style={styles.sugImg} />
                   <div style={{ minWidth: 0 }}>
                     <div style={styles.sugName}>{s.name}</div>
                     <div style={styles.sugPrice}>{formatARS(s.price_cents)}</div>

@@ -70,7 +70,9 @@ export function useCart() {
         slug: product.slug,
         name: product.name,
         price_cents: product.price_cents,
-        primary_image: product.primary_image || (product.images?.[0]?.url) || null,
+        // Packs de puntos no traen foto → moneda HOLISTIC oficial como imagen.
+        primary_image: product.primary_image || (product.images?.[0]?.url)
+          || ((product.meta?.points_pack || product.meta?.points_custom) ? "/imagenes-web/coins/moneda-holistic.webp" : null),
         quantity: Math.min(productLineLimit, quantity),
         max_stock: product.stock ?? null,
       });
