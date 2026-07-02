@@ -1003,6 +1003,45 @@ async function migrate() {
     )
   `, "reactivate elite partes sueltas");
 
+  // Item 5 (cliente 2026-07-02): Elite Parte 1 con TODAS sus medidas.
+  // Faltaban 250ml, 5L y 10L en su selector de medida (sólo tenía 500ml/1L).
+  // Los elite-max-5l/10l SON Parte 1 sola (confirmado), pero el re-author de
+  // imágenes (shopImageSet) los fuerza a la foto DOBLE — así que en vez de
+  // re-etiquetarlos creamos SKUs Parte 1 propios (render de Parte 1 sola,
+  // aislados del SET) y desactivamos los elite-max duplicados.
+  // Precios (reales del shop, hgrowshop): 250ml $22.304, 5L $337.749, 10L
+  // $568.372 — los mismos que los bidones elite-max que reemplazan. Editables
+  // desde el admin (ProductsTab → price_cents).
+  await safeQuery(`
+    INSERT INTO products (slug, name, short_description, price_cents, sku, category_id, featured, sort_order, meta)
+    SELECT v.slug, v.name, v.short, v.price, v.sku, c.id, FALSE, v.sort, v.meta::jsonb
+    FROM (VALUES
+      ('elite-parte-1-250ml', 'Elite Parte 1 — 250ml', 'NPK + calcio. Se aplica junto con Parte 2 en cada riego.',  2230400, 'ELITE-P1-250', 'fertilizantes', 19, '{"linea":"elite","parte":"1","formato":"250ml"}'),
+      ('elite-parte-1-5l',    'Elite Parte 1 — 5L',    'NPK + calcio. Se aplica junto con Parte 2 en cada riego.', 33774900, 'ELITE-P1-5L',  'fertilizantes', 30, '{"linea":"elite","parte":"1","formato":"5L"}'),
+      ('elite-parte-1-10l',   'Elite Parte 1 — 10L',   'NPK + calcio. Se aplica junto con Parte 2 en cada riego.', 56837200, 'ELITE-P1-10L', 'fertilizantes', 31, '{"linea":"elite","parte":"1","formato":"10L"}')
+    ) AS v(slug, name, short, price, sku, cat_slug, sort, meta)
+    JOIN product_categories c ON c.slug = v.cat_slug
+    ON CONFLICT DO NOTHING
+  `, "seed elite parte 1 250/5/10");
+  await safeQuery(`
+    INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+    SELECT p.id, v.url, p.name, 0, TRUE
+    FROM (VALUES
+      ('elite-parte-1-250ml', '/imagenes-web/productos/linea-elite/elite-part-1.png'),
+      ('elite-parte-1-5l',    '/imagenes-web/productos/elite-max/a-5-lts-perspectiva-1.png'),
+      ('elite-parte-1-10l',   '/imagenes-web/productos/elite-max/a-10-lts-perspectiva-1.png')
+    ) AS v(slug, url)
+    JOIN products p ON p.slug = v.slug
+    WHERE NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
+  `, "img elite parte 1 250/5/10");
+  // elite-max-5l/10l eran la representación "combo/par" (foto doble) de esas
+  // mismas medidas que ahora vende Parte 1 sola → se desactivan para no
+  // duplicar. No DELETE (pueden estar en orders viejas). Idempotente.
+  await safeQuery(`
+    UPDATE products SET active = FALSE
+    WHERE active = TRUE AND slug IN ('elite-max-5l','elite-max-10l')
+  `, "deactivate elite-max 5l/10l (duplican Parte 1)");
+
   // 3) Precios reales (hgrowshop.com, jun 2026). Guard por placeholder.
   await safeQuery(`
     UPDATE products p SET price_cents = v.real
