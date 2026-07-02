@@ -6,6 +6,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
+// Contenido por línea (sincronizado desde las internas) para pre-cargar los
+// editores del producto con lo que HOY se muestra en la ficha del shop.
+import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
+
+// Cross-sell default por línea en "Sumá para acompañar" — espeja LINE_CROSS_SELL
+// de ShopProduct.jsx para que el picker del admin arranque pre-cargado.
+const LINE_CROSS_DEFAULT = {
+  race: ["race-3-pk-1-500ml", "race-3-pk-2-500ml"],
+  pro:  ["race-4-micro-magnesio-500ml", "race-2-calcio-nitrogeno-500ml"],
+};
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -1379,15 +1389,27 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   // sub-clave `editorial`. Así NO pisamos linea/etapa/formato/bundle/etc.
   const metaBase = product?.meta && typeof product.meta === "object" ? product.meta : {};
   const ed0 = (metaBase.editorial && typeof metaBase.editorial === "object") ? metaBase.editorial : {};
-  // Secciones editoriales de la interna (todas opcionales; vacío = default).
+  // Contenido actual de la interna (default por línea) para PRE-CARGAR los
+  // editores cuando el producto todavía no tiene meta.editorial propio. Así el
+  // admin ve exactamente lo que HOY muestra la ficha y lo puede editar.
+  const lineDef = (product && lineDetails[lineKeyFor(product)]) || {};
+  const pickArr = (edKey, defKey) =>
+    (Array.isArray(ed0[edKey]) && ed0[edKey].length) ? ed0[edKey] : (lineDef[defKey] || []);
+  // Secciones editoriales de la interna. Vacío en meta → cae al contenido de la
+  // interna (lineDef); vacío también ahí → sin sección.
   const [benefits, setBenefits] = useState(() =>
-    Array.isArray(ed0.benefits) ? ed0.benefits.map((b) => ({ title: b.title || "", body: b.body || "" })) : []);
+    pickArr("benefits", "benefits").map((b) => ({ title: b.title || "", body: b.body || "" })));
   const [features, setFeatures] = useState(() =>
-    Array.isArray(ed0.features) ? ed0.features.map((f) => ({ emoji: f.emoji || "", title: f.title || "", body: f.body || "" })) : []);
+    pickArr("features", "features").map((f) => ({ emoji: f.emoji || "", title: f.title || "", body: f.body || "" })));
   const [specs, setSpecs] = useState(() =>
-    Array.isArray(ed0.specs) ? ed0.specs.map((s) => ({ label: s.label || "", value: s.value || "" })) : []);
+    pickArr("specs", "specs").map((s) => ({ label: s.label || "", value: s.value || "" })));
   const [crossSlugs, setCrossSlugs] = useState(() =>
-    Array.isArray(ed0.cross_sell_slugs) ? ed0.cross_sell_slugs.filter(Boolean) : []);
+    (Array.isArray(ed0.cross_sell_slugs) && ed0.cross_sell_slugs.length)
+      ? ed0.cross_sell_slugs.filter(Boolean)
+      : (LINE_CROSS_DEFAULT[metaBase.linea] || []));
+  // "También de esta línea" (related). Vacío = automático por categoría en la ficha.
+  const [relatedSlugs, setRelatedSlugs] = useState(() =>
+    Array.isArray(ed0.related_slugs) ? ed0.related_slugs.filter(Boolean) : []);
   const [bundleSlugs, setBundleSlugs] = useState(() =>
     Array.isArray(ed0.bundle_includes_slugs) ? ed0.bundle_includes_slugs.filter(Boolean) : []);
   const isBundle = metaBase.bundle === true;
@@ -1566,6 +1588,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     if (f.length) editorial.features = f;
     if (s.length) editorial.specs = s;
     if (crossSlugs.length) editorial.cross_sell_slugs = crossSlugs;
+    if (relatedSlugs.length) editorial.related_slugs = relatedSlugs;
     if (bundleSlugs.length) editorial.bundle_includes_slugs = bundleSlugs;
 
     const next = { ...metaBase };
@@ -1936,6 +1959,14 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
           options={allProducts.filter((o) => o.slug !== slug)}
           selected={crossSlugs}
           onToggle={(s) => toggleSlug(setCrossSlugs, s)}
+        />
+
+        <ProductPicker
+          title='También de esta línea (relacionados)'
+          hint="Productos de la sección 'También de…'. Vacío = automático por categoría."
+          options={allProducts.filter((o) => o.slug !== slug)}
+          selected={relatedSlugs}
+          onToggle={(s) => toggleSlug(setRelatedSlugs, s)}
         />
 
         <ProductPicker

@@ -320,7 +320,25 @@ export default function ShopProduct() {
             } catch { /* sin red: queda el cross_sell que mandó el server */ }
           }
           setProduct(normalized);
-          if (d.product?.category?.slug) {
+          // "También de…": si el admin eligió productos (meta.editorial.
+          // related_slugs) usamos esos; si no, automático por categoría.
+          const relSlugs = normalized?.meta?.editorial?.related_slugs;
+          if (Array.isArray(relSlugs) && relSlugs.length) {
+            fetch(`${API}/api/shop/products?limit=100`)
+              .then((r) => r.json())
+              .then((cat) => {
+                const bySlug = new Map((cat.products || []).map((p) => [p.slug, p]));
+                setRelated(
+                  relSlugs
+                    .filter((s) => s && s !== normalized.slug && !isStaleProduct(s))
+                    .map((s) => bySlug.get(s))
+                    .filter(Boolean)
+                    .slice(0, 4)
+                    .map(normalizeProduct)
+                );
+              })
+              .catch(() => {});
+          } else if (d.product?.category?.slug) {
             fetch(`${API}/api/shop/products?category=${d.product.category.slug}&limit=8`)
               .then((r) => r.json())
               .then((rd) =>
