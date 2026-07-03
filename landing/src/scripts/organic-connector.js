@@ -53,7 +53,7 @@ if (root) {
 
         if (reduceMotion) {
             gsap.set(stems, { drawSVG: "0% 70%" });
-            gsap.set(halo, { opacity: 0.35 });
+            gsap.set(halo, { opacity: 0.2 });
             leaves.forEach((leaf) => {
                 const s = parseFloat(leaf.dataset.targetScale) * 0.85;
                 gsap.set(leaf, { scale: s });
@@ -77,7 +77,8 @@ if (root) {
         // a full cuando el usuario está saliendo de la sección hacia
         // Productos Estrella.
         tl.to(halo, {
-            opacity: 1,
+            opacity: 0.4,   // suave: el halo vive abajo (top:50%), no cerca de la
+                            // unión, así el verde de arriba queda uniforme.
             duration: 1,
             ease: "none",
         }, 0);
