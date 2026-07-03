@@ -196,15 +196,15 @@
         background:
             linear-gradient(
                 180deg,
-                #1f6b50 0%,      /* MISMO verde que el borde inferior de HumanSupport.
-                                    Arranca MUY suave (misma pendiente que el HS al
-                                    llegar) para que no haya quiebre de velocidad en la
-                                    unión, y recién más abajo acelera hacia mint/blanco. */
-                #226e53 16%,
-                #2b8560 34%,
-                #3da86e 50%,     /* emerald — puente hacia las plantas (lejos de la unión) */
-                #8ce3b4 68%,
-                #cfefe0 86%,
+                /* FONDO UNIFORME: el mismo verde del HumanSupport en casi toda la
+                   sección (HS + OC = un solo campo verde con las plantas por
+                   arriba). Recién funde a blanco en el último tramo para entrar
+                   seamless al catálogo (LineasEstrella es #ffffff). Pedido cliente
+                   2026-07-03: "que todo eso tenga un fondo igual". */
+                #1f6b50 0%,
+                #1f6b50 56%,     /* verde plano/uniforme — zona de las plantas */
+                #4fbf87 74%,
+                #b7ead0 88%,
                 #ffffff 100%
             );
         overflow: hidden;
