@@ -164,7 +164,7 @@ export default function Shop() {
           </h1>
           <p className="cat-sub">
             Sumá los productos al carrito y pagás seguro con MercadoPago.
-            Despachamos a los clientes en 24 hs, con soporte humano sin cargo.
+            Despachamos en 24 hs. Con soporte humano sin cargo.
           </p>
         </div>
       </header>

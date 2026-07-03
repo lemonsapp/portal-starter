@@ -419,7 +419,7 @@ export const productDetails = {
         system: {
             title: "El primer paso del ciclo.",
             body: "Aplicalo en arranque, antes de cualquier otro producto. Activa raíces y defensas para que el resto del catálogo trabaje sobre una planta sana y receptiva.",
-            chips: ["+ Cloner", "+ Elite", "+ Pro"],
+            chips: ["+ Race", "+ Elite", "+ Pro"],
         },
         // Pullquote removido por pedido del cliente — antes decía
         // "La diferencia entre un cultivo indoor bueno y uno excelente
