@@ -580,8 +580,11 @@ const S = {
         display: "inline-flex", alignItems: "center", justifyContent: "center",
     },
 
-    // Right
-    right: { display: "inline-flex", alignItems: "center", gap: 10, flexShrink: 0 },
+    // Right — cluster de acciones (balance · campana · usuario). marginLeft:auto
+    // lo ancla al borde derecho SIEMPRE: en desktop el nav (flex:1) ya lo empuja,
+    // pero en mobile el nav está oculto y sin esto quedaba pegado a la H con un
+    // hueco vacío a la derecha. Ahora la campana y el usuario van bien a la derecha.
+    right: { display: "inline-flex", alignItems: "center", gap: 10, flexShrink: 0, marginLeft: "auto" },
     balance: {
         display: "inline-flex", alignItems: "center", gap: 6,
         padding: "7px 12px",
