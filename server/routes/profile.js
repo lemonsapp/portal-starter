@@ -655,33 +655,10 @@ router.post("/missions/:slug/claim", authRequired, async (req, res) => {
     await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [mission.coins_reward, userId]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, mission.coins_reward, 'Misión: ' + mission.title]);
 
-    // STREAK de login: cuando reclamás "daily_login", se actualiza el streak.
-    // Si el último claim fue ayer → suma 1; si fue >1 día → reset a 1.
-    let streakInfo = null;
-    if (slug === "daily_login") {
-      const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-      const yesterdayStr = yesterday.toISOString().slice(0,10);
-      const sQ = await db.query(`SELECT * FROM login_streaks WHERE user_id=$1`, [userId]);
-      const cur = sQ.rows[0];
-      let newStreak = 1;
-      if (cur) {
-        if (cur.last_login === yesterdayStr) newStreak = (cur.streak || 0) + 1;
-        else if (cur.last_login === today)   newStreak = cur.streak || 1;
-        // si cur.last_login no es ayer ni hoy → reset a 1
-        await db.query(`UPDATE login_streaks SET streak=$1, last_login=$2, updated_at=NOW() WHERE user_id=$3`, [newStreak, today, userId]);
-      } else {
-        await db.query(`INSERT INTO login_streaks (user_id, streak, last_login) VALUES ($1,1,$2)`, [userId, today]);
-      }
-      // Bonus 7 días seguidos: 25 extras + reset
-      if (newStreak >= 7) {
-        await db.query(`UPDATE coins SET balance=balance+25, total_earned=total_earned+25, updated_at=NOW() WHERE user_id=$1`, [userId]);
-        await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',25,'Bonus 7 días seguidos')`, [userId]);
-        await db.query(`UPDATE login_streaks SET streak=0 WHERE user_id=$1`, [userId]);
-      }
-      streakInfo = { streak: newStreak, last_login: today, bonus_awarded: newStreak >= 7 };
-    }
-
-    res.json({ ok: true, coins_earned: mission.coins_reward, streak: streakInfo });
+    // La racha de login ya NO se toca acá: se actualiza al ENTRAR a la app
+    // (checkMissions('login'), disparado por /auth/me y /auth/login). Reclamar
+    // la misión diaria sólo paga sus coins.
+    res.json({ ok: true, coins_earned: mission.coins_reward });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -724,8 +701,19 @@ router.get("/referrals", authRequired, async (req, res) => {
 router.get("/streak", authRequired, async (req, res) => {
   try {
     const userId = req.user.id;
-    const sQ = await db.query(`SELECT streak, last_login FROM login_streaks WHERE user_id=$1`, [userId]);
-    const streak = sQ.rows[0] || { streak: 0, last_login: null };
+    const today = new Date().toISOString().slice(0,10);
+    const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0,10);
+
+    // last_login como texto (evita ambigüedad Date/string del driver pg).
+    const sQ = await db.query(
+      `SELECT streak, to_char(last_login,'YYYY-MM-DD') AS last_login FROM login_streaks WHERE user_id=$1`,
+      [userId]
+    );
+    const row = sQ.rows[0] || { streak: 0, last_login: null };
+    // Racha efectiva: sólo vale si entró hoy o ayer; si se salteó un día está
+    // rota → 0 (aunque el valor guardado no se haya reseteado aún).
+    const streakVal = (row.last_login === today || row.last_login === yesterday)
+      ? (row.streak || 0) : 0;
 
     // Fechas YYYY-MM-DD de los últimos 7 días (inclusive hoy)
     const days = [];
@@ -733,24 +721,23 @@ router.get("/streak", authRequired, async (req, res) => {
       const d = new Date(); d.setDate(d.getDate() - i);
       days.push(d.toISOString().slice(0,10));
     }
-    // Buscar claims de daily_login en ese rango
-    const claimsQ = await db.query(
+    // Días en que ENTRÓ (misión daily_login completada) dentro del rango.
+    const seenQ = await db.query(
       `SELECT period FROM user_missions
-        WHERE user_id=$1 AND mission_slug='daily_login' AND claimed_at IS NOT NULL
+        WHERE user_id=$1 AND mission_slug='daily_login' AND completed_at IS NOT NULL
           AND period = ANY($2)`,
       [userId, days]
     );
-    const claimedSet = new Set(claimsQ.rows.map(r => r.period));
-    const today = new Date().toISOString().slice(0,10);
+    const seenSet = new Set(seenQ.rows.map(r => r.period));
     const week = days.map(d => ({
       date: d,
       day_short: new Date(d).toLocaleDateString("es-AR", { weekday: "short" }).slice(0,3).toUpperCase(),
-      claimed: claimedSet.has(d),
+      claimed: seenSet.has(d),   // "claimed" = entró ese día (el front lo pinta con ✅)
       is_today: d === today,
     }));
 
     res.set("Cache-Control", "no-store");
-    res.json({ ok: true, streak: streak.streak || 0, last_login: streak.last_login, week });
+    res.json({ ok: true, streak: streakVal, last_login: row.last_login, week });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 

@@ -448,8 +448,11 @@ function LoginStreak({ refreshKey }) {
           </div>
         </div>
         <div style={{ textAlign:"right", fontFamily:"'Gotham', monospace", fontSize:10, letterSpacing:"1.5px", color:"rgba(255,255,255,.45)" }}>
-          {streak >= 7 ? "MÁXIMO ✓" : `Faltan ${7 - streak} para el bonus`}
-          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 <Coin size={11} /> al completar 7</div>
+          {(() => {
+            const toBonus = streak % 7 === 0 ? (streak === 0 ? 7 : 0) : 7 - (streak % 7);
+            return toBonus === 0 ? "¡BONUS! 🎉" : `Faltan ${toBonus} para el bonus`;
+          })()}
+          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 <Coin size={11} /> cada 7 días seguidos</div>
         </div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6 }}>

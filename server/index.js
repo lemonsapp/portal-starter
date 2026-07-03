@@ -637,19 +637,41 @@ async function checkMissions(userId, eventType, extraData = {}) {
     }
 
     if (eventType === 'login') {
-      // Login diario: SOLO marca la misión como completada (sin pagar coins automáticos).
-      // Los coins se pagan al hacer click en "Reclamar" desde /coins/misiones.
-      // Esto evita el doble-crédito y deja un único pago por día.
-      const existing = await db.query(
-        `SELECT * FROM user_missions WHERE user_id=$1 AND mission_slug='daily_login' AND period=$2`,
+      // 1) Marca la misión diaria como completada por ENTRAR (los coins se
+      //    reclaman aparte desde /coins → Misiones; un único pago por día).
+      await db.query(
+        `INSERT INTO user_missions (user_id, mission_slug, progress, completed_at, period)
+         VALUES ($1,'daily_login',1,NOW(),$2) ON CONFLICT DO NOTHING`,
         [userId, today]
       );
-      if (!existing.rows[0]) {
-        await db.query(
-          `INSERT INTO user_missions (user_id, mission_slug, progress, completed_at, period)
-           VALUES ($1,'daily_login',1,NOW(),$2) ON CONFLICT DO NOTHING`,
-          [userId, today]
-        );
+
+      // 2) Racha de días consecutivos — se guarda por ENTRAR (no por reclamar).
+      //    Upsert ATÓMICO (evita doble conteo con requests concurrentes) e
+      //    idempotente por día:
+      //      · ya entró hoy      → no-op (WHERE last_login DISTINCT FROM hoy)
+      //      · entró ayer        → streak + 1
+      //      · se salteó un día  → reset a 1 (hoy arranca de nuevo)
+      //    RETURNING sólo devuelve fila cuando REALMENTE avanzó hoy, así el
+      //    bonus se evalúa una sola vez por día.
+      const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+      const up = await db.query(
+        `INSERT INTO login_streaks (user_id, streak, last_login)
+         VALUES ($1, 1, $2::date)
+         ON CONFLICT (user_id) DO UPDATE SET
+           streak = CASE WHEN login_streaks.last_login = $3::date
+                         THEN login_streaks.streak + 1 ELSE 1 END,
+           last_login = $2::date,
+           updated_at = NOW()
+         WHERE login_streaks.last_login IS DISTINCT FROM $2::date
+         RETURNING streak`,
+        [userId, today, yesterday]
+      );
+      const newStreak = up.rows[0]?.streak;
+      // Bonus recurrente cada 7 días seguidos (+25) — sin cortar la racha.
+      if (newStreak && newStreak % 7 === 0) {
+        await db.query(`INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
+        await db.query(`UPDATE coins SET balance=balance+25, total_earned=total_earned+25, updated_at=NOW() WHERE user_id=$1`, [userId]);
+        await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',25,$2)`, [userId, 'Bonus racha ' + newStreak + ' días']);
       }
     }
 
@@ -758,19 +780,41 @@ async function checkMissions(userId, eventType, extraData = {}) {
     }
 
     if (eventType === 'login') {
-      // Login diario: SOLO marca la misión como completada (sin pagar coins automáticos).
-      // Los coins se pagan al hacer click en "Reclamar" desde /coins/misiones.
-      // Esto evita el doble-crédito y deja un único pago por día.
-      const existing = await db.query(
-        `SELECT * FROM user_missions WHERE user_id=$1 AND mission_slug='daily_login' AND period=$2`,
+      // 1) Marca la misión diaria como completada por ENTRAR (los coins se
+      //    reclaman aparte desde /coins → Misiones; un único pago por día).
+      await db.query(
+        `INSERT INTO user_missions (user_id, mission_slug, progress, completed_at, period)
+         VALUES ($1,'daily_login',1,NOW(),$2) ON CONFLICT DO NOTHING`,
         [userId, today]
       );
-      if (!existing.rows[0]) {
-        await db.query(
-          `INSERT INTO user_missions (user_id, mission_slug, progress, completed_at, period)
-           VALUES ($1,'daily_login',1,NOW(),$2) ON CONFLICT DO NOTHING`,
-          [userId, today]
-        );
+
+      // 2) Racha de días consecutivos — se guarda por ENTRAR (no por reclamar).
+      //    Upsert ATÓMICO (evita doble conteo con requests concurrentes) e
+      //    idempotente por día:
+      //      · ya entró hoy      → no-op (WHERE last_login DISTINCT FROM hoy)
+      //      · entró ayer        → streak + 1
+      //      · se salteó un día  → reset a 1 (hoy arranca de nuevo)
+      //    RETURNING sólo devuelve fila cuando REALMENTE avanzó hoy, así el
+      //    bonus se evalúa una sola vez por día.
+      const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+      const up = await db.query(
+        `INSERT INTO login_streaks (user_id, streak, last_login)
+         VALUES ($1, 1, $2::date)
+         ON CONFLICT (user_id) DO UPDATE SET
+           streak = CASE WHEN login_streaks.last_login = $3::date
+                         THEN login_streaks.streak + 1 ELSE 1 END,
+           last_login = $2::date,
+           updated_at = NOW()
+         WHERE login_streaks.last_login IS DISTINCT FROM $2::date
+         RETURNING streak`,
+        [userId, today, yesterday]
+      );
+      const newStreak = up.rows[0]?.streak;
+      // Bonus recurrente cada 7 días seguidos (+25) — sin cortar la racha.
+      if (newStreak && newStreak % 7 === 0) {
+        await db.query(`INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
+        await db.query(`UPDATE coins SET balance=balance+25, total_earned=total_earned+25, updated_at=NOW() WHERE user_id=$1`, [userId]);
+        await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',25,$2)`, [userId, 'Bonus racha ' + newStreak + ' días']);
       }
     }
 
@@ -1656,6 +1700,11 @@ app.get("/auth/me", authRequired, noStore, async (req, res) => {
     );
     const user = u.rows[0];
     if (!user) return res.status(404).json({ error: "Usuario no existe" });
+    // Cuenta la racha al ENTRAR a la app (con JWT de 7 días el usuario no
+    // re-loguea cada día, pero sí carga /auth/me). Idempotente por día; se
+    // espera antes de responder para que un GET /profile/streak posterior lea
+    // el valor ya actualizado.
+    await checkMissions(user.id, 'login').catch(() => {});
     res.json({ user });
   } catch (e) {
     console.error("ME ERROR", e);
