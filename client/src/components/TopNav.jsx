@@ -359,7 +359,16 @@ export default function TopNav() {
                         <div ref={userMenuRef} style={S.userWrap}>
                             <button
                                 style={S.userBtn}
-                                onClick={() => setUserMenuOpen((v) => !v)}
+                                onClick={() => {
+                                    // Mobile/tablet (≤1024): el dropdown se salía de pantalla
+                                    // por la izquierda. Abrimos el drawer lateral fino en su
+                                    // lugar (mismo menú, prolijo). Desktop mantiene el dropdown.
+                                    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1024px)").matches) {
+                                        setMenuOpen(true);
+                                    } else {
+                                        setUserMenuOpen((v) => !v);
+                                    }
+                                }}
                                 aria-label="Menú de usuario"
                                 aria-expanded={userMenuOpen}
                             >
@@ -422,18 +431,33 @@ export default function TopNav() {
             <div style={S.mobileBackdrop(menuOpen)} onClick={() => setMenuOpen(false)} />
             <aside style={S.mobileDrawer(menuOpen)} aria-hidden={!menuOpen}>
                 <div style={S.mobileHeader}>
-                    <img src="/imagenes-web/marca/logo.svg" alt="Holistic" style={S.logoImg} width="30" height="30" />
+                    <img src="/imagenes-web/marca/logo.svg" alt="Holistic" style={S.mobileLogo} width="26" height="26" />
                     <button style={S.mobileClose} onClick={() => setMenuOpen(false)} aria-label="Cerrar menú">
-                        <Icon name="close" size={22} />
+                        <Icon name="close" size={20} />
                     </button>
                 </div>
+
+                {/* Identidad — el drawer también es el acceso al perfil en mobile */}
+                {!isAnon && (
+                    <Link to="/perfil" style={S.mobileIdentity} onClick={() => setMenuOpen(false)}>
+                        <span style={S.mobileIdentityAvatar}>
+                            {(me?.name || me?.email || "?").charAt(0).toUpperCase()}
+                        </span>
+                        <span style={S.mobileIdentityText}>
+                            <span style={S.mobileIdentityName}>{me?.name || "Mi cuenta"}</span>
+                            <span style={S.mobileIdentityMail}>{me?.email}</span>
+                        </span>
+                        <Icon name="chevron" size={16} />
+                    </Link>
+                )}
+
                 <nav style={S.mobileNav}>
                     {nav.map((item) => {
                         const active = !item.external && location.pathname === item.path;
                         const style = { ...S.mobileNavLink, ...(active ? S.mobileNavLinkActive : {}) };
                         const inner = (
                             <>
-                                <Icon name={item.icon} size={20} />
+                                <Icon name={item.icon} size={18} />
                                 <span>{item.label}</span>
                                 {item.path === "/chat" && unreadChat > 0 && (
                                     <span style={{ ...S.unreadBadge, position: "static", marginLeft: "auto" }}>
@@ -443,15 +467,32 @@ export default function TopNav() {
                             </>
                         );
                         return item.external ? (
-                            <a key={item.path} href={item.path} style={style}>{inner}</a>
+                            <a key={item.path} href={item.path} style={style} onClick={() => setMenuOpen(false)}>{inner}</a>
                         ) : (
-                            <Link key={item.path} to={item.path} style={style}>{inner}</Link>
+                            <Link key={item.path} to={item.path} style={style} onClick={() => setMenuOpen(false)}>{inner}</Link>
                         );
                     })}
-                    <hr style={S.mobileDivider} />
-                    <button onClick={logout} style={{ ...S.mobileNavLink, color: "#dc2626", background: "transparent", border: "none", textAlign: "left", width: "100%" }}>
-                        <Icon name="logout" size={20} /> Cerrar sesión
-                    </button>
+
+                    {!isAnon && (() => {
+                        const pActive = location.pathname === "/perfil";
+                        return (
+                            <Link to="/perfil" style={{ ...S.mobileNavLink, ...(pActive ? S.mobileNavLinkActive : {}) }} onClick={() => setMenuOpen(false)}>
+                                <Icon name="user" size={18} /> <span>Perfil</span>
+                            </Link>
+                        );
+                    })()}
+                    {role === "admin" && (
+                        <Link to="/admin/setup" style={S.mobileNavLink} onClick={() => setMenuOpen(false)}>
+                            <Icon name="settings" size={18} /> <span>Configuración</span>
+                        </Link>
+                    )}
+
+                    {!isAnon && <hr style={S.mobileDivider} />}
+                    {!isAnon && (
+                        <button onClick={logout} style={{ ...S.mobileNavLink, color: "#dc2626", background: "transparent", border: "none", textAlign: "left", width: "100%" }}>
+                            <Icon name="logout" size={18} /> <span>Cerrar sesión</span>
+                        </button>
+                    )}
                 </nav>
             </aside>
 
@@ -749,53 +790,89 @@ const S = {
         transition: "opacity .3s ease",
         zIndex: 380,
     }),
+    // Drawer slim: panel angosto pegado a la derecha (deja ver el logo H a la
+    // izquierda) + tipografía fina y estado activo sutil. Minimalista.
     mobileDrawer: (open) => ({
         position: "fixed",
         top: 0, right: 0, bottom: 0,
-        width: "min(320px, 88vw)",
+        width: "min(284px, 80vw)",
         background: "#ffffff",
         borderLeft: `1px solid ${C.border}`,
-        boxShadow: "-14px 0 34px rgba(0,0,0,0.10)",
+        boxShadow: open ? "-24px 0 60px -18px rgba(0,0,0,0.22)" : "none",
         transform: open ? "translateX(0)" : "translateX(100%)",
-        transition: "transform .35s cubic-bezier(.2,.8,.2,1)",
+        transition: "transform .34s cubic-bezier(.22,1,.36,1)",
         zIndex: 400,
         display: "flex", flexDirection: "column",
     }),
     mobileHeader: {
-        height: 64,
-        padding: "0 20px",
+        height: 60,
+        padding: "0 16px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         borderBottom: `1px solid ${C.border}`,
     },
+    mobileLogo: { height: 26, width: "auto", display: "block" },
+    mobileIdentity: {
+        display: "flex", alignItems: "center", gap: 11,
+        padding: "13px 16px",
+        margin: "8px 10px 2px",
+        borderRadius: 12,
+        background: "rgba(26,26,26,0.03)",
+        textDecoration: "none",
+        color: "inherit",
+    },
+    mobileIdentityAvatar: {
+        flexShrink: 0,
+        width: 34, height: 34,
+        borderRadius: "50%",
+        background: "linear-gradient(135deg, #25D366 0%, #2E8F6E 100%)",
+        color: "#fff",
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        fontSize: 14, fontWeight: 800,
+    },
+    mobileIdentityText: { display: "flex", flexDirection: "column", minWidth: 0, flex: 1, gap: 1 },
+    mobileIdentityName: {
+        fontSize: 13.5, fontWeight: 800, color: C.text, lineHeight: 1.2,
+        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+    },
+    mobileIdentityMail: {
+        fontSize: 11.5, color: C.textSoft, lineHeight: 1.2,
+        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+    },
     mobileClose: {
-        background: "transparent", border: "none", color: C.text,
-        padding: 8, cursor: "pointer",
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        width: 34, height: 34,
+        background: "transparent", border: "none", borderRadius: 8,
+        color: C.textSoft,
+        padding: 0, cursor: "pointer",
     },
     mobileNav: {
         flex: 1,
-        padding: 12,
-        display: "flex", flexDirection: "column", gap: 4,
+        padding: "10px 10px",
+        display: "flex", flexDirection: "column", gap: 2,
         overflowY: "auto",
     },
     mobileNavLink: {
-        display: "inline-flex", alignItems: "center", gap: 14,
-        padding: "13px 16px",
-        borderRadius: 12,
-        color: "rgba(26,26,26,0.82)",
+        display: "inline-flex", alignItems: "center", gap: 12,
+        padding: "11px 12px",
+        borderRadius: 10,
+        color: "rgba(26,26,26,0.68)",
         textDecoration: "none",
         fontFamily: "inherit",
-        fontSize: 14, fontWeight: 700,
-        letterSpacing: "0.06em",
+        fontSize: 13.5, fontWeight: 600,
+        letterSpacing: "0.02em",
         cursor: "pointer",
+        transition: `background .18s ${C.ease}, color .18s ${C.ease}`,
     },
     mobileNavLinkActive: {
         color: C.waDark,
-        background: "rgba(37,211,102,0.10)",
+        background: "rgba(37,211,102,0.05)",
+        fontWeight: 800,
+        boxShadow: "inset 2.5px 0 0 #25d366",
     },
     mobileDivider: {
         border: "none",
         borderTop: `1px solid ${C.border}`,
-        margin: "10px 4px",
+        margin: "8px 8px",
     },
 };
 
@@ -816,7 +893,8 @@ if (typeof window !== "undefined" && !document.getElementById("topnav-responsive
                         0 0 0 1.5px rgba(167,245,200,.6) !important;
         }
         .topnav-icon:hover { background: #eee !important; color: #25d366 !important; }
-        /* Hamburguesa visible en celu Y web (acceso a internas vía drawer). */
+        /* Hamburguesa: en desktop es el acceso al drawer de internas. En mobile
+           la ocultamos — el avatar (perfil) abre el mismo drawer, sin duplicar. */
         .topnav-hamburger { display: inline-flex !important; }
         /* Bump 900→1024: la fila de pills es más ancha que los links de texto;
            en tablet conviene caer al drawer antes de que se aprieten. */
@@ -824,6 +902,7 @@ if (typeof window !== "undefined" && !document.getElementById("topnav-responsive
             .topnav-nav { display: none !important; }
             .topnav-balance { display: none !important; }
             .topnav-username { display: none !important; }
+            .topnav-hamburger { display: none !important; }
         }
     `;
     document.head.appendChild(styleEl);
