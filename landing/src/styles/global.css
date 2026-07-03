@@ -4084,13 +4084,13 @@ html.is-loading body {
         linear-gradient(
             180deg,
             #050807 0%,            /* casi negro arriba (entra desde el VideoHero) */
-            #0a1410 18%,
-            #0f3527 44%,           /* verde Holistic muy oscuro mid */
-            #1f6b50 70%,           /* verde saturado donde vive el CTA */
-            #1f6b50 100%           /* VERDE PLANO hasta el fondo — SIN degradé a negro.
-                                      El OrganicConnector arranca con este mismo verde,
-                                      así la unión es un color uniforme (pedido cliente:
-                                      "todo el mismo color, sin degrade de verde a negro"). */
+            #0a1410 20%,
+            #0f3527 48%,           /* verde Holistic muy oscuro mid */
+            #175640 76%,           /* sigue aclarando (sin plateau) */
+            #1f6b50 100%           /* verde en el borde inferior = arranque exacto del
+                                      OrganicConnector. Sin banda plana: el gradiente
+                                      aclara de forma CONTINUA hacia la unión, así el OC
+                                      la retoma sin que se note un cambio de color. */
         );
 }
 .hs__bg-radial {

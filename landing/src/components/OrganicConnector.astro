@@ -196,12 +196,14 @@
         background:
             linear-gradient(
                 180deg,
-                #1f6b50 0%,      /* MISMO verde que el bottom de HumanSupport — la unión
-                                    es un color uniforme, sin degradé a negro. */
-                #1f6b50 8%,      /* banda de verde plano que espeja el bottom de HS. */
-                #3da86e 30%,     /* de acá para abajo sube hacia el mint/blanco. */
-                #a7f5c8 62%,
-                #e8f5ee 82%,
+                #1f6b50 0%,      /* MISMO verde que el borde inferior de HumanSupport.
+                                    Sin banda plana: retoma el gradiente y sigue
+                                    aclarando de forma continua, así la unión no se
+                                    nota (es un punto dentro de un degradé suave). */
+                #2f8763 18%,
+                #3da86e 36%,     /* emerald — puente hacia las plantas */
+                #7fd9a8 58%,
+                #c8ecda 80%,
                 #ffffff 100%
             );
         overflow: hidden;
