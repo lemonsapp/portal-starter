@@ -4667,8 +4667,11 @@ html.is-loading body {
     }
     .hs__milestones { grid-template-columns: 1fr; gap: 12px; }
     .hs-milestone { padding-top: 56px; }
-    .hs__display-mask > span { font-size: clamp(2rem, 11vw, 3.6rem); }
-    .hs__display-line--em .hs__display-mask > span { font-size: clamp(1.8rem, 9vw, 3rem); }
+    /* "ASESORAMIENTO" (13 chars, ~9em de ancho) se clipeaba por la máscara
+       en celu: a 11vw el natural (~357px @360) superaba el stage (92vw ~331px).
+       8.4vw entra completo con ~10% de margen a cada lado en 320–430px. */
+    .hs__display-mask > span { font-size: clamp(1.5rem, 8.4vw, 3.6rem); }
+    .hs__display-line--em .hs__display-mask > span { font-size: clamp(1.35rem, 6.8vw, 3rem); }
     .hs__display-line--em { flex-direction: column; gap: 6px; }
     .hs__display-rule { width: 60px; }
 }
@@ -6729,13 +6732,16 @@ html.is-loading body {
     }
 }
 
-/* Mobile: el boton se mantiene visible (es la conversion mas importante). */
+/* Mobile: el boton se mantiene visible (es la conversion mas importante),
+   pero compacto — antes se inflaba a ~134px por padding doble (exterior +
+   un override interior). El __inner es sólo la fila texto+flecha: sin padding. */
 @media (max-width: 720px) {
     .header__socios-cta {
         height: 36px;
-        padding: 0 16px;
+        padding: 0 15px;
     }
-    .header__socios-cta__label { font-size: 11px; letter-spacing: 1.8px; }
+    .header__socios-cta__inner { gap: 6px; }
+    .header__socios-cta__label { font-size: 11px; letter-spacing: 1.6px; }
     .header__socios-cta__arrow { width: 12px; height: 12px; }
 }
 
@@ -7004,22 +7010,24 @@ html.is-loading body {
     }
 }
 
-/* --- HEADER NAV · MOBILE --- */
-@media (max-width: 720px) {
+/* --- HEADER NAV · MOBILE + TABLET (nav aparece recién a ≥960px) --- */
+@media (max-width: 959px) {
     .header__nav {
         display: none;  /* navegación oculta en pantallas chicas */
     }
+    /* El nav oculto dejaba su columna 1fr viva y los íconos caían en ella,
+       estirándose por todo el medio (SOCIOS quedaba "al aire"). Con 2 columnas
+       auto + space-between el logo va a la izquierda y el cluster de acción
+       (buscar · SOCIOS · carrito · menú) queda pegado a la derecha, prolijo —
+       tanto en celu como en tablet. */
     .header__inner {
+        grid-template-columns: auto auto;
         justify-content: space-between;
-        gap: 16px;
+        gap: 12px;
     }
     .header__icons {
         gap: 8px;
     }
-    .header__socios-cta__inner {
-        padding: 8px 14px !important;
-    }
-    .header__socios-cta__label { font-size: 0.66rem !important; }
 }
 
 /* --- HOTSPOTS TOUCH SAFETY --- */
