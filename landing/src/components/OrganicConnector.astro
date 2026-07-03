@@ -197,22 +197,23 @@
             linear-gradient(
                 180deg,
                 #1f6b50 0%,      /* MISMO verde que el borde inferior de HumanSupport.
-                                    Sin banda plana: retoma el gradiente y sigue
-                                    aclarando de forma continua, así la unión no se
-                                    nota (es un punto dentro de un degradé suave). */
-                #2f8763 18%,
-                #3da86e 36%,     /* emerald — puente hacia las plantas */
-                #7fd9a8 58%,
-                #c8ecda 80%,
+                                    Arranca MUY suave (misma pendiente que el HS al
+                                    llegar) para que no haya quiebre de velocidad en la
+                                    unión, y recién más abajo acelera hacia mint/blanco. */
+                #226e53 16%,
+                #2b8560 34%,
+                #3da86e 50%,     /* emerald — puente hacia las plantas (lejos de la unión) */
+                #8ce3b4 68%,
+                #cfefe0 86%,
                 #ffffff 100%
             );
         overflow: hidden;
         isolation: isolate;
         /* margin negativo para que el OC se "monte" sobre el bottom de
            HumanSupport y elimine cualquier gap/línea sub-pixel de unión.
-           -2px cubre el redondeo a distintos niveles de zoom sin tapar el
+           -8px cubre el redondeo a distintos niveles de zoom/DPR sin tapar el
            HUD (SEGUIMOS/FASE) que está a >=18px del borde. */
-        margin-top: -2px;
+        margin-top: -8px;
         margin-bottom: -1px;
     }
     .oc__bg {
