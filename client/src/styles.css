@@ -252,8 +252,12 @@ html, body {
   font-family: var(--h-font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Safety net mobile: nada desborda horizontalmente la pantalla. */
-  overflow-x: hidden;
+  /* Safety net mobile: nada desborda horizontalmente la pantalla.
+     `clip` (no `hidden`): recorta igual el desborde horizontal, pero NO crea
+     un scroll-container en html/body — con `hidden`, overflow-y computaba a
+     `auto` y rompía `position:sticky` en todo el portal (ej. barra de tabs de
+     Puntos). Con `clip` el sticky se ancla al viewport y funciona. */
+  overflow-x: clip;
   max-width: 100%;
 }
 

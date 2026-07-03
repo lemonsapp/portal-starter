@@ -1111,7 +1111,7 @@ export default function Coins() {
         ))}
 
         {/* TOPBAR DE TABS (Tienda · Ruleta · Misiones · Ranking · Regalar) */}
-        <div style={{ display:"flex",gap:6,padding:"14px 24px",borderBottom:"1px solid rgba(255,255,255,0.04)",background:"rgba(5,5,5,0.95)",position:"sticky",top:0,zIndex:10,overflowX:"auto",scrollbarWidth:"none" }}>
+        <div style={{ display:"flex",gap:6,padding:"14px 24px",borderBottom:"1px solid rgba(255,255,255,0.06)",background:"rgba(5,5,5,0.96)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",position:"sticky",top:64,zIndex:100,overflowX:"auto",scrollbarWidth:"none" }}>
           {TABS.map(t=>{
             const isActive = tab===t.id && t.id!=="ruleta";
             return (

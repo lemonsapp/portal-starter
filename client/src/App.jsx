@@ -115,7 +115,12 @@ function AppLayout({ children, me, refreshMe }) {
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
   return (
     <div style={{ display:"flex", flexDirection:"column", minHeight:"100vh", background:"transparent", position:"relative", zIndex:3 }}>
-      <main style={{ flex:1, overflowY:"auto", minWidth:0, display:"flex", flexDirection:"column" }}>
+      {/* Sin overflowY:auto: el root es minHeight:100vh (no altura fija), así que
+          <main> nunca scrollea internamente — scrollea el body. Pero con overflow
+          ≠ visible, <main> se volvía el contenedor de `position:sticky` y rompía
+          el sticky de las páginas (ej. la barra de tabs de Puntos). overflow:visible
+          deja que el sticky se ancle al viewport y funcione. */}
+      <main style={{ flex:1, minWidth:0, display:"flex", flexDirection:"column" }}>
         <div key={location.pathname} className="fxPage" style={{ flex:1 }}>
           {children}
         </div>
