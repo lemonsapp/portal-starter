@@ -18,8 +18,12 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\
 // Normaliza las imágenes de una familia: corrige paths Race viejos del backend
 // y, si un pack de puntos no trae imagen (backend sin redeploy), usa el SVG.
 function normalizeFamily(f) {
-  const fixed = fixImageUrl(f.primary_image);
-  const primary = fixed || (f.meta?.points_pack ? PRODUCT_FALLBACK_IMG : f.primary_image);
+  // Packs/compra de puntos → SIEMPRE la moneda HOLISTIC oficial, sin importar
+  // qué imagen tengan en la DB. Algunos tienen un SVG diamante subido a
+  // Cloudinary por el admin (URL remota que no matchea fixImageUrl), por eso
+  // hay que forzarla por el flag y no por el path.
+  const isPoints = f.meta?.points_pack || f.meta?.points_custom;
+  const primary = isPoints ? PRODUCT_FALLBACK_IMG : (fixImageUrl(f.primary_image) || f.primary_image);
   return {
     ...f,
     primary_image: primary,

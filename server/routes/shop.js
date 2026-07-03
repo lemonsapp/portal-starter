@@ -1153,6 +1153,18 @@ async function migrate() {
     SET url = '/imagenes-web/coins/moneda-holistic.webp'
     WHERE url = '/imagenes-web/productos/puntos/pack-puntos.svg'
   `, "packs puntos → moneda oficial");
+  // Todos los productos de puntos (pack o compra libre) → moneda oficial, sin
+  // importar qué imagen tengan (algunos quedaron con un SVG/webp subido a
+  // Cloudinary por el admin, que las migraciones por URL local no agarran).
+  // Guard por url distinta → idempotente.
+  await safeQuery(`
+    UPDATE product_images pi
+    SET url = '/imagenes-web/coins/moneda-holistic.webp'
+    FROM products p
+    WHERE pi.product_id = p.id
+      AND (p.meta ? 'points_pack' OR p.meta ? 'points_custom')
+      AND pi.url <> '/imagenes-web/coins/moneda-holistic.webp'
+  `, "todos los productos de puntos → moneda oficial");
 
   // ─── Day-0 y Bio: sacar la presentación 1L (sin stock — cliente 2026-07-02) ──
   // Desactivar los SKUs -1l (no DELETE: pueden estar en orders viejas) y limpiar

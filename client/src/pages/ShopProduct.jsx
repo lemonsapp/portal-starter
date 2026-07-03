@@ -26,6 +26,13 @@ function normalizeProduct(p) {
   if (!p) return p;
   let fixedPrimary = fixImageUrl(p.primary_image);
   let images = (p.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) }));
+  // Packs / compra de puntos → SIEMPRE la moneda HOLISTIC oficial (galería +
+  // destacada), ignorando la imagen de la DB. Algunos tienen un SVG diamante
+  // subido a Cloudinary por el admin (URL remota que fixImageUrl no mapea).
+  if (p.meta?.points_pack || p.meta?.points_custom) {
+    fixedPrimary = PRODUCT_FALLBACK_IMG;
+    images = [{ url: PRODUCT_FALLBACK_IMG, alt: p.name, is_primary: true }];
+  }
 
   // Galería fija: el admin marcó "usar solo estas fotos" (meta.gallery_fixed).
   // Cuando está activo, las imágenes subidas SON la galería y no se las toca:
