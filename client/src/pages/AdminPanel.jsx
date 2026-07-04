@@ -2382,6 +2382,15 @@ function formatARS(cents) {
 // Vista de marketing: lista de customers con métricas acumuladas
 // (orders_count, total_spent), filtros, toggle opt-in y export CSV para
 // campañas externas (Mailchimp, etc).
+// Pill de filtro (lo usa CustomersTab). Estilo del kit claro.
+function FilterPill({ active, onClick, children }) {
+  return (
+    <button onClick={onClick} className={`adm-btn adm-btn--sm ${active ? "adm-btn--primary" : "adm-btn--default"}`}>
+      {children}
+    </button>
+  );
+}
+
 function CustomersTab() {
   const [customers, setCustomers] = useState([]);
   const [total, setTotal] = useState(0);
