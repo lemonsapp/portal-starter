@@ -1021,13 +1021,11 @@ function Instagram() {
 
 // ── MAIN ───────────────────────────────────────────────────────────────────────
 export default function Coins() {
-  // En mobile el balance vive en su propia pestaña "Balance" (no se repite arriba
-  // de cada tab). En desktop se muestra siempre como header.
-  const isMobileInit = typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
-  const [isMobile, setIsMobile] = useState(isMobileInit);
-  const [tab, setTab] = useState(isMobileInit ? "balance" : "tienda");
+  // El balance vive en su propia pestaña "Balance" (no se repite arriba de cada
+  // tab) — tanto en mobile como en desktop.
+  const [tab, setTab] = useState("balance");
   const tabsRef = useRef(null);
-  const [tabHint, setTabHint] = useState(false); // flecha "hay más tabs →" en mobile
+  const [tabHint, setTabHint] = useState(false); // flecha "hay más tabs →"
   const [balance, setBalance] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
   const [level, setLevel] = useState("bronze");
@@ -1057,14 +1055,6 @@ export default function Coins() {
     });
   }, []);
 
-  // Reacciona al cambio de viewport (rotar / resize) para mover el balance.
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    const on = () => setIsMobile(mq.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
-
   // Detecta si la barra de tabs tiene scroll horizontal pendiente para mostrar
   // la flecha-affordance; la oculta al llegar al final.
   useEffect(() => {
@@ -1079,7 +1069,7 @@ export default function Coins() {
     el.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
     return () => { el.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
-  }, [isMobile]);
+  }, []);
 
   function copyCode() {
     if (!customerCode) return;
@@ -1102,7 +1092,7 @@ export default function Coins() {
   const pct = lc.n ? Math.min(100,(totalEarned/lc.n)*100) : 100;
 
   const TABS = [
-    ...(isMobile ? [{ id:"balance", icon:"💰", label:"Balance", color:"var(--brand-primary)" }] : []),
+    { id:"balance",  icon:"💰", label:"Balance",  color:"var(--brand-primary)" },
     { id:"canjes",   icon:"🎟️", label:"Canjes",   color:"var(--brand-primary)" },
     { id:"comofunciona", icon:"📖", label:"Cómo funciona", color:"#60a5fa" },
     { id:"instagram",icon:"📸", label:"Instagram",color:"#ec4899" },
@@ -1167,8 +1157,8 @@ export default function Coins() {
             <BuyCTA variant="inline" label="COMPRAR" />
           </div>
 
-          {/* HERO EDITORIAL — en mobile sólo bajo la pestaña "Balance"; en desktop siempre */}
-          {(!isMobile || tab === "balance") && (<>
+          {/* HERO EDITORIAL — sólo bajo la pestaña "Balance" (mobile y desktop) */}
+          {tab === "balance" && (<>
           <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"clamp(20px,5vw,32px) clamp(16px,5vw,36px)",marginBottom:28,overflow:"hidden",display:"block" }}>
             <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--lemon),var(--orange),transparent)" }}/>
             <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px)",backgroundSize:"48px 48px",pointerEvents:"none",opacity:.7 }}/>
