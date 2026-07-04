@@ -16,7 +16,14 @@ import {
   sizeTokenFromUrl, variantOfSize,
 } from "../lib/shopImages.js";
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
+// GSAP — reveal por scroll de las secciones (el hero ya anima solo via
+// .sp-reveal; acá NO se toca). Skills: gsap-react + gsap-scrolltrigger.
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import "../styles/shop-product.css";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -229,6 +236,7 @@ export default function ShopProduct() {
 
   // Barra de compra fija (mobile): visible sólo cuando el CTA principal
   // salió del viewport, para que precio + "Agregar" siempre estén a mano.
+  const rootRef = useRef(null);
   const ctaRef = useRef(null);
   const [ctaInView, setCtaInView] = useState(true);
   useEffect(() => {
@@ -564,8 +572,27 @@ export default function ShopProduct() {
       ? { label: product.category.name, to: "/shop" }
       : null;
 
+  // Reveal por scroll de las secciones de abajo (el hero se anima solo via
+  // .sp-reveal). matchMedia respeta reduced-motion; re-corre al cambiar de
+  // producto/variante (slug) o al terminar de cargar.
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      const secs = gsap.utils.toArray(".sp-section", rootRef.current);
+      if (!secs.length) return;
+      gsap.set(secs, { opacity: 0, y: 32 });
+      ScrollTrigger.batch(secs, {
+        start: "top 86%",
+        once: true,
+        onEnter: (batch) =>
+          gsap.to(batch, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }),
+      });
+      ScrollTrigger.refresh();
+    });
+  }, { scope: rootRef, dependencies: [loading], revertOnUpdate: true });
+
   return (
-    <div className="sp-page theme-light">
+    <div ref={rootRef} className="sp-page theme-light">
       <div className="sp-container">
         <nav className="sp-crumbs" aria-label="Estás en">
           <Link to="/shop" className="sp-crumb">

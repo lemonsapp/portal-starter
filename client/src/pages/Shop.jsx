@@ -6,12 +6,19 @@
 // hover lift + zoom de imagen. Estilos en styles/shop-catalog.css (clases
 // reales — reemplaza el style-object inline).
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
 import { useCart } from "../lib/useCart.js";
 import { fixImageUrl, isStaleProduct, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
+// Animaciones GSAP — skills: gsap-react (useGSAP + scope + cleanup) y
+// gsap-scrolltrigger (reveal por scroll). matchMedia respeta reduced-motion.
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import "../styles/shop-catalog.css";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -67,6 +74,7 @@ const CATEGORIA_QUERY = {
 
 export default function Shop() {
   useBranding();
+  const rootRef = useRef(null);
   const { addItem } = useCart();
   const [searchParams] = useSearchParams();
   const [families, setFamilies] = useState([]);
@@ -150,11 +158,42 @@ export default function Shop() {
     window.dispatchEvent(new CustomEvent("holistic-cart-open"));
   }
 
+  // Hero: entrada coreografiada al montar (una sola vez). Con reduced-motion
+  // no corre nada → los elementos quedan en su estado natural (visibles).
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      gsap.timeline({ defaults: { ease: "power3.out" } })
+        .from(".cat-eyebrow", { y: 16, opacity: 0, duration: 0.5 })
+        .from(".cat-display", { y: 26, opacity: 0, duration: 0.7 }, "-=0.28")
+        .from(".cat-sub", { y: 16, opacity: 0, duration: 0.6 }, "-=0.42");
+    });
+  }, { scope: rootRef });
+
+  // Cards: reveal escalonado al entrar en viewport (ScrollTrigger.batch).
+  // Re-stagger al cambiar de categoría o al terminar de cargar — NO en cada
+  // tecla del buscador (searchInput fuera de deps) para evitar jank.
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      const cards = gsap.utils.toArray(".cat-card", rootRef.current);
+      if (!cards.length) return;
+      gsap.set(cards, { opacity: 0, y: 28 });
+      ScrollTrigger.batch(cards, {
+        start: "top 90%",
+        once: true,
+        onEnter: (batch) =>
+          gsap.to(batch, { opacity: 1, y: 0, duration: 0.55, stagger: 0.06, ease: "power2.out" }),
+      });
+      ScrollTrigger.refresh();
+    });
+  }, { scope: rootRef, dependencies: [loading, activeCategory], revertOnUpdate: true });
+
   return (
-    <div className="cat-page theme-light">
+    <div ref={rootRef} className="cat-page theme-light">
       {/* Hero editorial */}
       <header className="cat-hero">
-        <div className="cat-hero-inner cat-reveal">
+        <div className="cat-hero-inner">
           <div className="cat-eyebrow">Fertilizantes superiores para cultivo</div>
           <h1 className="cat-display">
             Fertilizantes
