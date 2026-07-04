@@ -237,6 +237,7 @@ export default function ShopProduct() {
   // Barra de compra fija (mobile): visible sólo cuando el CTA principal
   // salió del viewport, para que precio + "Agregar" siempre estén a mano.
   const rootRef = useRef(null);
+  const glowRef = useRef(null);
   const ctaRef = useRef(null);
   const [ctaInView, setCtaInView] = useState(true);
   useEffect(() => {
@@ -579,20 +580,33 @@ export default function ShopProduct() {
     const mm = gsap.matchMedia();
     mm.add("(prefers-reduced-motion: no-preference)", () => {
       const secs = gsap.utils.toArray(".sp-section", rootRef.current);
-      if (!secs.length) return;
-      gsap.set(secs, { opacity: 0, y: 32 });
-      ScrollTrigger.batch(secs, {
-        start: "top 86%",
-        once: true,
-        onEnter: (batch) =>
-          gsap.to(batch, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }),
-      });
-      ScrollTrigger.refresh();
+      if (secs.length) {
+        gsap.set(secs, { opacity: 0, y: 32 });
+        ScrollTrigger.batch(secs, {
+          start: "top 86%",
+          once: true,
+          onEnter: (batch) =>
+            gsap.to(batch, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }),
+        });
+        ScrollTrigger.refresh();
+      }
+
+      // Spotlight ambiental que sigue el cursor (sólo puntero fino).
+      if (glowRef.current && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        const xTo = gsap.quickTo(glowRef.current, "x", { duration: 0.5, ease: "power3" });
+        const yTo = gsap.quickTo(glowRef.current, "y", { duration: 0.5, ease: "power3" });
+        const move = (e) => { xTo(e.clientX); yTo(e.clientY); gsap.to(glowRef.current, { opacity: 1, duration: 0.4, overwrite: "auto" }); };
+        const leave = () => gsap.to(glowRef.current, { opacity: 0, duration: 0.4, overwrite: "auto" });
+        window.addEventListener("pointermove", move, { passive: true });
+        window.addEventListener("pointerleave", leave);
+        return () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerleave", leave); };
+      }
     });
   }, { scope: rootRef, dependencies: [loading], revertOnUpdate: true });
 
   return (
     <div ref={rootRef} className="sp-page theme-light">
+      <div ref={glowRef} className="sp-cursor-glow" aria-hidden="true" />
       <div className="sp-container">
         <nav className="sp-crumbs" aria-label="Estás en">
           <Link to="/shop" className="sp-crumb">
