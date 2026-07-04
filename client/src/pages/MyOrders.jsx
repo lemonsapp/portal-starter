@@ -67,6 +67,26 @@ export default function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [confirming, setConfirming] = useState(null);
+
+  // El cliente confirma que recibió el pedido (despachado → entregado).
+  async function confirmReceived(publicId) {
+    if (!window.confirm("¿Confirmás que recibiste este pedido?")) return;
+    setConfirming(publicId);
+    try {
+      const r = await fetch(`${API}/api/shop/orders/${encodeURIComponent(publicId)}/received`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const d = await r.json();
+      if (r.ok && d.order) {
+        setOrders((prev) => prev.map((o) => (o.public_id === publicId ? d.order : o)));
+      } else {
+        alert(d.error || "No se pudo confirmar la recepción.");
+      }
+    } catch { alert("Error de red."); }
+    setConfirming(null);
+  }
 
   useEffect(() => {
     let alive = true;
@@ -148,6 +168,18 @@ export default function MyOrders() {
                       {o.tracking_url && (
                         <a href={o.tracking_url} target="_blank" rel="noopener noreferrer" style={{ marginLeft: "auto", color: "var(--brand-primary, #f5e03a)", fontWeight: 800, textDecoration: "none" }}>Seguir envío →</a>
                       )}
+                    </div>
+                  )}
+
+                  {o.status === "dispatched" && (
+                    <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.07)", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                      <button onClick={() => confirmReceived(o.public_id)} disabled={confirming === o.public_id}
+                        style={{ padding: "11px 22px", borderRadius: 999, border: "none", background: "#22c55e", color: "#04120b", fontFamily: "inherit", fontWeight: 900, fontSize: 13, letterSpacing: ".5px", cursor: confirming === o.public_id ? "default" : "pointer", boxShadow: "0 8px 22px -8px rgba(34,197,94,.6)" }}>
+                        {confirming === o.public_id ? "Confirmando…" : "✓ SE RECIBIÓ"}
+                      </button>
+                      <span style={{ fontSize: 11.5, color: "rgba(255,255,255,.5)", lineHeight: 1.4 }}>
+                        Confirmá cuando lo tengas. Si no, se marca <b>entregado</b> solo a los 2 días.
+                      </span>
                     </div>
                   )}
 

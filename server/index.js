@@ -2298,6 +2298,21 @@ setInterval(async () => {
   } catch(e) { console.error("[INVITES CLEANUP]", e.message); }
 }, 60 * 60 * 1000);
 
+// Auto-completar pedidos: si un pedido está "despachado" y el cliente no
+// confirmó la recepción en 2 días, se marca "entregado" (completed) solo.
+async function autoCompleteDispatchedOrders() {
+  try {
+    const r = await db.query(
+      `UPDATE orders
+          SET status = 'completed', completed_at = COALESCE(completed_at, NOW()), updated_at = NOW()
+        WHERE status = 'dispatched' AND dispatched_at < NOW() - INTERVAL '2 days'`
+    );
+    if (r.rowCount > 0) console.log(`[ORDERS] ${r.rowCount} pedidos auto-completados (2 días sin confirmar)`);
+  } catch (e) { console.error("[ORDERS AUTO-COMPLETE]", e.message); }
+}
+setInterval(autoCompleteDispatchedOrders, 6 * 60 * 60 * 1000); // cada 6 hs
+setTimeout(autoCompleteDispatchedOrders, 30 * 1000);           // una vez al arrancar
+
 const http = require("http");
 const { Server } = require("socket.io");
 

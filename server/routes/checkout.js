@@ -579,6 +579,33 @@ a{color:${color};text-decoration:underline dotted;}
     }
   });
 
+  // POST /api/shop/orders/:public_id/received — el cliente confirma que recibió
+  // el pedido (despachado → entregado). Público: el public_id es la llave y sólo
+  // permite avanzar dispatched → completed (idempotente, bajo riesgo).
+  router.post("/orders/:public_id/received", async (req, res) => {
+    try {
+      const pid = String(req.params.public_id || "");
+      const { rows } = await db.query(
+        `UPDATE orders
+            SET status = 'completed', completed_at = COALESCE(completed_at, NOW()), updated_at = NOW()
+          WHERE public_id = $1 AND status = 'dispatched'
+          RETURNING id`,
+        [pid]
+      );
+      const data = rows[0]
+        ? await loadOrderById(rows[0].id)
+        : await loadOrderByPublicId(pid);
+      if (!data) return res.status(404).json({ error: "Orden no encontrada" });
+      const safe = serializeOrder(data.order, data.items);
+      delete safe.admin_notes;
+      delete safe.mp_status_raw;
+      res.json({ order: safe });
+    } catch (e) {
+      console.error("[checkout order received]", e);
+      res.status(500).json({ error: "No se pudo confirmar la recepción" });
+    }
+  });
+
   // GET /api/shop/my-orders — pedidos del usuario logueado (seguimiento).
   // El checkout es "guest" (sin user_id), así que matcheamos por el email de
   // la cuenta. Devuelve la lista con estado + tracking para el panel del cliente.

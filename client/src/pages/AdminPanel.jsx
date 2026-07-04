@@ -2176,10 +2176,19 @@ function OrdersTab() {
                       <td>
                         <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", flexWrap: "wrap" }}>
                           {(NEXT_ACTIONS[o.status] || []).map((a) => (
-                            <Btn key={a.to} size="sm" variant={a.variant} disabled={changing === `${o.id}-${a.to}`}
-                              onClick={(e) => quickStatus(e, o.id, a.to)}>
-                              {changing === `${o.id}-${a.to}` ? "…" : a.label}
-                            </Btn>
+                            // "Despachar" abre el detalle para cargar carrier + nº de
+                            // tracking a mano (ahí se dispara el email con seguimiento).
+                            a.to === "dispatched" ? (
+                              <Btn key={a.to} size="sm" variant={a.variant}
+                                onClick={(e) => { e.stopPropagation(); setDetail(o.id); }}>
+                                {a.label}
+                              </Btn>
+                            ) : (
+                              <Btn key={a.to} size="sm" variant={a.variant} disabled={changing === `${o.id}-${a.to}`}
+                                onClick={(e) => quickStatus(e, o.id, a.to)}>
+                                {changing === `${o.id}-${a.to}` ? "…" : a.label}
+                              </Btn>
+                            )
                           ))}
                           <Btn size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setDetail(o.id); }}>Detalle</Btn>
                         </div>
