@@ -173,8 +173,10 @@ export default function ShopCheckout() {
         window.location.href = data.init_point;
         return;
       }
-      // Free purchase OR manual fallback → success page directo
-      clear();
+      // Free purchase OR manual fallback → success page directo.
+      // NO limpiamos el carrito acá: dispararía el efecto "carrito vacío →
+      // /shop" y te sacaría de la página de éxito (bug con cupón 100% off).
+      // La página de éxito limpia el carrito sola al montarse.
       navigate(`/shop/checkout/success?order=${encodeURIComponent(data.public_id || "")}${data.free ? "&free=1" : ""}`, { replace: true });
     } catch (e) {
       console.error("checkout error", e);
