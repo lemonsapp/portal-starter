@@ -866,6 +866,27 @@ function adminRouter({ authRequired, requireRole }) {
     }
   });
 
+  // POST /api/admin/shop/test-email — envía un email de prueba y devuelve el
+  // resultado REAL de Resend (para diagnosticar si el envío está configurado).
+  router.post("/test-email", ...readMw, async (req, res) => {
+    try {
+      const to = String(req.body?.to || "").trim();
+      if (!/^\S+@\S+\.\S+$/.test(to)) return res.status(400).json({ error: "Email inválido" });
+      const result = await shopNotify.sendResendEmail({
+        to,
+        subject: "✅ Test de email del portal",
+        html: `<div style="font-family:sans-serif;padding:24px;max-width:480px">
+                 <h2 style="margin:0 0 8px">Funciona 🎉</h2>
+                 <p style="color:#444;line-height:1.5">Si estás leyendo esto, el envío de emails desde el portal está configurado correctamente (Resend).</p>
+               </div>`,
+      });
+      res.json({ result });
+    } catch (e) {
+      console.error("[test-email]", e);
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // ── GET /api/admin/shop/customers?search=&marketing=
   // Lista clientes con métricas acumuladas. Soporta filtro por
   // marketing_opt (TRUE = solo opt-in para campañas F4).

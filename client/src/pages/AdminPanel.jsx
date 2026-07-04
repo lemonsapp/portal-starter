@@ -1005,12 +1005,33 @@ function PreviewCard({ title, children }) {
 // ── Tab: Settings ───────────────────────────────────────────────────────────
 function SettingsTab() {
   const [status, setStatus] = useState(null);
+  const [testTo, setTestTo] = useState("");
+  const [testing, setTesting] = useState(false);
+  const [testRes, setTestRes] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`${API}/api/admin/config/status`, { headers: authHdr() })
       .then(r => r.json()).then(d => setStatus(d.status || null)).catch(() => {});
   }, []);
+
+  async function sendTest() {
+    setTesting(true); setTestRes(null);
+    try {
+      const r = await fetch(`${API}/api/admin/shop/test-email`, {
+        method: "POST", headers: jsonHdr(), body: JSON.stringify({ to: testTo.trim() }),
+      });
+      const d = await r.json();
+      if (!r.ok) { setTestRes({ ok: false, msg: d.error || "Error del servidor." }); }
+      else {
+        const res = d.result || {};
+        if (res.ok) setTestRes({ ok: true, msg: `✓ Email enviado a ${testTo.trim()}. Revisá la bandeja (y el spam).` });
+        else if (res.skipped) setTestRes({ ok: false, msg: "Resend NO está configurado (falta la API key o el email remitente). Configuralo en el wizard → sección Resend." });
+        else setTestRes({ ok: false, msg: `Resend rechazó el envío: ${res.error}. Suele ser el dominio del remitente sin verificar en Resend (verificá tu dominio en resend.com).` });
+      }
+    } catch { setTestRes({ ok: false, msg: "Error de red." }); }
+    setTesting(false);
+  }
 
   return (
     <div>
@@ -1034,6 +1055,24 @@ function SettingsTab() {
           El wizard te permite editar cada sección (Cloudinary, Marca, Resend, Telegram, Reglas) de forma individual.
           Los cambios se aplican al instante (con cache-bust del frontend al recargar).
         </div>
+      </div>
+
+      <div style={styles.card}>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>📧 Probar envío de email</div>
+        <div style={{ fontSize: 12, color: "rgba(90,102,117,.6)", marginBottom: 12 }}>
+          Mandá un email de prueba para verificar que Resend está configurado. Si falla, el resultado te dice exactamente por qué.
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input style={{ ...styles.input, maxWidth: 320 }} type="email" placeholder="tu@email.com" value={testTo} onChange={(e) => setTestTo(e.target.value)} />
+          <button style={styles.btn(true)} disabled={testing || !testTo.trim()} onClick={sendTest}>
+            {testing ? "Enviando…" : "Enviar test"}
+          </button>
+        </div>
+        {testRes && (
+          <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 8, fontSize: 13, lineHeight: 1.5, background: testRes.ok ? "rgba(34,197,94,.1)" : "rgba(239,68,68,.08)", border: `1px solid ${testRes.ok ? "rgba(34,197,94,.3)" : "rgba(239,68,68,.3)"}`, color: testRes.ok ? "#15803d" : "#b42318" }}>
+            {testRes.msg}
+          </div>
+        )}
       </div>
     </div>
   );
