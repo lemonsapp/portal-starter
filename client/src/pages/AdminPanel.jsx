@@ -4,8 +4,11 @@
 // Tabs: Coins / Feed / Settings (re-abre el wizard por sección).
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
+// Kit de UI del admin — tema claro estilo Tiendanube (scopeado bajo `.adm`).
+import { useAdmCss, Btn, Card, Field, Badge } from "./admin/ui.jsx";
 // Contenido por línea (sincronizado desde las internas) para pre-cargar los
 // editores del producto con lo que HOY se muestra en la ficha del shop.
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
@@ -1044,6 +1047,9 @@ function ProductsTab() {
   const [err, setErr] = useState("");
   const [migrating, setMigrating] = useState(false);
   const [migrateMsg, setMigrateMsg] = useState("");
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all"); // all | active | hidden | featured
+  useAdmCss();
 
   async function load() {
     setLoading(true);
@@ -1103,75 +1109,120 @@ function ProductsTab() {
     setMigrating(false);
   }
 
+  const needle = q.trim().toLowerCase();
+  const counts = {
+    all: products.length,
+    active: products.filter((p) => p.active).length,
+    hidden: products.filter((p) => !p.active).length,
+    featured: products.filter((p) => p.featured).length,
+  };
+  const filtered = products.filter((p) => {
+    if (statusFilter === "active" && !p.active) return false;
+    if (statusFilter === "hidden" && p.active) return false;
+    if (statusFilter === "featured" && !p.featured) return false;
+    if (needle && !`${p.name} ${p.slug} ${p.sku || ""}`.toLowerCase().includes(needle)) return false;
+    return true;
+  });
+  const FILTERS = [
+    { k: "all", label: "Todos" },
+    { k: "active", label: "Activos" },
+    { k: "hidden", label: "Ocultos" },
+    { k: "featured", label: "Destacados" },
+  ];
+
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <h2 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>Productos del catálogo</h2>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button style={styles.btn()} disabled={migrating} onClick={migrateImages} title="Sube a Cloudinary las imágenes que todavía son archivos de carpeta, para poder editarlas desde el panel">
-            {migrating ? "Migrando…" : "☁ Migrar imágenes a Cloudinary"}
-          </button>
-          <button style={styles.btn(true)} onClick={() => setEditing("new")}>+ Nuevo producto</button>
+    <div className="adm" style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "18px 18px 22px", margin: "2px 0" }}>
+      <div className="adm-spread" style={{ marginBottom: 16 }}>
+        <div>
+          <div className="adm-h1">Productos</div>
+          <div className="adm-sub">{counts.all} en el catálogo · {counts.active} publicados</div>
+        </div>
+        <div className="adm-toolbar">
+          <Btn size="sm" disabled={migrating} onClick={migrateImages} title="Sube a Cloudinary las imágenes que todavía son archivos de carpeta, para poder editarlas desde el panel">
+            {migrating ? "Migrando…" : "☁ Migrar imágenes"}
+          </Btn>
+          <Btn variant="primary" onClick={() => setEditing("new")}>+ Nuevo producto</Btn>
         </div>
       </div>
 
-      {migrateMsg && (
-        <div style={{ ...styles.card, marginBottom: 12, fontSize: 13, color: migrateMsg.startsWith("Error") ? "#fca5a5" : "#a7f3d0", borderColor: migrateMsg.startsWith("Error") ? "rgba(239,68,68,.4)" : "rgba(16,185,129,.4)" }}>
-          {migrateMsg}
+      {migrateMsg && <div className={`adm-alert ${migrateMsg.startsWith("Error") ? "adm-alert--err" : "adm-alert--ok"}`} style={{ marginBottom: 12 }}>{migrateMsg}</div>}
+      {err && <div className="adm-alert adm-alert--err" style={{ marginBottom: 12 }}>{err}</div>}
+
+      <div className="adm-card">
+        <div className="adm-card__bd adm-spread" style={{ borderBottom: "1px solid var(--border)", gap: 12 }}>
+          <div className="adm-search" style={{ flex: "1 1 240px", minWidth: 0 }}>
+            <span className="adm-search__i">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.2-3.2" /></svg>
+            </span>
+            <input className="adm-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre, slug o SKU…" />
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {FILTERS.map((f) => (
+              <button key={f.k} onClick={() => setStatusFilter(f.k)} className={`adm-btn adm-btn--sm ${statusFilter === f.k ? "adm-btn--primary" : "adm-btn--ghost"}`}>
+                {f.label} <span style={{ opacity: 0.7 }}>{counts[f.k]}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      )}
 
-      {err && <div style={{ ...styles.card, color: "#fca5a5", borderColor: "rgba(239,68,68,.4)" }}>{err}</div>}
-
-      <div style={styles.card}>
         {loading ? (
-          <div>Cargando…</div>
-        ) : products.length === 0 ? (
-          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
-            Sin productos. Hacé clic en <strong>+ Nuevo producto</strong> para arrancar.
+          <div className="adm-empty">Cargando catálogo…</div>
+        ) : filtered.length === 0 ? (
+          <div className="adm-empty">
+            <div className="adm-empty__ic">📦</div>
+            {products.length === 0
+              ? <>Todavía no hay productos. Tocá <strong>+ Nuevo producto</strong> para publicar el primero.</>
+              : <>Ningún producto coincide con la búsqueda o el filtro.</>}
           </div>
         ) : (
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}></th>
-                <th style={styles.th}>Producto</th>
-                <th style={styles.th}>Categoría</th>
-                <th style={styles.th}>Precio</th>
-                <th style={styles.th}>Stock</th>
-                <th style={styles.th}>Estado</th>
-                <th style={styles.th}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p) => (
-                <tr key={p.id}>
-                  <td style={styles.td}>
-                    {p.primary_image
-                      ? <img src={p.primary_image} alt="" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.03)" }} />
-                      : <div style={{ width: 36, height: 36, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />
-                    }
-                  </td>
-                  <td style={styles.td}>
-                    <div style={{ fontWeight: 600 }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>/{p.slug}{p.featured ? " · ⭐ destacado" : ""}</div>
-                  </td>
-                  <td style={styles.td}>{p.category?.name || "—"}</td>
-                  <td style={styles.td}>{p.price_formatted}</td>
-                  <td style={styles.td}>{p.stock == null ? "∞" : p.stock}</td>
-                  <td style={styles.td}>
-                    <span style={{ fontSize: 11, color: p.active ? "#86efac" : "rgba(237,233,224,.4)" }}>
-                      {p.active ? "✓ activo" : "— oculto"}
-                    </span>
-                  </td>
-                  <td style={styles.td}>
-                    <button style={styles.btn()} onClick={() => setEditing(p)}>Editar</button>{" "}
-                    <button style={styles.btn(false, true)} onClick={() => remove(p)}>Borrar</button>
-                  </td>
+          <div className="adm-tablewrap">
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 56 }}></th>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Estado</th>
+                  <th style={{ width: 140 }}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map((p) => (
+                  <tr key={p.id}>
+                    <td>
+                      {p.primary_image
+                        ? <img src={p.primary_image} alt="" className="adm-thumb" />
+                        : <div className="adm-thumb adm-thumb--ph">🖼</div>}
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 700 }}>{p.name}</div>
+                      <div className="adm-mono" style={{ fontSize: 11.5, color: "var(--text-3)" }}>/{p.slug}{p.featured ? " · ⭐" : ""}</div>
+                    </td>
+                    <td>{p.category?.name || <span style={{ color: "var(--text-3)" }}>—</span>}</td>
+                    <td style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{p.price_formatted}</td>
+                    <td>
+                      {p.stock == null
+                        ? <Badge tone="muted">∞</Badge>
+                        : p.stock <= 0
+                          ? <Badge tone="danger">Sin stock</Badge>
+                          : p.stock <= 5
+                            ? <Badge tone="warn">{p.stock}</Badge>
+                            : <span>{p.stock}</span>}
+                    </td>
+                    <td>{p.active ? <Badge tone="ok"><span className="adm-dot" />Activo</Badge> : <Badge tone="muted">Oculto</Badge>}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                        <Btn size="sm" onClick={() => setEditing(p)}>Editar</Btn>
+                        <Btn size="sm" variant="danger" onClick={() => remove(p)} title="Borrar">🗑</Btn>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -1192,18 +1243,23 @@ function ProductsTab() {
 // `fields` = [{ key, placeholder, wide?, textarea? }]. Cada fila es un objeto.
 function RepeatList({ title, hint, rows, fields, onAdd, onChange, onRemove, addLabel }) {
   return (
-    <div style={{ marginTop: 16 }}>
-      <label style={styles.label}>{title}</label>
-      {hint && <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", margin: "2px 0 8px" }}>{hint}</div>}
-      <div style={{ display: "grid", gap: 8 }}>
+    <div>
+      {(title || hint) && (
+        <div style={{ marginBottom: 10 }}>
+          {title && <div className="adm-label" style={{ marginBottom: hint ? 3 : 0 }}>{title}</div>}
+          {hint && <div className="adm-help" style={{ marginTop: 0 }}>{hint}</div>}
+        </div>
+      )}
+      <div className="adm-rep">
         {rows.map((row, i) => (
-          <div key={i} style={{ display: "flex", gap: 6, alignItems: "flex-start", background: "rgba(255,255,255,.03)", borderRadius: 6, padding: 8 }}>
-            <div style={{ flex: 1, display: "grid", gap: 6 }}>
+          <div key={i} className="adm-rep__row">
+            <div className="adm-rep__fields">
               {fields.map((f) => (
                 f.textarea ? (
                   <textarea
                     key={f.key}
-                    style={{ ...styles.input, minHeight: 54, resize: "vertical" }}
+                    className="adm-textarea"
+                    style={{ minHeight: 56 }}
                     value={row[f.key] || ""}
                     onChange={(e) => onChange(i, f.key, e.target.value)}
                     placeholder={f.placeholder}
@@ -1211,7 +1267,7 @@ function RepeatList({ title, hint, rows, fields, onAdd, onChange, onRemove, addL
                 ) : (
                   <input
                     key={f.key}
-                    style={{ ...styles.input, ...(f.wide ? {} : {}) }}
+                    className="adm-input"
                     value={row[f.key] || ""}
                     onChange={(e) => onChange(i, f.key, e.target.value)}
                     placeholder={f.placeholder}
@@ -1219,13 +1275,11 @@ function RepeatList({ title, hint, rows, fields, onAdd, onChange, onRemove, addL
                 )
               ))}
             </div>
-            <button style={{ ...styles.btn(false, true), padding: "4px 10px" }} onClick={() => onRemove(i)} title="Quitar">×</button>
+            <Btn size="sm" variant="danger" onClick={() => onRemove(i)} title="Quitar">×</Btn>
           </div>
         ))}
       </div>
-      <button style={{ ...styles.btn(), alignSelf: "start", marginTop: 8 }} onClick={onAdd}>
-        {addLabel || "+ Agregar"}
-      </button>
+      <Btn size="sm" onClick={onAdd} style={{ marginTop: 10 }}>{addLabel || "+ Agregar"}</Btn>
     </div>
   );
 }
@@ -1239,33 +1293,37 @@ function ProductPicker({ title, hint, options, selected, onToggle }) {
     : options;
   const bySlug = new Map(options.map((o) => [o.slug, o]));
   return (
-    <div style={{ marginTop: 16 }}>
-      <label style={styles.label}>{title}</label>
-      {hint && <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", margin: "2px 0 8px" }}>{hint}</div>}
+    <div>
+      {(title || hint) && (
+        <div style={{ marginBottom: 8 }}>
+          {title && <div className="adm-label" style={{ marginBottom: hint ? 3 : 0 }}>{title}</div>}
+          {hint && <div className="adm-help" style={{ marginTop: 0 }}>{hint}</div>}
+        </div>
+      )}
       {selected.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        <div className="adm-chips">
           {selected.map((slug) => (
-            <span key={slug} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, background: "rgba(245,224,58,.15)", border: "1px solid rgba(245,224,58,.35)", borderRadius: 999, padding: "3px 10px" }}>
+            <span key={slug} className="adm-chip">
               {bySlug.get(slug)?.name || slug}
-              <button onClick={() => onToggle(slug)} style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 14, lineHeight: 1 }} title="Quitar">×</button>
+              <button onClick={() => onToggle(slug)} title="Quitar">×</button>
             </span>
           ))}
         </div>
       )}
-      <input style={styles.input} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar producto por nombre o slug…" />
-      <div style={{ maxHeight: 200, overflowY: "auto", marginTop: 8, border: "1px solid rgba(255,255,255,.08)", borderRadius: 6 }}>
+      <input className="adm-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar producto por nombre o slug…" />
+      <div className="adm-picklist">
         {filtered.length === 0 ? (
-          <div style={{ padding: 10, fontSize: 12, color: "rgba(237,233,224,.4)" }}>Sin resultados.</div>
+          <div style={{ padding: 12, fontSize: 12.5, color: "var(--text-3)" }}>Sin resultados.</div>
         ) : filtered.map((o) => {
           const on = selected.includes(o.slug);
           return (
-            <label key={o.slug} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,.04)", background: on ? "rgba(245,224,58,.08)" : "transparent" }}>
+            <label key={o.slug} className={`adm-pickrow ${on ? "is-on" : ""}`}>
               <input type="checkbox" checked={on} onChange={() => onToggle(o.slug)} />
               {o.primary_image
-                ? <img src={o.primary_image} alt="" style={{ width: 26, height: 26, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
-                : <div style={{ width: 26, height: 26, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />}
+                ? <img src={o.primary_image} alt="" className="adm-thumb" style={{ width: 28, height: 28 }} />
+                : <div className="adm-thumb adm-thumb--ph" style={{ width: 28, height: 28, fontSize: 12 }}>🖼</div>}
               <span style={{ flex: 1, fontSize: 13 }}>{o.name}</span>
-              <span style={{ fontSize: 11, color: "rgba(237,233,224,.45)" }}>{o.price_formatted || ""}</span>
+              <span style={{ fontSize: 11.5, color: "var(--text-3)" }}>{o.price_formatted || ""}</span>
             </label>
           );
         })}
@@ -1360,24 +1418,24 @@ function MedidaImageEditor({ variant }) {
       {imgs.map((img, i) => (
         <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1.3fr 1fr auto auto auto", gap: 6, alignItems: "center" }}>
           {img.url
-            ? <img src={img.url} alt="" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
-            : <div style={{ width: 32, height: 32, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />}
-          <input style={styles.input} value={img.url} onChange={(e) => upd(i, "url", e.target.value)} placeholder="URL de la imagen" />
-          <input style={styles.input} value={img.alt} onChange={(e) => upd(i, "alt", e.target.value)} placeholder="Alt text" />
-          <label style={{ ...styles.btn(), padding: "4px 10px", cursor: uploadingIdx === i ? "wait" : "pointer", whiteSpace: "nowrap", opacity: uploadingIdx === i ? 0.6 : 1 }}>
+            ? <img src={img.url} alt="" className="adm-thumb" style={{ width: 34, height: 34 }} />
+            : <div className="adm-thumb adm-thumb--ph" style={{ width: 34, height: 34 }}>🖼</div>}
+          <input className="adm-input" value={img.url} onChange={(e) => upd(i, "url", e.target.value)} placeholder="URL de la imagen" />
+          <input className="adm-input" value={img.alt} onChange={(e) => upd(i, "alt", e.target.value)} placeholder="Alt text" />
+          <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: uploadingIdx === i ? "wait" : "pointer", opacity: uploadingIdx === i ? 0.6 : 1 }}>
             {uploadingIdx === i ? "Subiendo…" : "Subir"}
             <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploadingIdx === i} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadFile(i, f); }} />
           </label>
-          <label style={{ fontSize: 11, color: "rgba(237,233,224,.6)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+          <label style={{ fontSize: 11.5, color: "var(--text-2)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
             <input type="radio" name={`prim-${variant.id}`} checked={img.is_primary} onChange={() => setPrim(i)} /> Destacada
           </label>
-          <button style={{ ...styles.btn(false, true), padding: "4px 10px" }} onClick={() => del(i)}>×</button>
+          <Btn size="sm" variant="danger" onClick={() => del(i)}>×</Btn>
         </div>
       ))}
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 2 }}>
-        <button style={styles.btn()} onClick={add}>+ Agregar imagen</button>
-        <button style={styles.btn(true)} disabled={saving} onClick={save}>{saving ? "Guardando…" : "Guardar imágenes de esta medida"}</button>
-        {msg && <span style={{ fontSize: 12, color: msg.startsWith("Error") ? "#fca5a5" : "#a7f3d0" }}>{msg}</span>}
+        <Btn size="sm" onClick={add}>+ Agregar imagen</Btn>
+        <Btn size="sm" variant="primary" disabled={saving} onClick={save}>{saving ? "Guardando…" : "Guardar imágenes de esta medida"}</Btn>
+        {msg && <span style={{ fontSize: 12, color: msg.startsWith("Error") ? "var(--danger)" : "var(--accent-hover)" }}>{msg}</span>}
       </div>
     </div>
   );
@@ -1669,324 +1727,315 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     setSaving(false);
   }
 
-  return (
-    <div style={styles.modalBackdrop} onClick={onClose}>
-      <div
-        style={{ ...styles.modalCard, maxWidth: 640, maxHeight: "88vh", overflowY: "auto" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <h3 style={{ margin: 0, fontSize: 18 }}>{isNew ? "Nuevo producto" : `Editar — ${product.name}`}</h3>
-          <button style={styles.btn()} onClick={onClose}>✕</button>
-        </div>
+  useAdmCss();
 
-        {err && (
-          <div style={{ padding: 10, marginBottom: 12, background: "rgba(239,68,68,.12)", border: "1px solid rgba(239,68,68,.35)", borderRadius: 6, color: "#fca5a5", fontSize: 13 }}>
-            {err}
-          </div>
-        )}
+  // Agrega una foto nueva y le sube el archivo directo (tile "Subir foto").
+  function addImageWithFile(file) {
+    if (!file) return;
+    const idx = images.length;
+    setImages((arr) => [...arr, { url: "", alt: "", is_primary: arr.every((x) => !x.is_primary) }]);
+    uploadImageFile(idx, file);
+  }
 
-        <label style={styles.label}>Nombre</label>
-        <input style={styles.input} value={name} onChange={(e) => maybeAutoSlug(e.target.value)} placeholder="Ej: Línea Race — Race 1 Vegetativo 500ml" />
+  const hasVariantSection = (isBundle && kitMedidas.length > 0) || isVariant || medidaSiblings.length > 1;
 
-        <label style={styles.label}>Slug (URL)</label>
-        <input style={styles.input} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="race-1-vegetativo-500ml" />
-        <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 4 }}>Aparecerá como /shop/{slug || "..."}</div>
-
-        <label style={styles.label}>Descripción corta</label>
-        <input style={styles.input} value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} placeholder="Tarjeta del catálogo, 1-2 líneas" />
-
-        <label style={styles.label}>Descripción larga</label>
-        <textarea style={{ ...styles.input, minHeight: 90, resize: "vertical" }} value={longDesc} onChange={(e) => setLongDesc(e.target.value)} placeholder="Detalle del producto en la página de producto" />
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-          <div>
-            <label style={styles.label}>Precio (ARS)</label>
-            <input style={styles.input} type="number" min="0" step="1" value={priceArs} onChange={(e) => setPriceArs(e.target.value)} placeholder="25000" />
-          </div>
-          <div>
-            <label style={styles.label}>Stock (vacío = ∞)</label>
-            <input style={styles.input} type="number" min="0" step="1" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="50" />
-          </div>
-          <div>
-            <label style={styles.label}>SKU</label>
-            <input style={styles.input} value={sku} onChange={(e) => setSku(e.target.value)} placeholder="RACE-1-500" />
+  return createPortal(
+    <div className="adm">
+      <div className="adm-editor" role="dialog" aria-modal="true">
+        {/* Barra superior sticky */}
+        <div className="adm-editor__top">
+          <Btn variant="ghost" size="sm" onClick={onClose} disabled={saving}>← Volver</Btn>
+          <div className="adm-editor__title">{isNew ? "Nuevo producto" : product.name}</div>
+          {!isNew && (active ? <Badge tone="ok"><span className="adm-dot" />Activo</Badge> : <Badge tone="muted">Oculto</Badge>)}
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+            <Btn onClick={onClose} disabled={saving}>Cancelar</Btn>
+            <Btn variant="primary" onClick={save} disabled={saving || !name || !slug || priceArs === ""}>
+              {saving ? "Guardando…" : (isNew ? "Crear producto" : "Guardar cambios")}
+            </Btn>
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 10 }}>
-          <div>
-            <label style={styles.label}>Categoría</label>
-            <select style={styles.input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-              <option value="">— Sin categoría —</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label style={styles.label}>Orden</label>
-            <input style={styles.input} type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
-          </div>
-        </div>
+        <div className="adm-editor__scroll">
+          <div className="adm-editor__wrap">
+            {/* Columna principal */}
+            <div className="adm-editor__main">
+              {err && <div className="adm-alert adm-alert--err">{err}</div>}
 
-        <div style={{ display: "flex", gap: 18, marginTop: 14, fontSize: 13 }}>
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
-            Activo (visible en /shop)
-          </label>
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-            <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
-            Destacado ⭐
-          </label>
-        </div>
+              <Card title="Información básica">
+                <Field label="Nombre del producto">
+                  <input className="adm-input" value={name} onChange={(e) => maybeAutoSlug(e.target.value)} placeholder="Ej: Línea Race — Race 1 Vegetativo 500ml" />
+                </Field>
+                <Field label="URL (slug)" hint={`Aparecerá como /shop/${slug || "..."}`}>
+                  <input className="adm-input adm-mono" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="race-1-vegetativo-500ml" />
+                </Field>
+                <Field label="Descripción corta" hint="Se muestra en la tarjeta del catálogo (1-2 líneas).">
+                  <input className="adm-input" value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} placeholder="Resumen breve del producto" />
+                </Field>
+                <Field label="Descripción larga" hint="Detalle en la página del producto.">
+                  <textarea className="adm-textarea" value={longDesc} onChange={(e) => setLongDesc(e.target.value)} placeholder="Contá de qué se trata, cómo se usa, para qué sirve…" />
+                </Field>
+              </Card>
 
-        {/* Medida destacada — KIT: con qué medida abre la interna del kit. */}
-        {isBundle && kitMedidas.length > 0 && (
-          <div style={{ marginTop: 14 }}>
-            <label style={styles.label}>Medida destacada (con la que abre la interna)</label>
-            <select style={styles.input} value={medidaDestacada} onChange={(e) => setMedidaDestacada(e.target.value)}>
-              <option value="">— Automática (la primera) —</option>
-              {kitMedidas.map((m) => (
-                <option key={m} value={m}>{m}</option>
-              ))}
-            </select>
-            <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 4 }}>
-              Al entrar a la interna del kit se ve esta medida (sus potes y su precio). Cambiala cuando quieras (ej: hoy 10L, mañana 250ml).
-            </div>
-          </div>
-        )}
-        {/* Destacada (hero) del kit por medida: foto grande al elegir cada medida. */}
-        {isBundle && kitMedidas.length > 0 && (
-          <div style={{ marginTop: 14 }}>
-            <label style={styles.label}>Foto destacada del kit por medida</label>
-            <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", margin: "2px 0 8px" }}>
-              Por cada medida: subí tu propia foto destacada (botón "Subir") o elegí una de las existentes. Es la que se ve grande arriba al seleccionar esa medida. "Automática" = usa la foto unificada del kit.
-            </div>
-            <div style={{ display: "grid", gap: 10 }}>
-              {kitMedidas.map((m) => {
-                const cands = heroCandidates(m);
-                const sel = heroPorMedida[m] || "";
-                // Mostrar también la elegida aunque sea subida (no esté entre las candidatas).
-                const thumbs = sel && !cands.includes(sel) ? [sel, ...cands] : cands;
-                const up = uploadingHero === m;
-                return (
-                  <div key={m} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--brand-primary, #f5e03a)" }}>{m}</span>
-                    <button
-                      type="button"
-                      onClick={() => setHero(m, "")}
-                      style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, cursor: "pointer", background: sel === "" ? "rgba(245,224,58,.15)" : "rgba(255,255,255,.04)", color: sel === "" ? "var(--brand-primary, #f5e03a)" : "rgba(237,233,224,.7)", border: `1px solid ${sel === "" ? "rgba(245,224,58,.4)" : "rgba(255,255,255,.12)"}` }}
-                    >
-                      Automática
-                    </button>
-                    {thumbs.map((u) => (
-                      <button
-                        key={u}
-                        type="button"
-                        onClick={() => setHero(m, u)}
-                        title="Usar como destacada de esta medida"
-                        style={{ padding: 2, borderRadius: 6, cursor: "pointer", background: "transparent", border: `2px solid ${sel === u ? "var(--brand-primary, #f5e03a)" : "rgba(255,255,255,.12)"}` }}
-                      >
-                        <img src={u} alt="" style={{ width: 40, height: 40, objectFit: "contain", display: "block", borderRadius: 3, background: "rgba(255,255,255,.04)" }} />
-                      </button>
-                    ))}
-                    <label style={{ ...styles.btn(), padding: "4px 10px", fontSize: 11, cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, whiteSpace: "nowrap" }}>
-                      {up ? "Subiendo…" : "⬆ Subir"}
-                      <input type="file" accept="image/*" style={{ display: "none" }} disabled={up} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadHero(m, f); }} />
-                    </label>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        {/* Medida destacada — VARIANTE individual: esta medida es la cabecera de la familia. */}
-        {isVariant && (
-          <label style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", fontSize: 13, margin: "14px 0 0", padding: "8px 10px", border: "1px solid rgba(255,255,255,.1)", borderRadius: 6, background: "rgba(255,255,255,.03)" }}>
-            <input type="checkbox" checked={isMedidaDestacada} onChange={(e) => setIsMedidaDestacada(e.target.checked)} style={{ marginTop: 2 }} />
-            <span>
-              Medida destacada de la familia ({metaBase.formato})
-              <span style={{ display: "block", fontSize: 11, color: "rgba(237,233,224,.5)", marginTop: 2 }}>
-                Si lo activás, al entrar desde el catálogo la familia abre en esta medida (esta foto y este precio). Dejá solo una marcada por familia.
-              </span>
-            </span>
-          </label>
-        )}
-
-        <label style={{ ...styles.label, marginTop: 18 }}>Imágenes</label>
-        <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: -2, marginBottom: 6 }}>
-          Subí un archivo con "Subir" o pegá una URL (ej: /imagenes-web/productos/race/...).
-        </div>
-        <label style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", fontSize: 13, margin: "0 0 10px", padding: "8px 10px", border: "1px solid rgba(255,255,255,.1)", borderRadius: 6, background: "rgba(255,255,255,.03)" }}>
-          <input type="checkbox" checked={galleryFixed} onChange={(e) => setGalleryFixed(e.target.checked)} style={{ marginTop: 2 }} />
-          <span>
-            Usar solo estas fotos en la galería
-            <span style={{ display: "block", fontSize: 11, color: "rgba(237,233,224,.5)", marginTop: 2 }}>
-              Si lo activás, la página muestra exactamente las fotos de acá (la destacada primero) y no se agregan fotos al cambiar de medida. Si lo dejás apagado, en los kits la galería se arma por medida (comportamiento actual).
-            </span>
-          </span>
-        </label>
-        <div style={{ display: "grid", gap: 8 }}>
-          {images.map((img, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1.3fr 1fr auto auto auto", gap: 6, alignItems: "center" }}>
-              {img.url
-                ? <img src={img.url} alt="" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
-                : <div style={{ width: 32, height: 32, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />
-              }
-              <input style={styles.input} value={img.url} onChange={(e) => updateImage(i, "url", e.target.value)} placeholder="URL de la imagen" />
-              <input style={styles.input} value={img.alt} onChange={(e) => updateImage(i, "alt", e.target.value)} placeholder="Alt text (a11y)" />
-              <label style={{ ...styles.btn(), padding: "4px 10px", cursor: uploadingIdx === i ? "wait" : "pointer", whiteSpace: "nowrap", opacity: uploadingIdx === i ? 0.6 : 1 }}>
-                {uploadingIdx === i ? "Subiendo…" : "Subir"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  disabled={uploadingIdx === i}
-                  onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadImageFile(i, f); }}
-                />
-              </label>
-              <label style={{ fontSize: 11, color: "rgba(237,233,224,.6)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-                <input type="radio" name="primary" checked={img.is_primary} onChange={() => setPrimary(i)} />
-                Destacada
-              </label>
-              <button style={{ ...styles.btn(false, true), padding: "4px 10px" }} onClick={() => removeImage(i)}>×</button>
-            </div>
-          ))}
-          <button style={{ ...styles.btn(), alignSelf: "start", marginTop: 4 }} onClick={addImage}>+ Agregar imagen</button>
-        </div>
-
-        {/* ───── Imágenes por medida: editar las fotos de cada medida de la familia ───── */}
-        {medidaSiblings.length > 1 && (
-          <div style={{ marginTop: 22, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,.1)" }}>
-            <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>Imágenes por medida</h4>
-            <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)", marginBottom: 10 }}>
-              {isBundle
-                ? "Editá las fotos de cada producto de la línea, ordenados por medida. Cada uno se guarda por separado."
-                : "Editá las fotos de cada medida de esta familia sin salir de acá. Cada medida se guarda por separado."}
-            </div>
-            <div style={{ display: "grid", gap: 8 }}>
-              {medidaSiblings.map((sib) => {
-                const open = expandedMedida === sib.id;
-                const isThis = sib.id === product?.id;
-                const n = sib.images?.length || 0;
-                return (
-                  <div key={sib.id} style={{ border: "1px solid rgba(255,255,255,.1)", borderRadius: 8, overflow: "hidden" }}>
-                    <button
-                      type="button"
-                      onClick={() => setExpandedMedida(open ? null : sib.id)}
-                      style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "rgba(255,255,255,.03)", border: "none", color: "#fff", cursor: "pointer", textAlign: "left" }}
-                    >
-                      {sib.primary_image
-                        ? <img src={sib.primary_image} alt="" style={{ width: 30, height: 30, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.04)" }} />
-                        : <div style={{ width: 30, height: 30, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />}
-                      {sib.meta?.formato && (
-                        <span style={{ fontSize: 11, fontWeight: 800, color: "var(--brand-primary, #f5e03a)", background: "rgba(245,224,58,.1)", border: "1px solid rgba(245,224,58,.25)", borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" }}>{sib.meta.formato}</span>
-                      )}
-                      <span style={{ fontWeight: 700, fontSize: 13 }}>
-                        {sib.name}
-                        {isThis && <span style={{ color: "rgba(237,233,224,.5)", fontWeight: 400 }}> · esta</span>}
-                      </span>
-                      <span style={{ fontSize: 11, color: "rgba(237,233,224,.45)" }}>{n} {n === 1 ? "foto" : "fotos"}</span>
-                      <span style={{ marginLeft: "auto", color: "rgba(237,233,224,.5)" }}>{open ? "▲" : "▼"}</span>
-                    </button>
-                    {open && (
-                      <div style={{ padding: "0 12px 6px" }}>
-                        <MedidaImageEditor key={sib.id} variant={sib} />
+              <Card title="Fotos" hint="La foto marcada como destacada (★) abre la ficha. Subí archivos o pegá URLs.">
+                <div className="adm-gal">
+                  {images.map((img, i) => (
+                    <div key={i} className={`adm-tile ${img.is_primary ? "adm-tile--primary" : ""}`}>
+                      {img.url
+                        ? <img src={img.url} alt={img.alt || ""} />
+                        : <span style={{ color: "var(--text-3)", fontSize: 12, textAlign: "center", padding: 8 }}>{uploadingIdx === i ? "Subiendo…" : "Sin imagen"}</span>}
+                      {img.is_primary && <span className="adm-tile__flag">Destacada</span>}
+                      <div className="adm-tile__acts">
+                        <button type="button" className={`adm-tile__btn adm-tile__btn--star ${img.is_primary ? "is-on" : ""}`} title="Marcar como destacada" onClick={() => setPrimary(i)}>★</button>
+                        <button type="button" className="adm-tile__btn adm-tile__btn--del" title="Quitar" onClick={() => removeImage(i)}>🗑</button>
                       </div>
-                    )}
+                    </div>
+                  ))}
+                  <label className="adm-tile adm-tile--add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                    {uploadingIdx === images.length ? "Subiendo…" : "Subir foto"}
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; addImageWithFile(f); }} />
+                  </label>
+                </div>
+
+                <details style={{ marginTop: 14 }}>
+                  <summary style={{ cursor: "pointer", fontSize: 12.5, color: "var(--text-2)", fontWeight: 600 }}>Editar URLs / alt-text</summary>
+                  <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+                    {images.map((img, i) => (
+                      <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1.4fr 1fr auto", gap: 6, alignItems: "center" }}>
+                        {img.url
+                          ? <img src={img.url} alt="" className="adm-thumb" style={{ width: 32, height: 32 }} />
+                          : <div className="adm-thumb adm-thumb--ph" style={{ width: 32, height: 32 }}>🖼</div>}
+                        <input className="adm-input" value={img.url} onChange={(e) => updateImage(i, "url", e.target.value)} placeholder="URL de la imagen" />
+                        <input className="adm-input" value={img.alt} onChange={(e) => updateImage(i, "alt", e.target.value)} placeholder="Alt text (a11y)" />
+                        <Btn size="sm" variant="danger" onClick={() => removeImage(i)}>×</Btn>
+                      </div>
+                    ))}
+                    <Btn size="sm" onClick={addImage} style={{ justifySelf: "start" }}>+ Agregar fila</Btn>
                   </div>
-                );
-              })}
+                </details>
+
+                <label className="adm-switch" style={{ marginTop: 16, alignItems: "flex-start" }}>
+                  <input type="checkbox" checked={galleryFixed} onChange={(e) => setGalleryFixed(e.target.checked)} />
+                  <span className="adm-switch__track" />
+                  <span className="adm-switch__lab">
+                    <span className="adm-switch__t">Usar solo estas fotos en la galería</span>
+                    <span className="adm-switch__h">La ficha muestra exactamente estas fotos (destacada primero) y no agrega fotos al cambiar de medida.</span>
+                  </span>
+                </label>
+              </Card>
+
+              {hasVariantSection && (
+                <Card title="Variantes y medidas" hint="Configuración de la familia / kit por medida.">
+                  {isBundle && kitMedidas.length > 0 && (
+                    <Field label="Medida destacada (con la que abre la interna)" hint="Al entrar a la interna del kit se ve esta medida (sus potes y su precio). Cambiala cuando quieras.">
+                      <select className="adm-select" value={medidaDestacada} onChange={(e) => setMedidaDestacada(e.target.value)}>
+                        <option value="">— Automática (la primera) —</option>
+                        {kitMedidas.map((m) => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </Field>
+                  )}
+                  {isBundle && kitMedidas.length > 0 && (
+                    <Field label="Foto destacada del kit por medida" hint='Por cada medida: subí tu propia foto ("Subir") o elegí una existente. "Automática" = usa la foto unificada del kit.'>
+                      <div style={{ display: "grid", gap: 10 }}>
+                        {kitMedidas.map((m) => {
+                          const cands = heroCandidates(m);
+                          const sel = heroPorMedida[m] || "";
+                          const thumbs = sel && !cands.includes(sel) ? [sel, ...cands] : cands;
+                          const up = uploadingHero === m;
+                          return (
+                            <div key={m} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                              <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--accent-hover)" }}>{m}</span>
+                              <button type="button" onClick={() => setHero(m, "")} className={`adm-btn adm-btn--sm ${sel === "" ? "adm-btn--primary" : "adm-btn--default"}`}>Automática</button>
+                              {thumbs.map((u) => (
+                                <button key={u} type="button" onClick={() => setHero(m, u)} title="Usar como destacada de esta medida"
+                                  style={{ padding: 2, borderRadius: 8, cursor: "pointer", background: "transparent", border: `2px solid ${sel === u ? "var(--accent)" : "var(--border-2)"}` }}>
+                                  <img src={u} alt="" style={{ width: 40, height: 40, objectFit: "contain", display: "block", borderRadius: 4, background: "var(--surface-3)" }} />
+                                </button>
+                              ))}
+                              <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1 }}>
+                                {up ? "Subiendo…" : "⬆ Subir"}
+                                <input type="file" accept="image/*" style={{ display: "none" }} disabled={up} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadHero(m, f); }} />
+                              </label>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </Field>
+                  )}
+                  {isVariant && (
+                    <label className="adm-switch" style={{ alignItems: "flex-start", marginBottom: medidaSiblings.length > 1 ? 16 : 0 }}>
+                      <input type="checkbox" checked={isMedidaDestacada} onChange={(e) => setIsMedidaDestacada(e.target.checked)} />
+                      <span className="adm-switch__track" />
+                      <span className="adm-switch__lab">
+                        <span className="adm-switch__t">Medida destacada de la familia ({metaBase.formato})</span>
+                        <span className="adm-switch__h">Si lo activás, al entrar desde el catálogo la familia abre en esta medida. Dejá solo una marcada por familia.</span>
+                      </span>
+                    </label>
+                  )}
+                  {medidaSiblings.length > 1 && (
+                    <div>
+                      <div className="adm-label">Imágenes por medida</div>
+                      <div className="adm-help" style={{ marginTop: 0, marginBottom: 10 }}>
+                        {isBundle
+                          ? "Editá las fotos de cada producto de la línea, ordenados por medida. Cada uno se guarda por separado."
+                          : "Editá las fotos de cada medida de esta familia sin salir de acá. Cada medida se guarda por separado."}
+                      </div>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        {medidaSiblings.map((sib) => {
+                          const open = expandedMedida === sib.id;
+                          const isThis = sib.id === product?.id;
+                          const n = sib.images?.length || 0;
+                          return (
+                            <div key={sib.id} style={{ border: "1px solid var(--border)", borderRadius: 9, overflow: "hidden", background: "var(--surface)" }}>
+                              <button type="button" onClick={() => setExpandedMedida(open ? null : sib.id)}
+                                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: "var(--surface-2)", border: "none", color: "var(--text)", cursor: "pointer", textAlign: "left" }}>
+                                {sib.primary_image
+                                  ? <img src={sib.primary_image} alt="" className="adm-thumb" style={{ width: 30, height: 30 }} />
+                                  : <div className="adm-thumb adm-thumb--ph" style={{ width: 30, height: 30 }}>🖼</div>}
+                                {sib.meta?.formato && <Badge tone="ok">{sib.meta.formato}</Badge>}
+                                <span style={{ fontWeight: 700, fontSize: 13 }}>{sib.name}{isThis && <span style={{ color: "var(--text-3)", fontWeight: 400 }}> · esta</span>}</span>
+                                <span style={{ fontSize: 11.5, color: "var(--text-3)" }}>{n} {n === 1 ? "foto" : "fotos"}</span>
+                                <span style={{ marginLeft: "auto", color: "var(--text-3)" }}>{open ? "▲" : "▼"}</span>
+                              </button>
+                              {open && <div style={{ padding: "0 12px 6px" }}><MedidaImageEditor key={sib.id} variant={sib} /></div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              )}
+
+              <Card title="Contenido de la página" hint="Pisa el contenido por defecto de la línea. Si dejás una sección vacía, se usa el default.">
+                <RepeatList
+                  title="Por qué elegirlo (beneficios)"
+                  hint='Tarjetas de "Por qué elegirlo". Título corto + descripción.'
+                  rows={benefits}
+                  fields={[
+                    { key: "title", placeholder: "Título del beneficio (ej: Para ciclos completos)" },
+                    { key: "body", placeholder: "Descripción del beneficio", textarea: true },
+                  ]}
+                  onAdd={mkRow(setBenefits, { title: "", body: "" })}
+                  onChange={setField(setBenefits)}
+                  onRemove={delRow(setBenefits)}
+                  addLabel="+ Agregar beneficio"
+                />
+                <div style={{ height: 18 }} />
+                <RepeatList
+                  title="Características clave"
+                  hint="Lista con ícono (emoji) + título + descripción."
+                  rows={features}
+                  fields={[
+                    { key: "emoji", placeholder: "Emoji (ej: ⚖)" },
+                    { key: "title", placeholder: "Título (ej: pH auto-buffer)" },
+                    { key: "body", placeholder: "Descripción", textarea: true },
+                  ]}
+                  onAdd={mkRow(setFeatures, { emoji: "", title: "", body: "" })}
+                  onChange={setField(setFeatures)}
+                  onRemove={delRow(setFeatures)}
+                  addLabel="+ Agregar característica"
+                />
+                <div style={{ height: 18 }} />
+                <RepeatList
+                  title="Datos técnicos"
+                  hint="Ficha técnica: dato + valor (ej: Composición → NPK 5-3-7)."
+                  rows={specs}
+                  fields={[
+                    { key: "label", placeholder: "Dato (ej: Composición)" },
+                    { key: "value", placeholder: "Valor (ej: NPK 5-3-7 + micros)" },
+                  ]}
+                  onAdd={mkRow(setSpecs, { label: "", value: "" })}
+                  onChange={setField(setSpecs)}
+                  onRemove={delRow(setSpecs)}
+                  addLabel="+ Agregar dato técnico"
+                />
+              </Card>
+
+              <Card title="Productos relacionados" hint="Qué se muestra como complementario o relacionado en la ficha.">
+                <ProductPicker
+                  title="Sumá para acompañar (cross-sell)"
+                  hint="Productos complementarios que aparecen en la interna."
+                  options={allProducts.filter((o) => o.slug !== slug)}
+                  selected={crossSlugs}
+                  onToggle={(s) => toggleSlug(setCrossSlugs, s)}
+                />
+                <div style={{ height: 18 }} />
+                <ProductPicker
+                  title="También de esta línea (relacionados)"
+                  hint="Sección 'También de…'. Vacío = automático por categoría."
+                  options={allProducts.filter((o) => o.slug !== slug)}
+                  selected={relatedSlugs}
+                  onToggle={(s) => toggleSlug(setRelatedSlugs, s)}
+                />
+                <div style={{ height: 18 }} />
+                <ProductPicker
+                  title="Incluye la línea completa (kit)"
+                  hint={isBundle
+                    ? "Productos que componen este kit/línea. Vacío = se arma solo con la familia."
+                    : "Sólo aplica a productos marcados como kit/línea (meta.bundle)."}
+                  options={allProducts.filter((o) => o.slug !== slug)}
+                  selected={bundleSlugs}
+                  onToggle={(s) => toggleSlug(setBundleSlugs, s)}
+                />
+              </Card>
+            </div>
+
+            {/* Columna lateral */}
+            <div className="adm-editor__side">
+              <Card title="Estado y visibilidad">
+                <label className="adm-switch" style={{ alignItems: "flex-start", marginBottom: 16 }}>
+                  <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
+                  <span className="adm-switch__track" />
+                  <span className="adm-switch__lab">
+                    <span className="adm-switch__t">Activo</span>
+                    <span className="adm-switch__h">Visible en /shop</span>
+                  </span>
+                </label>
+                <label className="adm-switch" style={{ alignItems: "flex-start" }}>
+                  <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+                  <span className="adm-switch__track" />
+                  <span className="adm-switch__lab">
+                    <span className="adm-switch__t">Destacado ⭐</span>
+                    <span className="adm-switch__h">Aparece en secciones destacadas</span>
+                  </span>
+                </label>
+              </Card>
+
+              <Card title="Precio y stock">
+                <Field label="Precio (ARS)">
+                  <div className="adm-ig">
+                    <span className="adm-ig__pre">$</span>
+                    <input className="adm-input" type="number" min="0" step="1" value={priceArs} onChange={(e) => setPriceArs(e.target.value)} placeholder="25000" />
+                  </div>
+                </Field>
+                <div className="adm-row" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                  <Field label="Stock" hint="Vacío = ∞">
+                    <input className="adm-input" type="number" min="0" step="1" value={stock} onChange={(e) => setStock(e.target.value)} placeholder="50" />
+                  </Field>
+                  <Field label="SKU">
+                    <input className="adm-input" value={sku} onChange={(e) => setSku(e.target.value)} placeholder="RACE-1-500" />
+                  </Field>
+                </div>
+              </Card>
+
+              <Card title="Organización">
+                <Field label="Categoría">
+                  <select className="adm-select" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+                    <option value="">— Sin categoría —</option>
+                    {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </Field>
+                <Field label="Orden" hint="Menor número aparece antes.">
+                  <input className="adm-input" type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
+                </Field>
+              </Card>
             </div>
           </div>
-        )}
-
-        {/* ───── Contenido de la interna (todo editable, todo opcional) ───── */}
-        <div style={{ marginTop: 26, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,.1)" }}>
-          <h4 style={{ margin: "0 0 4px", fontSize: 15 }}>Contenido de la página del producto</h4>
-          <div style={{ fontSize: 12, color: "rgba(237,233,224,.5)" }}>
-            Lo que cargues acá pisa el contenido por defecto. Si dejás una sección vacía, se usa el texto por defecto de la línea.
-          </div>
-        </div>
-
-        <RepeatList
-          title='Por qué elegirlo (beneficios)'
-          hint='Tarjetas de "Por qué elegirlo". Título corto + descripción.'
-          rows={benefits}
-          fields={[
-            { key: "title", placeholder: "Título del beneficio (ej: Para ciclos completos)" },
-            { key: "body", placeholder: "Descripción del beneficio", textarea: true },
-          ]}
-          onAdd={mkRow(setBenefits, { title: "", body: "" })}
-          onChange={setField(setBenefits)}
-          onRemove={delRow(setBenefits)}
-          addLabel="+ Agregar beneficio"
-        />
-
-        <RepeatList
-          title="Características clave"
-          hint="Lista con ícono (emoji) + título + descripción."
-          rows={features}
-          fields={[
-            { key: "emoji", placeholder: "Emoji / ícono (ej: ⚖)" },
-            { key: "title", placeholder: "Título (ej: pH auto-buffer)" },
-            { key: "body", placeholder: "Descripción", textarea: true },
-          ]}
-          onAdd={mkRow(setFeatures, { emoji: "", title: "", body: "" })}
-          onChange={setField(setFeatures)}
-          onRemove={delRow(setFeatures)}
-          addLabel="+ Agregar característica"
-        />
-
-        <RepeatList
-          title="Datos técnicos"
-          hint="Ficha técnica: dato + valor (ej: Composición → NPK 5-3-7)."
-          rows={specs}
-          fields={[
-            { key: "label", placeholder: "Dato (ej: Composición)" },
-            { key: "value", placeholder: "Valor (ej: NPK 5-3-7 + micros)" },
-          ]}
-          onAdd={mkRow(setSpecs, { label: "", value: "" })}
-          onChange={setField(setSpecs)}
-          onRemove={delRow(setSpecs)}
-          addLabel="+ Agregar dato técnico"
-        />
-
-        <ProductPicker
-          title='Sumá para acompañar (cross-sell)'
-          hint="Elegí qué productos aparecen como complementarios en la interna."
-          options={allProducts.filter((o) => o.slug !== slug)}
-          selected={crossSlugs}
-          onToggle={(s) => toggleSlug(setCrossSlugs, s)}
-        />
-
-        <ProductPicker
-          title='También de esta línea (relacionados)'
-          hint="Productos de la sección 'También de…'. Vacío = automático por categoría."
-          options={allProducts.filter((o) => o.slug !== slug)}
-          selected={relatedSlugs}
-          onToggle={(s) => toggleSlug(setRelatedSlugs, s)}
-        />
-
-        <ProductPicker
-          title="Incluye la línea completa"
-          hint={isBundle
-            ? "Productos que componen este kit/línea. Vacío = se arma solo con la familia."
-            : "Sólo aplica a productos marcados como kit/línea (meta.bundle). En otros no se muestra."}
-          options={allProducts.filter((o) => o.slug !== slug)}
-          selected={bundleSlugs}
-          onToggle={(s) => toggleSlug(setBundleSlugs, s)}
-        />
-
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
-          <button style={styles.btn()} onClick={onClose} disabled={saving}>Cancelar</button>
-          <button style={styles.btn(true)} onClick={save} disabled={saving || !name || !slug || priceArs === ""}>
-            {saving ? "Guardando…" : (isNew ? "Crear producto" : "Guardar cambios")}
-          </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
