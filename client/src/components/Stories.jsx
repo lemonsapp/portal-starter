@@ -157,7 +157,7 @@ export default function Stories({ announcements = [] }) {
                   ? <img src={selfGroup.stories[0].image_url} alt="" />
                   : selfGroup?.avatar_url
                     ? <img src={selfGroup.avatar_url} alt="" />
-                    : <span style={{ fontSize: 26 }}>🪙</span>}
+                    : <img src={COIN_IMG} alt="" style={{ width: 30, height: 30, objectFit: "contain" }} />}
               </div>
             </div>
             <div className="st-label">Tu historia</div>
