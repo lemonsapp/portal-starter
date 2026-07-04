@@ -9,12 +9,17 @@
 // El submit pega a POST /api/shop/checkout que crea la orden y devuelve
 // init_point (MercadoPago Checkout Pro) o un fallback de "orden pendiente".
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart, formatARS } from "../lib/useCart.js";
 import { useBranding } from "../lib/branding.js";
 import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
+// GSAP — spotlight ambiental que sigue el cursor (skill gsap-react).
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import "../styles/shop-checkout.css";
+
+gsap.registerPlugin(useGSAP);
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -28,6 +33,24 @@ const PROVINCIAS_AR = [
 export default function ShopCheckout() {
   useBranding();
   const navigate = useNavigate();
+  const rootRef = useRef(null);
+  const glowRef = useRef(null);
+
+  // Spotlight ambiental que sigue el cursor (sólo puntero fino, respeta
+  // reduced-motion via matchMedia). Skill: gsap-react.
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      if (!glowRef.current || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+      const xTo = gsap.quickTo(glowRef.current, "x", { duration: 0.5, ease: "power3" });
+      const yTo = gsap.quickTo(glowRef.current, "y", { duration: 0.5, ease: "power3" });
+      const move = (e) => { xTo(e.clientX); yTo(e.clientY); gsap.to(glowRef.current, { opacity: 1, duration: 0.4, overwrite: "auto" }); };
+      const leave = () => gsap.to(glowRef.current, { opacity: 0, duration: 0.4, overwrite: "auto" });
+      window.addEventListener("pointermove", move, { passive: true });
+      window.addEventListener("pointerleave", leave);
+      return () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerleave", leave); };
+    });
+  }, { scope: rootRef });
   const { items, subtotalCents, clear } = useCart();
   // Guest checkout: comprar sin loguear. Si no hay sesión, recomendamos registro.
   const isGuest = typeof window !== "undefined" && !localStorage.getItem("token") && !sessionStorage.getItem("token");
@@ -161,7 +184,8 @@ export default function ShopCheckout() {
   }
 
   return (
-    <div className="co-page theme-light">
+    <div ref={rootRef} className="co-page theme-light">
+      <div ref={glowRef} className="co-cursor-glow" aria-hidden="true" />
       <div className="co-container">
         <Link to="/shop" className="co-back">
           <span className="co-arrow">←</span> Seguir comprando

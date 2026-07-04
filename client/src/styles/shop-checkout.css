@@ -231,3 +231,63 @@ textarea.co-input { min-height: 76px; resize: vertical; }
 .co-cta:active:not(:disabled),
 .co-guest-cta:active,
 .co-promo-btn:active:not(:disabled) { transform: translateY(1px); }
+
+/* ══════════════ Capa premium: luces + glitch (2026-07-04) ══════════════ */
+.co-page { position: relative; }
+/* Aurora de luz arriba (detrás del título) */
+.co-page::before {
+  content: ""; position: absolute; inset: -6% 0 auto 0; height: 460px; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(38% 60% at 24% 0%, rgba(var(--c-accent-rgb), 0.14), transparent 70%),
+    radial-gradient(34% 55% at 80% 6%, rgba(240, 170, 90, 0.08), transparent 70%);
+  filter: blur(28px);
+  animation: co-aurora 24s ease-in-out infinite alternate;
+}
+@keyframes co-aurora {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
+  50%  { transform: translate3d(3%, 2%, 0) scale(1.08); }
+  100% { transform: translate3d(-1%, 1%, 0) scale(1.04); }
+}
+.co-container { position: relative; z-index: 1; }
+
+/* Grano fílmico sutil */
+.co-page::after {
+  content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none; opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* Spotlight que sigue el cursor (posición por GSAP) */
+.co-cursor-glow {
+  position: fixed; top: 0; left: 0; width: 520px; height: 520px; margin: -260px 0 0 -260px;
+  border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0;
+  background: radial-gradient(circle, rgba(var(--c-accent-rgb), 0.10), transparent 60%);
+  mix-blend-mode: multiply; will-change: transform, opacity;
+}
+
+/* Glitch del título al hover */
+@media (hover: hover) {
+  .co-title:hover { animation: co-glitch 0.42s steps(2, end) 1; }
+}
+@keyframes co-glitch {
+  0%, 100% { text-shadow: none; transform: translateX(0); }
+  20% { text-shadow: -2px 0 rgba(255, 45, 85, 0.5), 2px 0 rgba(45, 224, 255, 0.5); transform: translateX(-1px); }
+  40% { text-shadow: 2px 0 rgba(255, 45, 85, 0.45), -2px 0 rgba(45, 224, 255, 0.45); transform: translateX(1px); }
+  62% { text-shadow: -1px 0 rgba(255, 45, 85, 0.35), 1px 0 rgba(45, 224, 255, 0.35); transform: translateX(0); }
+}
+
+/* CTA de pago: barrido de brillo al hover */
+.co-cta { position: relative; overflow: hidden; }
+.co-cta::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-130%);
+}
+.co-cta:hover:not(:disabled)::after { transform: translateX(130%); transition: transform 0.75s var(--ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  .co-page::before { animation: none; }
+  .co-title:hover { animation: none; }
+  .co-cursor-glow { display: none !important; }
+  .co-cta::after { display: none; }
+}

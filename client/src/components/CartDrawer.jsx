@@ -249,6 +249,22 @@ export default function CartDrawer() {
           .cart-fab, .cd-close, .cd-qty, .cd-sugadd, .cd-checkout { transition: none; }
           .cart-fab:hover, .cd-close:hover { transform: none; }
         }
+
+        /* Atmósfera premium del drawer (dark → glow verde Holistic) */
+        .cart-drawer::before {
+          content: ""; position: absolute; left: 0; right: 0; top: 0; height: 240px;
+          z-index: 0; pointer-events: none;
+          background: radial-gradient(120% 80% at 50% 0%, rgba(82, 183, 136, 0.16), transparent 70%);
+        }
+        .cart-drawer > * { position: relative; z-index: 1; }
+        .cd-checkout { position: relative; overflow: hidden; }
+        .cd-checkout::after {
+          content: ""; position: absolute; inset: 0; pointer-events: none;
+          background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.22) 50%, transparent 70%);
+          transform: translateX(-130%);
+        }
+        .cd-checkout:hover:not(:disabled)::after { transform: translateX(130%); transition: transform 0.7s ease; }
+        @media (prefers-reduced-motion: reduce) { .cd-checkout::after { display: none; } }
       `}</style>
       <button
         type="button"
@@ -267,7 +283,7 @@ export default function CartDrawer() {
 
       <div style={styles.backdrop(open)} onClick={() => setOpen(false)} />
 
-      <aside style={styles.drawer(open)} role="dialog" aria-label="Tu carrito" aria-hidden={!open}>
+      <aside className="cart-drawer" style={styles.drawer(open)} role="dialog" aria-label="Tu carrito" aria-hidden={!open}>
         <header style={styles.drawerHead}>
           <h2 style={styles.drawerTitle}>Tu carrito</h2>
           <button className="cd-close" style={styles.closeBtn} onClick={() => setOpen(false)} aria-label="Cerrar carrito">✕</button>
