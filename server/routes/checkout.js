@@ -280,7 +280,7 @@ const checkoutSchema = z.object({
 // Public router — sin auth (guest checkout)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function publicRouter() {
+function publicRouter({ authRequired } = {}) {
   const router = express.Router();
 
   // POST /api/shop/checkout
@@ -578,6 +578,40 @@ a{color:${color};text-decoration:underline dotted;}
       res.status(500).json({ error: "Error al consultar la orden" });
     }
   });
+
+  // GET /api/shop/my-orders — pedidos del usuario logueado (seguimiento).
+  // El checkout es "guest" (sin user_id), así que matcheamos por el email de
+  // la cuenta. Devuelve la lista con estado + tracking para el panel del cliente.
+  if (authRequired) {
+    router.get("/my-orders", authRequired, async (req, res) => {
+      try {
+        const u = await db.query("SELECT email FROM users WHERE id = $1", [req.user.id]);
+        const email = u.rows[0]?.email;
+        if (!email) return res.json({ orders: [], email: null });
+        const { rows } = await db.query(
+          `SELECT o.*,
+                  (SELECT COUNT(*)::int FROM order_items oi WHERE oi.order_id = o.id) AS item_count
+             FROM orders o
+            WHERE LOWER(o.customer_email) = LOWER($1)
+            ORDER BY o.created_at DESC
+            LIMIT 50`,
+          [email]
+        );
+        const orders = rows.map((o) => {
+          const s = serializeOrder(o, []);
+          delete s.admin_notes;
+          delete s.mp_status_raw;
+          delete s.mp_payment_id;
+          s.item_count = o.item_count;
+          return s;
+        });
+        res.json({ orders, email });
+      } catch (e) {
+        console.error("[checkout my-orders]", e);
+        res.status(500).json({ error: "Error al consultar tus pedidos" });
+      }
+    });
+  }
 
   return router;
 }

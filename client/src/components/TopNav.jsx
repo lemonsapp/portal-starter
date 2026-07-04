@@ -387,6 +387,9 @@ export default function TopNav() {
                                     <Link to="/perfil" style={S.userMenuItem}>
                                         <Icon name="user" size={16} /> Mi perfil
                                     </Link>
+                                    <Link to="/mis-pedidos" style={S.userMenuItem}>
+                                        <Icon name="shop" size={16} /> Mis pedidos
+                                    </Link>
                                     <Link to="/coins" style={S.userMenuItem}>
                                         <Icon name="puntos" size={16} /> Mis puntos{balance != null ? ` (${balance})` : ""}
                                     </Link>

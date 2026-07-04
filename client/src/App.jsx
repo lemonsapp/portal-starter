@@ -35,6 +35,7 @@ const ShopProduct      = lazy(() => import("./pages/ShopProduct.jsx"));
 const ShopCheckout     = lazy(() => import("./pages/ShopCheckout.jsx"));
 const ShopCheckoutSuccess = lazy(() => import("./pages/ShopCheckoutSuccess.jsx"));
 const ShopCheckoutFailure = lazy(() => import("./pages/ShopCheckoutFailure.jsx"));
+const MyOrders         = lazy(() => import("./pages/MyOrders.jsx"));
 import CartDrawer from "./components/CartDrawer.jsx";
 import ChunkErrorBoundary from "./components/ChunkErrorBoundary.jsx";
 
@@ -186,6 +187,7 @@ export default function App() {
         <Route path="/inicio"           element={<AuthGate><HomeClient /></AuthGate>} />
         <Route path="/coins"            element={<FeatureGate flag="coins"><AuthGate><Coins /></AuthGate></FeatureGate>} />
         <Route path="/perfil"           element={<AuthGate><ProfilePage /></AuthGate>} />
+        <Route path="/mis-pedidos"      element={<AuthGate><MyOrders /></AuthGate>} />
         <Route path="/perfil/:username"    element={<ProfilePage />} />
         <Route path="/perfil/id/:userId"   element={<ProfileByIdRedirect />} />
         <Route path="/chat"             element={<FeatureGate flag="chat"><AuthGate><ChatPage /></AuthGate></FeatureGate>} />

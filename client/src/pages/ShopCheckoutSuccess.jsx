@@ -337,7 +337,9 @@ export default function ShopCheckoutSuccess() {
                 {/* CTAs */}
                 <div ref={ctaRowRef} style={S.ctaRow}>
                     <Link to="/shop" style={S.btn}>Seguir comprando</Link>
-                    <Link to="/inicio" style={S.btnGhost}>Volver al inicio</Link>
+                    {(localStorage.getItem("token") || sessionStorage.getItem("token"))
+                        ? <Link to="/mis-pedidos" style={S.btnGhost}>Ver mis pedidos</Link>
+                        : <Link to="/inicio" style={S.btnGhost}>Volver al inicio</Link>}
                 </div>
 
                 <p style={S.fineprint}>

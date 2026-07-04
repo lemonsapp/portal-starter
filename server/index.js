@@ -2277,7 +2277,7 @@ app.use("/api/admin/shop", requireFeature("shop"), shop.build({ authRequired, re
 // Admin router agrega /orders endpoints bajo /api/admin/shop.
 // Webhook MP se monta sin feature flag (MP necesita poder llamarlo siempre
 // si hay órdenes pendientes, aunque el shop esté en mantenimiento momentáneo).
-app.use("/api/shop",       requireFeature("shop"), checkout.publicRouter());
+app.use("/api/shop",       requireFeature("shop"), checkout.publicRouter({ authRequired }));
 app.use("/api/admin/shop", requireFeature("shop"), checkout.adminRouter({ authRequired, requireRole }));
 app.use("/api/webhooks",   checkout.webhookRouter());
 
