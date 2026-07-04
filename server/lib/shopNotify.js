@@ -56,7 +56,7 @@ async function getResendConfig() {
   ]);
   const apiKey = csKey || process.env.RESEND_API_KEY || null;
   const fromEmail = csFromEmail || (process.env.MAIL_FROM || "").match(/<([^>]+)>/)?.[1] || process.env.MAIL_FROM || null;
-  const fromName = csFromName || (process.env.MAIL_FROM || "").match(/^([^<]+)/)?.[1]?.trim() || "Holistic Growshop";
+  const fromName = csFromName || (process.env.MAIL_FROM || "").match(/^([^<]+)/)?.[1]?.trim() || "Holistic";
   return {
     apiKey,
     from: apiKey && fromEmail ? `${fromName} <${fromEmail}>` : null,
@@ -139,7 +139,7 @@ function emailShell({ heading, intro, body, footer }) {
       ${body || ""}
     </td></tr>
     <tr><td style="padding:20px 32px;background:#f9f6f0;border-top:1px solid #ece8e0;font-size:12px;line-height:1.5;color:#666;">
-      ${footer || `<strong>Holistic Growshop</strong> · Soporte: <a href="https://wa.me/" style="color:${BRAND_CTA};">WhatsApp</a><br>
+      ${footer || `<strong>Holistic</strong> · Soporte: <a href="https://wa.me/" style="color:${BRAND_CTA};">WhatsApp</a><br>
       Si no esperabas este email, ignoralo o respondé y lo revisamos.`}
     </td></tr>
   </table>
@@ -515,7 +515,7 @@ function injectUnsubFooter(html, unsubUrl) {
   const footer = `
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:24px;border-top:1px solid #e5e5e5;padding-top:16px;">
       <tr><td style="font-family:-apple-system,'Segoe UI',Roboto,sans-serif;font-size:11px;line-height:1.5;color:#999;text-align:center;">
-        Recibís este email porque estás en la lista de clientes de <strong>Holistic Growshop</strong>.<br>
+        Recibís este email porque estás en la lista de clientes de <strong>Holistic</strong>.<br>
         ¿No querés más? <a href="${unsubUrl}" style="color:#666;text-decoration:underline;">Darse de baja</a>.
       </td></tr>
     </table>

@@ -506,7 +506,7 @@ a{color:${color};text-decoration:underline dotted;}
 .cta{display:inline-block;margin-top:14px;padding:12px 22px;border-radius:999px;background:linear-gradient(135deg,#25D366 0%,#2E8F6E 100%);color:#fff;text-decoration:none;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;}
 </style></head>
 <body><div class="card">
-  <div class="eyebrow">· Holistic Growshop ·</div>
+  <div class="eyebrow">· Holistic ·</div>
   <div class="icon">${result.ok ? "👋" : "⚠️"}</div>
   <h1>${title}</h1>
   ${msg}

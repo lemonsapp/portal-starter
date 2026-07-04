@@ -6,8 +6,8 @@ import "../styles/global.css";
 // Defaults SEO-optimizados para Home (SEO-DOCS v3).
 // Otras páginas pasan title/description/canonical via props.
 const {
-    title = "Fertilizantes para Cultivo Indoor | Línea Pro, Elite y Race — Holistic Growshop",
-    description = "Holistic Growshop: sistema adaptable de fertilizantes para cultivo indoor. Línea Pro, Línea Elite, Línea Race y Bio Estimulante. pH estable, ciclo completo, resultados superiores. Envío gratis.",
+    title = "Fertilizantes para Cultivo Indoor | Línea Pro, Elite y Race — Holistic",
+    description = "Holistic: sistema adaptable de fertilizantes para cultivo indoor. Línea Pro, Línea Elite, Línea Race y Bio Estimulante. pH estable, ciclo completo, resultados superiores. Envío gratis.",
     canonical,
     ogImage = "/imagenes-web/banners/og-race.jpg",
 } = Astro.props;
@@ -20,7 +20,7 @@ const canonicalURL = canonical
 const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "Holistic Growshop",
+    "name": "Holistic",
     "url": "https://hgrowshop.com",
     "logo": "https://hgrowshop.com/imagenes-web/marca/favicon.svg",
     "description": "Fertilizantes para cultivo indoor argentinos. Línea Pro, Línea Elite, Línea Race, Bio Estimulante, Cloner y Day 0.",
@@ -51,7 +51,7 @@ const organizationSchema = {
     {/* Open Graph */}
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_AR" />
-    <meta property="og:site_name" content="Holistic Growshop" />
+    <meta property="og:site_name" content="Holistic" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />

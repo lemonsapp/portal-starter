@@ -237,7 +237,7 @@ export default function Shop() {
 
       {/* Firma del footer */}
       <div className="cat-signature">
-        <span>Holistic Growshop</span>
+        <span>Holistic</span>
         <span>· Nutrición Superior · Cultivo Indoor / Outdoor ·</span>
       </div>
     </div>

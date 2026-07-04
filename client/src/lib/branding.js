@@ -17,7 +17,7 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\
 // actualizá acá también (no hay import directo porque está fuera del root
 // de Vite y queremos zero-build-step).
 const BRANDING_DEFAULTS = {
-  name: "Holistic Growshop",
+  name: "Holistic",
   slogan: "Tu growshop de confianza · Línea Elite, Pro y Bio",
   logo_url: "/portal/icons/holistic-logo.svg",
   favicon_url: "/portal/icons/holistic-logo.svg",

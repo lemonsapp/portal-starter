@@ -25,7 +25,7 @@ export const capitulos = [
         usoNombre: "Bioestimulante",
 
         // SEO meta — v3 §5
-        seoTitle: "Bioestimulante Orgánico para Cultivo Indoor | Holistic Growshop",
+        seoTitle: "Bioestimulante Orgánico para Cultivo Indoor | Holistic",
         seoDescription:
             "Bio Estimulante Holistic: bioestimulante orgánico para cultivo indoor fabricado en biorreactor industrial. Estimula raíces, potencia absorción de nutrientes y activa defensas naturales. Compatible con todos los fertilizantes del catálogo. Envío gratis.",
         keywords: ["bioestimulante orgánico", "cultivo indoor", "estimulador de raíces", "Azospirillum", "Azotobacter", "absorción de nutrientes"],
@@ -55,7 +55,7 @@ export const capitulos = [
         nombreDestacado: "Gel",
 
         // SEO meta — v3 §6
-        seoTitle: "Gel Enraizante para Esquejes | Cloner — Holistic Growshop",
+        seoTitle: "Gel Enraizante para Esquejes | Cloner — Holistic",
         seoDescription:
             "Cloner Holistic: gel enraizante de alta adherencia para esquejes. Prendimiento rápido y uniforme, mínima manipulación. El punto de partida de cada ciclo de cultivo indoor. Envío gratis.",
         keywords: ["gel enraizante", "esquejes", "prendimiento rápido", "cultivo indoor", "enraizante para clones"],

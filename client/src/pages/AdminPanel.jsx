@@ -2523,7 +2523,7 @@ function StatCard({ label, value, accent }) {
 const CAMPAIGN_TEMPLATES = {
   promo: {
     label: "🏷️ Promo / Oferta",
-    subject: "Oferta exclusiva en Holistic Growshop 🌱",
+    subject: "Oferta exclusiva en Holistic 🌱",
     body: `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden;font-family:-apple-system,sans-serif;">
   <tr><td style="background:#0a0a0a;padding:32px;text-align:center;color:#fff;">
     <div style="font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:#A7F5C8;">HOLISTIC · GROWSHOP</div>
@@ -2544,7 +2544,7 @@ const CAMPAIGN_TEMPLATES = {
   },
   anuncio: {
     label: "📣 Anuncio / Update",
-    subject: "Novedades de Holistic Growshop",
+    subject: "Novedades de Holistic",
     body: `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden;font-family:-apple-system,sans-serif;">
   <tr><td style="background:#0a0a0a;padding:32px;text-align:center;color:#fff;">
     <div style="font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:#A7F5C8;">HOLISTIC · NOVEDADES</div>
@@ -2818,7 +2818,7 @@ function CampaignComposer({ campaign, segments, onClose, onSaved }) {
         <label style={styles.label}>Contenido HTML</label>
         {previewMode ? (
           <iframe
-            srcDoc={bodyHtml + `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:24px;border-top:1px solid #e5e5e5;padding-top:16px;"><tr><td style="font-family:sans-serif;font-size:11px;line-height:1.5;color:#999;text-align:center;">Recibís este email porque estás en la lista de clientes de Holistic Growshop.<br>¿No querés más? <a href="#">Darse de baja</a>.</td></tr></table>`}
+            srcDoc={bodyHtml + `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:24px;border-top:1px solid #e5e5e5;padding-top:16px;"><tr><td style="font-family:sans-serif;font-size:11px;line-height:1.5;color:#999;text-align:center;">Recibís este email porque estás en la lista de clientes de Holistic.<br>¿No querés más? <a href="#">Darse de baja</a>.</td></tr></table>`}
             style={{ width: "100%", height: 540, border: "1px solid rgba(255,255,255,.1)", borderRadius: 8, background: "#fff" }}
             title="Preview del email"
             sandbox=""
