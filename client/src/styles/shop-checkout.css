@@ -291,3 +291,11 @@ textarea.co-input { min-height: 76px; resize: vertical; }
   .co-cursor-glow { display: none !important; }
   .co-cta::after { display: none; }
 }
+
+/* ── Mobile: aligerar la capa premium (perf en touch) ── */
+@media (max-width: 768px) {
+  .co-page { background-attachment: scroll; }        /* fixed jankea/ignora en iOS */
+  .co-page::after { display: none; }                 /* grano: mix-blend caro */
+  .co-page::before { animation: none; filter: blur(22px); }
+  .co-cursor-glow { display: none !important; }
+}

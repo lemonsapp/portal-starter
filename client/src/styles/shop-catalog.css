@@ -342,3 +342,12 @@
   .cat-cursor-glow { display: none !important; }
   .cat-card-cta::after { display: none; }
 }
+
+/* ── Mobile: aligerar la capa premium (perf en touch) ── */
+@media (max-width: 768px) {
+  .cat-page::after { display: none; }               /* grano: mix-blend es caro al scrollear */
+  .cat-hero::before { animation: none; filter: blur(20px); } /* aurora estática */
+  .cat-cursor-glow { display: none !important; }    /* no hay cursor en touch */
+  .cat-card::before { display: none; }              /* spotlight interno (sólo hover) */
+  .cat-card { transform: translateY(calc(var(--ty, 0px) + var(--rty, 0px))); } /* sin 3D → menos capas */
+}
