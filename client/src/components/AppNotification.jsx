@@ -1,6 +1,7 @@
 // client/src/components/AppNotification.jsx
 // Globito flotante de notificación in-app (avisos del admin → users)
 import { useEffect, useState } from "react";
+import { useUser } from "../context/UserContext.jsx";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -24,6 +25,8 @@ function addDismissed(id) {
 }
 
 export default function AppNotification() {
+  const { me } = useUser();
+  const isStaff = ["admin", "operator"].includes(me?.role);
   const [notif, setNotif]       = useState(null);
   const [visible, setVisible]   = useState(false);
   const [expanded, setExpanded] = useState(true);
@@ -61,6 +64,8 @@ export default function AppNotification() {
   }
 
   if (!notif || !visible) return null;
+  // Los avisos de pedidos (type='order') son sólo para staff logueado.
+  if (notif.type === "order" && !isStaff) return null;
 
   const style = TYPE_STYLES[notif.type] || TYPE_STYLES.info;
 

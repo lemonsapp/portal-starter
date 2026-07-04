@@ -38,10 +38,13 @@ migrate().catch(e => console.error("[NOTIF MIGRATE]", e));
 router.get("/active", authRequired, async (req, res) => {
   try {
     const role = req.user.role;
+    // Los avisos de pedidos (type='order') son SÓLO para staff, aunque alguna
+    // fila vieja haya quedado con target_role='all'. Un cliente nunca los ve.
     const q = await db.query(`
       SELECT * FROM broadcast_notifications
       WHERE active = TRUE
         AND (target_role = 'all' OR target_role = $1)
+        AND (type <> 'order' OR $1 IN ('admin', 'operator'))
       ORDER BY created_at DESC
       LIMIT 1
     `, [role]);
