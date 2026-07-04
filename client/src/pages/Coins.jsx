@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useToast } from "../components/ToastReward.jsx";
 import { Pop, FadeUp, Pulse, Jumbo, CountUp } from "../components/MotionPop.jsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -146,7 +147,9 @@ function SpinModal({ onClose, onWin }) {
 
   const SIZE = 320, R = 130, cx = SIZE/2, cy = SIZE/2, n = PRIZES.length;
 
-  return (
+  // Portal al body: escapa cualquier ancestro con transform/filter (framer-motion)
+  // que rompería el position:fixed y desplazaría el modal fuera de vista.
+  return createPortal((
     <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.95)",zIndex:2000,display:"flex",alignItems:"flex-start",justifyContent:"center",backdropFilter:"blur(12px)",overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"clamp(10px,3vh,36px) 12px" }}
       onClick={e=>e.target===e.currentTarget&&!spinning&&onClose()}>
       <ConfettiExplosion active={showConfetti} />
@@ -225,7 +228,7 @@ function SpinModal({ onClose, onWin }) {
             <div style={{ fontWeight:900,fontSize:36,color:"var(--brand-primary)",fontVariantNumeric:"tabular-nums",textShadow:"0 0 20px var(--brand-primary)66" }}>{timeLeft}</div>
           </div>
         ) : !errorMsg && (
-          <div style={{ textAlign:"center",color:"rgba(237,233,224,.6)",fontSize:13 }}>¡Girá para ganar hasta 1000 Puntos!</div>
+          <div style={{ textAlign:"center",color:"rgba(237,233,224,.6)",fontSize:13 }}>¡Girá para ganar puntos gratis todos los días!</div>
         )}
 
         <button onClick={spin} disabled={!canSpin||spinning}
@@ -236,7 +239,7 @@ function SpinModal({ onClose, onWin }) {
         </button>
       </div>
     </div>
-  );
+  ), document.body);
 }
 
 // ── TIENDA ─────────────────────────────────────────────────────────────────────
@@ -1018,7 +1021,13 @@ function Instagram() {
 
 // ── MAIN ───────────────────────────────────────────────────────────────────────
 export default function Coins() {
-  const [tab, setTab] = useState("tienda");
+  // En mobile el balance vive en su propia pestaña "Balance" (no se repite arriba
+  // de cada tab). En desktop se muestra siempre como header.
+  const isMobileInit = typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
+  const [isMobile, setIsMobile] = useState(isMobileInit);
+  const [tab, setTab] = useState(isMobileInit ? "balance" : "tienda");
+  const tabsRef = useRef(null);
+  const [tabHint, setTabHint] = useState(false); // flecha "hay más tabs →" en mobile
   const [balance, setBalance] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
   const [level, setLevel] = useState("bronze");
@@ -1048,6 +1057,30 @@ export default function Coins() {
     });
   }, []);
 
+  // Reacciona al cambio de viewport (rotar / resize) para mover el balance.
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const on = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
+  // Detecta si la barra de tabs tiene scroll horizontal pendiente para mostrar
+  // la flecha-affordance; la oculta al llegar al final.
+  useEffect(() => {
+    const el = tabsRef.current;
+    if (!el) return;
+    const update = () => {
+      const canScroll = el.scrollWidth > el.clientWidth + 4;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+      setTabHint(canScroll && !atEnd);
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => { el.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+  }, [isMobile]);
+
   function copyCode() {
     if (!customerCode) return;
     navigator.clipboard?.writeText(customerCode);
@@ -1069,6 +1102,7 @@ export default function Coins() {
   const pct = lc.n ? Math.min(100,(totalEarned/lc.n)*100) : 100;
 
   const TABS = [
+    ...(isMobile ? [{ id:"balance", icon:"💰", label:"Balance", color:"var(--brand-primary)" }] : []),
     { id:"canjes",   icon:"🎟️", label:"Canjes",   color:"var(--brand-primary)" },
     { id:"comofunciona", icon:"📖", label:"Cómo funciona", color:"#60a5fa" },
     { id:"instagram",icon:"📸", label:"Instagram",color:"#ec4899" },
@@ -1095,6 +1129,7 @@ export default function Coins() {
           @keyframes wiggle{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
           @keyframes heroGlow{0%,100%{box-shadow:0 0 40px var(--brand-primary)15,inset 0 1px 0 rgba(var(--brand-primary-rgb),0.1)}50%{box-shadow:0 0 80px var(--brand-primary)25,inset 0 1px 0 rgba(var(--brand-primary-rgb),0.2)}}
           @keyframes numberPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+          @keyframes tabHintNudge{0%,100%{transform:translateX(0);opacity:.45}50%{transform:translateX(4px);opacity:1}}
           .tab-btn:hover { transform: scale(1.05) !important; }
         `}</style>
 
@@ -1102,8 +1137,9 @@ export default function Coins() {
           <div key={p.id} style={{ position:"fixed",left:`${p.x}%`,top:"50%",zIndex:9999,animation:"coinFly 2.8s ease-out forwards",animationDelay:`${p.delay}s`,pointerEvents:"none" }}><Coin size={28} /></div>
         ))}
 
-        {/* TOPBAR DE TABS (Tienda · Ruleta · Misiones · Ranking · Regalar) */}
-        <div style={{ display:"flex",gap:6,padding:"14px 24px",borderBottom:"1px solid rgba(255,255,255,0.06)",background:"rgba(5,5,5,0.96)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",position:"sticky",top:64,zIndex:100,overflowX:"auto",scrollbarWidth:"none" }}>
+        {/* TOPBAR DE TABS — scrollable horizontal; flecha-affordance en mobile */}
+        <div style={{ position:"sticky",top:64,zIndex:100,background:"rgba(5,5,5,0.96)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+          <div ref={tabsRef} style={{ display:"flex",gap:6,padding:"14px 24px",overflowX:"auto",scrollbarWidth:"none" }}>
           {TABS.map(t=>{
             const isActive = tab===t.id && t.id!=="ruleta";
             return (
@@ -1116,6 +1152,12 @@ export default function Coins() {
               </Pop>
             );
           })}
+          </div>
+          {tabHint && (
+            <div aria-hidden="true" style={{ position:"absolute",right:0,top:0,bottom:0,width:64,display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:8,pointerEvents:"none",background:"linear-gradient(90deg,transparent,rgba(5,5,5,0.96) 55%)" }}>
+              <span style={{ fontSize:22,fontWeight:900,color:"var(--brand-primary)",animation:"tabHintNudge 1.2s ease-in-out infinite" }}>›</span>
+            </div>
+          )}
         </div>
 
         {/* CONTENIDO */}
@@ -1125,7 +1167,8 @@ export default function Coins() {
             <BuyCTA variant="inline" label="COMPRAR" />
           </div>
 
-          {/* HERO EDITORIAL */}
+          {/* HERO EDITORIAL — en mobile sólo bajo la pestaña "Balance"; en desktop siempre */}
+          {(!isMobile || tab === "balance") && (<>
           <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"clamp(20px,5vw,32px) clamp(16px,5vw,36px)",marginBottom:28,overflow:"hidden",display:"block" }}>
             <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--lemon),var(--orange),transparent)" }}/>
             <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px)",backgroundSize:"48px 48px",pointerEvents:"none",opacity:.7 }}/>
@@ -1186,6 +1229,7 @@ export default function Coins() {
           </FadeUp>
 
           <ReferralCard />
+          </>)}
 
           {tab==="canjes"   && <Canjes balance={balance} userId={userId} onRedeem={c=>{ setBalance(b=>b-c); }} />}
           {tab==="comofunciona" && <ComoFunciona pesoPerPoint={pesoPerPoint} code={customerCode} />}
