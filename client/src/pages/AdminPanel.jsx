@@ -2054,6 +2054,16 @@ const ORDER_STATUS_META = {
   failed:          { label: "Fallido",           color: "#fca5a5", emoji: "❌" },
 };
 
+// Acciones rápidas por fila: avanzar la etapa del pedido sin abrir el detalle.
+const NEXT_ACTIONS = {
+  pending_payment: [{ to: "paid", label: "Marcar pagado", variant: "primary" }, { to: "cancelled", label: "Cancelar", variant: "danger" }],
+  paid:            [{ to: "dispatched", label: "🚚 Despachar", variant: "primary" }, { to: "cancelled", label: "Cancelar", variant: "danger" }],
+  dispatched:      [{ to: "completed", label: "✅ Completar", variant: "primary" }],
+  completed:       [],
+  cancelled:       [{ to: "pending_payment", label: "Reabrir", variant: "default" }],
+  failed:          [{ to: "pending_payment", label: "Reabrir", variant: "default" }],
+};
+
 function OrdersTab() {
   const [orders, setOrders] = useState([]);
   const [counts, setCounts] = useState({});
@@ -2061,6 +2071,7 @@ function OrdersTab() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
+  const [changing, setChanging] = useState(null);
 
   async function load() {
     setLoading(true);
@@ -2078,6 +2089,23 @@ function OrdersTab() {
     setLoading(false);
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [filter]);
+
+  // Cambia el estado del pedido desde la lista (confirma primero). Reusa el
+  // endpoint del detalle. Para "Despachar" sin tracking, el nº de seguimiento
+  // se puede cargar después en el detalle.
+  async function quickStatus(e, id, status) {
+    e.stopPropagation();
+    if (!confirm(`Cambiar este pedido a "${ORDER_STATUS_META[status]?.label}"?`)) return;
+    setChanging(`${id}-${status}`);
+    try {
+      const r = await fetch(`${API}/api/admin/shop/orders/${id}/status`, {
+        method: "POST", headers: jsonHdr(), body: JSON.stringify({ status }),
+      });
+      if (r.ok) await load();
+      else alert("No se pudo cambiar el estado.");
+    } catch { alert("Error de red."); }
+    setChanging(null);
+  }
 
   const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
   const STATUS_TONE = { pending_payment: "warn", paid: "ok", dispatched: "muted", completed: "ok", cancelled: "muted", failed: "danger" };
@@ -2127,7 +2155,7 @@ function OrdersTab() {
                   <th>Total</th>
                   <th>Estado</th>
                   <th>Fecha</th>
-                  <th style={{ width: 120 }}></th>
+                  <th style={{ width: 300 }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -2146,8 +2174,14 @@ function OrdersTab() {
                         {new Date(o.created_at).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}
                       </td>
                       <td>
-                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                          <Btn size="sm" onClick={(e) => { e.stopPropagation(); setDetail(o.id); }}>Ver detalle</Btn>
+                        <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", flexWrap: "wrap" }}>
+                          {(NEXT_ACTIONS[o.status] || []).map((a) => (
+                            <Btn key={a.to} size="sm" variant={a.variant} disabled={changing === `${o.id}-${a.to}`}
+                              onClick={(e) => quickStatus(e, o.id, a.to)}>
+                              {changing === `${o.id}-${a.to}` ? "…" : a.label}
+                            </Btn>
+                          ))}
+                          <Btn size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setDetail(o.id); }}>Detalle</Btn>
                         </div>
                       </td>
                     </tr>
