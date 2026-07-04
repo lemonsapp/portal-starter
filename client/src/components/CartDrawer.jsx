@@ -254,13 +254,13 @@ export default function CartDrawer() {
         .cart-drawer::before {
           content: ""; position: absolute; left: 0; right: 0; top: 0; height: 240px;
           z-index: 0; pointer-events: none;
-          background: radial-gradient(120% 80% at 50% 0%, rgba(82, 183, 136, 0.16), transparent 70%);
+          background: radial-gradient(120% 80% at 50% 0%, rgba(82, 183, 136, 0.10), transparent 72%);
         }
         .cart-drawer > * { position: relative; z-index: 1; }
         .cd-checkout { position: relative; overflow: hidden; }
         .cd-checkout::after {
           content: ""; position: absolute; inset: 0; pointer-events: none;
-          background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.22) 50%, transparent 70%);
+          background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.14) 50%, transparent 65%);
           transform: translateX(-130%);
         }
         .cd-checkout:hover:not(:disabled)::after { transform: translateX(130%); transition: transform 0.7s ease; }

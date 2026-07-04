@@ -175,9 +175,9 @@ export default function Shop() {
         .from(".cat-display", { y: 26, opacity: 0, duration: 0.7 }, "-=0.28")
         // glitch: jitter rápido de skew/x al asentar el título
         .to(".cat-display", { keyframes: [
-          { x: -3, skewX: 6, duration: 0.05 },
-          { x: 3, skewX: -5, duration: 0.05 },
           { x: -2, skewX: 3, duration: 0.05 },
+          { x: 2, skewX: -3, duration: 0.05 },
+          { x: -1, skewX: 1.5, duration: 0.05 },
           { x: 0, skewX: 0, duration: 0.06 },
         ], ease: "none" }, "-=0.15")
         .from(".cat-sub", { y: 16, opacity: 0, duration: 0.6 }, "-=0.3");
@@ -363,7 +363,7 @@ function ShopCard({ family, onAdd }) {
     const r = el.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width;   // 0..1
     const py = (e.clientY - r.top) / r.height;   // 0..1
-    const MAX = 6;                               // grados de inclinación
+    const MAX = 4;                               // grados de inclinación
     el.style.setProperty("--ry", `${(px - 0.5) * 2 * MAX}deg`);
     el.style.setProperty("--rx", `${-(py - 0.5) * 2 * MAX}deg`);
     el.style.setProperty("--mx", `${px * 100}%`);
