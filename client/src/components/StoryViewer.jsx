@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Pop } from "./MotionPop.jsx";
 import { useBranding } from "../lib/branding.js";
+import { COIN_IMG } from "../lib/coin.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -280,7 +281,11 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
               </>
             ) : (
               <>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${story.color}25`, border: `1px solid ${story.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{story.emoji}</div>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${story.color}25`, border: `1px solid ${story.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
+                  {story.coin
+                    ? <img src={COIN_IMG} alt="" style={{ width: 22, height: 22, objectFit: "contain" }} />
+                    : story.emoji}
+                </div>
                 <div>
                   <div style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: "2px", color: story.color, textTransform: "uppercase", fontWeight: 700 }}>
                     {branding.name} {story.kind === "tip" ? "Tip" : "anuncia"}
@@ -322,7 +327,11 @@ export default function StoryViewer({ buckets, startBucket = 0, startStory = 0, 
         ) : (
           <>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 32px", zIndex: 3, pointerEvents: "none" }}>
-              <div style={{ fontSize: 80, marginBottom: 18, filter: `drop-shadow(0 0 24px ${story.color}aa)`, lineHeight: 1 }}>{story.emoji}</div>
+              <div style={{ fontSize: 80, marginBottom: 18, filter: `drop-shadow(0 0 24px ${story.color}aa)`, lineHeight: 1 }}>
+                {story.coin
+                  ? <img src={COIN_IMG} alt="" style={{ width: 88, height: 88, objectFit: "contain" }} />
+                  : story.emoji}
+              </div>
               <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: "clamp(36px, 6vw, 56px)", lineHeight: .95, letterSpacing: "1px", color: "#fff", marginBottom: 16, textShadow: `0 4px 24px ${story.color}66` }}>
                 {story.title}
               </div>

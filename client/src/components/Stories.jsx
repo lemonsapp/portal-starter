@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import StoryViewer from "./StoryViewer.jsx";
+import { COIN_IMG } from "../lib/coin.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -16,7 +17,7 @@ const CAT_CFG = {
 const TIPS = [
   { title: "Bienvenido al portal",         body: "Tu cuenta es tu pase a la comunidad: posteá, sumate al chat, ganá coins y desbloqueá items premium del perfil.",   emoji: "💡", color: "#fbbf24" },
   { title: "Stories del día",              body: "Subí hasta 5 stories diarias. Las ves vos, tus amigos y la comunidad — duran 24 hs y suman engagement.",            emoji: "⚡", color: "var(--brand-accent, #ff8c2a)" },
-  { title: "Coins acumulan",               body: "Cada interacción te suma coins. Canjealas por descuentos, items premium del perfil o powers del chat.",            emoji: "🪙", color: "var(--brand-primary, #f5e03a)" },
+  { title: "Coins acumulan",               body: "Cada interacción te suma coins. Canjealas por descuentos, items premium del perfil o powers del chat.",            emoji: "🪙", coin: true, color: "var(--brand-primary, #f5e03a)" },
   { title: "Invitá amigos · ganan ambos",  body: "Mandá tu link de referido. Cuando tu amigo se registra y activa su cuenta, ambos suman coins de bienvenida.",       emoji: "🎁", color: "#a78bfa" },
 ];
 
@@ -211,7 +212,11 @@ export default function Stories({ announcements = [] }) {
         {TIPS.map((t, i) => (
           <button key={`tip-${i}`} className="st-circle" onClick={() => openBucketByKey(`tip-${i}`)}>
             <div className="st-ring brand" style={{ "--c1": t.color, "--c2": "#ec4899" }}>
-              <div className="st-inner">{t.emoji}</div>
+              <div className="st-inner">
+                {t.coin
+                  ? <img src={COIN_IMG} alt="" style={{ width: 30, height: 30, objectFit: "contain", filter: "drop-shadow(0 1px 4px rgba(0,0,0,.35))" }} />
+                  : t.emoji}
+              </div>
             </div>
             <div className="st-label">TIP</div>
           </button>

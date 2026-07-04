@@ -10,13 +10,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext.jsx";
+import { COIN_IMG } from "../lib/coin.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
-
-// Moneda Holistic (cliente 2026-06-06) — misma imagen que usa Coins.jsx.
-// Definida local para no importar la page (mantiene el chunk de Coins lazy).
-const COIN_IMG = `${import.meta.env.BASE_URL}imagenes-web/coins/moneda-holistic.webp`;
 
 // SVG icon set — Lucide-like outline, 1.6 stroke
 const Icon = ({ name, size = 18 }) => {
