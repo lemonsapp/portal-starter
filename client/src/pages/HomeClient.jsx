@@ -19,6 +19,7 @@ import { useUser } from "../context/UserContext.jsx";
 import FriendsPanel from "../components/FriendsPanel.jsx";
 import Stories from "../components/Stories.jsx";
 import BuyCTA from "../components/BuyCTA.jsx";
+import InstallHolistic from "../components/InstallHolistic.jsx";
 import RotatingAuthBg from "../components/RotatingAuthBg.jsx";
 import { useFeatureFlag } from "../lib/branding.js";
 
@@ -477,6 +478,11 @@ export default function HomeClient() {
             <Stories />
           </div>
         )}
+
+        {/* INSTALAR APP (PWA) — bloque deliberado, no un prompt que aparece solo */}
+        <div className="hc-fade">
+          <InstallHolistic />
+        </div>
 
         {/* GRID */}
         <div className="hc-grid hc-fade">
