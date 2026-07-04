@@ -453,6 +453,39 @@ export default function ShopProduct() {
     window.dispatchEvent(new CustomEvent("holistic-cart-open"));
   }
 
+  // IMPORTANTE: este hook va ANTES de los early returns (loading/err) para no
+  // violar las Rules of Hooks (si no, al pasar de "cargando" a "cargado" React
+  // ve más hooks que en el render anterior y crashea → queda en el skeleton).
+  // Reveal por scroll de las secciones + spotlight de cursor. El hero se anima
+  // solo via .sp-reveal. matchMedia respeta reduced-motion.
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      const secs = gsap.utils.toArray(".sp-section", rootRef.current);
+      if (secs.length) {
+        gsap.set(secs, { opacity: 0, y: 32 });
+        ScrollTrigger.batch(secs, {
+          start: "top 86%",
+          once: true,
+          onEnter: (batch) =>
+            gsap.to(batch, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }),
+        });
+        ScrollTrigger.refresh();
+      }
+
+      // Spotlight ambiental que sigue el cursor (sólo puntero fino).
+      if (glowRef.current && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        const xTo = gsap.quickTo(glowRef.current, "x", { duration: 0.5, ease: "power3" });
+        const yTo = gsap.quickTo(glowRef.current, "y", { duration: 0.5, ease: "power3" });
+        const move = (e) => { xTo(e.clientX); yTo(e.clientY); gsap.to(glowRef.current, { opacity: 1, duration: 0.4, overwrite: "auto" }); };
+        const leave = () => gsap.to(glowRef.current, { opacity: 0, duration: 0.4, overwrite: "auto" });
+        window.addEventListener("pointermove", move, { passive: true });
+        window.addEventListener("pointerleave", leave);
+        return () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerleave", leave); };
+      }
+    });
+  }, { scope: rootRef, dependencies: [loading], revertOnUpdate: true });
+
   if (loading) {
     return (
       <div className="sp-page theme-light">
@@ -572,37 +605,6 @@ export default function ShopProduct() {
     : product.category
       ? { label: product.category.name, to: "/shop" }
       : null;
-
-  // Reveal por scroll de las secciones de abajo (el hero se anima solo via
-  // .sp-reveal). matchMedia respeta reduced-motion; re-corre al cambiar de
-  // producto/variante (slug) o al terminar de cargar.
-  useGSAP(() => {
-    const mm = gsap.matchMedia();
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      const secs = gsap.utils.toArray(".sp-section", rootRef.current);
-      if (secs.length) {
-        gsap.set(secs, { opacity: 0, y: 32 });
-        ScrollTrigger.batch(secs, {
-          start: "top 86%",
-          once: true,
-          onEnter: (batch) =>
-            gsap.to(batch, { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" }),
-        });
-        ScrollTrigger.refresh();
-      }
-
-      // Spotlight ambiental que sigue el cursor (sólo puntero fino).
-      if (glowRef.current && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-        const xTo = gsap.quickTo(glowRef.current, "x", { duration: 0.5, ease: "power3" });
-        const yTo = gsap.quickTo(glowRef.current, "y", { duration: 0.5, ease: "power3" });
-        const move = (e) => { xTo(e.clientX); yTo(e.clientY); gsap.to(glowRef.current, { opacity: 1, duration: 0.4, overwrite: "auto" }); };
-        const leave = () => gsap.to(glowRef.current, { opacity: 0, duration: 0.4, overwrite: "auto" });
-        window.addEventListener("pointermove", move, { passive: true });
-        window.addEventListener("pointerleave", leave);
-        return () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerleave", leave); };
-      }
-    });
-  }, { scope: rootRef, dependencies: [loading], revertOnUpdate: true });
 
   return (
     <div ref={rootRef} className="sp-page theme-light">
