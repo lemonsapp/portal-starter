@@ -376,7 +376,7 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
             {/* Powers como cards clickeables */}
             {[
               has("namecolor") && {
-                slug:"namecolor", icon:"🎨", label:"Name Color", desc:"Color del nombre",
+                slug:"namecolor", icon:"🎨", label:"Nickname Color", desc:"Color de tu nombre en el chat",
                 content: (
                   <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
                     <input type="color" value={cfg.name_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
@@ -401,19 +401,8 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                   </div>
                 )
               },
-              has("namegrad") && {
-                slug:"namegrad", icon:"🌈", label:"Name Gradient", desc:"Gradiente de 2 colores en tu nombre",
-                content: (
-                  <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
-                    <input type="color" value={cfg.name_grad_from||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_grad_from:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
-                    <span style={{ color:"#3a3833",fontSize:18 }}>→</span>
-                    <input type="color" value={cfg.name_grad_to||"#60a5fa"} onChange={e=>setCfg(c=>({...c,name_grad_to:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
-                    <span style={{ background:`linear-gradient(90deg,${cfg.name_grad_from||"#a7f5c8"},${cfg.name_grad_to||"#60a5fa"})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",fontWeight:800,fontSize:14 }}>Preview</span>
-                  </div>
-                )
-              },
               has("nickname") && {
-                slug:"nickname", icon:"📝", label:"Nickname", desc:"Texto de status debajo del nombre",
+                slug:"nickname", icon:"📝", label:"Status", desc:"Un status debajo de tu nombre",
                 content: (
                   <div style={{ marginTop:10 }}>
                     <input type="text" value={cfg.nickname||""} onChange={e=>setCfg(c=>({...c,nickname:e.target.value}))} maxLength={40} placeholder="Tu status..." style={{ width:"100%",background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:13,padding:"8px 12px",outline:"none",boxSizing:"border-box" }} />
@@ -422,7 +411,7 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                 )
               },
               has("nickcolor") && {
-                slug:"nickcolor", icon:"🎨", label:"Nick Color", desc:"Color del texto de status",
+                slug:"nickcolor", icon:"🎨", label:"Status Color", desc:"Color de tu status",
                 content: (
                   <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
                     <input type="color" value={cfg.nick_color||"#ffd500"} onChange={e=>setCfg(c=>({...c,nick_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
@@ -431,58 +420,17 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
                   </div>
                 )
               },
-              has("nickglow") && {
-                slug:"nickglow", icon:"✨", label:"Nick Glow", desc:"Glow en el texto de status",
-                content: (
-                  <div style={{ marginTop:10, display:"flex", flexDirection:"column", gap:10 }}>
-                    <div style={{ padding:"10px 12px",background:"rgba(255,255,255,.03)",borderRadius:8,textAlign:"center" }}>
-                      <span style={{ color:cfg.nick_color||"#ffffff", fontSize:15, fontWeight:700, textShadow:`0 0 ${Number(cfg.nick_glow)||8}px ${cfg.nick_glow_color||"#a7f5c8"}` }}>
-                        {cfg.nickname||"Glow preview"}
-                      </span>
-                    </div>
-                    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                      <input type="color" value={cfg.nick_glow_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,nick_glow_color:e.target.value}))} style={{ width:36,height:36,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2,flexShrink:0 }} />
-                      <input type="text" value={cfg.nick_glow_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,nick_glow_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:12,padding:"6px 10px",outline:"none" }} />
-                      <span style={{ color:"#6e6b64",fontSize:11 }}>Color del glow</span>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <span style={{ color:"#6e6b64",fontSize:11,minWidth:70,flexShrink:0 }}>Intensidad</span>
-                      <input type="range" min={0} max={20} value={Number(cfg.nick_glow)||0} onChange={e=>setCfg(c=>({...c,nick_glow:Number(e.target.value)}))} style={{ flex:1 }} />
-                      <span style={{ color:"#a7f5c8",fontSize:12,minWidth:24,textAlign:"right",fontWeight:700 }}>{Number(cfg.nick_glow)||0}</span>
-                    </div>
-                  </div>
-                )
-              },
-              (has("gold")||has("diamond")||has("crown")) && {
-                slug:"icons", icon:"🏅", label:"Ícono", desc:"Ícono exclusivo al lado de tu nombre",
-                content: (
-                  <div style={{ display:"flex",gap:8,marginTop:10,flexWrap:"wrap" }}>
-                    {[{slug:"gold",icon:"🥇",label:"Gold"},{slug:"diamond",icon:"💎",label:"Diamond"},{slug:"crown",icon:"👑",label:"Crown"}].filter(i=>has(i.slug)).map(i=>(
-                      <button key={i.slug} onClick={()=>setCfg(c=>({...c,icon_slug:c.icon_slug===i.slug?null:i.slug}))}
-                        style={{ background:cfg.icon_slug===i.slug?"rgba(167,245,200,.15)":"rgba(255,255,255,.03)",border:`2px solid ${cfg.icon_slug===i.slug?"#a7f5c8":"rgba(237,233,224,.08)"}`,borderRadius:12,padding:"10px 16px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4 }}>
-                        <span style={{ fontSize:28 }}>{i.icon}</span>
-                        <span style={{ fontSize:10,color:cfg.icon_slug===i.slug?"#a7f5c8":"#6e6b64",fontWeight:700 }}>{i.label}</span>
-                      </button>
-                    ))}
-                    <button onClick={()=>setCfg(c=>({...c,icon_slug:null}))}
-                      style={{ background:"rgba(255,255,255,.03)",border:"2px solid rgba(237,233,224,.06)",borderRadius:12,padding:"10px 16px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4 }}>
-                      <span style={{ fontSize:28 }}>⊘</span>
-                      <span style={{ fontSize:10,color:"#3a3833",fontWeight:700 }}>Ninguno</span>
-                    </button>
-                  </div>
-                )
-              },
             ].filter(Boolean).map(power => (
               <PowerAccordion key={power.slug} power={power} />
             ))}
 
-            {!has("namecolor")&&!has("nameglow")&&!has("nickname")&&!has("gold") && (
+            {!has("namecolor")&&!has("nameglow")&&!has("nickname")&&!has("nickcolor") && (
               <div style={{ textAlign:"center",padding:24,color:"#3a3833" }}>
                 <div style={{ fontSize:32,marginBottom:8 }}>⚡</div>
-                <div style={{ fontSize:12 }}>Comprá Powers en la tienda del chat</div>
+                <div style={{ fontSize:12 }}>Comprá Powers en Puntos → Tienda</div>
               </div>
             )}
-            {(has("namecolor")||has("nameglow")||has("nickname")||has("gold")) && (
+            {(has("namecolor")||has("nameglow")||has("nickname")||has("nickcolor")) && (
               <button onClick={save} disabled={saving}
                 style={{ background:"#a7f5c8",color:"#000",border:"none",borderRadius:10,padding:"12px",fontWeight:800,cursor:"pointer",fontSize:14,opacity:saving?0.6:1,marginTop:4 }}>
                 {saving?"Guardando...":"💾 Guardar cambios"}
@@ -663,7 +611,7 @@ function PowersInline({ token }) {
             <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>{p.description}</div>
           </div>
           {p.owned ? <span style={{ fontSize:11, fontWeight:800, color:"#a7f5c8", background:"rgba(167,245,200,0.1)", padding:"3px 10px", borderRadius:20 }}>✓ ACTIVO</span>
-            : <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>{p.cost} 🪙</span>}
+            : <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>{p.coins_price} 🪙</span>}
         </div>
       ))}
       <a href="/coins" style={{ display:"block", textAlign:"center", padding:"12px", background:"linear-gradient(135deg,var(--brand-primary),var(--brand-accent))", color:"#000", borderRadius:12, fontWeight:900, fontSize:14, textDecoration:"none", marginTop:8 }}>
