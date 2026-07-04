@@ -22,6 +22,11 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
+// Tilt 3D + spotlight sólo con puntero fino y sin reduced-motion (no en touch).
+const CAN_TILT = typeof window !== "undefined" &&
+  window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+  !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 // Normaliza las imágenes de una familia: corrige paths Race viejos del backend
 // y, si un pack de puntos no trae imagen (backend sin redeploy), usa el SVG.
 function normalizeFamily(f) {
@@ -158,32 +163,53 @@ export default function Shop() {
     window.dispatchEvent(new CustomEvent("holistic-cart-open"));
   }
 
-  // Hero: entrada coreografiada al montar (una sola vez). Con reduced-motion
-  // no corre nada → los elementos quedan en su estado natural (visibles).
+  // Hero: entrada coreografiada + un "glitch in" del título. Spotlight que
+  // sigue el cursor (gsap.quickTo). Todo bajo matchMedia → reduced-motion no
+  // corre nada y el glow no se muestra.
+  const glowRef = useRef(null);
   useGSAP(() => {
     const mm = gsap.matchMedia();
     mm.add("(prefers-reduced-motion: no-preference)", () => {
       gsap.timeline({ defaults: { ease: "power3.out" } })
         .from(".cat-eyebrow", { y: 16, opacity: 0, duration: 0.5 })
         .from(".cat-display", { y: 26, opacity: 0, duration: 0.7 }, "-=0.28")
-        .from(".cat-sub", { y: 16, opacity: 0, duration: 0.6 }, "-=0.42");
+        // glitch: jitter rápido de skew/x al asentar el título
+        .to(".cat-display", { keyframes: [
+          { x: -3, skewX: 6, duration: 0.05 },
+          { x: 3, skewX: -5, duration: 0.05 },
+          { x: -2, skewX: 3, duration: 0.05 },
+          { x: 0, skewX: 0, duration: 0.06 },
+        ], ease: "none" }, "-=0.15")
+        .from(".cat-sub", { y: 16, opacity: 0, duration: 0.6 }, "-=0.3");
+
+      // Spotlight de cursor sólo en dispositivos con puntero fino.
+      if (glowRef.current && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        const xTo = gsap.quickTo(glowRef.current, "x", { duration: 0.5, ease: "power3" });
+        const yTo = gsap.quickTo(glowRef.current, "y", { duration: 0.5, ease: "power3" });
+        const move = (e) => { xTo(e.clientX); yTo(e.clientY); gsap.to(glowRef.current, { opacity: 1, duration: 0.4, overwrite: "auto" }); };
+        const leave = () => gsap.to(glowRef.current, { opacity: 0, duration: 0.4, overwrite: "auto" });
+        window.addEventListener("pointermove", move, { passive: true });
+        window.addEventListener("pointerleave", leave);
+        return () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerleave", leave); };
+      }
     });
   }, { scope: rootRef });
 
   // Cards: reveal escalonado al entrar en viewport (ScrollTrigger.batch).
-  // Re-stagger al cambiar de categoría o al terminar de cargar — NO en cada
-  // tecla del buscador (searchInput fuera de deps) para evitar jank.
+  // Anima --rty (custom prop), NO el transform → convive con el tilt 3D y el
+  // hover-lift (--ty). Re-stagger al cambiar de categoría o al cargar; NO en
+  // cada tecla del buscador (searchInput fuera de deps) para evitar jank.
   useGSAP(() => {
     const mm = gsap.matchMedia();
     mm.add("(prefers-reduced-motion: no-preference)", () => {
       const cards = gsap.utils.toArray(".cat-card", rootRef.current);
       if (!cards.length) return;
-      gsap.set(cards, { opacity: 0, y: 28 });
+      gsap.set(cards, { opacity: 0, "--rty": "30px" });
       ScrollTrigger.batch(cards, {
         start: "top 90%",
         once: true,
         onEnter: (batch) =>
-          gsap.to(batch, { opacity: 1, y: 0, duration: 0.55, stagger: 0.06, ease: "power2.out" }),
+          gsap.to(batch, { opacity: 1, "--rty": "0px", duration: 0.55, stagger: 0.06, ease: "power2.out" }),
       });
       ScrollTrigger.refresh();
     });
@@ -191,6 +217,9 @@ export default function Shop() {
 
   return (
     <div ref={rootRef} className="cat-page theme-light">
+      {/* Spotlight ambiental que sigue el cursor (GSAP lo posiciona) */}
+      <div ref={glowRef} className="cat-cursor-glow" aria-hidden="true" />
+
       {/* Hero editorial */}
       <header className="cat-hero">
         <div className="cat-hero-inner">
@@ -327,8 +356,30 @@ function ShopCard({ family, onAdd }) {
     });
   }
 
+  // Tilt 3D + posición del spotlight interno (vars CSS). Sólo puntero fino.
+  function handleTilt(e) {
+    if (!CAN_TILT) return;
+    const el = e.currentTarget;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;   // 0..1
+    const py = (e.clientY - r.top) / r.height;   // 0..1
+    const MAX = 6;                               // grados de inclinación
+    el.style.setProperty("--ry", `${(px - 0.5) * 2 * MAX}deg`);
+    el.style.setProperty("--rx", `${-(py - 0.5) * 2 * MAX}deg`);
+    el.style.setProperty("--mx", `${px * 100}%`);
+    el.style.setProperty("--my", `${py * 100}%`);
+    if (!el.classList.contains("is-tilting")) el.classList.add("is-tilting");
+  }
+  function resetTilt(e) {
+    const el = e.currentTarget;
+    el.classList.remove("is-tilting");
+    el.style.setProperty("--rx", "0deg");
+    el.style.setProperty("--ry", "0deg");
+  }
+
   return (
-    <Link to={`/shop/${family.slug}`} className="cat-card" aria-label={`Ver ${family.name}`}>
+    <Link to={`/shop/${family.slug}`} className="cat-card" aria-label={`Ver ${family.name}`}
+      onMouseMove={handleTilt} onMouseLeave={resetTilt}>
       {family.featured && <span className="cat-badge cat-badge-featured">⭐ Destacado</span>}
       {(family.variant_count || 1) > 1 && <span className="cat-badge cat-badge-sizes">{family.variant_count} medidas</span>}
 

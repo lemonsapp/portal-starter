@@ -114,15 +114,27 @@
   border: 1px solid var(--c-border-2);
   border-radius: 20px; overflow: hidden;
   text-decoration: none; color: inherit;
-  transition: transform var(--dur-base) var(--ease-out),
+  /* transform vía CSS vars: --ty (reveal + hover lift), --rx/--ry (tilt 3D).
+     GSAP anima --ty (custom prop), NUNCA transform → no pisa el tilt/hover. */
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(calc(var(--ty, 0px) + var(--rty, 0px)));
+  transition: transform 0.4s var(--ease-out),
               box-shadow var(--dur-base) var(--ease-out),
               border-color var(--dur-base) var(--ease-out);
 }
+/* Mientras el mouse tiltea, el transform sigue al puntero sin lag. */
+.cat-card.is-tilting { transition: box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out); }
 .cat-card:hover {
-  transform: translateY(-6px);
+  --ty: -6px;
   border-color: rgba(var(--c-accent-rgb), 0.4);
   box-shadow: var(--shadow-lg);
 }
+/* Spotlight interno que sigue el cursor sobre la card (--mx/--my por JS). */
+.cat-card::before {
+  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit;
+  opacity: 0; transition: opacity 0.35s ease;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--c-accent-rgb), 0.16), transparent 62%);
+}
+.cat-card:hover::before { opacity: 1; }
 /* Panel OSCURO editorial (2026-06-07): los renders de producto son botellas
    blancas — sobre fondo claro se fundían y "desaparecían" (queja del cliente,
    ver ultimos-cambios/store-ejemplo.png). El plinto oscuro las hace leer. */
@@ -263,4 +275,70 @@
 @keyframes cat-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) {
   .cat-skel__img, .cat-skel__line { animation: none; }
+}
+
+/* ══════════════ Capa premium: luces + glitch (2026-07-04) ══════════════ */
+/* Aurora de luz derivando detrás del hero */
+.cat-hero { position: relative; overflow: hidden; }
+.cat-hero::before {
+  content: ""; position: absolute; inset: -30% -15%; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(38% 48% at 22% 30%, rgba(var(--c-accent-rgb), 0.18), transparent 72%),
+    radial-gradient(34% 42% at 78% 20%, rgba(var(--c-accent-rgb), 0.12), transparent 72%),
+    radial-gradient(30% 40% at 60% 84%, rgba(240, 170, 90, 0.10), transparent 72%);
+  filter: blur(26px);
+  animation: cat-aurora 22s ease-in-out infinite alternate;
+}
+@keyframes cat-aurora {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
+  50%  { transform: translate3d(3%, 2.5%, 0) scale(1.09); }
+  100% { transform: translate3d(-1%, 1%, 0) scale(1.04); }
+}
+.cat-hero-inner { position: relative; z-index: 1; }
+
+/* Contenido por encima del spotlight de fondo */
+.cat-container { position: relative; z-index: 1; }
+.cat-signature { position: relative; z-index: 1; }
+
+/* Grano fílmico sutil sobre toda la página */
+.cat-page { position: relative; }
+.cat-page::after {
+  content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none; opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* Spotlight que sigue el cursor (posición seteada por GSAP quickTo) */
+.cat-cursor-glow {
+  position: fixed; top: 0; left: 0; width: 560px; height: 560px; margin: -280px 0 0 -280px;
+  border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0;
+  background: radial-gradient(circle, rgba(var(--c-accent-rgb), 0.13), transparent 60%);
+  mix-blend-mode: multiply; will-change: transform, opacity;
+}
+
+/* Glitch del título: aberración cromática breve al hover */
+@media (hover: hover) {
+  .cat-display:hover { animation: cat-glitch 0.42s steps(2, end) 1; }
+}
+@keyframes cat-glitch {
+  0%, 100% { text-shadow: none; transform: translateX(0); }
+  20% { text-shadow: -2px 0 rgba(255, 45, 85, 0.55), 2px 0 rgba(45, 224, 255, 0.55); transform: translateX(-1px); }
+  40% { text-shadow: 2px 0 rgba(255, 45, 85, 0.5), -2px 0 rgba(45, 224, 255, 0.5); transform: translateX(1px); }
+  62% { text-shadow: -1px 0 rgba(255, 45, 85, 0.4), 1px 0 rgba(45, 224, 255, 0.4); transform: translateX(0); }
+}
+
+/* CTA: barrido de brillo cuando se hace hover en la card */
+.cat-card-cta { position: relative; overflow: hidden; }
+.cat-card-cta::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.42) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.cat-card:hover .cat-card-cta::after { transform: translateX(120%); transition: transform 0.7s var(--ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-hero::before { animation: none; }
+  .cat-display:hover { animation: none; }
+  .cat-cursor-glow { display: none !important; }
+  .cat-card-cta::after { display: none; }
 }
