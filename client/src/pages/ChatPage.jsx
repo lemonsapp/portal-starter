@@ -154,6 +154,69 @@ function UserName({ user, size=13 }) {
 }
 
 // ── Profile Modal ─────────────────────────────────────────────────────────────
+// ── Powers: metadata + controles COMPARTIDOS ────────────────────────────────
+// Definidos una sola vez y usados tanto por el editor del perfil (ProfileModal)
+// como por el panel ⚡ Powers de la pestaña Chat (PowersInline), así siempre son
+// idénticos a lo que se vende en la tienda de Puntos.
+const POWER_ORDER = ["namecolor", "nameglow", "nickname", "nickcolor"];
+const POWER_META = {
+  namecolor: { icon:"🎨", label:"Nickname Color", desc:"Color de tu nombre en el chat" },
+  nameglow:  { icon:"✨", label:"Name Glow",      desc:"Aura brillante alrededor de tu nombre" },
+  nickname:  { icon:"📝", label:"Status",         desc:"Un status debajo de tu nombre" },
+  nickcolor: { icon:"🎨", label:"Status Color",   desc:"Color de tu status" },
+};
+
+// Control editable de cada power (color picker / slider / texto).
+function PowerControl({ slug, cfg, setCfg }) {
+  if (slug === "namecolor") return (
+    <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
+      <input type="color" value={cfg.name_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
+      <input type="text" value={cfg.name_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:12,padding:"6px 10px",outline:"none" }} />
+      <span style={{ color:cfg.name_color||"#a7f5c8",fontWeight:800,fontSize:14 }}>Preview</span>
+    </div>
+  );
+  if (slug === "nameglow") return (
+    <div style={{ marginTop:10 }}>
+      <div style={{ display:"flex",gap:8,alignItems:"center",marginBottom:8 }}>
+        <input type="color" value={cfg.name_glow_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_glow_color:e.target.value}))} style={{ width:36,height:36,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
+        <span style={{ color:cfg.name_glow_color||"#a7f5c8",textShadow:`0 0 ${cfg.name_glow||8}px ${cfg.name_glow_color||"#a7f5c8"}`,fontWeight:800,fontSize:14 }}>Glow preview</span>
+      </div>
+      <div style={{ display:"flex",alignItems:"center",gap:8 }}>
+        <span style={{ color:"#6e6b64",fontSize:11,minWidth:70 }}>Intensidad</span>
+        <input type="range" min={0} max={20} value={cfg.name_glow||0} onChange={e=>setCfg(c=>({...c,name_glow:Number(e.target.value)}))} style={{ flex:1 }} />
+        <span style={{ color:"#a7f5c8",fontSize:12,minWidth:20,textAlign:"right" }}>{cfg.name_glow||0}</span>
+      </div>
+    </div>
+  );
+  if (slug === "nickname") return (
+    <div style={{ marginTop:10 }}>
+      <input type="text" value={cfg.nickname||""} onChange={e=>setCfg(c=>({...c,nickname:e.target.value}))} maxLength={40} placeholder="Tu status..." style={{ width:"100%",background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:13,padding:"8px 12px",outline:"none",boxSizing:"border-box" }} />
+      <div style={{ fontSize:11,color:"#3a3833",marginTop:6 }}>Vista: <span style={{ color:cfg.nick_color||"#8e8b84" }}>{cfg.nickname||"tu status"}</span></div>
+    </div>
+  );
+  if (slug === "nickcolor") return (
+    <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
+      <input type="color" value={cfg.nick_color||"#ffd500"} onChange={e=>setCfg(c=>({...c,nick_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
+      <input type="text" value={cfg.nick_color||"#ffd500"} onChange={e=>setCfg(c=>({...c,nick_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:12,padding:"6px 10px",outline:"none" }} />
+      <span style={{ color:cfg.nick_color||"#ffd500",fontWeight:700,fontSize:14 }}>{cfg.nickname||"Preview"}</span>
+    </div>
+  );
+  return null;
+}
+
+// Vista previa del nombre + status según la config actual.
+function PowerPreview({ cfg, name }) {
+  return (
+    <div style={{ background:"rgba(255,255,255,.03)",borderRadius:10,padding:"10px 14px",marginBottom:4,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap" }}>
+      <div style={{ fontSize:11,color:"#3a3833" }}>Vista previa:</div>
+      <span style={{ fontWeight:800, fontSize:14, color:cfg.name_color||"#a7f5c8", textShadow:cfg.name_glow?`0 0 ${cfg.name_glow}px ${cfg.name_glow_color||cfg.name_color||"#a7f5c8"}`:"none" }}>
+        🪙 {name}
+      </span>
+      {cfg.nickname && <span style={{ fontSize:11,color:cfg.nick_color||"#8e8b84" }}>{cfg.nickname}</span>}
+    </div>
+  );
+}
+
 function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onPrivateChat, onAddFriend, onAccept, onReject, onAssignRole, onKick, chatPowersOwned, currentProfile, onSaved }) {
   const navigate = useNavigate();
   const isOwn = user.user_id === currentUser?.id;
@@ -373,55 +436,9 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
               {cfg.nickname && <span style={{ fontSize:11,color:cfg.nick_color||"#8e8b84",textShadow:cfg.nick_glow?`0 0 ${cfg.nick_glow}px ${cfg.nick_color||"#8e8b84"}`:"none" }}>{cfg.nickname}</span>}
             </div>
 
-            {/* Powers como cards clickeables */}
-            {[
-              has("namecolor") && {
-                slug:"namecolor", icon:"🎨", label:"Nickname Color", desc:"Color de tu nombre en el chat",
-                content: (
-                  <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
-                    <input type="color" value={cfg.name_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
-                    <input type="text" value={cfg.name_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:12,padding:"6px 10px",outline:"none" }} />
-                    <span style={{ color:cfg.name_color||"#a7f5c8",fontWeight:800,fontSize:14 }}>Preview</span>
-                  </div>
-                )
-              },
-              has("nameglow") && {
-                slug:"nameglow", icon:"✨", label:"Name Glow", desc:"Aura brillante alrededor del nombre",
-                content: (
-                  <div style={{ marginTop:10 }}>
-                    <div style={{ display:"flex",gap:8,alignItems:"center",marginBottom:8 }}>
-                      <input type="color" value={cfg.name_glow_color||"#a7f5c8"} onChange={e=>setCfg(c=>({...c,name_glow_color:e.target.value}))} style={{ width:36,height:36,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
-                      <span style={{ color:cfg.name_glow_color||"#a7f5c8",textShadow:`0 0 ${cfg.name_glow||8}px ${cfg.name_glow_color||"#a7f5c8"}`,fontWeight:800,fontSize:14 }}>Glow preview</span>
-                    </div>
-                    <div style={{ display:"flex",alignItems:"center",gap:8 }}>
-                      <span style={{ color:"#6e6b64",fontSize:11,minWidth:70 }}>Intensidad</span>
-                      <input type="range" min={0} max={20} value={cfg.name_glow||0} onChange={e=>setCfg(c=>({...c,name_glow:Number(e.target.value)}))} style={{ flex:1 }} />
-                      <span style={{ color:"#a7f5c8",fontSize:12,minWidth:20,textAlign:"right" }}>{cfg.name_glow||0}</span>
-                    </div>
-                  </div>
-                )
-              },
-              has("nickname") && {
-                slug:"nickname", icon:"📝", label:"Status", desc:"Un status debajo de tu nombre",
-                content: (
-                  <div style={{ marginTop:10 }}>
-                    <input type="text" value={cfg.nickname||""} onChange={e=>setCfg(c=>({...c,nickname:e.target.value}))} maxLength={40} placeholder="Tu status..." style={{ width:"100%",background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:13,padding:"8px 12px",outline:"none",boxSizing:"border-box" }} />
-                    <div style={{ fontSize:11,color:"#3a3833",marginTop:6 }}>Vista: <span style={{ color:cfg.nick_color||"#8e8b84" }}>{cfg.nickname||"tu status"}</span></div>
-                  </div>
-                )
-              },
-              has("nickcolor") && {
-                slug:"nickcolor", icon:"🎨", label:"Status Color", desc:"Color de tu status",
-                content: (
-                  <div style={{ display:"flex",gap:8,alignItems:"center",marginTop:10 }}>
-                    <input type="color" value={cfg.nick_color||"#ffd500"} onChange={e=>setCfg(c=>({...c,nick_color:e.target.value}))} style={{ width:40,height:40,borderRadius:8,border:"2px solid #161a20",background:"none",cursor:"pointer",padding:2 }} />
-                    <input type="text" value={cfg.nick_color||"#ffd500"} onChange={e=>setCfg(c=>({...c,nick_color:e.target.value}))} maxLength={7} style={{ width:90,background:"#161a20",border:"1px solid #3a3833",borderRadius:8,color:"#f5f2eb",fontSize:12,padding:"6px 10px",outline:"none" }} />
-                    <span style={{ color:cfg.nick_color||"#ffd500",fontWeight:700,fontSize:14 }}>{cfg.nickname||"Preview"}</span>
-                  </div>
-                )
-              },
-            ].filter(Boolean).map(power => (
-              <PowerAccordion key={power.slug} power={power} />
+            {/* Powers como cards clickeables (control compartido con el chat) */}
+            {POWER_ORDER.filter(slug=>has(slug)).map(slug => (
+              <PowerAccordion key={slug} power={{ ...POWER_META[slug], slug, content:<PowerControl slug={slug} cfg={cfg} setCfg={setCfg} /> }} />
             ))}
 
             {!has("namecolor")&&!has("nameglow")&&!has("nickname")&&!has("nickcolor") && (
@@ -586,36 +603,73 @@ function PrivateChatPanel({ targetUser, currentUser, socket, token, onClose }) {
 
 
 // ── Powers Inline ────────────────────────────────────────────────────────────
-function PowersInline({ token }) {
-  const [powers, setPowers] = useState([]);
-  const [loading, setLoading] = useState(true);
+// Panel ⚡ Powers de la pestaña Chat — ahora EDITA los colores/status igual que
+// el perfil (usa PowerControl/PowerPreview compartidos). Los powers que tenés se
+// pueden editar; los que no, se muestran bloqueados con su precio para comprar.
+function PowersInline({ token, role, chatPowersOwned, userName }) {
+  const [powers, setPowers] = useState([]);        // catálogo (precio + owned)
+  const [cfg, setCfg] = useState(null);            // config actual (null = cargando)
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState(null);
 
   useEffect(() => {
     fetch(`${API}/api/chat/powers`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json()).then(d => {
-        if (d.ok) setPowers(d.powers || []);
-      }).catch(() => {}).finally(() => setLoading(false));
+      .then(r => r.json()).then(d => { if (d.ok) setPowers(d.powers || []); }).catch(() => {});
+    fetch(`${API}/api/chat/config`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => setCfg(d.ok ? (d.config || {}) : {})).catch(() => setCfg({}));
   }, []);
 
-  if (loading) return <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)" }}>Cargando powers...</div>;
+  const isStaff = ["admin", "operator"].includes(role);
+  const owns = (slug) => isStaff || (chatPowersOwned || []).includes(slug) || !!powers.find(p => p.slug === slug)?.owned;
+  const priceOf = (slug) => powers.find(p => p.slug === slug)?.coins_price;
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const r = await fetch(`${API}/api/chat/config`, {
+        method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name_color: cfg.name_color || null, name_glow: cfg.name_glow || null, name_glow_color: cfg.name_glow_color || null,
+          nickname: cfg.nickname !== undefined ? cfg.nickname : null, nick_color: cfg.nick_color || null,
+        }),
+      });
+      const d = await r.json();
+      setSaveMsg(d.ok ? { ok: true, text: "¡Guardado! Se aplica en tus próximos mensajes." } : { ok: false, text: d.error || "Error" });
+    } catch { setSaveMsg({ ok: false, text: "Error de red" }); }
+    setSaving(false); setTimeout(() => setSaveMsg(null), 3500);
+  };
+
+  if (cfg === null) return <div style={{ textAlign:"center", padding:40, color:"rgba(255,255,255,0.3)" }}>Cargando powers...</div>;
+  const anyOwned = POWER_ORDER.some(owns);
 
   return (
     <div style={{ padding:"16px", display:"flex", flexDirection:"column", gap:10 }}>
-      <div style={{ fontSize:13, fontWeight:800, color:"#a7f5c8", marginBottom:8 }}>⚡ Powers</div>
-      {powers.length === 0 && <div style={{ color:"rgba(255,255,255,0.3)", fontSize:13, textAlign:"center", padding:20 }}>No tenés powers todavía. Comprá en la tienda de Coins!</div>}
-      {powers.map(p => (
-        <div key={p.slug} style={{ padding:"12px 16px", background: p.owned ? "rgba(167,245,200,0.08)" : "rgba(255,255,255,0.03)", border:`1px solid ${p.owned ? "rgba(167,245,200,0.2)" : "rgba(255,255,255,0.06)"}`, borderRadius:12, display:"flex", alignItems:"center", gap:12 }}>
-          <span style={{ fontSize:24 }}>{p.icon || "⚡"}</span>
-          <div style={{ flex:1 }}>
-            <div style={{ fontWeight:700, fontSize:13, color: p.owned ? "#a7f5c8" : "rgba(255,255,255,0.5)" }}>{p.name}</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:2 }}>{p.description}</div>
+      <div style={{ fontSize:13, fontWeight:800, color:"#a7f5c8", marginBottom:4 }}>⚡ Powers</div>
+      {saveMsg && <div style={{ background:saveMsg.ok?"#22c55e15":"#ef444415",border:`1px solid ${saveMsg.ok?"#22c55e30":"#ef444430"}`,borderRadius:8,padding:"8px 12px",color:saveMsg.ok?"#22c55e":"#ef4444",fontSize:12 }}>{saveMsg.text}</div>}
+
+      <PowerPreview cfg={cfg} name={userName || "Vos"} />
+
+      {POWER_ORDER.map(slug => owns(slug) ? (
+        <PowerAccordion key={slug} power={{ ...POWER_META[slug], slug, content:<PowerControl slug={slug} cfg={cfg} setCfg={setCfg} /> }} />
+      ) : (
+        <div key={slug} style={{ padding:"12px 14px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:12, display:"flex", alignItems:"center", gap:12, opacity:.75 }}>
+          <div style={{ width:40,height:40,borderRadius:10,background:"rgba(255,255,255,.04)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0 }}>{POWER_META[slug].icon}</div>
+          <div style={{ flex:1,minWidth:0 }}>
+            <div style={{ fontWeight:700,fontSize:13,color:"rgba(255,255,255,0.55)" }}>{POWER_META[slug].label} 🔒</div>
+            <div style={{ fontSize:11,color:"rgba(255,255,255,0.3)",marginTop:1 }}>{POWER_META[slug].desc}</div>
           </div>
-          {p.owned ? <span style={{ fontSize:11, fontWeight:800, color:"#a7f5c8", background:"rgba(167,245,200,0.1)", padding:"3px 10px", borderRadius:20 }}>✓ ACTIVO</span>
-            : <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>{p.coins_price} 🪙</span>}
+          {priceOf(slug) != null && <span style={{ fontSize:11,color:"rgba(255,255,255,0.3)",whiteSpace:"nowrap" }}>{priceOf(slug)} 🪙</span>}
         </div>
       ))}
-      <a href="/coins" style={{ display:"block", textAlign:"center", padding:"12px", background:"linear-gradient(135deg,var(--brand-primary),var(--brand-accent))", color:"#000", borderRadius:12, fontWeight:900, fontSize:14, textDecoration:"none", marginTop:8 }}>
-        🪙 Ver tienda de Coins
+
+      {anyOwned && (
+        <button onClick={save} disabled={saving} style={{ background:"#a7f5c8",color:"#000",border:"none",borderRadius:10,padding:"12px",fontWeight:800,cursor:"pointer",fontSize:14,opacity:saving?0.6:1 }}>
+          {saving ? "Guardando..." : "💾 Guardar cambios"}
+        </button>
+      )}
+
+      <a href="/coins" style={{ display:"block", textAlign:"center", padding:"12px", background:"linear-gradient(135deg,var(--brand-primary),var(--brand-accent))", color:"#000", borderRadius:12, fontWeight:900, fontSize:14, textDecoration:"none", marginTop:4 }}>
+        🪙 Comprar más Powers
       </a>
     </div>
   );
@@ -1021,7 +1075,7 @@ export default function ChatPage() {
             </div>
           )}
           {showPowers ? (
-            <PowersInline token={token} />
+            <PowersInline token={token} role={currentUser?.role} chatPowersOwned={chatPowersOwned} userName={currentUser?.name} />
           ) : loading ? (
             <div style={{ textAlign:"center",color:"#161a20",marginTop:40,fontSize:13 }}>Cargando...</div>
           ) : messages.length===0 ? (
