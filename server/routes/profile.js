@@ -583,16 +583,19 @@ router.post("/spin", authRequired, async (req, res) => {
     if (lastSpin && (new Date() - new Date(lastSpin.spun_at)) < 24*60*60*1000) {
       return res.status(400).json({ error: "Ya giraste hoy. Volvé mañana!" });
     }
-    // ORDEN EXACTO igual al frontend (8 segmentos)
+    // ORDEN EXACTO igual al frontend (8 segmentos). Escala acorde al sistema de
+    // puntos (1 punto = valor de canje real; el descuento más barato = 150 pts):
+    // ~92% cae en 0/1/2 y 3/5/10/25/50 son deliberadamente muy improbables.
+    // probs suman 100 (rand = Math.random()*100).
     const prizes = [
-      { label:"Manana",  coins:0,    prob:25    },
-      { label:"5",       coins:5,    prob:42.47 },
-      { label:"10",      coins:10,   prob:20    },
-      { label:"50",      coins:50,   prob:8     },
-      { label:"100",     coins:100,  prob:3     },
-      { label:"200",     coins:200,  prob:1     },
-      { label:"500",     coins:500,  prob:0.5   },
-      { label:"1000",    coins:1000, prob:0.03  },
+      { label:"Vuelve 24hs", coins:0,  prob:33   },
+      { label:"1",           coins:1,  prob:45   },
+      { label:"2",           coins:2,  prob:14   },
+      { label:"3",           coins:3,  prob:4    },
+      { label:"5",           coins:5,  prob:2    },
+      { label:"10",          coins:10, prob:1.4  },
+      { label:"25",          coins:25, prob:0.5  },
+      { label:"50",          coins:50, prob:0.1  },
     ];
     const rand = Math.random() * 100;
     let cumulative = 0, wonIdx = 0;

@@ -13,8 +13,9 @@ const AVATAR_EMOJI = { avatar_lemon:"💎", avatar_fire:"🔥", avatar_diamond:"
 // Moneda Holistic (cliente 2026-06-06): reemplaza el 💎 en todos los lugares
 // donde se muestra la MONEDA del portal (balance, ruleta, tienda, misiones,
 // regalos). Los 💎 que son avatares o el power "Diamond" quedan como están.
-// BASE_URL: el portal vive bajo /portal/ en prod (regla de assets por string).
-export const COIN_IMG = `${import.meta.env.BASE_URL}imagenes-web/coins/moneda-holistic.webp`;
+// La URL vive en lib/coin.js para poder reutilizarla desde stories/topnav.
+import { COIN_IMG } from "../lib/coin.js";
+export { COIN_IMG };
 // Escala global de la moneda inline: agranda TODAS las monedas de forma
 // proporcional (mantienen su ratio relativo) para que se noten más.
 // Pedido cliente 2026-07-02: "que se note la moneda".
@@ -83,14 +84,14 @@ function SpinModal({ onClose, onWin }) {
   // ORDEN EXACTO igual al backend. Los premios con coins muestran la moneda
   // Holistic al lado del número (svg <image>, ver render de segmentos).
   const PRIZES = [
-    { label:"😢 Mañana", coins:0,    color:"#1a1a2e", accent:"#64748b" },
-    { label:"5",         coins:5,    color:"#0a2a0a", accent:"#4ade80" },
-    { label:"10",        coins:10,   color:"#0a1a3a", accent:"#60a5fa" },
-    { label:"50",        coins:50,   color:"#2a1a00", accent:"var(--brand-primary)" },
-    { label:"100",       coins:100,  color:"#0a2a10", accent:"#34d399" },
-    { label:"200",       coins:200,  color:"#2a0a0a", accent:"#f87171" },
-    { label:"500",       coins:500,  color:"#1a0a3a", accent:"#a78bfa" },
-    { label:"1000",      coins:1000, color:"#2a1500", accent:"var(--brand-primary)" },
+    { label:"Vuelve 24hs", coins:0,  color:"#1a1a2e", accent:"#64748b" },
+    { label:"1",           coins:1,  color:"#0a2a0a", accent:"#4ade80" },
+    { label:"2",           coins:2,  color:"#0a1a3a", accent:"#60a5fa" },
+    { label:"3",           coins:3,  color:"#2a1a00", accent:"var(--brand-primary)" },
+    { label:"5",           coins:5,  color:"#0a2a10", accent:"#34d399" },
+    { label:"10",          coins:10, color:"#2a0a0a", accent:"#f87171" },
+    { label:"25",          coins:25, color:"#1a0a3a", accent:"#a78bfa" },
+    { label:"50",          coins:50, color:"#2a1500", accent:"var(--brand-primary)" },
   ];
 
   useEffect(() => {
@@ -146,10 +147,10 @@ function SpinModal({ onClose, onWin }) {
   const SIZE = 320, R = 130, cx = SIZE/2, cy = SIZE/2, n = PRIZES.length;
 
   return (
-    <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.95)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)" }}
+    <div style={{ position:"fixed",inset:0,background:"rgba(0,0,0,0.95)",zIndex:2000,display:"flex",alignItems:"flex-start",justifyContent:"center",backdropFilter:"blur(12px)",overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"clamp(10px,3vh,36px) 12px" }}
       onClick={e=>e.target===e.currentTarget&&!spinning&&onClose()}>
       <ConfettiExplosion active={showConfetti} />
-      <div style={{ background:"linear-gradient(145deg,#0d0d0d,#1a0a00)",border:"2px solid var(--brand-primary)44",borderRadius:32,padding:"clamp(20px,5vw,40px)",display:"flex",flexDirection:"column",alignItems:"center",gap:20,boxShadow:"0 0 100px var(--brand-primary)22, inset 0 1px 0 var(--brand-primary)22",width:"min(420px, 95vw)",maxHeight:"92vh",overflowY:"auto",position:"relative" }}>
+      <div style={{ background:"linear-gradient(145deg,#0d0d0d,#1a0a00)",border:"2px solid var(--brand-primary)44",borderRadius:32,padding:"clamp(18px,4vw,32px)",display:"flex",flexDirection:"column",alignItems:"center",gap:14,boxShadow:"0 0 100px var(--brand-primary)22, inset 0 1px 0 var(--brand-primary)22",width:"min(420px, 95vw)",margin:"auto",position:"relative" }}>
         <div style={{ position:"absolute",inset:0,borderRadius:32,background:"radial-gradient(ellipse at top,var(--brand-primary)08,transparent 60%)",pointerEvents:"none" }}/>
         <button onClick={onClose} disabled={spinning} style={{ position:"absolute",top:16,right:16,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",color:"#666",cursor:spinning?"not-allowed":"pointer",fontSize:18,borderRadius:10,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s" }}
           onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.1)"}
@@ -173,8 +174,17 @@ function SpinModal({ onClose, onWin }) {
                 <g key={i}>
                   <path d={`M${cx},${cy} L${x1},${y1} A${R},${R} 0 0,1 ${x2},${y2} Z`} fill={p.color} stroke="rgba(255,255,255,0.06)" strokeWidth="2"/>
                   <g transform={`translate(${tx},${ty}) rotate(${rot})`}>
-                    <text textAnchor="middle" dominantBaseline="middle" x={p.coins>0?-9:0} fill={p.accent} fontSize="13" fontWeight="900">{p.label}</text>
-                    {p.coins>0 && <image href={COIN_IMG} x={p.label.length*4-2} y={-8} width="16" height="16"/>}
+                    {p.coins>0 ? (
+                      <>
+                        <text textAnchor="middle" dominantBaseline="middle" x={-9} fill={p.accent} fontSize="13" fontWeight="900">{p.label}</text>
+                        <image href={COIN_IMG} x={p.label.length*4-2} y={-8} width="16" height="16"/>
+                      </>
+                    ) : (
+                      <text textAnchor="middle" dominantBaseline="middle" fill={p.accent} fontSize="8.5" fontWeight="900" letterSpacing="0.5">
+                        <tspan x="0" dy="-0.45em">VUELVE</tspan>
+                        <tspan x="0" dy="1.05em">EN 24HS</tspan>
+                      </text>
+                    )}
                   </g>
                 </g>
               );
