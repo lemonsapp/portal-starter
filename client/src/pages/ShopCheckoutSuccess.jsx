@@ -27,6 +27,8 @@ export default function ShopCheckoutSuccess() {
     const { clear } = useCart();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    // `verifying` = seguimos esperando la confirmación del webhook de MP.
+    const [verifying, setVerifying] = useState(false);
 
     const rootRef        = useRef(null);
     const checkRef       = useRef(null);
@@ -44,15 +46,45 @@ export default function ShopCheckoutSuccess() {
         sessionStorage.removeItem("holistic.lastOrderFree");
     }, [clear]);
 
-    // Fetch order detail
+    // Fetch + poll del pedido. MP redirige (auto_return) apenas se aprueba el
+    // pago, a veces ANTES de que el webhook (notification_url) marque la orden
+    // como "paid". Reintentamos unos segundos para que pase a "completado" sin
+    // que el usuario tenga que refrescar. Las órdenes gratis ya están pagas.
     useEffect(() => {
         if (!orderParam) { setLoading(false); return; }
-        fetch(`${API}/api/shop/orders/${encodeURIComponent(orderParam)}`)
-            .then((r) => r.ok ? r.json() : null)
-            .then((d) => setOrder(d?.order || null))
-            .catch(() => {})
-            .finally(() => setLoading(false));
-    }, [orderParam]);
+        let alive = true;
+        let timer;
+        let tries = 0;
+        const MAX_TRIES = 8;      // ~20s (2.5s * 8)
+        const POLL_MS = 2500;
+
+        async function poll() {
+            try {
+                const r = await fetch(`${API}/api/shop/orders/${encodeURIComponent(orderParam)}`);
+                const d = r.ok ? await r.json() : null;
+                const o = d?.order || null;
+                if (!alive) return;
+                if (o) setOrder(o);
+                setLoading(false);
+                tries += 1;
+                // Seguimos sondeando sólo si el pago todavía está en tránsito.
+                const pendingStill = !o || o.status === "pending_payment";
+                const willContinue = !isFree && pendingStill && tries < MAX_TRIES;
+                if (willContinue) timer = setTimeout(poll, POLL_MS);
+                else setVerifying(false);
+            } catch {
+                if (!alive) return;
+                setLoading(false);
+                tries += 1;
+                const willContinue = !isFree && tries < MAX_TRIES;
+                if (willContinue) timer = setTimeout(poll, POLL_MS);
+                else setVerifying(false);
+            }
+        }
+        if (!isFree) setVerifying(true);
+        poll();
+        return () => { alive = false; clearTimeout(timer); };
+    }, [orderParam, isFree]);
 
     // ── GSAP master timeline ──
     useEffect(() => {
@@ -144,25 +176,30 @@ export default function ShopCheckoutSuccess() {
     }, [loading]);
 
     const status = order?.status;
-    const isPaid = status === "paid" || isFree;
-    const isManual = status === "pending_payment" && !isFree;
+    const isPaid = ["paid", "dispatched", "completed"].includes(status) || isFree;
+    // Manual = pendiente Y ya no estamos esperando la confirmación de MP.
+    const isManual = status === "pending_payment" && !isFree && !verifying;
 
     // Headline narrativo (no exclamativo) según el estado real del pedido.
     const headlineText = isPaid
         ? "Hemos recibido tu compra"
-        : isPending
-            ? "Pago pendiente"
-            : "Orden recibida";
+        : verifying
+            ? "Confirmando tu pago…"
+            : isPending
+                ? "Pago pendiente"
+                : "Orden recibida";
 
     // Sub-text corto + descripción del flujo siguiente. El flujo detallado
     // se renderiza aparte como step list (ver flowSteps abajo).
     const subText = isPaid
         ? "El equipo va a empezar a preparar tus productos. Te mantenemos al tanto por email."
-        : isPending
-            ? "MercadoPago todavía está procesando el pago. Te avisamos por email cuando se confirme."
-            : isManual
-                ? "Guardamos tu pedido. Te contactamos por WhatsApp para coordinar pago y envío."
-                : "Te contactamos por WhatsApp para coordinar.";
+        : verifying
+            ? "Estamos confirmando el pago con MercadoPago. Puede tardar unos segundos…"
+            : isPending
+                ? "MercadoPago todavía está procesando el pago. Te avisamos por email cuando se confirme."
+                : isManual
+                    ? "Guardamos tu pedido. Te contactamos por WhatsApp para coordinar pago y envío."
+                    : "Te contactamos por WhatsApp para coordinar.";
 
     // Step list visible cuando la compra ya está confirmada (paid o free).
     // Refleja el flujo real del post-checkout: armado → email confirmación →
@@ -277,7 +314,7 @@ export default function ShopCheckoutSuccess() {
                         <div style={S.orderId}>{orderParam}</div>
                         {status && (
                             <div style={S.statusBadge(isPaid ? "paid" : "pending")}>
-                                {isPaid ? "✓ Pagado" : isPending ? "⏳ Pendiente MP" : "📋 En revisión"}
+                                {isPaid ? "✓ Pagado" : verifying ? "⏳ Confirmando…" : isPending ? "⏳ Pendiente MP" : "📋 En revisión"}
                             </div>
                         )}
                     </div>
