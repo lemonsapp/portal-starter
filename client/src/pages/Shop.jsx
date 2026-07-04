@@ -216,6 +216,22 @@ export default function Shop() {
               : `${filtered.length} ${filtered.length === 1 ? "producto" : "productos"}`}
         </div>
 
+        {/* Skeletons mientras carga el catálogo */}
+        {loading && (
+          <div className="cat-grid" aria-hidden="true">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="cat-skel">
+                <div className="cat-skel__img" />
+                <div className="cat-skel__body">
+                  <div className="cat-skel__line" style={{ width: "40%" }} />
+                  <div className="cat-skel__line" style={{ width: "85%" }} />
+                  <div className="cat-skel__line" style={{ width: "60%" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Estado vacío */}
         {!loading && !err && filtered.length === 0 && (
           <div className="cat-empty">

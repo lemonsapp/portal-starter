@@ -218,3 +218,49 @@
   .cat-reveal { opacity: 1; animation: none; }
   .cat-card:hover .cat-card-imgwrap img { transform: none; }
 }
+
+/* ── Enhancement pass (2026-07-04): a11y focus-visible + profundidad + skeletons ── */
+.cat-card:focus-visible,
+.cat-pill:focus-visible,
+.cat-card-cta:focus-visible,
+.cat-empty-reset:focus-visible,
+.cat-search input:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+}
+.cat-card:focus-visible { outline-offset: 4px; }
+
+/* Plinto con leve gradiente + hairline inferior para dar profundidad al render */
+.cat-card-imgwrap {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(var(--c-accent-rgb), 0.05), transparent 60%),
+    #fff;
+  position: relative;
+}
+.cat-card-imgwrap::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 0 -1px 0 var(--c-border);
+}
+
+/* El nombre reacciona al hover del card (refuerza el foco) */
+.cat-card-name { transition: color var(--dur-base) var(--ease-out); }
+.cat-card:hover .cat-card-name { color: var(--c-accent-2, var(--c-accent)); }
+
+.cat-card-price { font-variant-numeric: tabular-nums; }
+.cat-pill.is-active { transform: translateY(-1px); }
+
+/* Skeleton de carga del grid */
+.cat-skel { border-radius: 20px; overflow: hidden; border: 1px solid var(--c-border-2); background: var(--c-surface); }
+.cat-skel__img { aspect-ratio: 1 / 1; }
+.cat-skel__body { padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+.cat-skel__img,
+.cat-skel__line {
+  background: linear-gradient(100deg, var(--c-surface-2) 30%, rgba(var(--c-accent-rgb), 0.08) 50%, var(--c-surface-2) 70%);
+  background-size: 200% 100%;
+  animation: cat-shimmer 1.3s linear infinite;
+}
+.cat-skel__line { height: 12px; border-radius: 6px; }
+@keyframes cat-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .cat-skel__img, .cat-skel__line { animation: none; }
+}
