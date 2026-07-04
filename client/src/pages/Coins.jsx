@@ -243,27 +243,17 @@ function Store({ balance, onBuy }) {
       .then(r=>r.json()).then(d=>{ if(d.ok) setOwnedPowers(d.powers.filter(p=>p.owned).map(p=>p.slug)); });
   }, []);
 
+  // Powers de personalización del chat. Los slugs (id sin "power_") matchean el
+  // catálogo `chat_powers` del backend; el precio matchea coins_price. Se compran
+  // acá y se activan/configuran en el Perfil (Estudio) para usar en el chat.
   const ITEMS = [
-    // Legacy de logística (Envío Gratis / 5kg / USD Off) removido — el portal-starter
-    // se vende como base social, los rewards de envíos quedan disponibles solo si
-    // el cliente activa el módulo de logística en una versión futura.
-    { id:"power_namecolor",    icon:"🎨",name:"Name Color",       desc:"Color personalizado en el chat",   detail:"Elegí cualquier color para tu nombre.",  cost:20,  cat:"powers",   color:"#ec4899" },
-    { id:"power_nameglow",     icon:"✨",name:"Name Glow",        desc:"Aura brillante en tu nombre",      detail:"Efecto glow en tu nombre del chat.",     cost:20,  cat:"powers",   color:"#8b5cf6" },
-    { id:"power_namegrad",     icon:"🌈",name:"Name Gradient",    desc:"Gradiente de colores",             detail:"Tu nombre con degradado de 2 colores.",  cost:20,  cat:"powers",   color:"#06b6d4" },
-    { id:"power_nickname",     icon:"📝",name:"Nickname",         desc:"Status debajo de tu nombre",       detail:"Texto bajo tu nombre en el chat.",       cost:20,  cat:"powers",   color:"#84cc16" },
-    { id:"power_nickcolor",    icon:"🎨",name:"Nick Color",       desc:"Color del status",                 detail:"Color personalizado para tu status.",    cost:20,  cat:"powers",   color:"#f97316" },
-    { id:"power_nickglow",     icon:"✨",name:"Nick Glow",        desc:"Brillo en el status",              detail:"Efecto glow en tu texto de status.",     cost:20,  cat:"powers",   color:"#d946ef" },
-    { id:"power_gold",         icon:"🥇",name:"Gold",             desc:"Icono dorado exclusivo",           detail:"Medalla dorada al lado de tu nombre.",   cost:20,  cat:"powers",   color:"#eab308" },
-    { id:"power_diamond",      icon:"💎",name:"Diamond",          desc:"Icono diamante",                   detail:"Diamante al lado de tu nombre.",         cost:20,  cat:"powers",   color:"#67e8f9" },
-    { id:"power_crown",        icon:"👑",name:"Crown",            desc:"Corona — el mas exclusivo",        detail:"El icono mas exclusivo del chat.",       cost:20,  cat:"powers",   color:"var(--brand-primary)",badge:"RARO" },
+    { id:"power_namecolor", icon:"🎨", name:"Nickname Color", desc:"Color de tu nombre en el chat",  detail:"Elegí cualquier color para tu nombre.",         cost:50, cat:"powers", color:"#ec4899" },
+    { id:"power_nameglow",  icon:"✨", name:"Name Glow",      desc:"Aura brillante en tu nombre",    detail:"Efecto glow alrededor de tu nombre.",           cost:60, cat:"powers", color:"#8b5cf6" },
+    { id:"power_nickname",  icon:"📝", name:"Status",         desc:"Un status debajo de tu nombre",  detail:"Una línea de status/nickname bajo tu nombre.",  cost:40, cat:"powers", color:"#84cc16" },
+    { id:"power_nickcolor", icon:"🎨", name:"Status Color",   desc:"Color de tu status",             detail:"Color personalizado para tu status.",           cost:40, cat:"powers", color:"#f97316" },
   ];
 
-  const FILTERS = [
-    { id:"all",        label:"Todo",        icon:"⭐" },
-    { id:"powers",     label:"Powers",      icon:"⚡" },
-  ];
-
-  const filtered = filter==="all" ? ITEMS : ITEMS.filter(i=>i.cat===filter);
+  const filtered = ITEMS;
 
   const buy = async (item) => {
     if (item.cat==="powers" && ownedPowers.includes(item.id.replace("power_",""))) return;
@@ -289,17 +279,6 @@ function Store({ balance, onBuy }) {
           {msg.text}
         </div>
       )}
-      <div style={{ display:"flex",gap:8,marginBottom:24,flexWrap:"wrap" }}>
-        {FILTERS.map(f=>(
-          <Pop as="button" key={f.id} onClick={()=>setFilter(f.id)}
-            style={{ background:filter===f.id?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))":"rgba(255,255,255,0.04)",border:`1px solid ${filter===f.id?"transparent":"rgba(255,255,255,0.08)"}`,borderRadius:24,padding:"10px 24px",color:filter===f.id?"#000":"#666",cursor:"pointer",fontSize:13,fontWeight:800,transition:"all .2s",boxShadow:filter===f.id?"0 4px 20px var(--brand-primary)44":"none",transform:filter===f.id?"scale(1.05)":"scale(1)" }}
-            onMouseEnter={e=>{ if(filter!==f.id){e.currentTarget.style.background="rgba(var(--brand-primary-rgb),0.1)";e.currentTarget.style.color="var(--brand-primary)";e.currentTarget.style.borderColor="rgba(var(--brand-primary-rgb),0.3)"; }}}
-            onMouseLeave={e=>{ if(filter!==f.id){e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.color="#666";e.currentTarget.style.borderColor="rgba(255,255,255,0.08)"; }}}>
-            {f.icon} {f.label}
-          </Pop>
-        ))}
-      </div>
-
       <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,230px),1fr))",gap:16 }}>
         {filtered.map((item,idx)=>{
           const canAfford=balance>=item.cost;

@@ -56,7 +56,49 @@ const upload = multer({
       VALUES ('general', 'Sala general', 'Charlá con toda la comunidad', '💬', 0, TRUE)
       ON CONFLICT (slug) DO NOTHING
     `);
-    console.log("[MIGRATION] custom_emojis + story_likes + reply_to_story + general room ready");
+
+    // ── Powers de personalización del chat ──────────────────────────────────
+    // El catálogo `chat_powers` venía VACÍO (por eso "los powers no existían":
+    // la tienda fallaba al comprar). Dejamos SOLO 4 powers, comprables con
+    // puntos y activables en el perfil (ProfileStudio → POST /chat/config):
+    //   · namecolor → color del nombre    · nameglow → glow del nombre
+    //   · nickname  → línea de status     · nickcolor → color del status
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS chat_powers (
+        id          SERIAL PRIMARY KEY,
+        slug        TEXT UNIQUE NOT NULL,
+        name        TEXT NOT NULL,
+        description TEXT,
+        icon        TEXT,
+        category    TEXT DEFAULT 'chat',
+        coins_price INT  DEFAULT 0,
+        is_active   BOOLEAN DEFAULT TRUE,
+        created_at  TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    const POWERS = [
+      ['namecolor', 'Nickname Color', 'Color personalizado para tu nombre en el chat.', '🎨', 'nombre', 50],
+      ['nameglow',  'Name Glow',      'Aura brillante alrededor de tu nombre.',        '✨', 'nombre', 60],
+      ['nickname',  'Status',         'Una línea de status debajo de tu nombre.',      '📝', 'status', 40],
+      ['nickcolor', 'Status Color',   'Color personalizado para tu status.',           '🎨', 'status', 40],
+    ];
+    for (const [slug, name, description, icon, category, price] of POWERS) {
+      await db.query(
+        `INSERT INTO chat_powers (slug, name, description, icon, category, coins_price, is_active)
+         VALUES ($1,$2,$3,$4,$5,$6,TRUE)
+         ON CONFLICT (slug) DO UPDATE SET
+           name=$2, description=$3, icon=$4, category=$5, coins_price=$6, is_active=TRUE`,
+        [slug, name, description, icon, category, price]
+      );
+    }
+    // Cualquier power viejo (namegrad, nickglow, gold, diamond, crown, …) se
+    // desactiva para que NO aparezca en la tienda ni en el perfil.
+    await db.query(
+      `UPDATE chat_powers SET is_active=FALSE
+        WHERE slug NOT IN ('namecolor','nameglow','nickname','nickcolor')`
+    );
+
+    console.log("[MIGRATION] custom_emojis + story_likes + reply_to_story + general room + chat_powers ready");
   } catch (e) { console.error("[MIGRATION chat ERROR]", e.message); }
 })();
 
