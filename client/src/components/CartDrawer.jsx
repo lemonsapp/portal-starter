@@ -231,6 +231,25 @@ export default function CartDrawer() {
 
   return (
     <>
+      {/* Micro-interacciones + focus-visible (el drawer usa estilos inline; estas
+          reglas sólo tocan outline/transform, que no chocan con el inline). */}
+      <style>{`
+        .cart-fab:hover { transform: scale(1.06); }
+        .cart-fab:focus-visible, .cd-close:focus-visible, .cd-qty:focus-visible,
+        .cd-remove:focus-visible, .cd-sugadd:focus-visible, .cd-checkout:focus-visible {
+          outline: 2px solid var(--c-accent); outline-offset: 2px;
+        }
+        .cd-close, .cd-qty, .cd-sugadd, .cd-checkout { transition: transform .15s ease; }
+        .cd-close:hover { transform: rotate(90deg); }
+        .cd-qty:hover { transform: translateY(-1px); }
+        .cd-qty:active, .cd-sugadd:active { transform: translateY(1px); }
+        .cd-checkout:hover:not(:disabled) { transform: translateY(-2px); }
+        .cd-checkout:active:not(:disabled) { transform: translateY(0); }
+        @media (prefers-reduced-motion: reduce) {
+          .cart-fab, .cd-close, .cd-qty, .cd-sugadd, .cd-checkout { transition: none; }
+          .cart-fab:hover, .cd-close:hover { transform: none; }
+        }
+      `}</style>
       <button
         type="button"
         className="cart-fab"
@@ -251,7 +270,7 @@ export default function CartDrawer() {
       <aside style={styles.drawer(open)} role="dialog" aria-label="Tu carrito" aria-hidden={!open}>
         <header style={styles.drawerHead}>
           <h2 style={styles.drawerTitle}>Tu carrito</h2>
-          <button style={styles.closeBtn} onClick={() => setOpen(false)} aria-label="Cerrar carrito">✕</button>
+          <button className="cd-close" style={styles.closeBtn} onClick={() => setOpen(false)} aria-label="Cerrar carrito">✕</button>
         </header>
 
         <div style={styles.drawerBody}>
@@ -270,12 +289,12 @@ export default function CartDrawer() {
                   <div style={styles.rowName}>{i.name}</div>
                   <div style={styles.rowPrice}>{formatARS(i.price_cents)}</div>
                   <div style={styles.qty}>
-                    <button style={styles.qtyBtn} onClick={() => updateQty(i.id, i.quantity - 1)} aria-label="Quitar uno">−</button>
+                    <button className="cd-qty" style={styles.qtyBtn} onClick={() => updateQty(i.id, i.quantity - 1)} aria-label="Quitar uno">−</button>
                     <span style={styles.qtyNum}>{i.quantity}</span>
-                    <button style={styles.qtyBtn} onClick={() => updateQty(i.id, i.quantity + 1)} aria-label="Sumar uno">+</button>
+                    <button className="cd-qty" style={styles.qtyBtn} onClick={() => updateQty(i.id, i.quantity + 1)} aria-label="Sumar uno">+</button>
                   </div>
                 </div>
-                <button style={styles.removeBtn} onClick={() => removeItem(i.id)} aria-label={`Quitar ${i.name} del carrito`}>
+                <button className="cd-remove" style={styles.removeBtn} onClick={() => removeItem(i.id)} aria-label={`Quitar ${i.name} del carrito`}>
                   Quitar
                 </button>
               </div>
@@ -293,7 +312,7 @@ export default function CartDrawer() {
                     <div style={styles.sugName}>{s.name}</div>
                     <div style={styles.sugPrice}>{formatARS(s.price_cents)}</div>
                   </div>
-                  <button style={styles.sugAdd} onClick={() => addSuggestion(s)} aria-label={`Agregar ${s.name}`}>
+                  <button className="cd-sugadd" style={styles.sugAdd} onClick={() => addSuggestion(s)} aria-label={`Agregar ${s.name}`}>
                     + Sumar
                   </button>
                 </div>
@@ -311,6 +330,7 @@ export default function CartDrawer() {
             El envío se calcula en el checkout.
           </div>
           <button
+            className="cd-checkout"
             style={{ ...styles.ctaCheckout, ...(items.length === 0 ? styles.ctaCheckoutDisabled : {}) }}
             disabled={items.length === 0}
             onClick={goToCheckout}

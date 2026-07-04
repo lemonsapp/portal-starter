@@ -598,3 +598,32 @@
 @media (prefers-reduced-motion: reduce) {
   .sp-sticky-buy { transition: none; }
 }
+
+/* ── Enhancement pass (2026-07-04): a11y focus-visible + press + skeleton ── */
+.sp-cta:focus-visible,
+.sp-pill:focus-visible,
+.sp-thumb:focus-visible,
+.sp-qty-btn:focus-visible,
+.sp-cross-add:focus-visible,
+.sp-bundle-promo-cta:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+}
+.sp-cta:active:not(:disabled),
+.sp-qty-btn:active,
+.sp-cross-add:active { transform: translateY(1px); }
+.sp-qty-btn { transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+
+/* Skeleton de carga de la ficha (dos columnas: galería + info) */
+.sp-skel-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); padding: clamp(20px, 4vw, 40px) 0; }
+.sp-skel-img { aspect-ratio: 1 / 1; border-radius: 20px; }
+.sp-skel-info { display: flex; flex-direction: column; gap: 16px; padding-top: 12px; }
+.sp-skel-line { height: 14px; border-radius: 7px; }
+.sp-skel-img, .sp-skel-line {
+  background: linear-gradient(100deg, var(--c-surface-2) 30%, rgba(var(--c-accent-rgb), 0.08) 50%, var(--c-surface-2) 70%);
+  background-size: 200% 100%;
+  animation: sp-shimmer 1.3s linear infinite;
+}
+@keyframes sp-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (max-width: 720px) { .sp-skel-hero { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .sp-skel-img, .sp-skel-line { animation: none; } }

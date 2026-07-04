@@ -447,7 +447,19 @@ export default function ShopProduct() {
   if (loading) {
     return (
       <div className="sp-page theme-light">
-        <div className="sp-container"><div className="sp-loading">Cargando…</div></div>
+        <div className="sp-container">
+          <div className="sp-skel-hero" aria-hidden="true">
+            <div className="sp-skel-img" />
+            <div className="sp-skel-info">
+              <div className="sp-skel-line" style={{ width: "35%", height: 12 }} />
+              <div className="sp-skel-line" style={{ width: "80%", height: 30 }} />
+              <div className="sp-skel-line" style={{ width: "55%", height: 22 }} />
+              <div className="sp-skel-line" style={{ width: "100%" }} />
+              <div className="sp-skel-line" style={{ width: "92%" }} />
+              <div className="sp-skel-line" style={{ width: "45%", height: 44, marginTop: 8 }} />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

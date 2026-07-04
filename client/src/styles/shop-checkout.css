@@ -213,3 +213,21 @@ textarea.co-input { min-height: 76px; resize: vertical; }
 @media (prefers-reduced-motion: reduce) {
   .co-reveal { opacity: 1; animation: none; }
 }
+
+/* ── Enhancement pass (2026-07-04): a11y focus-visible + press ── */
+.co-cta:focus-visible,
+.co-guest-cta:focus-visible,
+.co-promo-btn:focus-visible,
+.co-back:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+.co-input:focus-visible {
+  outline: none;
+  border-color: var(--c-accent);
+  box-shadow: 0 0 0 3px rgba(var(--c-accent-rgb), 0.15);
+}
+.co-cta:active:not(:disabled),
+.co-guest-cta:active,
+.co-promo-btn:active:not(:disabled) { transform: translateY(1px); }
