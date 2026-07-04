@@ -28,10 +28,10 @@ const jsonHdr = () => ({ ...authHdr(), "Content-Type": "application/json" });
 const styles = {
   shell: {
     minHeight: "100vh",
-    background: "var(--brand-bg, #080808)",
-    color: "var(--brand-text, #ede9e0)",
+    background: "var(--bg)",
+    color: "var(--text)",
     fontFamily: "var(--brand-font, 'Gotham', system-ui, sans-serif)",
-    padding: "32px 16px",
+    padding: "28px 16px",
   },
   container: { maxWidth: 1100, margin: "0 auto" },
   h1: {
@@ -39,16 +39,16 @@ const styles = {
     fontSize: 32, fontWeight: 900, margin: "0 0 6px 0",
     letterSpacing: "-0.02em",
   },
-  sub: { color: "rgba(237,233,224,.55)", marginBottom: 22, fontSize: 14 },
+  sub: { color: "rgba(90,102,117,.55)", marginBottom: 22, fontSize: 14 },
   // overflowX auto + tabs que no encogen: en mobile la fila scrollea
   // horizontalmente dentro del panel en vez de desbordar/cortarse.
-  tabs: { display: "flex", gap: 6, marginBottom: 18, borderBottom: "1px solid rgba(255,255,255,.08)", overflowX: "auto", WebkitOverflowScrolling: "touch" },
+  tabs: { display: "flex", gap: 6, marginBottom: 18, borderBottom: "1px solid rgba(17,24,39,.08)", overflowX: "auto", WebkitOverflowScrolling: "touch" },
   tab: (active) => ({
     padding: "10px 18px",
     flex: "0 0 auto", whiteSpace: "nowrap",
     cursor: "pointer",
     fontSize: 13, fontWeight: 700, letterSpacing: 0.5,
-    color: active ? "var(--brand-primary, #3B82F6)" : "rgba(237,233,224,.55)",
+    color: active ? "var(--brand-primary, #3B82F6)" : "rgba(90,102,117,.55)",
     background: "transparent",
     border: "none", borderBottom: active ? "2px solid var(--brand-primary, #3B82F6)" : "2px solid transparent",
     fontFamily: "inherit", marginBottom: -1,
@@ -59,42 +59,42 @@ const styles = {
   subtab: (active) => ({
     padding: "7px 15px", borderRadius: 999, cursor: "pointer",
     fontSize: 12, fontWeight: 700, letterSpacing: 0.3,
-    color: active ? "#fff" : "rgba(237,233,224,.6)",
-    background: active ? "var(--brand-primary, #3B82F6)" : "rgba(255,255,255,.05)",
-    border: `1px solid ${active ? "transparent" : "rgba(255,255,255,.1)"}`,
+    color: active ? "#fff" : "rgba(90,102,117,.6)",
+    background: active ? "var(--brand-primary, #3B82F6)" : "rgba(17,24,39,.05)",
+    border: `1px solid ${active ? "transparent" : "rgba(17,24,39,.1)"}`,
     fontFamily: "inherit",
   }),
   card: {
     padding: 20, marginBottom: 16,
-    background: "rgba(255,255,255,.02)",
-    border: "1px solid rgba(255,255,255,.08)",
+    background: "rgba(17,24,39,.02)",
+    border: "1px solid rgba(17,24,39,.08)",
     borderRadius: 10,
   },
   table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
-  th: { textAlign: "left", padding: "10px 12px", fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.4)", borderBottom: "1px solid rgba(255,255,255,.08)" },
-  td: { padding: "12px", borderBottom: "1px solid rgba(255,255,255,.04)" },
+  th: { textAlign: "left", padding: "10px 12px", fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.4)", borderBottom: "1px solid rgba(17,24,39,.08)" },
+  td: { padding: "12px", borderBottom: "1px solid rgba(17,24,39,.04)" },
   btn: (primary = false, danger = false) => ({
     padding: "8px 14px",
     borderRadius: 6,
     border: "none",
     cursor: "pointer",
     fontSize: 12, fontWeight: 700,
-    background: danger ? "rgba(239,68,68,.15)" : primary ? "var(--brand-primary, #3B82F6)" : "rgba(255,255,255,.06)",
-    color: danger ? "#fca5a5" : primary ? "#fff" : "rgba(237,233,224,.85)",
+    background: danger ? "rgba(239,68,68,.15)" : primary ? "var(--brand-primary, #3B82F6)" : "rgba(17,24,39,.06)",
+    color: danger ? "#fca5a5" : primary ? "#fff" : "rgba(90,102,117,.85)",
     fontFamily: "inherit",
   }),
   input: {
     width: "100%", padding: "9px 11px", fontSize: 13,
-    background: "rgba(255,255,255,.03)",
-    border: "1px solid rgba(255,255,255,.1)",
+    background: "rgba(17,24,39,.03)",
+    border: "1px solid rgba(17,24,39,.1)",
     borderRadius: 6, color: "inherit", fontFamily: "inherit",
     boxSizing: "border-box",
   },
-  label: { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.45)", marginBottom: 5, marginTop: 12 },
+  label: { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.45)", marginBottom: 5, marginTop: 12 },
   modalBackdrop: { position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "grid", placeItems: "center", zIndex: 9000, padding: 16, boxSizing: "border-box" },
   // maxHeight + scroll: en celular los modales altos (editor de producto) no
   // se salen del viewport; el contenido scrollea dentro de la card.
-  modalCard: { background: "#0e0f15", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12, padding: 24, width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", boxSizing: "border-box" },
+  modalCard: { background: "#ffffff", border: "1px solid rgba(17,24,39,.1)", borderRadius: 14, padding: 24, width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", boxSizing: "border-box", boxShadow: "0 24px 60px rgba(16,24,40,.24)" },
 };
 
 // Estructura de pestañas del admin. TIENDA y CONFIGURACIÓN agrupan sub-pestañas;
@@ -134,6 +134,7 @@ const ADMIN_NAV = [
 export default function AdminPanel() {
   const [tabKey, setTabKey] = useState("tienda");
   const [subKey, setSubKey] = useState("products");
+  useAdmCss();
 
   const tab = ADMIN_NAV.find((t) => t.key === tabKey) || ADMIN_NAV[0];
 
@@ -151,7 +152,7 @@ export default function AdminPanel() {
     // data-staff-page activa staff-mobile.css (<=768px): tablas con scroll
     // horizontal interno, grids a 1 columna, inputs capeados y root sin
     // overflow — mismo tratamiento mobile que los demás paneles staff.
-    <div style={styles.shell} data-staff-page>
+    <div className="adm" style={styles.shell} data-staff-page>
       <div style={styles.container}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <div>
@@ -249,7 +250,7 @@ function PuntosManualTab() {
     <div>
       <div style={styles.card}>
         <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800 }}>Carga manual de puntos</h3>
-        <p style={{ margin: "0 0 12px", fontSize: 13, color: "rgba(237,233,224,.55)" }}>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: "rgba(90,102,117,.55)" }}>
           Compra externa (WhatsApp, ML, efectivo…). Buscá al cliente por su código, ingresá el monto y acreditá.
         </p>
         <label style={styles.label}>Código de cliente</label>
@@ -273,10 +274,10 @@ function PuntosManualTab() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 4 }}>
             <div>
               <div style={{ fontWeight: 800, fontSize: 16 }}>{customer.name}</div>
-              <div style={{ fontSize: 12, color: "rgba(237,233,224,.55)" }}>{customer.email} · {customer.customer_code}</div>
+              <div style={{ fontSize: 12, color: "rgba(90,102,117,.55)" }}>{customer.email} · {customer.customer_code}</div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.4)" }}>Saldo</div>
+              <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.4)" }}>Saldo</div>
               <div style={{ fontWeight: 900, fontSize: 20, color: "var(--brand-primary, #3B82F6)" }}>{customer.balance} pts</div>
             </div>
           </div>
@@ -301,10 +302,10 @@ function PuntosManualTab() {
           <input style={styles.input} type="number" min="0" placeholder={`auto: ${previewPoints}`} value={override} onChange={(e) => setOverride(e.target.value)} />
 
           <div style={{ marginTop: 14, padding: "12px 14px", borderRadius: 8, background: "rgba(59,130,246,.12)", border: "1px solid rgba(59,130,246,.25)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 13, color: "rgba(237,233,224,.8)" }}>Se acreditarán</span>
+            <span style={{ fontSize: 13, color: "rgba(90,102,117,.8)" }}>Se acreditarán</span>
             <span style={{ fontWeight: 900, fontSize: 20, color: "var(--brand-primary, #3B82F6)" }}>+{previewPoints} pts</span>
           </div>
-          <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 6 }}>
+          <div style={{ fontSize: 11, color: "rgba(90,102,117,.45)", marginTop: 6 }}>
             1 punto cada ${earnPerPoint.toLocaleString("es-AR")} · redondeo hacia abajo.
           </div>
 
@@ -355,7 +356,7 @@ function RewardRow({ rw, onSaved, onDeleted }) {
     <tr>
       <td style={styles.td}>
         <div style={{ fontWeight: 700 }}>{rw.label}</div>
-        <div style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>{rw.slug} · {rw.kind}</div>
+        <div style={{ fontSize: 11, color: "rgba(90,102,117,.4)" }}>{rw.slug} · {rw.kind}</div>
       </td>
       <td style={styles.td}><input style={{ ...styles.input, width: 80 }} type="number" value={cost} onChange={e => setCost(e.target.value)} /></td>
       <td style={styles.td}>
@@ -401,12 +402,12 @@ function RewardsCatalogTab() {
     if (r.ok) { setNuevo(null); load(); } else alert(d.error || "Error");
   }
 
-  if (loading) return <div style={{ color: "rgba(237,233,224,.5)", padding: 20 }}>Cargando…</div>;
+  if (loading) return <div style={{ color: "rgba(90,102,117,.5)", padding: 20 }}>Cargando…</div>;
 
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <p style={{ margin: 0, fontSize: 13, color: "rgba(237,233,224,.55)" }}>Catálogo de canjes — editá costo en puntos, stock y disponibilidad.</p>
+        <p style={{ margin: 0, fontSize: 13, color: "rgba(90,102,117,.55)" }}>Catálogo de canjes — editá costo en puntos, stock y disponibilidad.</p>
         <button style={styles.btn(true)} onClick={() => setNuevo(nuevo ? null : { kind: "descuento", stock: "" })}>{nuevo ? "Cancelar" : "+ Nuevo canje"}</button>
       </div>
 
@@ -467,8 +468,8 @@ function RedemptionsTab() {
           <button key={k} style={styles.subtab(filter === k)} onClick={() => setFilter(k)}>{l}</button>
         ))}
       </div>
-      {loading ? <div style={{ color: "rgba(237,233,224,.5)", padding: 20 }}>Cargando…</div> : rows.length === 0 ? (
-        <div style={{ color: "rgba(237,233,224,.4)", padding: 20 }}>Sin canjes en este filtro.</div>
+      {loading ? <div style={{ color: "rgba(90,102,117,.5)", padding: 20 }}>Cargando…</div> : rows.length === 0 ? (
+        <div style={{ color: "rgba(90,102,117,.4)", padding: 20 }}>Sin canjes en este filtro.</div>
       ) : (
         <table style={styles.table}>
           <thead><tr>
@@ -480,9 +481,9 @@ function RedemptionsTab() {
               <tr key={r.id}>
                 <td style={styles.td}>
                   <div style={{ fontWeight: 700 }}>{r.user_name}</div>
-                  <div style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>{r.customer_code}</div>
+                  <div style={{ fontSize: 11, color: "rgba(90,102,117,.4)" }}>{r.customer_code}</div>
                 </td>
-                <td style={styles.td}>{r.label || r.reward_slug}<div style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>{r.kind}</div></td>
+                <td style={styles.td}>{r.label || r.reward_slug}<div style={{ fontSize: 11, color: "rgba(90,102,117,.4)" }}>{r.kind}</div></td>
                 <td style={styles.td}>{r.cost_points}</td>
                 <td style={styles.td}>{r.coupon_code ? <code style={{ fontSize: 12, color: "var(--brand-primary, #3B82F6)" }}>{r.coupon_code}</code> : "—"}</td>
                 <td style={styles.td}>{r.status}</td>
@@ -526,14 +527,14 @@ function IgQueueTab() {
 
   return (
     <div>
-      <p style={{ margin: "0 0 12px", fontSize: 13, color: "rgba(237,233,224,.55)" }}>Evidencias de acciones de Instagram. Aprobar acredita los puntos al cliente.</p>
+      <p style={{ margin: "0 0 12px", fontSize: 13, color: "rgba(90,102,117,.55)" }}>Evidencias de acciones de Instagram. Aprobar acredita los puntos al cliente.</p>
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
         {[["pending", "Pendientes"], ["approved", "Aprobadas"], ["rejected", "Rechazadas"], ["all", "Todas"]].map(([k, l]) => (
           <button key={k} style={styles.subtab(filter === k)} onClick={() => setFilter(k)}>{l}</button>
         ))}
       </div>
-      {loading ? <div style={{ color: "rgba(237,233,224,.5)", padding: 20 }}>Cargando…</div> : rows.length === 0 ? (
-        <div style={{ color: "rgba(237,233,224,.4)", padding: 20 }}>Sin evidencias en este filtro.</div>
+      {loading ? <div style={{ color: "rgba(90,102,117,.5)", padding: 20 }}>Cargando…</div> : rows.length === 0 ? (
+        <div style={{ color: "rgba(90,102,117,.4)", padding: 20 }}>Sin evidencias en este filtro.</div>
       ) : (
         <table style={styles.table}>
           <thead><tr>
@@ -545,13 +546,13 @@ function IgQueueTab() {
               <tr key={s.id}>
                 <td style={styles.td}>
                   <div style={{ fontWeight: 700 }}>{s.user_name}</div>
-                  <div style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>{s.customer_code}</div>
+                  <div style={{ fontSize: 11, color: "rgba(90,102,117,.4)" }}>{s.customer_code}</div>
                 </td>
                 <td style={styles.td}>{s.label}</td>
                 <td style={styles.td}>+{s.points}</td>
                 <td style={styles.td}>
                   {s.evidence_url ? <a href={s.evidence_url} target="_blank" rel="noreferrer" style={{ color: "var(--brand-primary, #3B82F6)" }}>Ver link</a> : null}
-                  {s.note ? <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>{s.note}</div> : null}
+                  {s.note ? <div style={{ fontSize: 11, color: "rgba(90,102,117,.5)" }}>{s.note}</div> : null}
                   {!s.evidence_url && !s.note ? "—" : null}
                 </td>
                 <td style={styles.td}>{s.status}</td>
@@ -665,7 +666,7 @@ function CoinModal({ modal, onClose, onSuccess }) {
     <div style={styles.modalBackdrop} onClick={onClose}>
       <div style={styles.modalCard} onClick={e => e.stopPropagation()}>
         <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{action === "gift" ? "Regalar coins" : "Ajustar saldo"}</div>
-        <div style={{ color: "rgba(237,233,224,.55)", fontSize: 13, marginBottom: 16 }}>
+        <div style={{ color: "rgba(90,102,117,.55)", fontSize: 13, marginBottom: 16 }}>
           {user.name} · {user.email} · balance actual: <b>{user.balance}</b>
         </div>
 
@@ -687,7 +688,7 @@ function CoinModal({ modal, onClose, onSuccess }) {
 }
 
 function Pill({ children }) {
-  const c = children === "admin" ? "#ef4444" : children === "operator" ? "#f59e0b" : "rgba(237,233,224,.5)";
+  const c = children === "admin" ? "#ef4444" : children === "operator" ? "#f59e0b" : "rgba(90,102,117,.5)";
   return <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", border: `1px solid ${c}`, color: c }}>{children}</span>;
 }
 
@@ -756,18 +757,18 @@ function FeedTab() {
       <div style={styles.card}>
         <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Posts publicados ({posts.length})</div>
         {loading && <div>Cargando…</div>}
-        {!loading && posts.length === 0 && <div style={{ color: "rgba(237,233,224,.5)" }}>(sin posts)</div>}
+        {!loading && posts.length === 0 && <div style={{ color: "rgba(90,102,117,.5)" }}>(sin posts)</div>}
         {posts.map(p => (
-          <div key={p.id} style={{ padding: 14, borderTop: "1px solid rgba(255,255,255,.06)", display: "flex", justifyContent: "space-between", gap: 14, alignItems: "flex-start" }}>
+          <div key={p.id} style={{ padding: 14, borderTop: "1px solid rgba(17,24,39,.06)", display: "flex", justifyContent: "space-between", gap: 14, alignItems: "flex-start" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
                 <Pill>{p.type}</Pill>
-                <span style={{ fontSize: 11, color: "rgba(237,233,224,.4)" }}>{new Date(p.created_at).toLocaleString("es-AR")}</span>
+                <span style={{ fontSize: 11, color: "rgba(90,102,117,.4)" }}>{new Date(p.created_at).toLocaleString("es-AR")}</span>
                 {p.expires_at && <span style={{ fontSize: 11, color: "#f59e0b" }}>expira: {new Date(p.expires_at).toLocaleString("es-AR")}</span>}
               </div>
               {p.title && <div style={{ fontWeight: 700, marginBottom: 4 }}>{p.title}</div>}
-              {p.body && <div style={{ fontSize: 13, color: "rgba(237,233,224,.7)", whiteSpace: "pre-wrap" }}>{p.body}</div>}
-              {p.media_url && <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 4, wordBreak: "break-all" }}>📎 {p.media_url}</div>}
+              {p.body && <div style={{ fontSize: 13, color: "rgba(90,102,117,.7)", whiteSpace: "pre-wrap" }}>{p.body}</div>}
+              {p.media_url && <div style={{ fontSize: 11, color: "rgba(90,102,117,.45)", marginTop: 4, wordBreak: "break-all" }}>📎 {p.media_url}</div>}
             </div>
             <button style={styles.btn(false, true)} onClick={() => remove(p.id)}>Borrar</button>
           </div>
@@ -811,7 +812,7 @@ function BrandingTab() {
       {/* Resumen actual */}
       <div style={styles.card}>
         <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Branding actual</div>
-        <div style={{ fontSize: 12, color: "rgba(237,233,224,.5)", marginBottom: 16 }}>Sólo lectura. Para editar, abrí el wizard de configuración.</div>
+        <div style={{ fontSize: 12, color: "rgba(90,102,117,.5)", marginBottom: 16 }}>Sólo lectura. Para editar, abrí el wizard de configuración.</div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <BrandingField label="Nombre"   value={branding.name} mono />
@@ -836,7 +837,7 @@ function BrandingTab() {
       {/* Live previews */}
       <div style={styles.card}>
         <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Cómo se ve tu portal</div>
-        <div style={{ fontSize: 12, color: "rgba(237,233,224,.5)", marginBottom: 16 }}>Mockups que reflejan el branding actual (datos reales del backend).</div>
+        <div style={{ fontSize: 12, color: "rgba(90,102,117,.5)", marginBottom: 16 }}>Mockups que reflejan el branding actual (datos reales del backend).</div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14 }}>
           {/* Browser tab */}
@@ -938,22 +939,22 @@ function BrandingTab() {
       {/* Propagación */}
       <div style={styles.card}>
         <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Se aplica automáticamente en {propagationTargets.length} lugares</div>
-        <div style={{ fontSize: 12, color: "rgba(237,233,224,.5)", marginBottom: 14 }}>Cuando edités <code style={{ background: "rgba(255,255,255,.08)", padding: "1px 5px", borderRadius: 3 }}>name</code> / <code style={{ background: "rgba(255,255,255,.08)", padding: "1px 5px", borderRadius: 3 }}>logo</code> / <code style={{ background: "rgba(255,255,255,.08)", padding: "1px 5px", borderRadius: 3 }}>colors</code>, se propaga al instante (cache 30s).</div>
+        <div style={{ fontSize: 12, color: "rgba(90,102,117,.5)", marginBottom: 14 }}>Cuando edités <code style={{ background: "rgba(17,24,39,.08)", padding: "1px 5px", borderRadius: 3 }}>name</code> / <code style={{ background: "rgba(17,24,39,.08)", padding: "1px 5px", borderRadius: 3 }}>logo</code> / <code style={{ background: "rgba(17,24,39,.08)", padding: "1px 5px", borderRadius: 3 }}>colors</code>, se propaga al instante (cache 30s).</div>
 
         <div style={{ display: "grid", gap: 8 }}>
           {propagationTargets.map(t => (
-            <div key={t.title} style={{ display: "flex", gap: 12, padding: "10px 12px", background: "rgba(255,255,255,.02)", borderRadius: 6, alignItems: "flex-start" }}>
+            <div key={t.title} style={{ display: "flex", gap: 12, padding: "10px 12px", background: "rgba(17,24,39,.02)", borderRadius: 6, alignItems: "flex-start" }}>
               <div style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.2 }}>{t.icon}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>{t.title}</div>
-                <div style={{ fontSize: 11, color: "rgba(237,233,224,.55)", marginTop: 2 }}>{t.desc}</div>
-                <div style={{ fontSize: 10, color: "rgba(237,233,224,.35)", marginTop: 3, fontFamily: "monospace" }}>← {t.source}</div>
+                <div style={{ fontSize: 11, color: "rgba(90,102,117,.55)", marginTop: 2 }}>{t.desc}</div>
+                <div style={{ fontSize: 10, color: "rgba(90,102,117,.35)", marginTop: 3, fontFamily: "monospace" }}>← {t.source}</div>
               </div>
             </div>
           ))}
         </div>
 
-        <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.08)" }}>
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid rgba(17,24,39,.08)" }}>
           <button style={styles.btn(true)} onClick={() => navigate("/admin/setup?section=branding")}>✏️ Editar branding en el wizard →</button>
         </div>
       </div>
@@ -964,11 +965,11 @@ function BrandingTab() {
 function BrandingField({ label, value, mono = false, ellipsis = false }) {
   return (
     <div>
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.4)", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.4)", marginBottom: 4 }}>{label}</div>
       <div style={{
         fontSize: 13,
         fontFamily: mono ? "monospace" : "inherit",
-        color: value ? "rgba(237,233,224,.9)" : "rgba(237,233,224,.35)",
+        color: value ? "rgba(90,102,117,.9)" : "rgba(90,102,117,.35)",
         ...(ellipsis ? { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } : {}),
       }}>{value || "(vacío)"}</div>
     </div>
@@ -983,18 +984,18 @@ function Swatch({ hex, label }) {
   }
   return (
     <button onClick={copy} title="Click para copiar"
-      style={{ background: "transparent", border: "1px solid rgba(255,255,255,.08)", borderRadius: 8, padding: 8, display: "flex", flexDirection: "column", gap: 4, cursor: "pointer", fontFamily: "inherit", color: "inherit" }}>
+      style={{ background: "transparent", border: "1px solid rgba(17,24,39,.08)", borderRadius: 8, padding: 8, display: "flex", flexDirection: "column", gap: 4, cursor: "pointer", fontFamily: "inherit", color: "inherit" }}>
       <div style={{ width: 60, height: 40, background: hex, borderRadius: 4, border: "1px solid rgba(0,0,0,.2)" }} />
-      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.5)" }}>{label}</div>
-      <div style={{ fontSize: 11, fontFamily: "monospace", color: "rgba(237,233,224,.85)" }}>{copied ? "copiado!" : hex}</div>
+      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.5)" }}>{label}</div>
+      <div style={{ fontSize: 11, fontFamily: "monospace", color: "rgba(90,102,117,.85)" }}>{copied ? "copiado!" : hex}</div>
     </button>
   );
 }
 
 function PreviewCard({ title, children }) {
   return (
-    <div style={{ background: "rgba(0,0,0,.3)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 8, padding: 12 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(237,233,224,.45)", marginBottom: 10 }}>{title}</div>
+    <div style={{ background: "rgba(0,0,0,.3)", border: "1px solid rgba(17,24,39,.06)", borderRadius: 8, padding: 12 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.45)", marginBottom: 10 }}>{title}</div>
       {children}
     </div>
   );
@@ -1018,9 +1019,9 @@ function SettingsTab() {
         {status && (
           <div style={{ display: "grid", gap: 8 }}>
             {Object.entries(status).map(([k, v]) => (
-              <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "rgba(255,255,255,.02)", borderRadius: 6, fontSize: 13 }}>
+              <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "rgba(17,24,39,.02)", borderRadius: 6, fontSize: 13 }}>
                 <span style={{ textTransform: "capitalize" }}>{k}</span>
-                <span style={{ color: v ? "#22c55e" : "rgba(237,233,224,.4)" }}>{v ? "✓ configurado" : "— pendiente"}</span>
+                <span style={{ color: v ? "#22c55e" : "rgba(90,102,117,.4)" }}>{v ? "✓ configurado" : "— pendiente"}</span>
               </div>
             ))}
           </div>
@@ -1028,7 +1029,7 @@ function SettingsTab() {
         <div style={{ marginTop: 18 }}>
           <button style={styles.btn(true)} onClick={() => navigate("/admin/setup")}>Abrir el wizard de configuración →</button>
         </div>
-        <div style={{ marginTop: 12, fontSize: 12, color: "rgba(237,233,224,.5)" }}>
+        <div style={{ marginTop: 12, fontSize: 12, color: "rgba(90,102,117,.5)" }}>
           El wizard te permite editar cada sección (Cloudinary, Marca, Resend, Telegram, Reglas) de forma individual.
           Los cambios se aplican al instante (con cache-bust del frontend al recargar).
         </div>
@@ -1131,7 +1132,7 @@ function ProductsTab() {
   ];
 
   return (
-    <div className="adm" style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "18px 18px 22px", margin: "2px 0" }}>
+    <div style={{ margin: "2px 0" }}>
       <div className="adm-spread" style={{ marginBottom: 16 }}>
         <div>
           <div className="adm-h1">Productos</div>
@@ -2048,7 +2049,7 @@ const ORDER_STATUS_META = {
   paid:            { label: "Pagado",            color: "#86efac", emoji: "💰" },
   dispatched:      { label: "Despachado",        color: "#93c5fd", emoji: "🚚" },
   completed:       { label: "Completado",        color: "#A7F5C8", emoji: "✅" },
-  cancelled:       { label: "Cancelado",         color: "rgba(237,233,224,.5)", emoji: "🚫" },
+  cancelled:       { label: "Cancelado",         color: "rgba(90,102,117,.5)", emoji: "🚫" },
   failed:          { label: "Fallido",           color: "#fca5a5", emoji: "❌" },
 };
 
@@ -2077,109 +2078,88 @@ function OrdersTab() {
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [filter]);
 
-  return (
-    <div>
-      <h2 style={{ fontSize: 18, margin: "0 0 14px", fontWeight: 700 }}>Pedidos del shop</h2>
+  const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
+  const STATUS_TONE = { pending_payment: "warn", paid: "ok", dispatched: "muted", completed: "ok", cancelled: "muted", failed: "danger" };
 
-      <div style={styles.card}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-          <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
-            Todos · {Object.values(counts).reduce((a, b) => a + b, 0)}
-          </FilterPill>
-          {Object.entries(ORDER_STATUS_META).map(([key, meta]) => (
-            <FilterPill key={key} active={filter === key} onClick={() => setFilter(key)} color={meta.color}>
-              {meta.emoji} {meta.label} · {counts[key] || 0}
-            </FilterPill>
-          ))}
+  return (
+    <div style={{ margin: "2px 0" }}>
+      <div className="adm-spread" style={{ marginBottom: 16 }}>
+        <div>
+          <div className="adm-h1">Pedidos</div>
+          <div className="adm-sub">{totalCount} {totalCount === 1 ? "pedido" : "pedidos"} en total</div>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <input
-            style={{ ...styles.input, maxWidth: 360 }}
-            placeholder="Buscar por email, nombre o número de orden…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") load(); }}
-          />
-          <button style={styles.btn()} onClick={load}>Buscar</button>
+        <div className="adm-search" style={{ minWidth: 260 }}>
+          <span className="adm-search__i">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.2-3.2" /></svg>
+          </span>
+          <input className="adm-input" placeholder="Buscar por email, nombre o N° de orden…" value={search}
+            onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") load(); }} />
         </div>
       </div>
 
-      <div style={styles.card}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+        <button onClick={() => setFilter("all")} className={`adm-btn adm-btn--sm ${filter === "all" ? "adm-btn--primary" : "adm-btn--default"}`}>
+          Todos <span style={{ opacity: 0.7 }}>{totalCount}</span>
+        </button>
+        {Object.entries(ORDER_STATUS_META).map(([key, meta]) => (
+          <button key={key} onClick={() => setFilter(key)} className={`adm-btn adm-btn--sm ${filter === key ? "adm-btn--primary" : "adm-btn--default"}`}>
+            {meta.emoji} {meta.label} <span style={{ opacity: 0.7 }}>{counts[key] || 0}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="adm-card">
         {loading ? (
-          <div>Cargando…</div>
+          <div className="adm-empty">Cargando pedidos…</div>
         ) : orders.length === 0 ? (
-          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
+          <div className="adm-empty">
+            <div className="adm-empty__ic">🧾</div>
             No hay pedidos {filter !== "all" ? `con estado "${ORDER_STATUS_META[filter]?.label}"` : "todavía"}.
           </div>
         ) : (
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Orden</th>
-                <th style={styles.th}>Cliente</th>
-                <th style={styles.th}>Total</th>
-                <th style={styles.th}>Estado</th>
-                <th style={styles.th}>Fecha</th>
-                <th style={styles.th}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((o) => {
-                const meta = ORDER_STATUS_META[o.status] || ORDER_STATUS_META.pending_payment;
-                return (
-                  <tr key={o.id} onClick={() => setDetail(o.id)} style={{ cursor: "pointer" }}>
-                    <td style={styles.td}>
-                      <code style={{ fontFamily: "monospace", fontWeight: 700 }}>{o.public_id}</code>
-                    </td>
-                    <td style={styles.td}>
-                      <div style={{ fontWeight: 600 }}>{o.customer_first_name} {o.customer_last_name || ""}</div>
-                      <div style={{ fontSize: 11, color: "rgba(237,233,224,.55)" }}>{o.customer_email}</div>
-                    </td>
-                    <td style={styles.td}>
-                      <strong style={{ color: "var(--brand-primary, #A7F5C8)" }}>{o.total_formatted}</strong>
-                    </td>
-                    <td style={styles.td}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: meta.color }}>
-                        <span>{meta.emoji}</span>
-                        <span>{meta.label}</span>
-                      </span>
-                    </td>
-                    <td style={styles.td}>
-                      <span style={{ fontSize: 12, color: "rgba(237,233,224,.6)" }}>
+          <div className="adm-tablewrap">
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th>Orden</th>
+                  <th>Cliente</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th style={{ width: 120 }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((o) => {
+                  const meta = ORDER_STATUS_META[o.status] || ORDER_STATUS_META.pending_payment;
+                  return (
+                    <tr key={o.id} onClick={() => setDetail(o.id)} style={{ cursor: "pointer" }}>
+                      <td><span className="adm-mono" style={{ fontWeight: 700 }}>{o.public_id}</span></td>
+                      <td>
+                        <div style={{ fontWeight: 700 }}>{o.customer_first_name} {o.customer_last_name || ""}</div>
+                        <div style={{ fontSize: 11.5, color: "var(--text-3)" }}>{o.customer_email}</div>
+                      </td>
+                      <td style={{ fontWeight: 700, whiteSpace: "nowrap" }}>{o.total_formatted}</td>
+                      <td><Badge tone={STATUS_TONE[o.status] || "muted"}>{meta.emoji} {meta.label}</Badge></td>
+                      <td style={{ fontSize: 12, color: "var(--text-2)", whiteSpace: "nowrap" }}>
                         {new Date(o.created_at).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                    </td>
-                    <td style={styles.td}>
-                      <button style={styles.btn()} onClick={(e) => { e.stopPropagation(); setDetail(o.id); }}>Ver detalle</button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                          <Btn size="sm" onClick={(e) => { e.stopPropagation(); setDetail(o.id); }}>Ver detalle</Btn>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
       {detail && <OrderDetailModal orderId={detail} onClose={() => setDetail(null)} onChanged={load} />}
     </div>
-  );
-}
-
-function FilterPill({ active, onClick, color, children }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: "8px 14px", borderRadius: 999,
-        border: active ? `1px solid ${color || "var(--brand-primary, #A7F5C8)"}` : "1px solid rgba(255,255,255,.1)",
-        background: active ? "rgba(167,245,200,.10)" : "transparent",
-        color: active ? (color || "var(--brand-primary, #A7F5C8)") : "rgba(237,233,224,.75)",
-        fontSize: 12, fontWeight: 700, cursor: "pointer",
-        fontFamily: "inherit",
-      }}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -2252,7 +2232,7 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
             {/* Estado actual + acciones */}
             <div style={{ ...styles.card, marginBottom: 16, padding: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)" }}>Estado</div>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)" }}>Estado</div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: ORDER_STATUS_META[order.status]?.color }}>
                   {ORDER_STATUS_META[order.status]?.emoji} {ORDER_STATUS_META[order.status]?.label}
                 </div>
@@ -2265,9 +2245,9 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
                     onClick={() => changeStatus(key)}
                     style={{
                       padding: "7px 11px", fontSize: 11, fontWeight: 700,
-                      borderRadius: 6, border: "1px solid rgba(255,255,255,.1)",
-                      background: key === order.status ? "rgba(167,245,200,.12)" : "rgba(255,255,255,.04)",
-                      color: key === order.status ? meta.color : "rgba(237,233,224,.8)",
+                      borderRadius: 6, border: "1px solid rgba(17,24,39,.1)",
+                      background: key === order.status ? "rgba(167,245,200,.12)" : "rgba(17,24,39,.04)",
+                      color: key === order.status ? meta.color : "rgba(90,102,117,.8)",
                       cursor: key === order.status ? "default" : "pointer",
                       opacity: savingStatus === key ? 0.5 : 1,
                       fontFamily: "inherit",
@@ -2277,7 +2257,7 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
                   </button>
                 ))}
               </div>
-              <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)", marginTop: 10 }}>
+              <div style={{ fontSize: 11, color: "rgba(90,102,117,.5)", marginTop: 10 }}>
                 Flujo típico: Pendiente → Pagado → Despachado → Completado.
               </div>
             </div>
@@ -2285,12 +2265,12 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
             {/* Tracking de envío — visible desde que el pedido está pagado */}
             {["paid", "dispatched", "completed"].includes(order.status) && (
               <div style={{ ...styles.card, marginBottom: 16, padding: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)", marginBottom: 10 }}>
                   🚚 Envío / Tracking
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                   <select value={carrier} onChange={(e) => setCarrier(e.target.value)}
-                    style={{ flex: "1 1 150px", padding: "9px 12px", borderRadius: 8, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", color: "rgba(237,233,224,.9)", fontFamily: "inherit", fontSize: 13 }}>
+                    style={{ flex: "1 1 150px", padding: "9px 12px", borderRadius: 8, background: "rgba(17,24,39,.05)", border: "1px solid rgba(17,24,39,.12)", color: "rgba(90,102,117,.9)", fontFamily: "inherit", fontSize: 13 }}>
                     <option value="">Elegir correo…</option>
                     <option value="andreani">Andreani</option>
                     <option value="correo_argentino">Correo Argentino</option>
@@ -2298,18 +2278,18 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
                     <option value="propio">Envío propio</option>
                   </select>
                   <input value={trackingNum} onChange={(e) => setTrackingNum(e.target.value)} placeholder="N° de seguimiento"
-                    style={{ flex: "2 1 200px", padding: "9px 12px", borderRadius: 8, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", color: "rgba(237,233,224,.9)", fontFamily: "inherit", fontSize: 13 }} />
+                    style={{ flex: "2 1 200px", padding: "9px 12px", borderRadius: 8, background: "rgba(17,24,39,.05)", border: "1px solid rgba(17,24,39,.12)", color: "rgba(90,102,117,.9)", fontFamily: "inherit", fontSize: 13 }} />
                   <button onClick={saveDispatch} disabled={!!savingStatus}
                     style={{ padding: "9px 16px", fontSize: 12, fontWeight: 800, borderRadius: 8, border: "none", background: "#25D366", color: "#fff", cursor: "pointer", fontFamily: "inherit", opacity: savingStatus ? 0.6 : 1, whiteSpace: "nowrap" }}>
                     {order.status === "dispatched" ? "Actualizar envío" : "Despachar y notificar"}
                   </button>
                 </div>
                 {order.tracking_url && (
-                  <div style={{ fontSize: 12, color: "rgba(237,233,224,.6)", marginTop: 10 }}>
+                  <div style={{ fontSize: 12, color: "rgba(90,102,117,.6)", marginTop: 10 }}>
                     Link de seguimiento: <a href={order.tracking_url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--brand-primary, #A7F5C8)" }}>{order.tracking_url}</a>
                   </div>
                 )}
-                <div style={{ fontSize: 11, color: "rgba(237,233,224,.45)", marginTop: 8 }}>
+                <div style={{ fontSize: 11, color: "rgba(90,102,117,.45)", marginTop: 8 }}>
                   Al despachar, el socio recibe un email con el botón “Seguir mi envío”.
                 </div>
               </div>
@@ -2318,9 +2298,9 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {/* Cliente */}
               <div style={styles.card}>
-                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>Cliente</div>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)", marginBottom: 10 }}>Cliente</div>
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{order.customer_first_name} {order.customer_last_name || ""}</div>
-                <div style={{ fontSize: 13, color: "rgba(237,233,224,.75)", marginTop: 4 }}>
+                <div style={{ fontSize: 13, color: "rgba(90,102,117,.75)", marginTop: 4 }}>
                   <div>📧 <a href={`mailto:${order.customer_email}`} style={{ color: "inherit", textDecoration: "underline dotted" }}>{order.customer_email}</a></div>
                   <div>📱 <a href={`https://wa.me/${order.customer_phone?.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline dotted" }}>{order.customer_phone}</a></div>
                 </div>
@@ -2328,19 +2308,19 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
 
               {/* Envío */}
               <div style={styles.card}>
-                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>Dirección de envío</div>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)", marginBottom: 10 }}>Dirección de envío</div>
                 <div style={{ fontSize: 13, lineHeight: 1.55 }}>
                   <div>{sa.street} {sa.number}{sa.apartment ? ` · Dpto ${sa.apartment}` : ""}</div>
                   <div>{sa.city}, {sa.province}</div>
                   <div>CP {sa.postal_code}{sa.country ? ` · ${sa.country}` : ""}</div>
-                  {sa.notes && <div style={{ marginTop: 8, fontStyle: "italic", color: "rgba(237,233,224,.65)" }}>“{sa.notes}”</div>}
+                  {sa.notes && <div style={{ marginTop: 8, fontStyle: "italic", color: "rgba(90,102,117,.65)" }}>“{sa.notes}”</div>}
                 </div>
               </div>
             </div>
 
             {/* Items */}
             <div style={{ ...styles.card, marginTop: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>Productos ({order.items?.length || 0})</div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)", marginBottom: 10 }}>Productos ({order.items?.length || 0})</div>
               <table style={styles.table}>
                 <thead>
                   <tr>
@@ -2355,13 +2335,13 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
                     <tr key={it.id}>
                       <td style={styles.td}>
                         {it.image_url
-                          ? <img src={it.image_url} alt="" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 4, background: "rgba(255,255,255,.03)" }} />
-                          : <div style={{ width: 36, height: 36, background: "rgba(255,255,255,.05)", borderRadius: 4 }} />
+                          ? <img src={it.image_url} alt="" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 4, background: "rgba(17,24,39,.03)" }} />
+                          : <div style={{ width: 36, height: 36, background: "rgba(17,24,39,.05)", borderRadius: 4 }} />
                         }
                       </td>
                       <td style={styles.td}>
                         <div style={{ fontWeight: 600 }}>{it.name}</div>
-                        <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>/{it.product_slug}</div>
+                        <div style={{ fontSize: 11, color: "rgba(90,102,117,.5)" }}>/{it.product_slug}</div>
                       </td>
                       <td style={styles.td}>{it.quantity}</td>
                       <td style={styles.td}>{formatARS(it.line_total_cents)}</td>
@@ -2369,15 +2349,15 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
                   ))}
                 </tbody>
               </table>
-              <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,.08)", display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: 14 }}>
-                <span style={{ fontSize: 13, color: "rgba(237,233,224,.7)" }}>Total</span>
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(17,24,39,.08)", display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: 14 }}>
+                <span style={{ fontSize: 13, color: "rgba(90,102,117,.7)" }}>Total</span>
                 <strong style={{ fontSize: 22, color: "var(--brand-primary, #A7F5C8)" }}>{order.total_formatted}</strong>
               </div>
             </div>
 
             {/* Timestamps */}
-            <div style={{ ...styles.card, marginTop: 14, fontSize: 12, color: "rgba(237,233,224,.65)" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 8 }}>Historial</div>
+            <div style={{ ...styles.card, marginTop: 14, fontSize: 12, color: "rgba(90,102,117,.65)" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)", marginBottom: 8 }}>Historial</div>
               <div>📥 Creado: {new Date(order.created_at).toLocaleString("es-AR")}</div>
               {order.paid_at && <div>💰 Pagado: {new Date(order.paid_at).toLocaleString("es-AR")}</div>}
               {order.dispatched_at && <div>🚚 Despachado: {new Date(order.dispatched_at).toLocaleString("es-AR")}</div>}
@@ -2488,7 +2468,7 @@ function CustomersTab() {
 
       <div style={styles.card}>
         {loading ? <div>Cargando…</div> : customers.length === 0 ? (
-          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
+          <div style={{ color: "rgba(90,102,117,.5)", padding: "20px 0" }}>
             Sin clientes que coincidan. Los nuevos se crean automáticamente al confirmar un pedido en /shop.
           </div>
         ) : (
@@ -2508,13 +2488,13 @@ function CustomersTab() {
                 <tr key={c.id}>
                   <td style={styles.td}>
                     <div style={{ fontWeight: 600 }}>{c.first_name || "—"} {c.last_name || ""}</div>
-                    <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>
+                    <div style={{ fontSize: 11, color: "rgba(90,102,117,.5)" }}>
                       {(c.last_address?.city || "") + (c.last_address?.province ? `, ${c.last_address.province}` : "")}
                     </div>
                   </td>
                   <td style={styles.td}>
                     <a href={`mailto:${c.email}`} style={{ color: "inherit" }}>{c.email}</a>
-                    {c.phone && <div style={{ fontSize: 11, color: "rgba(237,233,224,.55)" }}>📱 {c.phone}</div>}
+                    {c.phone && <div style={{ fontSize: 11, color: "rgba(90,102,117,.55)" }}>📱 {c.phone}</div>}
                   </td>
                   <td style={styles.td}>
                     <strong>{c.orders_count}</strong>
@@ -2523,7 +2503,7 @@ function CustomersTab() {
                     <strong style={{ color: "var(--brand-primary, #A7F5C8)" }}>{c.total_spent_formatted}</strong>
                   </td>
                   <td style={styles.td}>
-                    <span style={{ fontSize: 12, color: "rgba(237,233,224,.7)" }}>
+                    <span style={{ fontSize: 12, color: "rgba(90,102,117,.7)" }}>
                       {c.last_order_at ? new Date(c.last_order_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                     </span>
                   </td>
@@ -2555,7 +2535,7 @@ function CustomersTab() {
 function StatCard({ label, value, accent }) {
   return (
     <div style={{ ...styles.card, padding: 16, margin: 0, textAlign: "center" }}>
-      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 8 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)", marginBottom: 8 }}>
         {label}
       </div>
       <div style={{ fontSize: 28, fontWeight: 900, color: accent ? "var(--brand-primary, #A7F5C8)" : "inherit", lineHeight: 1 }}>
@@ -2633,10 +2613,10 @@ const CAMPAIGN_TEMPLATES = {
 };
 
 const CAMPAIGN_STATUS_META = {
-  draft:      { label: "Borrador",  color: "rgba(237,233,224,.6)", emoji: "📝" },
+  draft:      { label: "Borrador",  color: "rgba(90,102,117,.6)", emoji: "📝" },
   sending:    { label: "Enviando…", color: "#fcd34d", emoji: "📡" },
   sent:       { label: "Enviada",   color: "#86efac", emoji: "✅" },
-  cancelled:  { label: "Cancelada", color: "rgba(237,233,224,.4)", emoji: "🚫" },
+  cancelled:  { label: "Cancelada", color: "rgba(90,102,117,.4)", emoji: "🚫" },
   failed:     { label: "Falló",     color: "#fca5a5", emoji: "❌" },
 };
 
@@ -2673,7 +2653,7 @@ function CampaignsTab() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <div>
           <h2 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>Campañas de email</h2>
-          <div style={{ fontSize: 12, color: "rgba(237,233,224,.55)", marginTop: 3 }}>
+          <div style={{ fontSize: 12, color: "rgba(90,102,117,.55)", marginTop: 3 }}>
             {segments.opt_in} clientes opt-in · {segments.all} totales · Free tier: 90/día
           </div>
         </div>
@@ -2682,7 +2662,7 @@ function CampaignsTab() {
 
       <div style={styles.card}>
         {loading ? <div>Cargando…</div> : campaigns.length === 0 ? (
-          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
+          <div style={{ color: "rgba(90,102,117,.5)", padding: "20px 0" }}>
             No hay campañas todavía. Tocá <strong>Nueva campaña</strong> para arrancar.
           </div>
         ) : (
@@ -2707,10 +2687,10 @@ function CampaignsTab() {
                   <tr key={c.id} onClick={() => setDetail(c.id)} style={{ cursor: "pointer" }}>
                     <td style={styles.td}>
                       <div style={{ fontWeight: 600 }}>{c.name}</div>
-                      <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>{c.subject}</div>
+                      <div style={{ fontSize: 11, color: "rgba(90,102,117,.5)" }}>{c.subject}</div>
                     </td>
                     <td style={styles.td}>
-                      <span style={{ fontSize: 11, color: "rgba(237,233,224,.7)", textTransform: "uppercase", letterSpacing: ".1em" }}>
+                      <span style={{ fontSize: 11, color: "rgba(90,102,117,.7)", textTransform: "uppercase", letterSpacing: ".1em" }}>
                         {c.segment === "all" ? "Todos" : "Opt-in"}
                       </span>
                     </td>
@@ -2723,16 +2703,16 @@ function CampaignsTab() {
                       {c.total_count > 0 ? (
                         <div>
                           <div style={{ fontSize: 12 }}>{c.sent_count + c.failed_count} / {c.total_count}{c.failed_count > 0 ? ` · ${c.failed_count} fallaron` : ""}</div>
-                          <div style={{ width: 90, height: 5, background: "rgba(255,255,255,.06)", borderRadius: 999, marginTop: 4, overflow: "hidden" }}>
+                          <div style={{ width: 90, height: 5, background: "rgba(17,24,39,.06)", borderRadius: 999, marginTop: 4, overflow: "hidden" }}>
                             <div style={{ width: `${progress}%`, height: "100%", background: meta.color, transition: "width .4s" }} />
                           </div>
                         </div>
                       ) : (
-                        <span style={{ color: "rgba(237,233,224,.4)" }}>—</span>
+                        <span style={{ color: "rgba(90,102,117,.4)" }}>—</span>
                       )}
                     </td>
                     <td style={styles.td}>
-                      <span style={{ fontSize: 12, color: "rgba(237,233,224,.6)" }}>
+                      <span style={{ fontSize: 12, color: "rgba(90,102,117,.6)" }}>
                         {new Date(c.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
                       </span>
                     </td>
@@ -2868,7 +2848,7 @@ function CampaignComposer({ campaign, segments, onClose, onSaved }) {
         {previewMode ? (
           <iframe
             srcDoc={bodyHtml + `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:24px;border-top:1px solid #e5e5e5;padding-top:16px;"><tr><td style="font-family:sans-serif;font-size:11px;line-height:1.5;color:#999;text-align:center;">Recibís este email porque estás en la lista de clientes de Holistic.<br>¿No querés más? <a href="#">Darse de baja</a>.</td></tr></table>`}
-            style={{ width: "100%", height: 540, border: "1px solid rgba(255,255,255,.1)", borderRadius: 8, background: "#fff" }}
+            style={{ width: "100%", height: 540, border: "1px solid rgba(17,24,39,.1)", borderRadius: 8, background: "#fff" }}
             title="Preview del email"
             sandbox=""
           />
@@ -2881,7 +2861,7 @@ function CampaignComposer({ campaign, segments, onClose, onSaved }) {
           />
         )}
 
-        <div style={{ marginTop: 18, padding: "14px 16px", borderRadius: 10, background: dailyLimitReached ? "rgba(252,211,77,.10)" : "rgba(167,245,200,.08)", border: `1px solid ${dailyLimitReached ? "rgba(252,211,77,.3)" : "rgba(167,245,200,.2)"}`, fontSize: 13, color: "rgba(237,233,224,.85)" }}>
+        <div style={{ marginTop: 18, padding: "14px 16px", borderRadius: 10, background: dailyLimitReached ? "rgba(252,211,77,.10)" : "rgba(167,245,200,.08)", border: `1px solid ${dailyLimitReached ? "rgba(252,211,77,.3)" : "rgba(167,245,200,.2)"}`, fontSize: 13, color: "rgba(90,102,117,.85)" }}>
           {dailyLimitReached ? (
             <>⚠️ <strong>{audienceCount} destinatarios</strong> superan el límite del free tier de Resend (90/día). Solo se mandarán los primeros 90; el resto en otra campaña.</>
           ) : (
@@ -2899,7 +2879,7 @@ function CampaignComposer({ campaign, segments, onClose, onSaved }) {
             {saving ? "Guardando…" : "💾 Guardar borrador"}
           </button>
         </div>
-        <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)", textAlign: "right", marginTop: 6 }}>
+        <div style={{ fontSize: 11, color: "rgba(90,102,117,.5)", textAlign: "right", marginTop: 6 }}>
           Después del save tocá <strong>Enviar</strong> desde la lista para disparar.
         </div>
       </div>
@@ -2979,7 +2959,7 @@ function CampaignDetailModal({ campaignId, onClose, onChanged }) {
         <div style={{ ...styles.card, padding: 16, marginBottom: 14 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)" }}>Asunto</div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)" }}>Asunto</div>
               <div style={{ fontSize: 14, marginTop: 4 }}>{campaign.subject}</div>
             </div>
             <span style={{ fontSize: 14, fontWeight: 800, color: meta.color }}>
@@ -2995,7 +2975,7 @@ function CampaignDetailModal({ campaignId, onClose, onChanged }) {
                   {campaign.sent_count} sent · {campaign.failed_count} fail · {campaign.total_count} total ({progress}%)
                 </span>
               </div>
-              <div style={{ width: "100%", height: 8, background: "rgba(255,255,255,.06)", borderRadius: 999, overflow: "hidden" }}>
+              <div style={{ width: "100%", height: 8, background: "rgba(17,24,39,.06)", borderRadius: 999, overflow: "hidden" }}>
                 <div style={{ width: `${progress}%`, height: "100%", background: meta.color, transition: "width .4s" }} />
               </div>
             </div>
@@ -3022,7 +3002,7 @@ function CampaignDetailModal({ campaignId, onClose, onChanged }) {
 
         {failedSends.length > 0 && (
           <div style={styles.card}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(237,233,224,.5)", marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)", marginBottom: 10 }}>
               ❌ Envíos fallidos ({failedSends.length})
             </div>
             <table style={styles.table}>
@@ -3047,8 +3027,8 @@ function CampaignDetailModal({ campaignId, onClose, onChanged }) {
         )}
 
         <details style={{ marginTop: 14 }}>
-          <summary style={{ cursor: "pointer", color: "rgba(237,233,224,.7)", fontSize: 12 }}>Ver HTML enviado</summary>
-          <pre style={{ marginTop: 10, padding: 12, background: "rgba(0,0,0,.4)", borderRadius: 6, fontSize: 11, color: "rgba(237,233,224,.7)", maxHeight: 280, overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+          <summary style={{ cursor: "pointer", color: "rgba(90,102,117,.7)", fontSize: 12 }}>Ver HTML enviado</summary>
+          <pre style={{ marginTop: 10, padding: 12, background: "rgba(0,0,0,.4)", borderRadius: 6, fontSize: 11, color: "rgba(90,102,117,.7)", maxHeight: 280, overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
             {campaign.body_html}
           </pre>
         </details>
@@ -3094,7 +3074,7 @@ function PromoCodesTab() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <div>
           <h2 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>Códigos promocionales</h2>
-          <div style={{ fontSize: 12, color: "rgba(237,233,224,.55)", marginTop: 3 }}>
+          <div style={{ fontSize: 12, color: "rgba(90,102,117,.55)", marginTop: 3 }}>
             Aplican en /checkout. El cliente los tipea o se les manda por campaña.
           </div>
         </div>
@@ -3103,7 +3083,7 @@ function PromoCodesTab() {
 
       <div style={styles.card}>
         {loading ? <div>Cargando…</div> : codes.length === 0 ? (
-          <div style={{ color: "rgba(237,233,224,.5)", padding: "20px 0" }}>
+          <div style={{ color: "rgba(90,102,117,.5)", padding: "20px 0" }}>
             Sin códigos todavía. Hacé clic en <strong>+ Nuevo código</strong> para crear el primero.
           </div>
         ) : (
@@ -3126,11 +3106,11 @@ function PromoCodesTab() {
                     <code style={{ fontFamily: "monospace", fontWeight: 800, fontSize: 14, color: "var(--brand-primary, #A7F5C8)" }}>
                       {c.code}
                     </code>
-                    {c.notes && <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>{c.notes}</div>}
+                    {c.notes && <div style={{ fontSize: 11, color: "rgba(90,102,117,.5)" }}>{c.notes}</div>}
                   </td>
                   <td style={styles.td}>
                     <strong>{c.discount_display}</strong>
-                    <div style={{ fontSize: 11, color: "rgba(237,233,224,.5)" }}>
+                    <div style={{ fontSize: 11, color: "rgba(90,102,117,.5)" }}>
                       {c.kind === "percent" ? "porcentaje" : "monto fijo"}
                     </div>
                   </td>
@@ -3156,10 +3136,10 @@ function PromoCodesTab() {
                   </td>
                   <td style={styles.td}>
                     {c.expires_at ? (
-                      <span style={{ fontSize: 12, color: "rgba(237,233,224,.7)" }}>
+                      <span style={{ fontSize: 12, color: "rgba(90,102,117,.7)" }}>
                         {new Date(c.expires_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
                       </span>
-                    ) : <span style={{ color: "rgba(237,233,224,.4)" }}>—</span>}
+                    ) : <span style={{ color: "rgba(90,102,117,.4)" }}>—</span>}
                   </td>
                   <td style={styles.td}>
                     <button style={styles.btn()} onClick={() => setEditing(c)}>Editar</button>{" "}
