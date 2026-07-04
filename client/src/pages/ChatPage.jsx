@@ -279,7 +279,12 @@ function ProfileModal({ user, currentUser, token, isAdmin, friends, onClose, onP
         body: JSON.stringify({ name_color:cfg.name_color||null, name_glow:cfg.name_glow||null, name_glow_color:cfg.name_glow_color||null, name_grad_from:cfg.name_grad_from||null, name_grad_to:cfg.name_grad_to||null, nickname:cfg.nickname!==undefined?cfg.nickname:null, nick_color:cfg.nick_color||null, nick_glow:cfg.nick_glow||null, nick_glow_color:cfg.nick_glow_color||null, icon_slug:cfg.icon_slug||null })
       });
       const d = await r.json();
-      if(d.ok) { setSaveMsg({ok:true,text:"¡Guardado!"}); onSaved&&onSaved(cfg); }
+      if(d.ok) {
+        setSaveMsg({ok:true,text:"¡Guardado! Actualizando..."});
+        onSaved&&onSaved(cfg);
+        setTimeout(()=>window.location.reload(),700);
+        return;
+      }
       else setSaveMsg({ok:false,text:d.error});
     } catch { setSaveMsg({ok:false,text:"Error"}); }
     setSaving(false); setTimeout(()=>setSaveMsg(null),3000);
@@ -634,7 +639,14 @@ function PowersInline({ token, role, chatPowersOwned, userName }) {
         }),
       });
       const d = await r.json();
-      setSaveMsg(d.ok ? { ok: true, text: "¡Guardado! Se aplica en tus próximos mensajes." } : { ok: false, text: d.error || "Error" });
+      if (d.ok) {
+        // Recarga la página para que los colores/status queden aplicados en
+        // todo el chat (mensajes, lista de usuarios) de una.
+        setSaveMsg({ ok: true, text: "¡Guardado! Actualizando..." });
+        setTimeout(() => window.location.reload(), 700);
+        return;
+      }
+      setSaveMsg({ ok: false, text: d.error || "Error" });
     } catch { setSaveMsg({ ok: false, text: "Error de red" }); }
     setSaving(false); setTimeout(() => setSaveMsg(null), 3500);
   };
