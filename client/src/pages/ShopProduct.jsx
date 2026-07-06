@@ -728,10 +728,6 @@ export default function ShopProduct() {
                   : isKit ? formatARS(kitPriceCents)
                   : product.price_formatted
               }</span>
-              {/* Pack con precio a medida más barato que la suma → mostramos el "antes". */}
-              {isKit && kitCustomCents != null && kitTotalCents > kitCustomCents && (
-                <span className="sp-price-was">{formatARS(kitTotalCents)}</span>
-              )}
               {isCustomPoints
                 ? <span className="sp-sku">{clampPoints(pointsQty)} puntos · {product.price_formatted} por punto</span>
                 : isKit
