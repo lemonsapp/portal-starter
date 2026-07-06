@@ -1544,6 +1544,9 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   const [heroPorMedida, setHeroPorMedida] = useState(() => ({ ...(metaBase.hero_por_medida || {}) }));
   const [uploadingHero, setUploadingHero] = useState(null);
   const setHero = (m, url) => setHeroPorMedida((prev) => ({ ...prev, [m]: url }));
+  // URLs de candidatas que el admin borró en esta sesión (se ocultan al toque,
+  // sin esperar el refetch). El borrado real ya se hizo (form o API).
+  const [deletedHeroUrls, setDeletedHeroUrls] = useState(() => new Set());
   // KIT: precio a medida del pack por cada medida (ML/g). El form trabaja en
   // pesos (string "80000"); vacío = sin precio propio (cae a la suma de partes).
   // meta.precio_por_medida se guarda en CENTAVOS. { "500ml": 8000000, ... }
@@ -1673,6 +1676,65 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       setErr("Error de red al subir la imagen");
     } finally {
       setUploadingHero(null);
+    }
+  }
+
+  // Elimina una foto candidata (la ×) de la sección "Foto destacada por medida".
+  // La foto puede pertenecer al kit (imágenes del form) o a una variante de la
+  // línea; en ese caso se borra de esa variante vía API. Se oculta al instante.
+  async function deleteHeroCandidate(m, url) {
+    if (!url) return;
+    if (!window.confirm("¿Eliminar esta foto del producto? No se puede deshacer.")) return;
+    // Si era la destacada elegida de esta medida, volvemos a "Automática".
+    if (heroPorMedida[m] === url) setHero(m, "");
+
+    // Caso 1: es una foto propia del kit (está en el form de imágenes).
+    if (images.some((im) => im.url === url)) {
+      setImages((arr) => {
+        const next = arr.filter((im) => im.url !== url);
+        if (next.length && !next.some((im) => im.is_primary)) next[0].is_primary = true;
+        return next.length ? next : [{ url: "", alt: "", is_primary: true }];
+      });
+      setDeletedHeroUrls((prev) => new Set(prev).add(url));
+      return;
+    }
+
+    // Caso 2: pertenece a una variante de la línea → se borra de esa variante.
+    const owner = allProducts.find(
+      (v) => v.meta?.linea === lineKey && v.meta?.formato === m && !v.meta?.bundle
+        && (v.images || []).some((im) => im.url === url)
+    );
+    if (!owner) { setDeletedHeroUrls((prev) => new Set(prev).add(url)); return; }
+
+    const nextImgs = (owner.images || [])
+      .filter((im) => im.url !== url)
+      .map((im, idx) => ({ url: im.url, alt: im.alt || null, sort_order: idx, is_primary: !!im.is_primary }));
+    if (nextImgs.length && !nextImgs.some((im) => im.is_primary)) nextImgs[0].is_primary = true;
+
+    const payload = {
+      slug: owner.slug,
+      name: owner.name,
+      short_description: owner.short_description || null,
+      long_description: owner.long_description || null,
+      price_cents: owner.price_cents ?? 0,
+      stock: owner.stock ?? null,
+      sku: owner.sku || null,
+      category_id: owner.category?.id ?? null,
+      active: owner.active !== false,
+      featured: owner.featured === true,
+      sort_order: owner.sort_order ?? 0,
+      images: nextImgs,
+      meta: owner.meta || {},
+    };
+    try {
+      const r = await fetch(`${API}/api/admin/shop/products/${owner.id}`, {
+        method: "PUT", headers: jsonHdr(), body: JSON.stringify(payload),
+      });
+      if (!r.ok) { const d = await r.json().catch(() => ({})); setErr(d.error || "No se pudo eliminar la foto"); return; }
+      owner.images = nextImgs; // mantiene el prop en sync para futuros cálculos
+      setDeletedHeroUrls((prev) => new Set(prev).add(url));
+    } catch (e) {
+      setErr("Error de red al eliminar la foto");
     }
   }
 
@@ -1901,24 +1963,33 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                     </Field>
                   )}
                   {isBundle && kitMedidas.length > 0 && (
-                    <Field label="Foto destacada del kit por medida" hint='Por cada medida: subí tu propia foto ("Subir") o elegí una existente. "Automática" = usa la foto unificada del kit.'>
+                    <Field label="Foto destacada del kit por medida" hint='Por cada medida: subí tu propia foto ("Subir") o elegí una existente. La × elimina esa foto del producto. "Automática" = usa la foto unificada del kit.'>
                       <div style={{ display: "grid", gap: 10 }}>
                         {kitMedidas.map((m) => {
                           const cands = heroCandidates(m);
                           const sel = heroPorMedida[m] || "";
-                          const thumbs = sel && !cands.includes(sel) ? [sel, ...cands] : cands;
+                          const thumbs = (sel && !cands.includes(sel) ? [sel, ...cands] : cands)
+                            .filter((u) => !deletedHeroUrls.has(u));
                           const up = uploadingHero === m;
                           return (
-                            <div key={m} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            <div key={m} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--accent-hover)" }}>{m}</span>
-                              <button type="button" onClick={() => setHero(m, "")} className={`adm-btn adm-btn--sm ${sel === "" ? "adm-btn--primary" : "adm-btn--default"}`}>Automática</button>
-                              {thumbs.map((u) => (
-                                <button key={u} type="button" onClick={() => setHero(m, u)} title="Usar como destacada de esta medida"
-                                  style={{ padding: 2, borderRadius: 8, cursor: "pointer", background: "transparent", border: `2px solid ${sel === u ? "var(--accent)" : "var(--border-2)"}` }}>
-                                  <img src={u} alt="" style={{ width: 40, height: 40, objectFit: "contain", display: "block", borderRadius: 4, background: "var(--surface-3)" }} />
-                                </button>
-                              ))}
-                              <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1 }}>
+                              <button type="button" onClick={() => setHero(m, "")} className={`adm-btn adm-btn--sm ${sel === "" ? "adm-btn--primary" : "adm-btn--default"}`} style={{ flex: "0 0 auto" }}>Automática</button>
+                              {/* Tira con scroll horizontal: no importa cuántas fotos haya,
+                                  "Subir" siempre queda visible al final de la fila. */}
+                              <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "6px 2px", flex: 1, minWidth: 0 }}>
+                                {thumbs.map((u) => (
+                                  <div key={u} style={{ position: "relative", flex: "0 0 auto" }}>
+                                    <button type="button" onClick={() => setHero(m, u)} title="Usar como destacada de esta medida"
+                                      style={{ padding: 2, borderRadius: 8, cursor: "pointer", background: "transparent", border: `2px solid ${sel === u ? "var(--accent)" : "var(--border-2)"}` }}>
+                                      <img src={u} alt="" style={{ width: 40, height: 40, objectFit: "contain", display: "block", borderRadius: 4, background: "var(--surface-3)" }} />
+                                    </button>
+                                    <button type="button" onClick={() => deleteHeroCandidate(m, u)} title="Eliminar esta foto del producto" aria-label="Eliminar foto"
+                                      style={{ position: "absolute", top: -7, right: -7, width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "1.5px solid var(--surface)", fontSize: 12, fontWeight: 900 }}>×</button>
+                                  </div>
+                                ))}
+                              </div>
+                              <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, flex: "0 0 auto" }}>
                                 {up ? "Subiendo…" : "⬆ Subir"}
                                 <input type="file" accept="image/*" style={{ display: "none" }} disabled={up} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadHero(m, f); }} />
                               </label>
