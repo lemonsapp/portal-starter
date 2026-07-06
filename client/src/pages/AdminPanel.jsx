@@ -1547,6 +1547,22 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   // URLs de candidatas que el admin borró en esta sesión (se ocultan al toque,
   // sin esperar el refetch). El borrado real ya se hizo (form o API).
   const [deletedHeroUrls, setDeletedHeroUrls] = useState(() => new Set());
+  // KIT: fotos COMUNES (galería) por medida, aparte de la destacada. Se guardan
+  // en meta.fotos_por_medida = { "20L": [url, ...] } y se ven en la ficha del
+  // kit cuando se elige esa medida. Acumulan varias (a diferencia de la
+  // destacada, que es una sola).
+  const [fotosPorMedida, setFotosPorMedida] = useState(() => {
+    const src = (metaBase.fotos_por_medida && typeof metaBase.fotos_por_medida === "object")
+      ? metaBase.fotos_por_medida : {};
+    const out = {};
+    for (const [m, arr] of Object.entries(src)) out[m] = Array.isArray(arr) ? arr.filter(Boolean) : [];
+    return out;
+  });
+  const [uploadingFoto, setUploadingFoto] = useState(null);
+  const addFotoMedida = (m, url) =>
+    setFotosPorMedida((prev) => ({ ...prev, [m]: [...(prev[m] || []), url] }));
+  const removeFotoMedida = (m, url) =>
+    setFotosPorMedida((prev) => ({ ...prev, [m]: (prev[m] || []).filter((u) => u !== url) }));
   // KIT: precio a medida del pack por cada medida (ML/g). El form trabaja en
   // pesos (string "80000"); vacío = sin precio propio (cae a la suma de partes).
   // meta.precio_por_medida se guarda en CENTAVOS. { "500ml": 8000000, ... }
@@ -1679,6 +1695,26 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     }
   }
 
+  // Sube una foto COMÚN de una medida (galería del kit) y la agrega a la lista
+  // de esa medida (acumula, no reemplaza). Se persiste en meta.fotos_por_medida.
+  async function uploadFotoMedida(m, file) {
+    if (!file) return;
+    setUploadingFoto(m);
+    setErr("");
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const r = await fetch(`${API}/api/admin/shop/products/upload-image`, { method: "POST", headers: authHdr(), body: fd });
+      const d = await r.json();
+      if (!r.ok) { setErr(d.error || "Error al subir la imagen"); return; }
+      addFotoMedida(m, d.url);
+    } catch (e) {
+      setErr("Error de red al subir la imagen");
+    } finally {
+      setUploadingFoto(null);
+    }
+  }
+
   // Elimina una foto candidata (la ×) de la sección "Foto destacada por medida".
   // La foto puede pertenecer al kit (imágenes del form) o a una variante de la
   // línea; en ese caso se borra de esa variante vía API. Se oculta al instante.
@@ -1778,6 +1814,16 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       const hpm = Object.fromEntries(Object.entries(heroPorMedida).filter(([, v]) => v));
       if (Object.keys(hpm).length) next.hero_por_medida = hpm;
       else delete next.hero_por_medida;
+    }
+    // Fotos comunes (galería) por medida.
+    if (isBundle) {
+      const fpm = {};
+      for (const [m, arr] of Object.entries(fotosPorMedida)) {
+        const clean = (arr || []).filter(Boolean);
+        if (clean.length) fpm[m] = clean;
+      }
+      if (Object.keys(fpm).length) next.fotos_por_medida = fpm;
+      else delete next.fotos_por_medida;
     }
     // Precio a medida del pack por cada medida (pesos del form → centavos).
     if (isBundle) {
@@ -1963,7 +2009,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                     </Field>
                   )}
                   {isBundle && kitMedidas.length > 0 && (
-                    <Field label="Foto destacada del kit por medida" hint='Por cada medida: subí tu propia foto ("Subir") o elegí una existente. La × elimina esa foto del producto. "Automática" = usa la foto unificada del kit.'>
+                    <Field label="Portada (destacada) por medida — una sola" hint='La foto GRANDE que abre la ficha en cada medida. Es UNA sola: subí la tuya ("Subir") o elegí una existente; la × la elimina. "Automática" = usa la foto unificada del kit. Las fotos comunes van en el bloque de abajo.'>
                       <div style={{ display: "grid", gap: 10 }}>
                         {kitMedidas.map((m) => {
                           const cands = heroCandidates(m);
@@ -1992,6 +2038,35 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                               <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, flex: "0 0 auto" }}>
                                 {up ? "Subiendo…" : "⬆ Subir"}
                                 <input type="file" accept="image/*" style={{ display: "none" }} disabled={up} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadHero(m, f); }} />
+                              </label>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </Field>
+                  )}
+                  {isBundle && kitMedidas.length > 0 && (
+                    <Field label="Fotos de la medida (galería) — varias" hint="Las fotos comunes que se ven en la ficha del kit al elegir esta medida. Podé subir todas las que quieras (se acumulan). La portada de arriba es aparte.">
+                      <div style={{ display: "grid", gap: 10 }}>
+                        {kitMedidas.map((m) => {
+                          const list = fotosPorMedida[m] || [];
+                          const up = uploadingFoto === m;
+                          return (
+                            <div key={m} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--accent-hover)" }}>{m}</span>
+                              <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "6px 2px", flex: 1, minWidth: 0 }}>
+                                {list.length === 0 && <span style={{ fontSize: 12, color: "var(--text-3)" }}>Sin fotos propias</span>}
+                                {list.map((u) => (
+                                  <div key={u} style={{ position: "relative", flex: "0 0 auto" }}>
+                                    <img src={u} alt="" style={{ width: 40, height: 40, objectFit: "contain", display: "block", borderRadius: 6, border: "1px solid var(--border-2)", background: "var(--surface-3)" }} />
+                                    <button type="button" onClick={() => removeFotoMedida(m, u)} title="Quitar esta foto de la medida" aria-label="Quitar foto"
+                                      style={{ position: "absolute", top: -7, right: -7, width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "1.5px solid var(--surface)", fontSize: 12, fontWeight: 900 }}>×</button>
+                                  </div>
+                                ))}
+                              </div>
+                              <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, flex: "0 0 auto" }}>
+                                {up ? "Subiendo…" : "⬆ Subir foto"}
+                                <input type="file" accept="image/*" style={{ display: "none" }} disabled={up} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadFotoMedida(m, f); }} />
                               </label>
                             </div>
                           );

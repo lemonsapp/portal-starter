@@ -591,6 +591,14 @@ export default function ShopProduct() {
           imgs.push({ url: hero, alt: product.name, is_primary: true });
           seen.add(hero);
         }
+        // Fotos comunes (galería) que el admin cargó para esta medida
+        // (meta.fotos_por_medida[formato]). Van después de la portada.
+        const fotosByMedida = product.meta?.fotos_por_medida || {};
+        const fotosMedida = (kitSel && Array.isArray(fotosByMedida[kitSel])) ? fotosByMedida[kitSel] : [];
+        for (const raw of fotosMedida) {
+          const url = fixImageUrl(raw);
+          if (url && !seen.has(url)) { seen.add(url); imgs.push({ url, alt: product.name }); }
+        }
         // Por cada parte del kit en la medida elegida, sumamos TODAS sus fotos
         // (la primaria primero), no sólo la primaria. Así las imágenes que el
         // admin sube a una medida (ej. Elite 20L) aparecen en la galería. Cae a
