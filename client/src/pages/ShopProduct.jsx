@@ -586,17 +586,23 @@ export default function ShopProduct() {
         // (meta.hero_por_medida[formato]). Si no hay para la medida activa,
         // cae a la foto unificada del kit (product.primary_image).
         const heroByMedida = product.meta?.hero_por_medida || {};
-        const hero = (kitSel && heroByMedida[kitSel]) || product.primary_image;
+        const fotosByMedida = product.meta?.fotos_por_medida || {};
+        // Fotos comunes que el admin cargó para esta medida (meta.fotos_por_medida).
+        const fotosMedida = (kitSel && Array.isArray(fotosByMedida[kitSel]))
+          ? fotosByMedida[kitSel].map(fixImageUrl).filter(Boolean) : [];
+        // Foto principal ESPECÍFICA de la medida, para que al cambiar de medida
+        // cambie la foto grande (no sólo las miniaturas). Prioridad:
+        //  1) portada por medida del admin (hero_por_medida)
+        //  2) 1ra foto común de la medida (fotos_por_medida)
+        //  3) foto de una parte del kit en esa medida
+        //  4) foto unificada del kit (fallback)
+        const partHero = kitParts.find((v) => v.primary_image)?.primary_image;
+        const hero = (kitSel && heroByMedida[kitSel]) || fotosMedida[0] || partHero || product.primary_image;
         if (hero) {
           imgs.push({ url: hero, alt: product.name, is_primary: true });
           seen.add(hero);
         }
-        // Fotos comunes (galería) que el admin cargó para esta medida
-        // (meta.fotos_por_medida[formato]). Van después de la portada.
-        const fotosByMedida = product.meta?.fotos_por_medida || {};
-        const fotosMedida = (kitSel && Array.isArray(fotosByMedida[kitSel])) ? fotosByMedida[kitSel] : [];
-        for (const raw of fotosMedida) {
-          const url = fixImageUrl(raw);
+        for (const url of fotosMedida) {
           if (url && !seen.has(url)) { seen.add(url); imgs.push({ url, alt: product.name }); }
         }
         // Por cada parte del kit en la medida elegida, sumamos TODAS sus fotos
@@ -613,6 +619,12 @@ export default function ShopProduct() {
               imgs.push({ url: im.url, alt: im.alt || v.name });
             }
           }
+        }
+        // Foto unificada del kit al final (si no quedó como principal), para que
+        // el "todos juntos" siga estando disponible como miniatura.
+        if (product.primary_image && !seen.has(product.primary_image)) {
+          seen.add(product.primary_image);
+          imgs.push({ url: product.primary_image, alt: product.name });
         }
         return imgs;
       })()
