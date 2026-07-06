@@ -1695,21 +1695,25 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     }
   }
 
-  // Sube una foto COMÚN de una medida (galería del kit) y la agrega a la lista
-  // de esa medida (acumula, no reemplaza). Se persiste en meta.fotos_por_medida.
-  async function uploadFotoMedida(m, file) {
-    if (!file) return;
+  // Sube una o VARIAS fotos comunes de una medida (galería del kit) y las agrega
+  // a la lista de esa medida (acumula, no reemplaza). Sube en orden para
+  // preservar la secuencia. Se persiste en meta.fotos_por_medida.
+  async function uploadFotosMedida(m, files) {
+    const list = Array.from(files || []).filter(Boolean);
+    if (!list.length) return;
     setUploadingFoto(m);
     setErr("");
     try {
-      const fd = new FormData();
-      fd.append("image", file);
-      const r = await fetch(`${API}/api/admin/shop/products/upload-image`, { method: "POST", headers: authHdr(), body: fd });
-      const d = await r.json();
-      if (!r.ok) { setErr(d.error || "Error al subir la imagen"); return; }
-      addFotoMedida(m, d.url);
+      for (const file of list) {
+        const fd = new FormData();
+        fd.append("image", file);
+        const r = await fetch(`${API}/api/admin/shop/products/upload-image`, { method: "POST", headers: authHdr(), body: fd });
+        const d = await r.json();
+        if (!r.ok) { setErr(d.error || "Error al subir una imagen"); continue; }
+        addFotoMedida(m, d.url);
+      }
     } catch (e) {
-      setErr("Error de red al subir la imagen");
+      setErr("Error de red al subir imágenes");
     } finally {
       setUploadingFoto(null);
     }
@@ -2065,8 +2069,8 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                                 ))}
                               </div>
                               <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, flex: "0 0 auto" }}>
-                                {up ? "Subiendo…" : "⬆ Subir foto"}
-                                <input type="file" accept="image/*" style={{ display: "none" }} disabled={up} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadFotoMedida(m, f); }} />
+                                {up ? "Subiendo…" : "⬆ Subir fotos"}
+                                <input type="file" accept="image/*" multiple style={{ display: "none" }} disabled={up} onChange={(e) => { const files = Array.from(e.target.files || []); e.target.value = ""; uploadFotosMedida(m, files); }} />
                               </label>
                             </div>
                           );
