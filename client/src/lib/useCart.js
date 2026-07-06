@@ -67,6 +67,12 @@ export function useCart() {
     } else {
       cur.push({
         id: product.id,
+        // Para líneas de kit (pack por medida) el `id` es compuesto
+        // (`${kitId}::kit::${formato}`) para no pisar otras medidas del mismo
+        // kit. `product_id` guarda el id numérico real que el checkout necesita,
+        // y `kit_formato` le dice al server qué precio a medida cobrar.
+        product_id: product.product_id ?? product.id,
+        kit_formato: product.kit_formato ?? null,
         slug: product.slug,
         name: product.name,
         price_cents: product.price_cents,

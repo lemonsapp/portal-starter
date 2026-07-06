@@ -150,7 +150,11 @@ export default function ShopCheckout() {
             country: "AR",
             notes: form.notes.trim() || null,
           },
-          items: items.map((i) => ({ product_id: i.id, quantity: i.quantity })),
+          items: items.map((i) => ({
+            product_id: i.product_id ?? i.id,
+            quantity: i.quantity,
+            ...(i.kit_formato ? { kit_formato: i.kit_formato } : {}),
+          })),
           promo_code: promoApplied?.code || null,
         }),
       });

@@ -172,6 +172,12 @@
   font-size: 11px; letter-spacing: 0.06em;
   color: var(--c-text-3); font-family: var(--f-mono, monospace);
 }
+/* Precio "antes" tachado — pack con precio a medida más barato que la suma. */
+.sp-price-was {
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 700; color: var(--c-text-3);
+  text-decoration: line-through; text-decoration-thickness: 1.5px;
+}
 
 /* campos (medida / cantidad) */
 .sp-field { display: flex; flex-direction: column; gap: 12px; margin-top: clamp(20px, 3vw, 28px); }

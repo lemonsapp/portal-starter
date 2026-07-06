@@ -271,6 +271,9 @@ const checkoutSchema = z.object({
     // Tope alto para soportar "puntos a medida" (1 punto = 1 unidad). El handler
     // re-acota a 99 los productos que NO son packs de puntos.
     quantity: z.number().int().positive().max(2000),
+    // Kit vendido como pack por medida (ej "500ml"): el precio NO se toma del
+    // request — el server lo resuelve desde meta.precio_por_medida del kit.
+    kit_formato: z.string().trim().min(1).max(20).optional(),
   })).min(1).max(40),
   // F5: código de promoción opcional
   promo_code: z.string().trim().max(40).optional().nullable(),
@@ -323,13 +326,31 @@ function publicRouter({ authRequired } = {}) {
           await client.query("ROLLBACK");
           return res.status(409).json({ error: `Sin stock suficiente de "${p.name}". Disponible: ${p.stock}` });
         }
-        const lineTotal = p.price_cents * reqItem.quantity;
+
+        // Precio y nombre por defecto = los del producto. Si es una línea de
+        // "kit por medida", el precio se resuelve server-side desde el kit
+        // (nunca desde el request) para que no se pueda manipular el monto.
+        let unitPriceCents = p.price_cents;
+        let nameSnapshot = p.name;
+        if (reqItem.kit_formato) {
+          const priceMap = (p.meta && typeof p.meta.precio_por_medida === "object" && p.meta.precio_por_medida) || {};
+          const raw = priceMap[reqItem.kit_formato];
+          const cents = typeof raw === "number" ? raw : parseInt(raw, 10);
+          if (!p.meta?.bundle || !Number.isFinite(cents) || cents <= 0) {
+            await client.query("ROLLBACK");
+            return res.status(400).json({ error: `El pack "${p.name}" no está disponible en la medida ${reqItem.kit_formato}` });
+          }
+          unitPriceCents = Math.round(cents);
+          nameSnapshot = `${p.name} · ${reqItem.kit_formato}`;
+        }
+
+        const lineTotal = unitPriceCents * reqItem.quantity;
         subtotalCents += lineTotal;
         lineItems.push({
           product_id: p.id,
           product_slug: p.slug,
-          name_snapshot: p.name,
-          price_cents_snapshot: p.price_cents,
+          name_snapshot: nameSnapshot,
+          price_cents_snapshot: unitPriceCents,
           quantity: reqItem.quantity,
           line_total_cents: lineTotal,
           image_url_snapshot: p.primary_image || null,

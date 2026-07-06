@@ -1544,6 +1544,21 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   const [heroPorMedida, setHeroPorMedida] = useState(() => ({ ...(metaBase.hero_por_medida || {}) }));
   const [uploadingHero, setUploadingHero] = useState(null);
   const setHero = (m, url) => setHeroPorMedida((prev) => ({ ...prev, [m]: url }));
+  // KIT: precio a medida del pack por cada medida (ML/g). El form trabaja en
+  // pesos (string "80000"); vacío = sin precio propio (cae a la suma de partes).
+  // meta.precio_por_medida se guarda en CENTAVOS. { "500ml": 8000000, ... }
+  const [precioPorMedida, setPrecioPorMedida] = useState(() => {
+    const src = (metaBase.precio_por_medida && typeof metaBase.precio_por_medida === "object")
+      ? metaBase.precio_por_medida : {};
+    return Object.fromEntries(
+      Object.entries(src).map(([m, cents]) => {
+        const n = Number(cents);
+        return [m, Number.isFinite(n) && n > 0 ? String(Math.round(n / 100)) : ""];
+      })
+    );
+  });
+  const setPrecioMedida = (m, ars) =>
+    setPrecioPorMedida((prev) => ({ ...prev, [m]: String(ars).replace(/[^\d]/g, "") }));
   // Variantes para editar las imágenes de cada medida acá mismo.
   //  • Producto de familia (Race/Pro/Bio/Elite individual): sus medidas hermanas.
   //  • Kit / línea (bundle): TODAS las variantes de la línea, ordenadas por medida
@@ -1701,6 +1716,16 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       const hpm = Object.fromEntries(Object.entries(heroPorMedida).filter(([, v]) => v));
       if (Object.keys(hpm).length) next.hero_por_medida = hpm;
       else delete next.hero_por_medida;
+    }
+    // Precio a medida del pack por cada medida (pesos del form → centavos).
+    if (isBundle) {
+      const ppm = {};
+      for (const [m, ars] of Object.entries(precioPorMedida)) {
+        const pesos = parseInt(String(ars).replace(/[^\d]/g, ""), 10);
+        if (Number.isFinite(pesos) && pesos > 0) ppm[m] = pesos * 100;
+      }
+      if (Object.keys(ppm).length) next.precio_por_medida = ppm;
+      else delete next.precio_por_medida;
     }
     // Medida destacada (con la que abre la interna / la familia).
     if (isBundle) {
@@ -1900,6 +1925,30 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                             </div>
                           );
                         })}
+                      </div>
+                    </Field>
+                  )}
+                  {isBundle && kitMedidas.length > 0 && (
+                    <Field label="Precio del pack por medida" hint='Fijá a mano cuánto sale el kit completo en cada medida (en pesos). Si dejás una vacía, el precio de esa medida es la suma de las partes, como hasta ahora.'>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        {kitMedidas.map((m) => (
+                          <div key={m} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--accent-hover)" }}>{m}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1, maxWidth: 220 }}>
+                              <span style={{ fontSize: 13, color: "var(--text-3)" }}>$</span>
+                              <input
+                                className="adm-input"
+                                type="text"
+                                inputMode="numeric"
+                                value={precioPorMedida[m] ?? ""}
+                                onChange={(e) => setPrecioMedida(m, e.target.value)}
+                                placeholder="Suma de las partes"
+                                aria-label={`Precio del pack en ${m}`}
+                                style={{ flex: 1 }}
+                              />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </Field>
                   )}

@@ -394,6 +394,15 @@ export default function ShopProduct() {
     : [];
   const kitTotalCents = kitParts.reduce((a, v) => a + (v.price_cents || 0), 0);
   const kitSelLabel = kitSizes.find((s) => s.formato === kitSel)?.label || "";
+  // Precio del pack a medida por ML: el admin puede fijar un precio propio para
+  // cada medida del kit (meta.precio_por_medida = { "500ml": <centavos>, ... }).
+  // Si hay uno para la medida elegida, ese es el precio (y se cobra como un solo
+  // ítem "kit"); si no, cae al total = suma de las partes (comportamiento previo).
+  const kitPriceMap = (product?.meta?.precio_por_medida && typeof product.meta.precio_por_medida === "object")
+    ? product.meta.precio_por_medida : {};
+  const kitCustomRaw = kitSel ? Number(kitPriceMap[kitSel]) : NaN;
+  const kitCustomCents = Number.isFinite(kitCustomRaw) && kitCustomRaw > 0 ? Math.round(kitCustomRaw) : null;
+  const kitPriceCents = kitCustomCents != null ? kitCustomCents : kitTotalCents;
 
   // Default al entrar: 1) la "medida destacada" que fijó el admin
   // (meta.medida_destacada), 2) la que ilustra la foto del kit, 3) la primera.
@@ -427,10 +436,34 @@ export default function ShopProduct() {
     setTimeout(() => setToast(""), 2500);
   }
 
-  // Agrega todas las partes del kit en la medida elegida (n SKUs de una).
+  // Agrega el kit en la medida elegida. Dos modos:
+  //  • Precio a medida (meta.precio_por_medida[medida]): se agrega UNA línea
+  //    "kit" al precio fijado por el admin (el server lo revalida al cobrar).
+  //  • Sin precio a medida: se agregan las N partes como SKUs sueltos (previo).
   function addKit() {
     if (!kitParts.length) return;
     const q = Math.max(1, Number(quantity) || 1);
+    if (kitCustomCents != null) {
+      const heroImg = product.meta?.hero_por_medida?.[kitSel]
+        || product.primary_image || product.images?.[0]?.url || null;
+      addItem(
+        {
+          id: `${product.id}::kit::${kitSel}`,
+          product_id: product.id,
+          kit_formato: kitSel,
+          slug: product.slug,
+          name: `${product.name}${kitSelLabel ? ` · ${kitSelLabel}` : ""}`,
+          price_cents: kitCustomCents,
+          primary_image: heroImg,
+          stock: null,
+        },
+        q
+      );
+      window.dispatchEvent(new CustomEvent("holistic-cart-open"));
+      setToast(`Kit agregado — ${kitSelLabel || kitSel}`);
+      setTimeout(() => setToast(""), 2500);
+      return;
+    }
     kitParts.forEach((v) =>
       addItem(
         { id: v.id, slug: v.slug, name: v.name, price_cents: v.price_cents, primary_image: v.primary_image, stock: v.stock },
@@ -665,9 +698,13 @@ export default function ShopProduct() {
             <div className="sp-pricerow">
               <span className="sp-price">{
                 isCustomPoints ? formatARS(customPointsTotal)
-                  : isKit ? formatARS(kitTotalCents)
+                  : isKit ? formatARS(kitPriceCents)
                   : product.price_formatted
               }</span>
+              {/* Pack con precio a medida más barato que la suma → mostramos el "antes". */}
+              {isKit && kitCustomCents != null && kitTotalCents > kitCustomCents && (
+                <span className="sp-price-was">{formatARS(kitTotalCents)}</span>
+              )}
               {isCustomPoints
                 ? <span className="sp-sku">{clampPoints(pointsQty)} puntos · {product.price_formatted} por punto</span>
                 : isKit
@@ -976,7 +1013,7 @@ export default function ShopProduct() {
         <div className={`sp-sticky-buy${!ctaInView ? " is-visible" : ""}`} aria-hidden={ctaInView}>
           <div className="sp-sticky-info">
             <span className="sp-sticky-name">{product.name}{isKit && kitSelLabel ? ` · ${kitSelLabel}` : ""}</span>
-            <span className="sp-sticky-price">{isKit ? formatARS(kitTotalCents) : product.price_formatted}</span>
+            <span className="sp-sticky-price">{isKit ? formatARS(kitPriceCents) : product.price_formatted}</span>
           </div>
           <button
             className="sp-sticky-cta"
