@@ -72,7 +72,11 @@ function normalizeProduct(p) {
             ...f,
             variants: (f.variants || [])
               .filter((v) => !isStaleProduct(v.slug))
-              .map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
+              .map((v) => ({
+                ...v,
+                primary_image: fixImageUrl(v.primary_image),
+                images: (v.images || []).map((im) => ({ ...im, url: fixImageUrl(im.url) })),
+              })),
           }))
           .filter((f) => f.variants.length > 0);
         // Unifica familias DUPLICADAS por nombre. En prod (sin redeploy del
@@ -587,10 +591,19 @@ export default function ShopProduct() {
           imgs.push({ url: hero, alt: product.name, is_primary: true });
           seen.add(hero);
         }
+        // Por cada parte del kit en la medida elegida, sumamos TODAS sus fotos
+        // (la primaria primero), no sólo la primaria. Así las imágenes que el
+        // admin sube a una medida (ej. Elite 20L) aparecen en la galería. Cae a
+        // primary_image si el server viejo todavía no manda el array `images`.
         for (const v of kitParts) {
-          if (v.primary_image && !seen.has(v.primary_image)) {
-            seen.add(v.primary_image);
-            imgs.push({ url: v.primary_image, alt: v.name });
+          const partImgs = (v.images && v.images.length)
+            ? v.images
+            : (v.primary_image ? [{ url: v.primary_image, alt: v.name, is_primary: true }] : []);
+          for (const im of partImgs) {
+            if (im.url && !seen.has(im.url)) {
+              seen.add(im.url);
+              imgs.push({ url: im.url, alt: im.alt || v.name });
+            }
           }
         }
         return imgs;

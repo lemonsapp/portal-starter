@@ -1550,7 +1550,7 @@ function familyName(name = "") {
 }
 
 // Resumen liviano de una variante para el selector de medida.
-function variantSummary(row, img) {
+function variantSummary(row, img, images = null) {
   const m = row.meta || {};
   return {
     id: row.id,
@@ -1564,6 +1564,10 @@ function variantSummary(row, img) {
     price_formatted: formatARS(row.price_cents),
     stock: row.stock,
     primary_image: img || null,
+    // Galería completa de la parte (sólo la pasamos en el bundle del kit): así
+    // la ficha del kit puede mostrar todas las fotos que el admin subió a esta
+    // medida, no únicamente la primaria.
+    ...(images && images.length ? { images } : {}),
   };
 }
 
@@ -1611,6 +1615,17 @@ function primaryUrl(imagesMap, id) {
   return imgs.find((i) => i.is_primary)?.url || imgs[0]?.url || null;
 }
 
+// Todas las imágenes (url/alt/is_primary) de un producto, la primaria al frente.
+// Se usa para el kit: cada parte manda su galería completa por medida, no sólo
+// la primaria (si no, las fotos extra que el admin sube a una variante nunca
+// llegan a la ficha del kit).
+function allImages(imagesMap, id) {
+  const imgs = imagesMap.get(id) || [];
+  return [...imgs]
+    .sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0))
+    .map((i) => ({ url: i.url, alt: i.alt || null, is_primary: !!i.is_primary }));
+}
+
 // Trae filas de productos activos por lista de slugs (preserva el orden de entrada).
 async function fetchRowsBySlugs(slugs) {
   if (!slugs.length) return [];
@@ -1619,7 +1634,7 @@ async function fetchRowsBySlugs(slugs) {
   const imagesMap = await loadImagesFor(rows.map((r) => r.id));
   const bySlug = new Map(rows.map((r) => [r.slug, r]));
   return slugs.map((s) => bySlug.get(s)).filter(Boolean)
-    .map((r) => ({ row: r, img: primaryUrl(imagesMap, r.id) }));
+    .map((r) => ({ row: r, img: primaryUrl(imagesMap, r.id), images: allImages(imagesMap, r.id) }));
 }
 
 // Trae todas las variantes activas de una línea (meta.linea = X) con su imagen.
@@ -1628,7 +1643,7 @@ async function fetchLineRows(linea) {
   const { rows } = await db.query(
     `SELECT * FROM products WHERE active = TRUE AND meta->>'linea' = $1`, [linea]);
   const imagesMap = await loadImagesFor(rows.map((r) => r.id));
-  return rows.map((r) => ({ row: r, img: primaryUrl(imagesMap, r.id) }));
+  return rows.map((r) => ({ row: r, img: primaryUrl(imagesMap, r.id), images: allImages(imagesMap, r.id) }));
 }
 
 // Agrupa una lista de productos YA serializados en familias (1 por variantGroup).
@@ -1847,14 +1862,14 @@ function publicRouter() {
           for (const x of await fetchRowsBySlugs(manual)) {
             const g = variantGroup(x.row.meta) || x.row.slug;
             if (!fams.has(g)) fams.set(g, { group: g, name: familyName(x.row.name), variants: [] });
-            fams.get(g).variants.push(variantSummary(x.row, x.img));
+            fams.get(g).variants.push(variantSummary(x.row, x.img, x.images));
           }
         } else {
           for (const x of lineRows) {
             const g = variantGroup(x.row.meta);
             if (!g) continue;
             if (!fams.has(g)) fams.set(g, { group: g, name: familyName(x.row.name), variants: [] });
-            fams.get(g).variants.push(variantSummary(x.row, x.img));
+            fams.get(g).variants.push(variantSummary(x.row, x.img, x.images));
           }
         }
         const includes = [...fams.values()];
