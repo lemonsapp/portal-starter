@@ -609,10 +609,16 @@ export default function ShopProduct() {
         return imgs;
       })()
     : [];
-  const images = isKit && kitGallery.length
-    ? kitGallery
-    : galleryFixed && adminImages.length
-      ? adminImages
+  // Prioridad de galería:
+  //  1) "Usar solo estas fotos" (gallery_fixed) → mandan las fotos del admin,
+  //     también en un kit. Sin esto, en un kit las ediciones de imágenes no se
+  //     reflejaban nunca porque la galería automática por medida ganaba siempre.
+  //  2) Kit sin gallery_fixed → galería automática por medida (hero + partes).
+  //  3) Producto normal → sus imágenes.
+  const images = galleryFixed && adminImages.length
+    ? adminImages
+    : isKit && kitGallery.length
+      ? kitGallery
       : product.images?.length
         ? product.images
         : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
