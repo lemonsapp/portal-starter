@@ -1594,9 +1594,8 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
           .filter((p) => p.meta?.linea === lineKey && p.meta?.formato && !p.meta?.bundle)
           .sort((a, b) => ordFmt(a.meta?.formato) - ordFmt(b.meta?.formato) || String(a.name).localeCompare(String(b.name), "es"))
       : [];
-  // Imágenes candidatas a hero para una medida del kit: las de las variantes de
-  // la línea en esa medida + las propias del kit. (Definida acá porque usa `images`.)
-  // Imágenes como lista de { url, alt, is_primary }
+  // Fotos propias del producto/kit (sección "Fotos"), como lista de
+  // { url, alt, is_primary }. Independientes de las fotos por medida del kit.
   const [images, setImages] = useState(
     product?.images?.length ? product.images.map((i) => ({
       url: i.url, alt: i.alt || "", is_primary: !!i.is_primary,
@@ -1607,8 +1606,12 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   // Cantidad de subidas "Subir foto" en vuelo (token-based, ver addImageWithFile).
   const [pendingCount, setPendingCount] = useState(0);
 
-  // Candidatas a hero del kit en una medida: imágenes de las variantes de la
-  // línea en esa medida + las propias del kit.
+  // Candidatas a hero de una medida del kit: SOLO las imágenes de las variantes
+  // de la línea en esa medida. Las fotos propias del kit (sección "Fotos") NO se
+  // mezclan acá a propósito: son secciones separadas. Antes se apilaban también
+  // `images`, y eso hacía que la destacada del kit "reapareciera" en cada medida
+  // de "Fotos por medida" (confuso al borrarla). La portada del kit se elige con
+  // el botón "Portada automática" (usa la foto principal del kit).
   const heroCandidates = (m) => {
     const urls = [];
     for (const v of allProducts) {
@@ -1616,7 +1619,6 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
         for (const im of (v.images || [])) if (im.url && !urls.includes(im.url)) urls.push(im.url);
       }
     }
-    for (const im of images) if (im.url && !urls.includes(im.url)) urls.push(im.url);
     return urls;
   };
 
