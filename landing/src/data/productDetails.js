@@ -391,7 +391,7 @@ export const productDetails = {
             },
             {
                 kicker: "SEGURIDAD",
-                title: "100% orgánico, 100% inocuo.",
+                title: "100% orgánico.",
                 body: "Sin metales pesados, sin sintéticos, para todo el ciclo.",
                 image: "/imagenes-web/productos/bio-estimulante/lateral-grande-rosa-sin-fondo.png",
                 color: "#D67D92",

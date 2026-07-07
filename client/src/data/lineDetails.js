@@ -279,7 +279,7 @@ export const lineDetails = {
         "body": "Mejora la estructura del suelo para un mejor desarrollo radicular. Mayor retención de humedad entre riegos. Estimula los microorganismos benéficos que nutren y protegen la planta."
       },
       {
-        "title": "100% orgánico, 100% inocuo.",
+        "title": "100% orgánico.",
         "body": "Sin metales pesados, sin sintéticos, para todo el ciclo."
       }
     ],
