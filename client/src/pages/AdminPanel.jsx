@@ -1604,8 +1604,6 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   );
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
-  // Índice de la fila de imagen que se está subiendo (-1 = ninguna).
-  const [uploadingIdx, setUploadingIdx] = useState(-1);
   // Cantidad de subidas "Subir foto" en vuelo (token-based, ver addImageWithFile).
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -1649,34 +1647,6 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       return next.length ? next : [{ url: "", alt: "", is_primary: true }];
     });
   }
-  // Sube un archivo a Cloudinary (via el server) y completa la url de la fila i.
-  // FormData → el browser pone el Content-Type multipart con boundary solo;
-  // por eso usamos authHdr() (sin el Content-Type json) y NO jsonHdr().
-  async function uploadImageFile(i, file) {
-    if (!file) return;
-    setUploadingIdx(i);
-    setErr("");
-    try {
-      const fd = new FormData();
-      fd.append("image", file);
-      const r = await fetch(`${API}/api/admin/shop/products/upload-image`, {
-        method: "POST",
-        headers: authHdr(),
-        body: fd,
-      });
-      const d = await r.json();
-      if (!r.ok) {
-        setErr(d.error || "Error al subir la imagen");
-        return;
-      }
-      updateImage(i, "url", d.url);
-    } catch (e) {
-      setErr("Error de red al subir la imagen");
-    } finally {
-      setUploadingIdx(-1);
-    }
-  }
-
   // Sube una o VARIAS fotos comunes de una medida (galería del kit) y las agrega
   // a la lista de esa medida (acumula, no reemplaza). Sube en orden para
   // preservar la secuencia. Se persiste en meta.fotos_por_medida.
@@ -1972,7 +1942,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                     <div key={i} className={`adm-tile ${img.is_primary ? "adm-tile--primary" : ""}`}>
                       {img.url
                         ? <img src={img.url} alt={img.alt || ""} />
-                        : <span style={{ color: "var(--text-3)", fontSize: 12, textAlign: "center", padding: 8 }}>{(img._pending || uploadingIdx === i) ? "Subiendo…" : "Sin imagen"}</span>}
+                        : <span style={{ color: "var(--text-3)", fontSize: 12, textAlign: "center", padding: 8 }}>{img._pending ? "Subiendo…" : "Sin imagen"}</span>}
                       {img.is_primary && <span className="adm-tile__flag">Destacada</span>}
                       <div className="adm-tile__acts">
                         <button type="button" className={`adm-tile__btn adm-tile__btn--star ${img.is_primary ? "is-on" : ""}`} title="Marcar como destacada" onClick={() => setPrimary(i)}>★</button>
