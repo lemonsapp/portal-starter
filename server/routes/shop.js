@@ -2181,6 +2181,54 @@ function build({ authRequired, requireRole }) {
     }
   });
 
+  // ── DELETE /api/admin/shop/products/:id/images — borrado QUIRÚRGICO de UNA
+  // foto por URL. A diferencia del PUT (que hace DELETE-all + reinsert de toda
+  // la galería que manda el cliente), esto sólo saca la fila que matchea la
+  // url — nunca toca el resto. Evita la pérdida de fotos cross-producto cuando
+  // el cliente arrastra un snapshot viejo de las imágenes de otra publicación
+  // (ej: la × de "Fotos por medida" sobre una variante hermana).
+  //
+  // La url viaja por querystring (?url=) — es lo más a prueba de proxies para
+  // DELETE; se acepta req.body.url como fallback.
+  router.delete("/products/:id/images", ...writeMw, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ error: "ID inválido" });
+    const url = (req.query && req.query.url) || (req.body && req.body.url);
+    if (!url || typeof url !== "string") {
+      return res.status(400).json({ error: "Falta la url de la imagen" });
+    }
+
+    const client = await db.connect();
+    try {
+      await client.query("BEGIN");
+      const del = await client.query(
+        `DELETE FROM product_images WHERE product_id = $1 AND url = $2 RETURNING is_primary`,
+        [id, url]
+      );
+      // Si borramos la destacada y quedan otras, promovemos la de menor
+      // sort_order para que el producto no quede sin foto principal.
+      if (del.rows.some((r) => r.is_primary)) {
+        await client.query(
+          `UPDATE product_images SET is_primary = TRUE
+             WHERE id = (SELECT id FROM product_images
+                          WHERE product_id = $1
+                          ORDER BY sort_order ASC, id ASC
+                          LIMIT 1)`,
+          [id]
+        );
+      }
+      await client.query("COMMIT");
+      const imagesMap = await loadImagesFor([id]);
+      res.json({ ok: true, removed: del.rowCount, images: imagesMap.get(id) || [] });
+    } catch (e) {
+      await client.query("ROLLBACK").catch(() => {});
+      console.error("[shop.admin product image delete]", e);
+      res.status(500).json({ error: "Error al borrar la imagen" });
+    } finally {
+      client.release();
+    }
+  });
+
   // ── DELETE /api/admin/shop/products/:id — hard delete (CASCADE limpia imágenes)
   router.delete("/products/:id", ...writeMw, async (req, res) => {
     const id = parseInt(req.params.id, 10);

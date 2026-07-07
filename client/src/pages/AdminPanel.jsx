@@ -1740,32 +1740,23 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     );
     if (!owner) { setDeletedHeroUrls((prev) => new Set(prev).add(url)); return; }
 
-    const nextImgs = (owner.images || [])
-      .filter((im) => im.url !== url)
-      .map((im, idx) => ({ url: im.url, alt: im.alt || null, sort_order: idx, is_primary: !!im.is_primary }));
-    if (nextImgs.length && !nextImgs.some((im) => im.is_primary)) nextImgs[0].is_primary = true;
-
-    const payload = {
-      slug: owner.slug,
-      name: owner.name,
-      short_description: owner.short_description || null,
-      long_description: owner.long_description || null,
-      price_cents: owner.price_cents ?? 0,
-      stock: owner.stock ?? null,
-      sku: owner.sku || null,
-      category_id: owner.category?.id ?? null,
-      active: owner.active !== false,
-      featured: owner.featured === true,
-      sort_order: owner.sort_order ?? 0,
-      images: nextImgs,
-      meta: owner.meta || {},
-    };
+    // Borrado QUIRÚRGICO: sacamos SÓLO esta foto de la variante hermana vía el
+    // endpoint dedicado. ⚠ Antes rearmábamos un PUT completo con `owner.images`
+    // de `allProducts` (snapshot cargado al abrir el panel): si la variante había
+    // recibido fotos nuevas después, ese PUT las pisaba y las BORRABA. Ahora el
+    // server sólo elimina la fila que matchea la url y devuelve la galería fresca.
     try {
-      const r = await fetch(`${API}/api/admin/shop/products/${owner.id}`, {
-        method: "PUT", headers: jsonHdr(), body: JSON.stringify(payload),
-      });
+      const r = await fetch(
+        `${API}/api/admin/shop/products/${owner.id}/images?url=${encodeURIComponent(url)}`,
+        { method: "DELETE", headers: authHdr() },
+      );
       if (!r.ok) { const d = await r.json().catch(() => ({})); setErr(d.error || "No se pudo eliminar la foto"); return; }
-      owner.images = nextImgs; // mantiene el prop en sync para futuros cálculos
+      const d = await r.json().catch(() => ({}));
+      // Sincroniza el prop en memoria con lo que quedó en el server (fresco),
+      // no con una resta local sobre el snapshot viejo.
+      owner.images = Array.isArray(d.images)
+        ? d.images
+        : (owner.images || []).filter((im) => im.url !== url);
       setDeletedHeroUrls((prev) => new Set(prev).add(url));
     } catch (e) {
       setErr("Error de red al eliminar la foto");
