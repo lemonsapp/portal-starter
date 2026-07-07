@@ -4036,6 +4036,22 @@ html.is-loading body {
 }
 
 @media (max-width: 640px) {
+    /* Eyebrow "TRES RAZONES PARA EMPEZAR HOY": la píldora se salía del ancho
+       (nowrap + letter-spacing grande). Se achica para que entre en el celu. */
+    .ease-of-use__eyebrow {
+        top: 3vh;
+        padding: 8px 15px;
+        gap: 8px;
+        font-size: 0.6rem;
+        letter-spacing: 0.16em;
+        max-width: 94vw;
+    }
+    .ease-of-use__dot { width: 6px; height: 6px; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06); }
+
+    .promise-panel { width: 92vw; }
+    .promise-panel__idx { font-size: 1.3rem; margin-bottom: 6px; }
+    .promise-panel__kicker { font-size: 0.8rem; letter-spacing: 0.14em; margin-bottom: 12px; }
+
     /* Palabra por línea (ej. "RESULTADOS" / "SUPERIORES") y tamaño acotado
        para que la más larga entre sin cortarse en celular. */
     .promise-panel__title {
@@ -4043,21 +4059,24 @@ html.is-loading body {
         gap: 0.05em;
         font-size: clamp(2.1rem, 9vw, 3.4rem);
         letter-spacing: -0.03em;
-        margin: 6px 0 20px;
+        margin: 6px 0 18px;
     }
     .promise-panel__copy {
         font-size: 0.95rem;
         line-height: 1.55;
-        max-width: 38ch;
-        padding: 0 4px;
+        max-width: 40ch;
+        padding: 0 6px;
     }
-    .ease-of-use__step { width: 28px; height: 3px; }
+    .ease-of-use__progress { bottom: 4vh; gap: 10px; }
+    .ease-of-use__step { width: 26px; height: 3px; }
 }
 
-/* Celulares angostos: un punto más chico para que "RESULTADOS"/"SUPERIORES"
-   nunca se corten. */
+/* Celulares angostos: eyebrow y título un punto más chicos para que nada
+   ("TRES RAZONES…", "RESULTADOS"/"SUPERIORES") se corte. */
 @media (max-width: 400px) {
+    .ease-of-use__eyebrow { font-size: 0.54rem; letter-spacing: 0.12em; padding: 7px 12px; }
     .promise-panel__title { font-size: clamp(1.85rem, 8.2vw, 2.4rem); }
+    .promise-panel__kicker { font-size: 0.74rem; }
     .promise-panel__copy { font-size: 0.9rem; }
 }
 
