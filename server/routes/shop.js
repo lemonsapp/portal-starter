@@ -24,9 +24,10 @@ const { migrateImagesToCloudinary } = require("./shopImageMigrate");
 // leyendo las creds de configStore (DB encriptada via wizard /admin/setup).
 const { configureCloudinary } = require("../lib/cloudinaryConfig");
 
+const MAX_IMAGE_MB = 20;
 const uploadImage = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: MAX_IMAGE_MB * 1024 * 1024 }, // 20MB — renders de bidón (10L/20L) pesan
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) cb(null, true);
     else cb(new Error("Solo se permiten imágenes"));
@@ -1996,7 +1997,12 @@ function build({ authRequired, requireRole }) {
     ...writeMw,
     (req, res, next) => {
       uploadImage.single("image")(req, res, (err) => {
-        if (err) return res.status(400).json({ error: err.message });
+        if (err) {
+          const msg = err.code === "LIMIT_FILE_SIZE"
+            ? `La imagen supera el límite de ${MAX_IMAGE_MB}MB. Reducila un poco e intentá de nuevo.`
+            : err.message;
+          return res.status(400).json({ error: msg });
+        }
         next();
       });
     },
