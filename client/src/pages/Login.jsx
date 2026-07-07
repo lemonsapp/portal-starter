@@ -514,7 +514,7 @@ export default function Login() {
         <div className="lg-grid" />
         <div className="lg-left-inner">
           <div className="lg-top">
-            <span className="lg-eyebrow">{branding.slogan || "Nutrición Superior"}</span>
+            <span className="lg-eyebrow">{branding.slogan || "Nutrición de Precisión"}</span>
             <span className="lg-logo">{(branding.name || "HOLISTIC").toUpperCase()}</span>
           </div>
 

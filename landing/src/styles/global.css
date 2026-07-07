@@ -4031,16 +4031,34 @@ html.is-loading body {
 }
 
 @media (max-width: 900px) {
-    .promise-panel__title { font-size: clamp(3rem, 14vw, 6.5rem); }
+    .promise-panel__title { font-size: clamp(2.6rem, 10vw, 5rem); }
     .ease-of-use__step { width: 36px; }
 }
 
 @media (max-width: 640px) {
+    /* Palabra por línea (ej. "RESULTADOS" / "SUPERIORES") y tamaño acotado
+       para que la más larga entre sin cortarse en celular. */
     .promise-panel__title {
         flex-direction: column;
         gap: 0.05em;
+        font-size: clamp(2.1rem, 9vw, 3.4rem);
+        letter-spacing: -0.03em;
+        margin: 6px 0 20px;
+    }
+    .promise-panel__copy {
+        font-size: 0.95rem;
+        line-height: 1.55;
+        max-width: 38ch;
+        padding: 0 4px;
     }
     .ease-of-use__step { width: 28px; height: 3px; }
+}
+
+/* Celulares angostos: un punto más chico para que "RESULTADOS"/"SUPERIORES"
+   nunca se corten. */
+@media (max-width: 400px) {
+    .promise-panel__title { font-size: clamp(1.85rem, 8.2vw, 2.4rem); }
+    .promise-panel__copy { font-size: 0.9rem; }
 }
 
 /* =====================================================================
