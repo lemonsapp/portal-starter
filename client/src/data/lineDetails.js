@@ -11,7 +11,7 @@
 
 export const lineDetails = {
   "linea-elite": {
-    "intro": "Part 1 + Part 2: el fertilizante dual de Holistic para cultivadores de coco, sustratos inertes y compuestos. Concentración máxima de NPK en cada riego, pH auto-buffer, resultados consistentes cosecha tras cosecha.",
+    "intro": "Part 1 + Part 2: el fertilizante de uso simple de Holistic para cultivadores de hidroponía, coco, sustratos inertes y compuestos. Concentración equilibrada de macro y micro nutrientes en cada riego, pH auto-buffer, resultados consistentes cosecha tras cosecha.",
     "benefits": [
       {
         "title": "Dos botellas, un sistema completo.",
@@ -85,7 +85,7 @@ export const lineDetails = {
       },
       {
         "label": "Conservación",
-        "value": "Bajo techo, 5–25°C, 24 meses"
+        "value": "Bajo techo, en lugar oscuro, 5–25°C, 24 meses"
       },
       {
         "label": "Presentaciones",
@@ -164,7 +164,7 @@ export const lineDetails = {
       },
       {
         "label": "Conservación",
-        "value": "Lugar seco, hasta 36 meses"
+        "value": "Bajo techo, en lugar oscuro, 5–25°C, 24 meses"
       },
       {
         "label": "Presentaciones",
@@ -251,7 +251,7 @@ export const lineDetails = {
       },
       {
         "label": "Conservación",
-        "value": "Bajo techo, 5–25°C, 24 meses"
+        "value": "Bajo techo, en lugar oscuro, 5–25°C, 24 meses"
       },
       {
         "label": "Presentaciones",
@@ -330,7 +330,7 @@ export const lineDetails = {
       },
       {
         "label": "Conservación",
-        "value": "Bajo techo, 5–25°C, 12 meses"
+        "value": "Bajo techo, en lugar oscuro, 5–25°C, 24 meses"
       },
       {
         "label": "Compatibilidad",
@@ -408,7 +408,7 @@ export const lineDetails = {
       },
       {
         "label": "Conservación",
-        "value": "Bajo techo, 5–25°C, 24 meses"
+        "value": "Bajo techo, en lugar oscuro, 5–25°C, 24 meses"
       }
     ]
   },
@@ -477,7 +477,7 @@ export const lineDetails = {
       },
       {
         "label": "Conservación",
-        "value": "Bajo techo, 5–25°C, 24 meses"
+        "value": "Bajo techo, en lugar oscuro, 5–25°C, 24 meses"
       },
       {
         "label": "Presentaciones",

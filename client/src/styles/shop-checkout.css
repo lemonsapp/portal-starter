@@ -40,8 +40,8 @@
 .co-title .co-em { color: var(--c-accent); }
 .co-sub {
   margin: 0 0 28px; max-width: 56ch;
-  font-family: var(--f-italic, "Fraunces", Georgia, serif);
-  font-style: italic; font-size: clamp(1rem, 1.3vw, 1.15rem);
+  font-family: var(--f-display, "Gotham", system-ui, sans-serif);
+  font-style: normal; font-size: clamp(1rem, 1.3vw, 1.15rem);
   line-height: 1.55; color: var(--c-text-2);
 }
 
