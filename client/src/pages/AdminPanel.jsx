@@ -1542,7 +1542,6 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   // KIT: destacada (hero) elegida por el admin para CADA medida. Se ve arriba en
   // la interna al seleccionar esa medida. { "250ml": url, ... } en meta.hero_por_medida.
   const [heroPorMedida, setHeroPorMedida] = useState(() => ({ ...(metaBase.hero_por_medida || {}) }));
-  const [uploadingHero, setUploadingHero] = useState(null);
   const setHero = (m, url) => setHeroPorMedida((prev) => ({ ...prev, [m]: url }));
   // URLs de candidatas que el admin borró en esta sesión (se ocultan al toque,
   // sin esperar el refetch). El borrado real ya se hizo (form o API).
@@ -1676,25 +1675,6 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     }
   }
 
-  // Sube una imagen NUEVA y la fija como destacada (hero) de una medida del kit.
-  async function uploadHero(m, file) {
-    if (!file) return;
-    setUploadingHero(m);
-    setErr("");
-    try {
-      const fd = new FormData();
-      fd.append("image", file);
-      const r = await fetch(`${API}/api/admin/shop/products/upload-image`, { method: "POST", headers: authHdr(), body: fd });
-      const d = await r.json();
-      if (!r.ok) { setErr(d.error || "Error al subir la imagen"); return; }
-      setHero(m, d.url);
-    } catch (e) {
-      setErr("Error de red al subir la imagen");
-    } finally {
-      setUploadingHero(null);
-    }
-  }
-
   // Sube una o VARIAS fotos comunes de una medida (galería del kit) y las agrega
   // a la lista de esa medida (acumula, no reemplaza). Sube en orden para
   // preservar la secuencia. Se persiste en meta.fotos_por_medida.
@@ -1717,6 +1697,18 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     } finally {
       setUploadingFoto(null);
     }
+  }
+
+  // Quita una foto de una medida desde la sección unificada. Enruta según origen:
+  //  • foto común subida (meta.fotos_por_medida) → sólo se saca de la lista.
+  //  • imagen de una variante/kit → se borra del producto (con confirm).
+  async function removeMedidaFoto(m, url) {
+    if ((fotosPorMedida[m] || []).includes(url)) {
+      if (heroPorMedida[m] === url) setHero(m, "");
+      removeFotoMedida(m, url);
+      return;
+    }
+    await deleteHeroCandidate(m, url);
   }
 
   // Elimina una foto candidata (la ×) de la sección "Foto destacada por medida".
@@ -2013,60 +2005,45 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                     </Field>
                   )}
                   {isBundle && kitMedidas.length > 0 && (
-                    <Field label="Portada (destacada) por medida — una sola" hint='La foto GRANDE que abre la ficha en cada medida. Es UNA sola: subí la tuya ("Subir") o elegí una existente; la × la elimina. "Automática" = usa la foto unificada del kit. Las fotos comunes van en el bloque de abajo.'>
-                      <div style={{ display: "grid", gap: 10 }}>
+                    <Field label="Fotos por medida" hint='Subí todas las fotos que quieras para cada medida — SIEMPRE se acumulan (nunca reemplaza). Tocá una para marcarla como PORTADA (la grande que abre la ficha); la ★ muestra cuál es. La × la quita. "Portada automática" usa la foto unificada del kit.'>
+                      <div style={{ display: "grid", gap: 14 }}>
                         {kitMedidas.map((m) => {
-                          const cands = heroCandidates(m);
-                          const sel = heroPorMedida[m] || "";
-                          const thumbs = (sel && !cands.includes(sel) ? [sel, ...cands] : cands)
-                            .filter((u) => !deletedHeroUrls.has(u));
-                          const up = uploadingHero === m;
-                          return (
-                            <div key={m} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--accent-hover)" }}>{m}</span>
-                              <button type="button" onClick={() => setHero(m, "")} className={`adm-btn adm-btn--sm ${sel === "" ? "adm-btn--primary" : "adm-btn--default"}`} style={{ flex: "0 0 auto" }}>Automática</button>
-                              {/* Tira con scroll horizontal: no importa cuántas fotos haya,
-                                  "Subir" siempre queda visible al final de la fila. */}
-                              <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "6px 2px", flex: 1, minWidth: 0 }}>
-                                {thumbs.map((u) => (
-                                  <div key={u} style={{ position: "relative", flex: "0 0 auto" }}>
-                                    <button type="button" onClick={() => setHero(m, u)} title="Usar como destacada de esta medida"
-                                      style={{ padding: 2, borderRadius: 8, cursor: "pointer", background: "transparent", border: `2px solid ${sel === u ? "var(--accent)" : "var(--border-2)"}` }}>
-                                      <img src={u} alt="" style={{ width: 40, height: 40, objectFit: "contain", display: "block", borderRadius: 4, background: "var(--surface-3)" }} />
-                                    </button>
-                                    <button type="button" onClick={() => deleteHeroCandidate(m, u)} title="Eliminar esta foto del producto" aria-label="Eliminar foto"
-                                      style={{ position: "absolute", top: -7, right: -7, width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "1.5px solid var(--surface)", fontSize: 12, fontWeight: 900 }}>×</button>
-                                  </div>
-                                ))}
-                              </div>
-                              <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, flex: "0 0 auto" }}>
-                                {up ? "Subiendo…" : "⬆ Subir"}
-                                <input type="file" accept="image/*" style={{ display: "none" }} disabled={up} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadHero(m, f); }} />
-                              </label>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </Field>
-                  )}
-                  {isBundle && kitMedidas.length > 0 && (
-                    <Field label="Fotos de la medida (galería) — varias" hint="Las fotos comunes que se ven en la ficha del kit al elegir esta medida. Podé subir todas las que quieras (se acumulan). La portada de arriba es aparte.">
-                      <div style={{ display: "grid", gap: 10 }}>
-                        {kitMedidas.map((m) => {
-                          const list = fotosPorMedida[m] || [];
+                          // Set completo de la medida: fotos comunes subidas + imágenes
+                          // de las variantes/kit (candidatas), deduplicadas, sin las borradas.
+                          const uploaded = fotosPorMedida[m] || [];
+                          const seen = new Set();
+                          const all = [...uploaded, ...heroCandidates(m)].filter((u) => {
+                            if (!u || seen.has(u) || deletedHeroUrls.has(u)) return false;
+                            seen.add(u);
+                            return true;
+                          });
+                          const portada = heroPorMedida[m] || "";
                           const up = uploadingFoto === m;
                           return (
                             <div key={m} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--accent-hover)" }}>{m}</span>
-                              <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "6px 2px", flex: 1, minWidth: 0 }}>
-                                {list.length === 0 && <span style={{ fontSize: 12, color: "var(--text-3)" }}>Sin fotos propias</span>}
-                                {list.map((u) => (
-                                  <div key={u} style={{ position: "relative", flex: "0 0 auto" }}>
-                                    <img src={u} alt="" style={{ width: 40, height: 40, objectFit: "contain", display: "block", borderRadius: 6, border: "1px solid var(--border-2)", background: "var(--surface-3)" }} />
-                                    <button type="button" onClick={() => removeFotoMedida(m, u)} title="Quitar esta foto de la medida" aria-label="Quitar foto"
-                                      style={{ position: "absolute", top: -7, right: -7, width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "1.5px solid var(--surface)", fontSize: 12, fontWeight: 900 }}>×</button>
-                                  </div>
-                                ))}
+                              <button type="button" onClick={() => setHero(m, "")}
+                                className={`adm-btn adm-btn--sm ${portada === "" ? "adm-btn--primary" : "adm-btn--default"}`}
+                                style={{ flex: "0 0 auto" }} title="Usar la foto unificada del kit como portada">Portada automática</button>
+                              {/* Tira con scroll horizontal: "Subir" siempre visible al final. */}
+                              <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "12px 2px", flex: 1, minWidth: 0 }}>
+                                {all.length === 0 && <span style={{ fontSize: 12, color: "var(--text-3)" }}>Sin fotos</span>}
+                                {all.map((u) => {
+                                  const isPortada = portada === u;
+                                  return (
+                                    <div key={u} style={{ position: "relative", flex: "0 0 auto" }}>
+                                      <button type="button" onClick={() => setHero(m, u)} title={isPortada ? "Es la portada de esta medida" : "Marcar como portada"}
+                                        style={{ padding: 2, borderRadius: 8, cursor: "pointer", background: "transparent", border: `2px solid ${isPortada ? "var(--accent)" : "var(--border-2)"}` }}>
+                                        <img src={u} alt="" style={{ width: 44, height: 44, objectFit: "contain", display: "block", borderRadius: 4, background: "var(--surface-3)" }} />
+                                      </button>
+                                      {isPortada && (
+                                        <span style={{ position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%)", fontSize: 8.5, fontWeight: 900, letterSpacing: "0.03em", color: "#fff", background: "var(--accent)", borderRadius: 4, padding: "1px 5px", whiteSpace: "nowrap" }}>★ PORTADA</span>
+                                      )}
+                                      <button type="button" onClick={() => removeMedidaFoto(m, u)} title="Quitar esta foto" aria-label="Quitar foto"
+                                        style={{ position: "absolute", top: -7, right: -7, width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "1.5px solid var(--surface)", fontSize: 12, fontWeight: 900 }}>×</button>
+                                    </div>
+                                  );
+                                })}
                               </div>
                               <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, flex: "0 0 auto" }}>
                                 {up ? "Subiendo…" : "⬆ Subir fotos"}
