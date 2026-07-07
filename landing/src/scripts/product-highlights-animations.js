@@ -50,6 +50,10 @@ function initProductHighlights(root) {
     const progressFill = root.querySelector("[data-ph-progress-fill]");
 
     let activeIdx = 0;
+    // Modo liviano (celular): sin blur animado en imágenes ni duraciones
+    // largas — el filter:blur() por frame es lo que traba el scroll en móvil.
+    // Se setea dentro de mm.add() según la condición isMobile.
+    let lite = false;
     // splits[i] = SplitText instance del title de cada panel. Se popula
     // dentro de mm.add() ya que SplitText necesita correr post-DOM.
     // setActive lo usa para reset/reveal del título al cambiar de panel.
@@ -73,9 +77,9 @@ function initProductHighlights(root) {
                 img.classList.add("is-active");
                 gsap.to(img, {
                     autoAlpha: 1,
-                    filter: "blur(0px) saturate(1.05)",
+                    filter: lite ? "blur(0px) saturate(1)" : "blur(0px) saturate(1.05)",
                     scale: 1,
-                    duration: 0.85,
+                    duration: lite ? 0.5 : 0.85,
                     ease: "power3.out",
                     overwrite: "auto",
                 });
@@ -88,9 +92,11 @@ function initProductHighlights(root) {
                 img.classList.remove("is-active");
                 gsap.to(img, {
                     autoAlpha: 0,
-                    filter: "blur(20px) saturate(0.65)",
-                    scale: 0.93,
-                    duration: 0.6,
+                    // En móvil no animamos blur (queda en 0): el cross-fade es
+                    // solo opacidad + escala. En desktop sí, para el look rico.
+                    filter: lite ? "blur(0px) saturate(1)" : "blur(20px) saturate(0.65)",
+                    scale: lite ? 0.97 : 0.93,
+                    duration: lite ? 0.4 : 0.6,
                     ease: "power2.in",
                     overwrite: "auto",
                 });
@@ -177,6 +183,7 @@ function initProductHighlights(root) {
     // ===== matchMedia scope =====
     mm.add(BREAKPOINTS, (context) => {
         const { reduceMotion, isMobile } = context.conditions;
+        lite = !!isMobile;
 
         if (reduceMotion) {
             setActive(0);
@@ -184,10 +191,14 @@ function initProductHighlights(root) {
             return;
         }
 
-        // Estados iniciales GSAP-controlled
-        gsap.set(images, { autoAlpha: 0, filter: "blur(20px) saturate(0.65)", scale: 0.93 });
+        // Estados iniciales GSAP-controlled. En móvil sin blur (ver `lite`).
+        gsap.set(images, {
+            autoAlpha: 0,
+            filter: lite ? "blur(0px) saturate(1)" : "blur(20px) saturate(0.65)",
+            scale: lite ? 0.97 : 0.93,
+        });
         if (images[0]) {
-            gsap.set(images[0], { autoAlpha: 1, filter: "blur(0px) saturate(1.05)", scale: 1 });
+            gsap.set(images[0], { autoAlpha: 1, filter: lite ? "blur(0px) saturate(1)" : "blur(0px) saturate(1.05)", scale: 1 });
             // Si el primer media es un video, intentar play.
             if (images[0].tagName === "VIDEO") {
                 const p = images[0].play();
@@ -241,7 +252,9 @@ function initProductHighlights(root) {
                 if (progressFill) {
                     gsap.set(progressFill, { scaleX: self.progress });
                 }
-                if (railFill) {
+                // El rail está display:none en móvil (<=900px): animar su attr
+                // por frame es trabajo tirado que suma jank al scrub. Sólo desktop.
+                if (railFill && !isMobile) {
                     const target = self.progress * 400;
                     gsap.to(railFill, {
                         attr: { "stroke-dasharray": `${target} 400` },
@@ -323,8 +336,9 @@ function initProductHighlights(root) {
             });
         }
 
-        // Partículas orbitales
-        const count = isMobile ? Math.min(12, particles.length) : particles.length;
+        // Partículas orbitales. En móvil las bajamos a 6 (menos timelines
+        // infinitas corriendo = menos presión sobre el main thread al scroll).
+        const count = isMobile ? Math.min(6, particles.length) : particles.length;
         particles.slice(count).forEach((p) => gsap.set(p, { autoAlpha: 0, display: "none" }));
 
         const stageSize = stage ? stage.offsetWidth : 480;

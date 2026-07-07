@@ -677,6 +677,28 @@ const colorList = highlights.map((h) => h.color || defaultAccent).join(",");
         }
         .ph__hud--top { font-size: 0.66rem; }
         .ph__hud-dots { display: none; }
+
+        /* ── Perf móvil ─────────────────────────────────────────────────
+           El scroll trababa por los blurs grandes y los repaints de fondo
+           dentro del pin+scrub. Aligeramos SIN tocar el layout: el
+           cross-fade de imágenes pasa a ser sólo opacidad/escala (sin
+           blur, que es el mayor costo de GPU en celular), el fondo deja
+           de animarse, y sacamos el ring cónico + la sombra difusa. */
+        .ph__image {
+            filter: none !important;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+            transition:
+                opacity 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .ph__image.is-active { filter: none !important; }
+        .ph__halo { filter: blur(22px); }
+        .ph__halo-ring { animation: none; opacity: 0.2; }
+        .ph__bg-radial {
+            transition: none;
+            will-change: auto;
+        }
+        .ph__shadow { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
