@@ -629,13 +629,21 @@ export default function ShopProduct() {
         return imgs;
       })()
     : [];
+  // Un kit que tiene portada o fotos POR MEDIDA cargadas quiere galería por
+  // medida (que cambia al elegir el tamaño), aun con "usar solo estas fotos"
+  // prendido. Si no, ese switch dejaba la galería fija e igual para toda medida
+  // (era el caso de Elite: se veía la misma foto en todas las medidas).
+  const hasPerMedida = isKit && (
+    Object.keys(product.meta?.hero_por_medida || {}).length > 0 ||
+    Object.keys(product.meta?.fotos_por_medida || {}).length > 0
+  );
   // Prioridad de galería:
-  //  1) "Usar solo estas fotos" (gallery_fixed) → mandan las fotos del admin,
-  //     también en un kit. Sin esto, en un kit las ediciones de imágenes no se
-  //     reflejaban nunca porque la galería automática por medida ganaba siempre.
-  //  2) Kit sin gallery_fixed → galería automática por medida (hero + partes).
+  //  1) "Usar solo estas fotos" (gallery_fixed) SIN datos por medida → mandan
+  //     las fotos del admin (también en un kit), para que sus ediciones se vean.
+  //  2) Kit (con o sin gallery_fixed) con datos por medida → galería por medida
+  //     (hero por medida + fotos por medida + partes), que cambia por tamaño.
   //  3) Producto normal → sus imágenes.
-  const images = galleryFixed && adminImages.length
+  const images = galleryFixed && adminImages.length && !hasPerMedida
     ? adminImages
     : isKit && kitGallery.length
       ? kitGallery
