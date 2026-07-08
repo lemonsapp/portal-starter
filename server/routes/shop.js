@@ -1707,7 +1707,10 @@ function groupIntoFamilies(products) {
       category: head.category,
       meta: head.meta,
       featured: items.some((i) => i.featured),
-      primary_image: head.primary_image,
+      // Si la cabecera todavía no tiene foto (medida recién creada con
+      // "+ Agregar medida", que arranca sin imágenes), la tarjeta cae a la
+      // primera variante CON foto: la familia nunca queda sin imagen.
+      primary_image: head.primary_image || items.find((i) => i.primary_image)?.primary_image || null,
       from_price_cents: prices.length ? Math.min(...prices) : null,
       from_price_formatted: prices.length ? formatARS(Math.min(...prices)) : null,
       variant_count: items.length,

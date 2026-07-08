@@ -1857,9 +1857,24 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   const fmtSlug = (f) => String(f).toLowerCase()
     .normalize("NFD").replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  // Canonicaliza la medida tipeada al formato del catálogo ("5lt" / "5 litros"
+  // / "5 L" → "5L"; "250 ML" → "250ml"; "500 gr" → "500g"). Sin esto, una
+  // medida fuera de canon rompe el orden de los chips (FMT_ORDER del server no
+  // la conoce → va última) y los tokens de fotos por medida.
+  function canonFormato(s) {
+    const m = String(s).trim().toLowerCase().replace(/\s+/g, "")
+      .match(/^(\d+(?:[.,]\d+)?)(ml|cc|l|lt|lts|litros?|g|gr|grs?|kg)\.?$/);
+    if (!m) return String(s).trim();
+    const n = m[1].replace(",", ".");
+    const u = m[2];
+    if (u === "ml" || u === "cc") return `${n}ml`;
+    if (u === "kg") return `${n}kg`;
+    if (u.startsWith("g")) return `${n}g`;
+    return `${n}L`; // l / lt / lts / litro(s)
+  }
 
   async function createMedida() {
-    const fmt = newFmt.trim();
+    const fmt = canonFormato(newFmt);
     if (!fmt || !product) return;
     if (medidaSiblings.some((s) => String(s.meta?.formato || "").toLowerCase() === fmt.toLowerCase())) {
       setMedidaMsg("Error: esa medida ya existe en esta familia."); return;

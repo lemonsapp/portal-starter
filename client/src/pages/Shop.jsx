@@ -35,11 +35,16 @@ function normalizeFamily(f) {
   // Cloudinary por el admin (URL remota que no matchea fixImageUrl), por eso
   // hay que forzarla por el flag y no por el path.
   const isPoints = f.meta?.points_pack || f.meta?.points_custom;
-  const primary = isPoints ? PRODUCT_FALLBACK_IMG : (fixImageUrl(f.primary_image) || f.primary_image);
+  const variants = (f.variants || []).map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) }));
+  // Espejo del fallback del server: si la cabecera de la familia no tiene foto
+  // (medida nueva sin imágenes), usa la primera variante con foto.
+  const primary = isPoints
+    ? PRODUCT_FALLBACK_IMG
+    : (fixImageUrl(f.primary_image) || f.primary_image || variants.find((v) => v.primary_image)?.primary_image || null);
   return {
     ...f,
     primary_image: primary,
-    variants: (f.variants || []).map((v) => ({ ...v, primary_image: fixImageUrl(v.primary_image) })),
+    variants,
   };
 }
 

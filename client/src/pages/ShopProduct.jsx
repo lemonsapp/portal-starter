@@ -667,7 +667,15 @@ export default function ShopProduct() {
       ? kitGallery
       : product.images?.length
         ? product.images
-        : [{ url: product.primary_image, alt: product.name }].filter((i) => i.url);
+        : (() => {
+            // Medida sin fotos propias (recién creada con "+ Agregar medida"):
+            // portada provisional = su primaria o la de la medida hermana de
+            // menor orden que tenga foto. La ficha nunca queda sin imagen
+            // mientras el admin todavía no subió las fotos reales.
+            const sib = (product.variants || []).find((v) => v.slug !== product.slug && v.primary_image);
+            const url = product.primary_image || sib?.primary_image || null;
+            return url ? [{ url, alt: product.name }] : [];
+          })();
   const inStock = product.stock == null || product.stock > 0;
   const isCustomPoints = !!product.meta?.points_custom;
   const customPointsTotal = product.price_cents * clampPoints(pointsQty);
