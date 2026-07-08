@@ -18,7 +18,10 @@ const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\
 // de Vite y queremos zero-build-step).
 const BRANDING_DEFAULTS = {
   name: "Holistic",
-  slogan: "Tu growshop de confianza · Línea Elite, Pro y Bio",
+  // Espejo EXACTO del slogan configurado en app_config: el default se pinta
+  // antes del fetch a /api/config/public — si difiere del remoto, el usuario
+  // ve el texto viejo un instante y después el cambio (flash en el login).
+  slogan: "Nutricion Superior",
   logo_url: "/portal/icons/holistic-logo.svg",
   favicon_url: "/portal/icons/holistic-logo.svg",
   color_primary: "#52b788",
