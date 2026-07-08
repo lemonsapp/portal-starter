@@ -1552,7 +1552,39 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   //  • Kit (bundle): string con el formato elegido (ej "250ml") de meta.presentaciones.
   //  • Variante individual (meta.formato): booleano → esta variante es la cabecera
   //    de la familia (la que abre desde el catálogo).
-  const kitMedidas = Array.isArray(metaBase.presentaciones) ? metaBase.presentaciones.filter(Boolean) : [];
+  // Medidas del kit (meta.presentaciones) — ahora EDITABLE: el admin puede
+  // agregar/quitar medidas. Controla las secciones por medida de este modal
+  // (fotos, precios, portada). El chip de medida en la TIENDA sale de los
+  // productos de la línea que existen en esa medida (ver "Agregar medida" en
+  // cada familia).
+  const [kitMedidas, setKitMedidas] = useState(() =>
+    Array.isArray(metaBase.presentaciones) ? metaBase.presentaciones.filter(Boolean) : []);
+  const [nuevaPresentacion, setNuevaPresentacion] = useState("");
+  // Medidas que el admin QUITÓ explícitamente en esta sesión. La poda de los
+  // datos por medida (fotos/orden/precio/portada) en buildMeta se hace SOLO
+  // sobre estas — nunca contra kitMedidas: hay kits legados con datos por
+  // medida cuyas claves no están en presentaciones, y podar contra la lista
+  // los borraría en silencio con cualquier "Guardar cambios".
+  const [removedKitMedidas, setRemovedKitMedidas] = useState(() => new Set());
+  const addKitMedida = () => {
+    const v = nuevaPresentacion.trim();
+    if (!v) return;
+    setNuevaPresentacion("");
+    // Si la había quitado en esta sesión, re-agregarla la "des-quita".
+    setRemovedKitMedidas((prev) => {
+      if (!prev.has(v)) return prev;
+      const next = new Set(prev); next.delete(v); return next;
+    });
+    if (kitMedidas.some((m) => m.toLowerCase() === v.toLowerCase())) return;
+    // Se inserta ordenada por tamaño (FORMATO_ORDER); lo desconocido va al final.
+    setKitMedidas((prev) => [...prev, v].sort((a, b) => ordFmt(a) - ordFmt(b)));
+  };
+  const removeKitMedida = (m) => {
+    if (!window.confirm(`¿Quitar la medida "${m}" del kit? Al GUARDAR se borran definitivamente sus fotos, orden, precio y portada guardados para esa medida (los productos de la línea NO se borran).`)) return;
+    setKitMedidas((prev) => prev.filter((x) => x !== m));
+    setRemovedKitMedidas((prev) => new Set(prev).add(m));
+    if (medidaDestacada === m) setMedidaDestacada("");
+  };
   const isVariant = !isBundle && typeof metaBase.formato === "string" && !!metaBase.formato;
   const [medidaDestacada, setMedidaDestacada] = useState(
     typeof metaBase.medida_destacada === "string" ? metaBase.medida_destacada : ""
@@ -1821,6 +1853,100 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     }
   }
 
+  // ── Familia: agregar / borrar MEDIDAS (cada medida es un producto real) ──
+  // El chip de medida en la tienda existe sólo si existe el producto variante
+  // (ej. race-2-...-20l). "Agregar medida" CLONA este producto en el formato
+  // nuevo (mismo meta/contenido, sin fotos: se suben después en "Fotos por
+  // medida"). "Borrar medida" elimina ese producto variante.
+  const [newFmt, setNewFmt] = useState("");
+  const [newFmtPrice, setNewFmtPrice] = useState("");
+  const [creatingMedida, setCreatingMedida] = useState(false);
+  const [medidaMsg, setMedidaMsg] = useState("");
+  // Token de medida al final de un nombre ("Race 1 — NPK 500ml" → "500ml").
+  const SIZE_TAIL = /\s*\d+(?:[.,]\d+)?\s*(?:ml|l|lt|lts|g|gr|kg)\.?\s*$/i;
+  const fmtSlug = (f) => String(f).toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+  async function createMedida() {
+    const fmt = newFmt.trim();
+    if (!fmt || !product) return;
+    if (medidaSiblings.some((s) => String(s.meta?.formato || "").toLowerCase() === fmt.toLowerCase())) {
+      setMedidaMsg("Error: esa medida ya existe en esta familia."); return;
+    }
+    const pesos = parseInt(String(newFmtPrice).replace(/[^\d]/g, ""), 10);
+    if (!Number.isFinite(pesos) || pesos <= 0) { setMedidaMsg("Error: poné el precio de la medida nueva (en pesos)."); return; }
+    setCreatingMedida(true); setMedidaMsg("");
+    // Nombre y slug: mismo producto con el token de medida cambiado. Primero
+    // se intenta sacar el formato EXACTO del final del nombre (cubre formatos
+    // raros tipo "20 litros"); si no está, cae al tail genérico (SIZE_TAIL).
+    const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const curFmt = String(metaBase.formato || "").trim();
+    let baseName = product.name;
+    if (curFmt) baseName = baseName.replace(new RegExp(`\\s*${escRe(curFmt)}\\s*$`, "i"), "");
+    baseName = baseName.replace(SIZE_TAIL, "").trim();
+    const curFmtSlug = fmtSlug(metaBase.formato || "");
+    const baseSlug = curFmtSlug && product.slug.endsWith(`-${curFmtSlug}`)
+      ? product.slug.slice(0, -(curFmtSlug.length + 1))
+      : product.slug;
+    // Meta clonado: misma familia (linea/etapa/parte/…), formato nuevo. Sin
+    // medida_destacada: una sola cabecera por familia.
+    const cloneMeta = { ...metaBase, formato: fmt };
+    delete cloneMeta.medida_destacada;
+    const payload = {
+      slug: `${baseSlug}-${fmtSlug(fmt)}`,
+      name: `${baseName} ${fmt}`,
+      short_description: product.short_description || null,
+      long_description: product.long_description || null,
+      price_cents: pesos * 100,
+      stock: null,
+      sku: null,
+      category_id: product.category?.id ?? null,
+      // Hereda el estado del form: si la familia está oculta (trabajo en
+      // curso), la medida nueva NO debe aparecer sola en la tienda.
+      active,
+      featured: false,
+      sort_order: product.sort_order ?? 0,
+      images: [],
+      meta: cloneMeta,
+    };
+    try {
+      const r = await fetch(`${API}/api/admin/shop/products`, { method: "POST", headers: jsonHdr(), body: JSON.stringify(payload) });
+      const d = await r.json();
+      if (!r.ok) {
+        setMedidaMsg("Error: " + (d.error || "no se pudo crear la medida"));
+      } else {
+        setMedidaMsg(`✓ Medida ${fmt} creada${active ? " — ya aparece en la tienda" : " (oculta, igual que esta familia)"}; subile fotos acá abajo`);
+        setNewFmt(""); setNewFmtPrice("");
+        onSaved(); // refresca la lista → la medida nueva entra a medidaSiblings
+      }
+    } catch { setMedidaMsg("Error de red al crear la medida"); }
+    setCreatingMedida(false);
+  }
+
+  async function deleteMedida(sib) {
+    if (!sib || sib.id === product?.id) return; // el producto abierto no se borra desde acá
+    // Si algún kit la lista A MANO en su "Incluye" (editorial.bundle_includes_slugs),
+    // avisamos: al borrarla, esa familia desaparece del kit sin error visible.
+    const kitsQueLaIncluyen = allProducts.filter((p) =>
+      p.meta?.bundle && Array.isArray(p.meta?.editorial?.bundle_includes_slugs)
+      && p.meta.editorial.bundle_includes_slugs.includes(sib.slug)
+    ).map((p) => p.name);
+    const aviso = kitsQueLaIncluyen.length
+      ? `\n\nOJO: ${kitsQueLaIncluyen.join(" y ")} la lista en su "Incluye" — al borrarla dejará de mostrarse ahí también.`
+      : "";
+    if (!window.confirm(`¿Borrar "${sib.name}"? Se elimina el producto de esa medida y deja de verse en la tienda. No se puede deshacer.${aviso}`)) return;
+    setMedidaMsg("");
+    try {
+      const r = await fetch(`${API}/api/admin/shop/products/${sib.id}`, { method: "DELETE", headers: authHdr() });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { setMedidaMsg("Error: " + (d.error || "no se pudo borrar la medida")); return; }
+      setMedidaMsg(`✓ Medida ${sib.meta?.formato || ""} borrada`);
+      if (expandedMedida === sib.id) setExpandedMedida(null);
+      onSaved(); // refresca la lista → desaparece de medidaSiblings
+    } catch { setMedidaMsg("Error de red al borrar la medida"); }
+  }
+
   // ── Editores de listas repetibles (beneficios / características / specs) ──
   const mkRow = (setter, blank) => () => setter((arr) => [...arr, { ...blank }]);
   const setField = (setter) => (i, field, value) =>
@@ -1856,9 +1982,18 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     // Galería fija (solo fotos subidas, sin armado por medida).
     if (galleryFixed) next.gallery_fixed = true;
     else delete next.gallery_fixed;
+    // Medidas del kit (editable): se persisten. La PODA de los datos por medida
+    // es SOLO sobre las quitadas explícitamente en esta sesión (removed) —
+    // nunca contra kitMedidas, para no borrar datos legados de claves que no
+    // figuran en presentaciones (data-loss silencioso al guardar).
+    const removed = removedKitMedidas;
+    if (isBundle) {
+      if (kitMedidas.length) next.presentaciones = kitMedidas;
+      else delete next.presentaciones;
+    }
     // Destacada (hero) del kit por medida.
     if (isBundle) {
-      const hpm = Object.fromEntries(Object.entries(heroPorMedida).filter(([, v]) => v));
+      const hpm = Object.fromEntries(Object.entries(heroPorMedida).filter(([m, v]) => v && !removed.has(m)));
       if (Object.keys(hpm).length) next.hero_por_medida = hpm;
       else delete next.hero_por_medida;
     }
@@ -1866,6 +2001,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     if (isBundle) {
       const fpm = {};
       for (const [m, arr] of Object.entries(fotosPorMedida)) {
+        if (removed.has(m)) continue;
         const clean = (arr || []).filter(Boolean);
         if (clean.length) fpm[m] = clean;
       }
@@ -1878,6 +2014,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     if (isBundle) {
       const opm = {};
       for (const m of Object.keys(ordenPorMedida)) {
+        if (removed.has(m)) continue;
         const list = orderedFotosMedida(m);
         if (list.length) opm[m] = list;
       }
@@ -1888,6 +2025,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     if (isBundle) {
       const ppm = {};
       for (const [m, ars] of Object.entries(precioPorMedida)) {
+        if (removed.has(m)) continue;
         const pesos = parseInt(String(ars).replace(/[^\d]/g, ""), 10);
         if (Number.isFinite(pesos) && pesos > 0) ppm[m] = pesos * 100;
       }
@@ -1896,7 +2034,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     }
     // Medida destacada (con la que abre la interna / la familia).
     if (isBundle) {
-      if (medidaDestacada) next.medida_destacada = medidaDestacada;
+      if (medidaDestacada && !removed.has(medidaDestacada)) next.medida_destacada = medidaDestacada;
       else delete next.medida_destacada;
     } else if (isVariant) {
       if (isMedidaDestacada) next.medida_destacada = true;
@@ -2001,7 +2139,9 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     }
   }
 
-  const hasVariantSection = (isBundle && kitMedidas.length > 0) || isVariant || medidaSiblings.length > 1;
+  // isBundle solo (sin exigir medidas): un kit sin presentaciones necesita ver
+  // la card para poder agregar su primera medida.
+  const hasVariantSection = isBundle || isVariant || medidaSiblings.length > 1;
 
   return createPortal(
     <div className="adm">
@@ -2097,6 +2237,28 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
 
               {hasVariantSection && (
                 <Card title="Variantes y medidas" hint="Configuración de la familia / kit por medida.">
+                  {isBundle && (
+                    <Field label="Medidas del kit" hint='Agregá o quitá medidas del kit (controla las fotos, precios y portada por medida de acá abajo). OJO: el selector de medida que ve el cliente sale de los productos de la línea — si falta una medida en la tienda, abrí cada producto de la línea y usá "+ Agregar medida" ahí.'>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                        {kitMedidas.map((m) => (
+                          <span key={m} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, color: "var(--text)", background: "var(--surface-2)", border: "1px solid var(--border-2)", borderRadius: 999, padding: "4px 6px 4px 12px" }}>
+                            {m}
+                            <button type="button" onClick={() => removeKitMedida(m)} title={`Quitar la medida ${m}`} aria-label={`Quitar la medida ${m}`}
+                              style={{ width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "none", fontSize: 11, fontWeight: 900 }}>×</button>
+                          </span>
+                        ))}
+                        {kitMedidas.length === 0 && <span style={{ fontSize: 12, color: "var(--text-3)" }}>Sin medidas — agregá la primera:</span>}
+                        <input className="adm-input" list="kit-fmt-options" value={nuevaPresentacion}
+                          onChange={(e) => setNuevaPresentacion(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addKitMedida(); } }}
+                          placeholder="Nueva medida (ej: 20L)" style={{ width: 150, flex: "0 0 auto" }} />
+                        <datalist id="kit-fmt-options">
+                          {FORMATO_ORDER.filter((f) => !kitMedidas.some((m) => m.toLowerCase() === f.toLowerCase())).map((f) => <option key={f} value={f} />)}
+                        </datalist>
+                        <Btn size="sm" onClick={addKitMedida} disabled={!nuevaPresentacion.trim()}>+ Agregar medida</Btn>
+                      </div>
+                    </Field>
+                  )}
                   {isBundle && kitMedidas.length > 0 && (
                     <Field label="Medida destacada (con la que abre la interna)" hint="Al entrar a la interna del kit se ve esta medida (sus potes y su precio). Cambiala cuando quieras.">
                       <select className="adm-select" value={medidaDestacada} onChange={(e) => setMedidaDestacada(e.target.value)}>
@@ -2196,12 +2358,13 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                       (subir, ordenar, portada, quitar), este accordion NO se muestra: era
                       la duplicación confusa. Queda para familias de medidas y para el
                       caso raro de un bundle sin meta.presentaciones (si no, ese bundle
-                      se quedaría sin NINGÚN editor por medida). */}
-                  {!(isBundle && kitMedidas.length > 0) && medidaSiblings.length > 1 && (
+                      se quedaría sin NINGÚN editor por medida). Para variantes se muestra
+                      aunque la familia tenga UNA sola medida: hace falta para agregar más. */}
+                  {!(isBundle && kitMedidas.length > 0) && (medidaSiblings.length > 1 || isVariant) && (
                     <div>
-                      <div className="adm-label">Fotos por medida</div>
+                      <div className="adm-label">Medidas de la familia y sus fotos</div>
                       <div className="adm-help" style={{ marginTop: 0, marginBottom: 10 }}>
-                        Editá las fotos de cada medida de esta familia sin salir de acá. Con ↑ ↓ elegís el orden en que se ven (1º, 2º, 3º…). Cada medida se guarda por separado.
+                        Cada medida es una publicación de la tienda: sus fotos son las que ve el cliente. Con ↑ ↓ elegís el orden (1º, 2º, 3º…). Cada medida se guarda por separado. Con "+ Agregar medida" creás una medida nueva (ej: 20L) y con 🗑 la borrás de la tienda.
                       </div>
                       <div style={{ display: "grid", gap: 8 }}>
                         {medidaSiblings.map((sib) => {
@@ -2210,16 +2373,22 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                           const n = sib.images?.length || 0;
                           return (
                             <div key={sib.id} style={{ border: "1px solid var(--border)", borderRadius: 9, overflow: "hidden", background: "var(--surface)" }}>
-                              <button type="button" onClick={() => setExpandedMedida(open ? null : sib.id)}
-                                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: "var(--surface-2)", border: "none", color: "var(--text)", cursor: "pointer", textAlign: "left" }}>
-                                {sib.primary_image
-                                  ? <img src={sib.primary_image} alt="" className="adm-thumb" style={{ width: 30, height: 30 }} />
-                                  : <div className="adm-thumb adm-thumb--ph" style={{ width: 30, height: 30 }}>🖼</div>}
-                                {sib.meta?.formato && <Badge tone="ok">{sib.meta.formato}</Badge>}
-                                <span style={{ fontWeight: 700, fontSize: 13 }}>{sib.name}{isThis && <span style={{ color: "var(--text-3)", fontWeight: 400 }}> · esta</span>}</span>
-                                <span style={{ fontSize: 11.5, color: "var(--text-3)" }}>{n} {n === 1 ? "foto" : "fotos"}</span>
-                                <span style={{ marginLeft: "auto", color: "var(--text-3)" }}>{open ? "▲" : "▼"}</span>
-                              </button>
+                              <div style={{ display: "flex", alignItems: "stretch", background: "var(--surface-2)" }}>
+                                <button type="button" onClick={() => setExpandedMedida(open ? null : sib.id)}
+                                  style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: "transparent", border: "none", color: "var(--text)", cursor: "pointer", textAlign: "left" }}>
+                                  {sib.primary_image
+                                    ? <img src={sib.primary_image} alt="" className="adm-thumb" style={{ width: 30, height: 30 }} />
+                                    : <div className="adm-thumb adm-thumb--ph" style={{ width: 30, height: 30 }}>🖼</div>}
+                                  {sib.meta?.formato && <Badge tone="ok">{sib.meta.formato}</Badge>}
+                                  <span style={{ fontWeight: 700, fontSize: 13 }}>{sib.name}{isThis && <span style={{ color: "var(--text-3)", fontWeight: 400 }}> · esta</span>}</span>
+                                  <span style={{ fontSize: 11.5, color: "var(--text-3)" }}>{n} {n === 1 ? "foto" : "fotos"}</span>
+                                  <span style={{ marginLeft: "auto", color: "var(--text-3)" }}>{open ? "▲" : "▼"}</span>
+                                </button>
+                                {isVariant && !isThis && (
+                                  <button type="button" onClick={() => deleteMedida(sib)} title={`Borrar la medida ${sib.meta?.formato || ""} de la tienda`} aria-label={`Borrar la medida ${sib.meta?.formato || ""}`}
+                                    style={{ flex: "0 0 auto", padding: "0 12px", background: "transparent", border: "none", borderLeft: "1px solid var(--border)", color: "var(--danger, #e5484d)", cursor: "pointer", fontSize: 14 }}>🗑</button>
+                                )}
+                              </div>
                               {open && <div style={{ padding: "0 12px 6px" }}>
                                 <MedidaImageEditor
                                   key={sib.id}
@@ -2240,6 +2409,30 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                           );
                         })}
                       </div>
+                      {/* Agregar una medida nueva: crea el producto variante (clon de
+                          este, sin fotos) y la tienda muestra el chip al instante. */}
+                      {isVariant && !isNew && (
+                        <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                          <input className="adm-input" list="fam-fmt-options" value={newFmt}
+                            onChange={(e) => setNewFmt(e.target.value)}
+                            placeholder="Medida nueva (ej: 20L)" style={{ width: 150, flex: "0 0 auto" }} />
+                          <datalist id="fam-fmt-options">
+                            {FORMATO_ORDER.filter((f) => !medidaSiblings.some((s) => String(s.meta?.formato || "").toLowerCase() === f.toLowerCase())).map((f) => <option key={f} value={f} />)}
+                          </datalist>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ fontSize: 13, color: "var(--text-3)" }}>$</span>
+                            <input className="adm-input" type="text" inputMode="numeric" value={newFmtPrice}
+                              onChange={(e) => setNewFmtPrice(e.target.value.replace(/[^\d]/g, ""))}
+                              placeholder="Precio" aria-label="Precio de la medida nueva" style={{ width: 110 }} />
+                          </div>
+                          <Btn size="sm" variant="primary" disabled={creatingMedida || !newFmt.trim() || !newFmtPrice} onClick={createMedida}>
+                            {creatingMedida ? "Creando…" : "+ Agregar medida"}
+                          </Btn>
+                        </div>
+                      )}
+                      {medidaMsg && (
+                        <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 600, color: medidaMsg.startsWith("Error") ? "var(--danger)" : "var(--accent-hover)" }}>{medidaMsg}</div>
+                      )}
                     </div>
                   )}
                 </Card>
