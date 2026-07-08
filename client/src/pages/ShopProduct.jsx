@@ -580,35 +580,30 @@ export default function ShopProduct() {
   // aparecían 6-8 fotos para una línea con 3 subidas.)
   const kitGallery = isKit
     ? (() => {
-        const imgs = [];
-        const seen = new Set();
         // Hero del kit: el admin puede fijar una destacada POR medida
         // (meta.hero_por_medida[formato]). Si no hay para la medida activa,
         // cae a la foto unificada del kit (product.primary_image).
         const heroByMedida = product.meta?.hero_por_medida || {};
         const fotosByMedida = product.meta?.fotos_por_medida || {};
+        // Orden elegido por el admin con ◀ ▶ (meta.orden_por_medida[formato]):
+        // lista de urls en el orden deseado. Es sólo un HINT: ordena lo que
+        // exista en el pool; urls muertas o desconocidas no agregan nada.
+        const ordenByMedida = product.meta?.orden_por_medida || {};
         // Fotos comunes que el admin cargó para esta medida (meta.fotos_por_medida).
         const fotosMedida = (kitSel && Array.isArray(fotosByMedida[kitSel]))
           ? fotosByMedida[kitSel].map(fixImageUrl).filter(Boolean) : [];
-        // Foto principal ESPECÍFICA de la medida, para que al cambiar de medida
-        // cambie la foto grande (no sólo las miniaturas). Prioridad:
-        //  1) portada por medida del admin (hero_por_medida)
-        //  2) 1ra foto común de la medida (fotos_por_medida)
-        //  3) foto de una parte del kit en esa medida
-        //  4) foto unificada del kit (fallback)
-        const partHero = kitParts.find((v) => v.primary_image)?.primary_image;
-        const hero = (kitSel && heroByMedida[kitSel]) || fotosMedida[0] || partHero || product.primary_image;
-        if (hero) {
-          imgs.push({ url: hero, alt: product.name, is_primary: true });
-          seen.add(hero);
-        }
+        const orden = (kitSel && Array.isArray(ordenByMedida[kitSel]))
+          ? ordenByMedida[kitSel].map(fixImageUrl).filter(Boolean) : [];
+        // Pool de la medida (dedup): fotos comunes + TODAS las fotos de cada
+        // parte del kit en la medida elegida (no sólo la primaria). Así las
+        // imágenes que el admin sube a una medida (ej. Elite 20L) aparecen en
+        // la galería. Cae a primary_image si el server viejo todavía no manda
+        // el array `images`.
+        const seen = new Set();
+        const pool = [];
         for (const url of fotosMedida) {
-          if (url && !seen.has(url)) { seen.add(url); imgs.push({ url, alt: product.name }); }
+          if (url && !seen.has(url)) { seen.add(url); pool.push({ url, alt: product.name }); }
         }
-        // Por cada parte del kit en la medida elegida, sumamos TODAS sus fotos
-        // (la primaria primero), no sólo la primaria. Así las imágenes que el
-        // admin sube a una medida (ej. Elite 20L) aparecen en la galería. Cae a
-        // primary_image si el server viejo todavía no manda el array `images`.
         for (const v of kitParts) {
           const partImgs = (v.images && v.images.length)
             ? v.images
@@ -616,14 +611,35 @@ export default function ShopProduct() {
           for (const im of partImgs) {
             if (im.url && !seen.has(im.url)) {
               seen.add(im.url);
-              imgs.push({ url: im.url, alt: im.alt || v.name });
+              pool.push({ url: im.url, alt: im.alt || v.name });
             }
           }
         }
-        // Foto unificada del kit al final (si no quedó como principal), para que
-        // el "todos juntos" siga estando disponible como miniatura.
-        if (product.primary_image && !seen.has(product.primary_image)) {
-          seen.add(product.primary_image);
+        // Aplica el orden del admin (sort estable: lo hinteado primero, en ese
+        // orden; el resto conserva su orden natural al final).
+        if (orden.length) {
+          const pos = (u) => { const i = orden.indexOf(u); return i === -1 ? Infinity : i; };
+          pool.sort((a, b) => pos(a.url) - pos(b.url));
+        }
+        // Foto principal ESPECÍFICA de la medida, para que al cambiar de medida
+        // cambie la foto grande (no sólo las miniaturas). Prioridad:
+        //  1) portada por medida del admin (hero_por_medida)
+        //  2) 1ª del orden elegido (si hay hint) — lo que el admin puso 1º
+        //  3) 1ra foto común de la medida (fotos_por_medida)
+        //  4) foto de una parte del kit en esa medida
+        //  5) foto unificada del kit (fallback)
+        const partHero = kitParts.find((v) => v.primary_image)?.primary_image;
+        const hero = (kitSel && heroByMedida[kitSel])
+          || (orden.length ? pool[0]?.url : "")
+          || fotosMedida[0] || partHero || product.primary_image;
+        const imgs = [];
+        if (hero) imgs.push({ url: hero, alt: product.name, is_primary: true });
+        for (const im of pool) {
+          if (im.url !== hero) imgs.push(im);
+        }
+        // Foto unificada del kit al final (si no quedó ya), para que el
+        // "todos juntos" siga estando disponible como miniatura.
+        if (product.primary_image && hero !== product.primary_image && !pool.some((im) => im.url === product.primary_image)) {
           imgs.push({ url: product.primary_image, alt: product.name });
         }
         return imgs;
@@ -635,7 +651,8 @@ export default function ShopProduct() {
   // (era el caso de Elite: se veía la misma foto en todas las medidas).
   const hasPerMedida = isKit && (
     Object.keys(product.meta?.hero_por_medida || {}).length > 0 ||
-    Object.keys(product.meta?.fotos_por_medida || {}).length > 0
+    Object.keys(product.meta?.fotos_por_medida || {}).length > 0 ||
+    Object.keys(product.meta?.orden_por_medida || {}).length > 0
   );
   // Prioridad de galería:
   //  1) "Usar solo estas fotos" (gallery_fixed) SIN datos por medida → mandan

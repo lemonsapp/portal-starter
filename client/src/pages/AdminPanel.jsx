@@ -1411,6 +1411,14 @@ function MedidaImageEditor({ variant, onSaved }) {
   const upd = (i, f, v) => setImgs((a) => a.map((im, idx) => (idx === i ? { ...im, [f]: v } : im)));
   const setPrim = (i) => setImgs((a) => a.map((im, idx) => ({ ...im, is_primary: idx === i })));
   const add = () => setImgs((a) => [...a, { url: "", alt: "", is_primary: false }]);
+  // Reordena: la posición en la lista ES el orden de la galería (sort_order).
+  const move = (i, dir) => setImgs((a) => {
+    const j = i + dir;
+    if (j < 0 || j >= a.length) return a;
+    const n = [...a];
+    [n[i], n[j]] = [n[j], n[i]];
+    return n;
+  });
   const del = (i) => setImgs((a) => {
     const n = a.filter((_, idx) => idx !== i);
     if (n.length && !n.some((x) => x.is_primary)) n[0].is_primary = true;
@@ -1460,7 +1468,15 @@ function MedidaImageEditor({ variant, onSaved }) {
   return (
     <div style={{ display: "grid", gap: 8, padding: "10px 0" }}>
       {imgs.map((img, i) => (
-        <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1.3fr 1fr auto auto auto", gap: 6, alignItems: "center" }}>
+        <div key={i} style={{ display: "grid", gridTemplateColumns: "auto auto 1.3fr 1fr auto auto auto", gap: 6, alignItems: "center" }}>
+          {/* Posición en la galería + flechas para reordenar (1º se ve primero). */}
+          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <button type="button" className="adm-btn adm-btn--default adm-btn--sm" title="Subir en el orden" aria-label="Mover antes"
+              disabled={i === 0} style={{ padding: "2px 6px", opacity: i === 0 ? 0.35 : 1 }} onClick={() => move(i, -1)}>↑</button>
+            <span style={{ fontSize: 11, fontWeight: 800, minWidth: 20, textAlign: "center", color: "var(--accent-hover)" }}>{i + 1}º</span>
+            <button type="button" className="adm-btn adm-btn--default adm-btn--sm" title="Bajar en el orden" aria-label="Mover después"
+              disabled={i === imgs.length - 1} style={{ padding: "2px 6px", opacity: i === imgs.length - 1 ? 0.35 : 1 }} onClick={() => move(i, 1)}>↓</button>
+          </div>
           {img.url
             ? <img src={img.url} alt="" className="adm-thumb" style={{ width: 34, height: 34 }} />
             : <div className="adm-thumb adm-thumb--ph" style={{ width: 34, height: 34 }}>🖼</div>}
@@ -1560,6 +1576,17 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     for (const [m, arr] of Object.entries(src)) out[m] = Array.isArray(arr) ? arr.filter(Boolean) : [];
     return out;
   });
+  // KIT: ORDEN elegido (◀ ▶) de la galería de cada medida. Es sólo un "hint"
+  // de orden (meta.orden_por_medida = { "20L": [url, ...] }): la ficha ordena
+  // por esta lista lo que exista y APENAS ordena — nunca "posee" fotos, así
+  // una url muerta acá no rompe nada (y se poda sola al guardar).
+  const [ordenPorMedida, setOrdenPorMedida] = useState(() => {
+    const src = (metaBase.orden_por_medida && typeof metaBase.orden_por_medida === "object")
+      ? metaBase.orden_por_medida : {};
+    const out = {};
+    for (const [m, arr] of Object.entries(src)) out[m] = Array.isArray(arr) ? arr.filter(Boolean) : [];
+    return out;
+  });
   const [uploadingFoto, setUploadingFoto] = useState(null);
   const addFotoMedida = (m, url) =>
     setFotosPorMedida((prev) => ({ ...prev, [m]: [...(prev[m] || []), url] }));
@@ -1653,6 +1680,17 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       return next.length ? next : [{ url: "", alt: "", is_primary: true }];
     });
   }
+  // Reordena la galería: la posición en la lista ES el orden en la ficha
+  // (se persiste como sort_order al guardar).
+  function moveImage(i, dir) {
+    setImages((arr) => {
+      const j = i + dir;
+      if (j < 0 || j >= arr.length) return arr;
+      const next = [...arr];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  }
   // Sube una o VARIAS fotos comunes de una medida (galería del kit) y las agrega
   // a la lista de esa medida (acumula, no reemplaza). Sube en orden para
   // preservar la secuencia. Se persiste en meta.fotos_por_medida.
@@ -1677,24 +1715,66 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     }
   }
 
+  // Lista COMPLETA y ordenada de las fotos de una medida, tal como se muestran
+  // en el admin y (portada primero) en la ficha: fotos comunes subidas
+  // (meta.fotos_por_medida) + candidatas de las variantes, deduplicadas, sin
+  // las borradas, y ordenadas por el hint de orden si el admin lo definió.
+  const orderedFotosMedida = (m) => {
+    const seen = new Set();
+    const pool = [...(fotosPorMedida[m] || []), ...heroCandidates(m)].filter((u) => {
+      if (!u || seen.has(u) || deletedHeroUrls.has(u)) return false;
+      seen.add(u);
+      return true;
+    });
+    const orden = ordenPorMedida[m] || [];
+    if (orden.length) {
+      // Sort estable: lo que está en el hint va primero (en ese orden), el
+      // resto (fotos nuevas) conserva su orden natural al final.
+      const pos = (u) => { const i = orden.indexOf(u); return i === -1 ? Infinity : i; };
+      pool.sort((a, b) => pos(a) - pos(b));
+    }
+    return pool;
+  };
+
+  // Mueve una foto un lugar (◀ dir=-1 / ▶ dir=+1) dentro de su medida. El
+  // orden completo resultante se guarda como HINT en ordenPorMedida (nunca
+  // agrega urls a fotos_por_medida: las fotos de variantes siguen viviendo en
+  // su producto, sólo se ordenan).
+  const moveFotoMedida = (m, url, dir) => {
+    const list = orderedFotosMedida(m);
+    const i = list.indexOf(url);
+    const j = i + dir;
+    if (i === -1 || j < 0 || j >= list.length) return;
+    const next = [...list];
+    [next[i], next[j]] = [next[j], next[i]];
+    setOrdenPorMedida((prev) => ({ ...prev, [m]: next }));
+  };
+
   // Quita una foto de una medida desde la sección unificada. Enruta según origen:
-  //  • foto común subida (meta.fotos_por_medida) → sólo se saca de la lista.
-  //  • imagen de una variante/kit → se borra del producto (con confirm).
+  //  • imagen de una variante o del kit → se borra del producto (con confirm);
+  //    si el admin cancela, no se toca nada.
+  //  • además, si estaba en el orden guardado (meta.fotos_por_medida), se saca
+  //    de la lista para que no reaparezca.
   async function removeMedidaFoto(m, url) {
-    if ((fotosPorMedida[m] || []).includes(url)) {
+    const inList = (fotosPorMedida[m] || []).includes(url);
+    const isCandidate = heroCandidates(m).includes(url) || images.some((im) => im.url === url);
+    if (isCandidate) {
+      const deleted = await deleteHeroCandidate(m, url);
+      if (!deleted) return; // canceló el confirm o falló el borrado
+    }
+    if (inList) {
       if (heroPorMedida[m] === url) setHero(m, "");
       removeFotoMedida(m, url);
-      return;
     }
-    await deleteHeroCandidate(m, url);
   }
 
-  // Elimina una foto candidata (la ×) de la sección "Foto destacada por medida".
-  // La foto puede pertenecer al kit (imágenes del form) o a una variante de la
-  // línea; en ese caso se borra de esa variante vía API. Se oculta al instante.
+  // Elimina una foto candidata (la ×) de la galería por medida. La foto puede
+  // pertenecer al kit (imágenes del form) o a una variante de la línea; en ese
+  // caso se borra de esa variante vía API. Se oculta al instante.
+  // Devuelve true si se borró, false si el admin canceló o falló.
   async function deleteHeroCandidate(m, url) {
-    if (!url) return;
-    if (!window.confirm("¿Eliminar esta foto del producto? No se puede deshacer.")) return;
+    if (!url) return false;
+    if (!window.confirm("¿Eliminar esta foto del producto? No se puede deshacer.")) return false;
     // Si era la destacada elegida de esta medida, volvemos a "Automática".
     if (heroPorMedida[m] === url) setHero(m, "");
 
@@ -1706,7 +1786,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
         return next.length ? next : [{ url: "", alt: "", is_primary: true }];
       });
       setDeletedHeroUrls((prev) => new Set(prev).add(url));
-      return;
+      return true;
     }
 
     // Caso 2: pertenece a una variante de la línea → se borra de esa variante.
@@ -1714,7 +1794,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       (v) => v.meta?.linea === lineKey && v.meta?.formato === m && !v.meta?.bundle
         && (v.images || []).some((im) => im.url === url)
     );
-    if (!owner) { setDeletedHeroUrls((prev) => new Set(prev).add(url)); return; }
+    if (!owner) { setDeletedHeroUrls((prev) => new Set(prev).add(url)); return true; }
 
     // Borrado QUIRÚRGICO: sacamos SÓLO esta foto de la variante hermana vía el
     // endpoint dedicado. ⚠ Antes rearmábamos un PUT completo con `owner.images`
@@ -1726,7 +1806,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
         `${API}/api/admin/shop/products/${owner.id}/images?url=${encodeURIComponent(url)}`,
         { method: "DELETE", headers: authHdr() },
       );
-      if (!r.ok) { const d = await r.json().catch(() => ({})); setErr(d.error || "No se pudo eliminar la foto"); return; }
+      if (!r.ok) { const d = await r.json().catch(() => ({})); setErr(d.error || "No se pudo eliminar la foto"); return false; }
       const d = await r.json().catch(() => ({}));
       // Sincroniza el prop en memoria con lo que quedó en el server (fresco),
       // no con una resta local sobre el snapshot viejo.
@@ -1734,8 +1814,10 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
         ? d.images
         : (owner.images || []).filter((im) => im.url !== url);
       setDeletedHeroUrls((prev) => new Set(prev).add(url));
+      return true;
     } catch (e) {
       setErr("Error de red al eliminar la foto");
+      return false;
     }
   }
 
@@ -1789,6 +1871,18 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       }
       if (Object.keys(fpm).length) next.fotos_por_medida = fpm;
       else delete next.fotos_por_medida;
+    }
+    // Orden de la galería por medida (hint de ◀ ▶). Se guarda la lista completa
+    // tal como el admin la ve HOY (orderedFotosMedida): urls muertas o fotos
+    // quitadas quedan afuera solas en cada guardado (auto-poda).
+    if (isBundle) {
+      const opm = {};
+      for (const m of Object.keys(ordenPorMedida)) {
+        const list = orderedFotosMedida(m);
+        if (list.length) opm[m] = list;
+      }
+      if (Object.keys(opm).length) next.orden_por_medida = opm;
+      else delete next.orden_por_medida;
     }
     // Precio a medida del pack por cada medida (pesos del form → centavos).
     if (isBundle) {
@@ -1947,15 +2041,21 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                 </Field>
               </Card>
 
-              <Card title="Fotos" hint="La foto marcada como destacada (★) abre la ficha. Subí archivos o pegá URLs.">
+              <Card title="Fotos" hint="La foto marcada como destacada (★) abre la ficha. Con ◀ ▶ elegís el orden en que se ven (1º, 2º, 3º…). Subí archivos o pegá URLs.">
                 <div className="adm-gal">
                   {images.map((img, i) => (
                     <div key={i} className={`adm-tile ${img.is_primary ? "adm-tile--primary" : ""}`}>
                       {img.url
                         ? <img src={img.url} alt={img.alt || ""} />
                         : <span style={{ color: "var(--text-3)", fontSize: 12, textAlign: "center", padding: 8 }}>{img._pending ? "Subiendo…" : "Sin imagen"}</span>}
+                      {/* Posición en la galería (1º se ve primero en la ficha).
+                          Abajo a la izquierda para no pisar el flag "Destacada". */}
+                      <span style={{ position: "absolute", bottom: 6, left: 6, fontSize: 10, fontWeight: 900, color: "#fff", background: "rgba(0,0,0,0.55)", borderRadius: 5, padding: "1px 6px", pointerEvents: "none" }}>{i + 1}º</span>
                       {img.is_primary && <span className="adm-tile__flag">Destacada</span>}
-                      <div className="adm-tile__acts">
+                      {/* flexWrap: con 4 botones no entran en el ancho mínimo del tile (110px). */}
+                      <div className="adm-tile__acts" style={{ flexWrap: "wrap", justifyContent: "flex-end", maxWidth: "calc(100% - 12px)" }}>
+                        <button type="button" className="adm-tile__btn" title="Mover antes" aria-label="Mover antes" disabled={i === 0} style={{ opacity: i === 0 ? 0.35 : 1 }} onClick={() => moveImage(i, -1)}>◀</button>
+                        <button type="button" className="adm-tile__btn" title="Mover después" aria-label="Mover después" disabled={i === images.length - 1} style={{ opacity: i === images.length - 1 ? 0.35 : 1 }} onClick={() => moveImage(i, 1)}>▶</button>
                         <button type="button" className={`adm-tile__btn adm-tile__btn--star ${img.is_primary ? "is-on" : ""}`} title="Marcar como destacada" onClick={() => setPrimary(i)}>★</button>
                         <button type="button" className="adm-tile__btn adm-tile__btn--del" title="Quitar" onClick={() => removeImage(i)}>🗑</button>
                       </div>
@@ -2006,18 +2106,12 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                     </Field>
                   )}
                   {isBundle && kitMedidas.length > 0 && (
-                    <Field label="Fotos por medida" hint='Subí todas las fotos que quieras para cada medida — SIEMPRE se acumulan (nunca reemplaza). Tocá una para marcarla como PORTADA (la grande que abre la ficha); la ★ muestra cuál es. La × la quita. "Portada automática" usa la foto unificada del kit.'>
+                    <Field label="Fotos por medida" hint='TODAS las fotos de cada medida en un solo lugar (las subidas acá + las de los productos de la línea). Con ◀ ▶ elegís el orden en que se ven en la ficha (1º, 2º, 3º…). Tocá una para marcarla PORTADA (la grande que abre la ficha — siempre se ve primera); la × la quita. "Portada automática" usa la foto unificada del kit.'>
                       <div style={{ display: "grid", gap: 14 }}>
                         {kitMedidas.map((m) => {
-                          // Set completo de la medida: fotos comunes subidas + imágenes
-                          // de las variantes/kit (candidatas), deduplicadas, sin las borradas.
-                          const uploaded = fotosPorMedida[m] || [];
-                          const seen = new Set();
-                          const all = [...uploaded, ...heroCandidates(m)].filter((u) => {
-                            if (!u || seen.has(u) || deletedHeroUrls.has(u)) return false;
-                            seen.add(u);
-                            return true;
-                          });
+                          // Set completo y ORDENADO de la medida (subidas + variantes,
+                          // dedup, sin borradas). El mismo orden que ve la ficha.
+                          const all = orderedFotosMedida(m);
                           const portada = heroPorMedida[m] || "";
                           const up = uploadingFoto === m;
                           return (
@@ -2027,19 +2121,27 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                                 className={`adm-btn adm-btn--sm ${portada === "" ? "adm-btn--primary" : "adm-btn--default"}`}
                                 style={{ flex: "0 0 auto" }} title="Usar la foto unificada del kit como portada">Portada automática</button>
                               {/* Tira con scroll horizontal: "Subir" siempre visible al final. */}
-                              <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "12px 2px", flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", gap: 14, overflowX: "auto", padding: "12px 2px 4px", flex: 1, minWidth: 0 }}>
                                 {all.length === 0 && <span style={{ fontSize: 12, color: "var(--text-3)" }}>Sin fotos</span>}
-                                {all.map((u) => {
+                                {all.map((u, idx) => {
                                   const isPortada = portada === u;
                                   return (
-                                    <div key={u} style={{ position: "relative", flex: "0 0 auto" }}>
+                                    <div key={u} style={{ position: "relative", flex: "0 0 auto", display: "grid", justifyItems: "center", gap: 4 }}>
                                       <button type="button" onClick={() => setHero(m, u)} title={isPortada ? "Es la portada de esta medida" : "Marcar como portada"}
-                                        style={{ padding: 2, borderRadius: 8, cursor: "pointer", background: "transparent", border: `2px solid ${isPortada ? "var(--accent)" : "var(--border-2)"}` }}>
-                                        <img src={u} alt="" style={{ width: 44, height: 44, objectFit: "contain", display: "block", borderRadius: 4, background: "var(--surface-3)" }} />
+                                        style={{ position: "relative", padding: 2, borderRadius: 8, cursor: "pointer", background: "transparent", border: `2px solid ${isPortada ? "var(--accent)" : "var(--border-2)"}` }}>
+                                        <img src={u} alt="" style={{ width: 48, height: 48, objectFit: "contain", display: "block", borderRadius: 4, background: "var(--surface-3)" }} />
+                                        {isPortada && (
+                                          <span style={{ position: "absolute", bottom: -2, left: "50%", transform: "translateX(-50%)", fontSize: 8.5, fontWeight: 900, letterSpacing: "0.03em", color: "#fff", background: "var(--accent)", borderRadius: 4, padding: "1px 5px", whiteSpace: "nowrap" }}>★ PORTADA</span>
+                                        )}
                                       </button>
-                                      {isPortada && (
-                                        <span style={{ position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%)", fontSize: 8.5, fontWeight: 900, letterSpacing: "0.03em", color: "#fff", background: "var(--accent)", borderRadius: 4, padding: "1px 5px", whiteSpace: "nowrap" }}>★ PORTADA</span>
-                                      )}
+                                      {/* Orden en la galería: ◀ posición ▶ */}
+                                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                                        <button type="button" onClick={() => moveFotoMedida(m, u, -1)} disabled={idx === 0} title="Mover antes" aria-label="Mover antes"
+                                          style={{ width: 18, height: 18, padding: 0, lineHeight: 1, fontSize: 10, borderRadius: 4, cursor: idx === 0 ? "default" : "pointer", opacity: idx === 0 ? 0.3 : 1, background: "var(--surface-3)", color: "var(--text-2)", border: "1px solid var(--border-2)" }}>◀</button>
+                                        <span style={{ fontSize: 10, fontWeight: 800, minWidth: 18, textAlign: "center", color: "var(--accent-hover)" }}>{idx + 1}º</span>
+                                        <button type="button" onClick={() => moveFotoMedida(m, u, 1)} disabled={idx === all.length - 1} title="Mover después" aria-label="Mover después"
+                                          style={{ width: 18, height: 18, padding: 0, lineHeight: 1, fontSize: 10, borderRadius: 4, cursor: idx === all.length - 1 ? "default" : "pointer", opacity: idx === all.length - 1 ? 0.3 : 1, background: "var(--surface-3)", color: "var(--text-2)", border: "1px solid var(--border-2)" }}>▶</button>
+                                      </div>
                                       <button type="button" onClick={() => removeMedidaFoto(m, u)} title="Quitar esta foto" aria-label="Quitar foto"
                                         style={{ position: "absolute", top: -7, right: -7, width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "1.5px solid var(--surface)", fontSize: 12, fontWeight: 900 }}>×</button>
                                     </div>
@@ -2090,13 +2192,16 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                       </span>
                     </label>
                   )}
-                  {medidaSiblings.length > 1 && (
+                  {/* Cuando el kit tiene la sección unificada "Fotos por medida" arriba
+                      (subir, ordenar, portada, quitar), este accordion NO se muestra: era
+                      la duplicación confusa. Queda para familias de medidas y para el
+                      caso raro de un bundle sin meta.presentaciones (si no, ese bundle
+                      se quedaría sin NINGÚN editor por medida). */}
+                  {!(isBundle && kitMedidas.length > 0) && medidaSiblings.length > 1 && (
                     <div>
-                      <div className="adm-label">Imágenes por medida</div>
+                      <div className="adm-label">Fotos por medida</div>
                       <div className="adm-help" style={{ marginTop: 0, marginBottom: 10 }}>
-                        {isBundle
-                          ? "Editá las fotos de cada producto de la línea, ordenados por medida. Cada uno se guarda por separado."
-                          : "Editá las fotos de cada medida de esta familia sin salir de acá. Cada medida se guarda por separado."}
+                        Editá las fotos de cada medida de esta familia sin salir de acá. Con ↑ ↓ elegís el orden en que se ven (1º, 2º, 3º…). Cada medida se guarda por separado.
                       </div>
                       <div style={{ display: "grid", gap: 8 }}>
                         {medidaSiblings.map((sib) => {
