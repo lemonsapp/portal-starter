@@ -1454,6 +1454,39 @@ async function migrate() {
       ('FULLOFF', 'percent', 100, NULL, 'Código test 100% off — compra gratis (skip MercadoPago, marca paid directo)', TRUE)
     ON CONFLICT (code) DO NOTHING
   `);
+
+  // ── Race 3 — PK 2ª parte 20L (2026-07-08) ──────────────────────────────────
+  // Única familia Race sin 20L: el kit linea-race en 20L quedaba con 4/5 potes
+  // y la familia sin el chip 20L. Se crea clonando la 10L de PK 2ª (mismo meta
+  // con formato 20L) con PRECIO = el ACTUAL de PK 1ª 20L (ambas partes de PK
+  // tienen precio idéntico en todas las medidas — verificado en prod). Foto
+  // provisional: el bidón 10L de PK 2ª (no existe asset violeta-b 20L); el
+  // admin la reemplaza desde el panel cuando tenga la foto real.
+  await safeQuery(`
+    INSERT INTO products (slug, name, short_description, long_description,
+                          price_cents, stock, sku, category_id, active,
+                          featured, sort_order, meta)
+    SELECT 'race-3-pk-2-20l',
+           CASE WHEN p10.name ~ '10L\\s*$'
+                THEN regexp_replace(p10.name, '10L\\s*$', '20L')
+                ELSE p10.name || ' 20L' END,
+           p10.short_description, p10.long_description,
+           pk1.price_cents, NULL, NULL, p10.category_id, TRUE,
+           FALSE, p10.sort_order + 1,
+           p10.meta || '{"formato":"20L"}'::jsonb
+    FROM products p10
+    JOIN products pk1 ON pk1.slug = 'race-3-pk-1-20l'
+    WHERE p10.slug = 'race-3-pk-2-10l'
+      AND NOT EXISTS (SELECT 1 FROM products WHERE slug = 'race-3-pk-2-20l')
+  `, "race-3-pk-2 20L");
+  await safeQuery(`
+    INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+    SELECT p.id, '/imagenes-web/productos/linea-race/10l/race-3-violeta-b-10l-f1.webp',
+           'Race 3 PK 2ª parte (violeta) bidón 20L', 0, TRUE
+    FROM products p
+    WHERE p.slug = 'race-3-pk-2-20l'
+      AND NOT EXISTS (SELECT 1 FROM product_images WHERE product_id = p.id)
+  `, "race-3-pk-2 20L img");
 }
 migrate().catch((e) => console.error("[SHOP MIGRATE]", e));
 
