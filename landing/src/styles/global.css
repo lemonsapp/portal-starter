@@ -4066,6 +4066,14 @@ html.is-loading body {
            SplitText); sin esto el contenido se pega a la izquierda. */
         justify-content: center;
     }
+    /* letter-spacing agrega un hueco DESPUÉS de la última letra también. Como
+       la píldora se ajusta al ancho del texto, ese hueco fantasma hacía el
+       padding derecho más grande que el izquierdo → texto corrido y desprolijo.
+       margin-right negativo = mismo valor del letter-spacing lo cancela, y el
+       pill abraza solo los glifos visibles (padding simétrico, texto centrado). */
+    .ease-of-use__eyebrow.ease-of-use__eyebrow--headline .ease-of-use__eyebrow-text {
+        margin-right: -0.11em;
+    }
 
     /* El panel (01 / kicker / título / copy) va centrado, pero subido un
        poco: el padding-bottom recorta el área de centrado por abajo, así el
@@ -4107,6 +4115,8 @@ html.is-loading body {
    ("TRES RAZONES…", "RESULTADOS"/"SUPERIORES") se corte. */
 @media (max-width: 400px) {
     .ease-of-use__eyebrow.ease-of-use__eyebrow--headline { font-size: 0.64rem; letter-spacing: 0.09em; padding: 8px 16px; }
+    /* Compensación del trailing letter-spacing (ver comentario en 640px). */
+    .ease-of-use__eyebrow.ease-of-use__eyebrow--headline .ease-of-use__eyebrow-text { margin-right: -0.09em; }
     .promise-panel__title { font-size: clamp(2.35rem, 10.5vw, 3.1rem); }
     .promise-panel__kicker { font-size: 0.74rem; }
     .promise-panel__copy { font-size: 0.9rem; }
