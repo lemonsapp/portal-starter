@@ -1273,7 +1273,7 @@ function ProductsTab() {
           categories={categories}
           allProducts={products}
           onClose={() => setEditing(null)}
-          onSaved={() => { setEditing(null); load(); }}
+          onSaved={() => { load(); }}
         />
       )}
     </div>
@@ -1396,7 +1396,10 @@ function famKeyOf(meta = {}) {
 // Editor de imágenes de UNA medida (variante). Reusa la UI de imágenes del modal
 // pero guarda solo esa variante vía el PUT existente (no toca el server). Cada
 // medida se guarda por separado: el admin edita y aprieta "Guardar".
-function MedidaImageEditor({ variant }) {
+// onSaved(images) avisa al modal padre — clave cuando la medida editada ES el
+// producto abierto: sin eso, "Guardar cambios" re-PUTea con la lista vieja del
+// form y pisa lo que este editor acababa de guardar.
+function MedidaImageEditor({ variant, onSaved }) {
   const [imgs, setImgs] = useState(() =>
     variant.images?.length
       ? variant.images.map((i) => ({ url: i.url, alt: i.alt || "", is_primary: !!i.is_primary }))
@@ -1450,7 +1453,7 @@ function MedidaImageEditor({ variant }) {
       if (!r.ok) {
         const detail = Array.isArray(d.issues) ? d.issues.map((it) => `${(it.path || []).join(".")}: ${it.message}`).join(" · ") : "";
         setMsg("Error: " + [d.error || "no se pudo guardar", detail].filter(Boolean).join(" — "));
-      } else { setMsg("✓ Imágenes guardadas"); variant.images = payload.images; }
+      } else { setMsg("✓ Imágenes guardadas"); variant.images = payload.images; onSaved?.(payload.images); }
     } catch { setMsg("Error de red al guardar"); }
     setSaving(false);
   }
@@ -1603,6 +1606,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   );
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  const [savedMsg, setSavedMsg] = useState("");
   // Cantidad de subidas "Subir foto" en vuelo (token-based, ver addImageWithFile).
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -1809,6 +1813,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
 
   async function save() {
     setErr("");
+    setSavedMsg("");
     setSaving(true);
     const payload = {
       slug: slug.trim(),
@@ -1855,7 +1860,10 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
         setSaving(false);
         return;
       }
+      // Refresca la lista de fondo PERO deja el modal abierto en este producto
+      // (onSaved ya no cierra). Confirmación visible arriba.
       onSaved();
+      setSavedMsg(isNew ? "✓ Producto creado" : "✓ Cambios guardados");
     } catch (e) {
       setErr("Error de red");
     }
@@ -1909,8 +1917,9 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
           <Btn variant="ghost" size="sm" onClick={onClose} disabled={saving}>← Volver</Btn>
           <div className="adm-editor__title">{isNew ? "Nuevo producto" : product.name}</div>
           {!isNew && (active ? <Badge tone="ok"><span className="adm-dot" />Activo</Badge> : <Badge tone="muted">Oculto</Badge>)}
-          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-            <Btn onClick={onClose} disabled={saving}>Cancelar</Btn>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+            {savedMsg && <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--accent-hover)" }}>{savedMsg}</span>}
+            <Btn onClick={onClose} disabled={saving}>Cerrar</Btn>
             <Btn variant="primary" onClick={save} disabled={saving || !name || !slug || priceArs === ""}>
               {saving ? "Guardando…" : (isNew ? "Crear producto" : "Guardar cambios")}
             </Btn>
@@ -2106,7 +2115,22 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                                 <span style={{ fontSize: 11.5, color: "var(--text-3)" }}>{n} {n === 1 ? "foto" : "fotos"}</span>
                                 <span style={{ marginLeft: "auto", color: "var(--text-3)" }}>{open ? "▲" : "▼"}</span>
                               </button>
-                              {open && <div style={{ padding: "0 12px 6px" }}><MedidaImageEditor key={sib.id} variant={sib} /></div>}
+                              {open && <div style={{ padding: "0 12px 6px" }}>
+                                <MedidaImageEditor
+                                  key={sib.id}
+                                  variant={sib}
+                                  onSaved={(imgs) => {
+                                    // Si la medida editada ES el producto abierto,
+                                    // sincronizamos la lista del form principal para
+                                    // que "Guardar cambios" NO pise estas fotos.
+                                    if (sib.id === product?.id) {
+                                      setImages(imgs.map((i) => ({
+                                        url: i.url, alt: i.alt || "", is_primary: !!i.is_primary,
+                                      })));
+                                    }
+                                  }}
+                                />
+                              </div>}
                             </div>
                           );
                         })}
