@@ -1747,7 +1747,10 @@ function publicRouter() {
         where.push(`(LOWER(p.name) LIKE $${i} OR LOWER(p.short_description) LIKE $${i})`);
       }
 
-      const lim = Math.min(100, Math.max(1, parseInt(limit, 10) || 60));
+      // Techo 500 (antes 100): el Shop pide limit=200 y con ~72 productos +
+      // medidas nuevas el clamp viejo empezaba a TRUNCAR el catálogo en
+      // silencio (publicaciones que "desaparecen" pasado el puesto 100).
+      const lim = Math.min(500, Math.max(1, parseInt(limit, 10) || 60));
       const off = Math.max(0, parseInt(offset, 10) || 0);
       params.push(lim, off);
 
