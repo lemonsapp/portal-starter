@@ -4062,6 +4062,18 @@ html.is-loading body {
         /* Fondo sólido (no el gradiente translúcido del --headline) para que
            el cuadro/píldora se lea bien y el texto quede más visible. */
         background: rgba(255, 255, 255, 0.94);
+        /* La píldora queda un poco más ancha que el texto (por el mask del
+           SplitText); sin esto el contenido se pega a la izquierda. */
+        justify-content: center;
+    }
+
+    /* El panel (01 / kicker / título / copy) estaba centrado en TODO el alto
+       del viewport (place-items:center) → mucho espacio muerto entre el
+       eyebrow de arriba y el bloque. En móvil lo anclamos más arriba, cerca
+       del eyebrow, para achicar ese gap. */
+    .ease-of-use__stage {
+        align-items: start;
+        padding-top: clamp(100px, 18vh, 200px);
     }
     .ease-of-use__dot { width: 6px; height: 6px; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06); }
 
