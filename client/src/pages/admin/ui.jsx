@@ -150,6 +150,82 @@ const CSS = `
 .adm-pickrow:hover { background:var(--surface-2); }
 .adm-pickrow.is-on { background:var(--accent-soft); }
 
+/* ---- fotos por medida (kit): tira curada + paleta de potes ---- */
+.adm-fpm { display:grid; gap:14px; }
+.adm-fpm__row { display:flex; align-items:center; gap:8px; }
+.adm-fpm__medida { font-size:12px; font-weight:800; min-width:46px; color:var(--accent-hover); flex:0 0 auto; }
+.adm-fpm__strip { display:flex; align-items:center; gap:14px; overflow-x:auto; padding:12px 2px 4px; flex:1; min-width:0; -webkit-overflow-scrolling:touch; }
+.adm-fpm__empty { font-size:12px; color:var(--text-3); flex:0 0 auto; }
+.adm-fpm__tile { position:relative; flex:0 0 auto; display:grid; justify-items:center; gap:4px; }
+.adm-fpm__imgbtn { position:relative; padding:2px; border-radius:8px; cursor:pointer; background:transparent; border:2px solid var(--border-2); display:block; }
+.adm-fpm__imgbtn.is-portada { border-color:var(--accent); }
+.adm-fpm__imgbtn.is-pote:not(.is-portada) { opacity:.6; }
+.adm-fpm__img { width:48px; height:48px; object-fit:contain; display:block; border-radius:4px; background:var(--surface-3); }
+.adm-fpm__flag { position:absolute; bottom:-2px; left:50%; transform:translateX(-50%); font-size:8.5px; font-weight:900; letter-spacing:.03em; color:#fff; background:var(--accent); border-radius:4px; padding:1px 5px; white-space:nowrap; }
+.adm-fpm__ord { display:flex; align-items:center; gap:2px; }
+.adm-fpm__ordbtn { width:18px; height:18px; padding:0; line-height:1; font-size:10px; border-radius:4px; cursor:pointer; background:var(--surface-3); color:var(--text-2); border:1px solid var(--border-2); }
+.adm-fpm__ordbtn:disabled { opacity:.3; cursor:default; }
+.adm-fpm__pos { font-size:10px; font-weight:800; min-width:18px; text-align:center; color:var(--accent-hover); }
+.adm-fpm__del { position:absolute; top:-7px; right:-7px; width:18px; height:18px; line-height:16px; text-align:center; padding:0; border-radius:50%; cursor:pointer; background:var(--danger,#e5484d); color:#fff; border:1.5px solid var(--surface); font-size:12px; font-weight:900; }
+.adm-fpm__sep { flex:0 0 auto; align-self:stretch; display:flex; align-items:center; gap:6px; border-left:1px dashed var(--border-2); padding-left:12px; font-size:10.5px; font-weight:800; letter-spacing:.04em; color:var(--text-3); text-transform:uppercase; }
+.adm-fpm__use { height:18px; padding:0 8px; line-height:1; font-size:10px; font-weight:800; border-radius:4px; cursor:pointer; background:var(--surface-3); color:var(--text-2); border:1px solid var(--border-2); white-space:nowrap; }
+.adm-fpm__use:hover { background:var(--accent-soft); color:var(--accent-hover); border-color:var(--accent-border); }
+@media (max-width:700px){
+  /* La fila se parte: [medida + portada + subir] arriba, tira full-width abajo. */
+  .adm-fpm__row { flex-wrap:wrap; }
+  .adm-fpm__strip { order:3; flex-basis:100%; padding-top:10px; }
+  .adm-fpm__img { width:56px; height:56px; }
+  .adm-fpm__ordbtn { width:24px; height:22px; font-size:11px; }
+  .adm-fpm__pos { font-size:11px; }
+  .adm-fpm__del { width:22px; height:22px; line-height:19px; }
+  .adm-fpm__use { height:22px; font-size:11px; }
+}
+
+/* ---- editor de imágenes por medida (familias) ---- */
+.adm-mie { display:grid; gap:8px; padding:10px 0; }
+.adm-mie__row { display:grid; grid-template-columns:auto auto 1.3fr 1fr auto; grid-template-areas:"ord thumb url alt acts"; gap:6px; align-items:center; }
+.adm-mie__ord { grid-area:ord; display:flex; align-items:center; gap:2px; }
+.adm-mie__ordbtn { padding:2px 6px; }
+.adm-mie__ordbtn:disabled { opacity:.35; }
+.adm-mie__pos { font-size:11px; font-weight:800; min-width:20px; text-align:center; color:var(--accent-hover); }
+.adm-mie__row > .adm-thumb { grid-area:thumb; }
+.adm-mie__url { grid-area:url; min-width:0; }
+.adm-mie__alt { grid-area:alt; min-width:0; }
+.adm-mie__acts { grid-area:acts; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+@media (max-width:700px){
+  /* Tarjeta apilada: url y alt a lo ancho, acciones abajo. */
+  .adm-mie__row { grid-template-columns:auto auto minmax(0,1fr); grid-template-areas:"ord thumb url" "ord thumb alt" "ord thumb acts"; align-items:start; row-gap:6px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-sm); padding:8px; }
+  .adm-mie__ord { flex-direction:column; gap:4px; }
+}
+
+/* ---- medidas de la familia: header del accordion + form agregar ---- */
+.adm-acc { border:1px solid var(--border); border-radius:9px; overflow:hidden; background:var(--surface); }
+.adm-acc__head { display:flex; align-items:stretch; background:var(--surface-2); }
+.adm-acc__toggle { flex:1; min-width:0; display:flex; align-items:center; gap:10px; padding:9px 12px; background:transparent; border:none; color:var(--text); cursor:pointer; text-align:left; font-family:inherit; }
+.adm-acc__name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:700; font-size:13px; }
+.adm-acc__muted { color:var(--text-3); font-weight:400; }
+.adm-acc__count { font-size:11.5px; color:var(--text-3); white-space:nowrap; flex:0 0 auto; }
+.adm-acc__caret { color:var(--text-3); flex:0 0 auto; }
+.adm-acc__del { flex:0 0 auto; padding:0 12px; background:transparent; border:none; border-left:1px solid var(--border); color:var(--danger,#e5484d); cursor:pointer; font-size:14px; }
+.adm-acc__del:hover { background:var(--danger-soft); }
+.adm-acc__body { padding:0 12px 6px; }
+.adm-addmedida { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.adm-addmedida__fmt { width:150px; flex:0 0 auto; }
+.adm-addmedida__price { display:flex; align-items:center; gap:4px; flex:0 0 auto; }
+.adm-addmedida__price > .adm-input { width:110px; }
+.adm-addmedida__cur { font-size:13px; color:var(--text-3); }
+@media (max-width:700px){
+  .adm-addmedida__fmt { flex:1 1 140px; width:auto; }
+  .adm-addmedida__price { flex:1 1 120px; }
+  .adm-addmedida__price > .adm-input { width:100%; flex:1; }
+  .adm-acc__count { display:none; } /* en pantallas chicas gana el nombre */
+}
+
+/* ---- touch: sin hover no hay acciones ocultas ---- */
+@media (hover:none){
+  .adm-tile__acts { opacity:1; }
+}
+
 /* ---- search ---- */
 .adm-search { position:relative; }
 .adm-search .adm-input { padding-left:36px; }

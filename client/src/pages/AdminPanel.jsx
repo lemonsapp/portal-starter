@@ -1466,30 +1466,32 @@ function MedidaImageEditor({ variant, onSaved }) {
     setSaving(false);
   }
   return (
-    <div style={{ display: "grid", gap: 8, padding: "10px 0" }}>
+    <div className="adm-mie">
       {imgs.map((img, i) => (
-        <div key={i} style={{ display: "grid", gridTemplateColumns: "auto auto 1.3fr 1fr auto auto auto", gap: 6, alignItems: "center" }}>
+        <div key={i} className="adm-mie__row">
           {/* Posición en la galería + flechas para reordenar (1º se ve primero). */}
-          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <button type="button" className="adm-btn adm-btn--default adm-btn--sm" title="Subir en el orden" aria-label="Mover antes"
-              disabled={i === 0} style={{ padding: "2px 6px", opacity: i === 0 ? 0.35 : 1 }} onClick={() => move(i, -1)}>↑</button>
-            <span style={{ fontSize: 11, fontWeight: 800, minWidth: 20, textAlign: "center", color: "var(--accent-hover)" }}>{i + 1}º</span>
-            <button type="button" className="adm-btn adm-btn--default adm-btn--sm" title="Bajar en el orden" aria-label="Mover después"
-              disabled={i === imgs.length - 1} style={{ padding: "2px 6px", opacity: i === imgs.length - 1 ? 0.35 : 1 }} onClick={() => move(i, 1)}>↓</button>
+          <div className="adm-mie__ord">
+            <button type="button" className="adm-btn adm-btn--default adm-btn--sm adm-mie__ordbtn" title="Subir en el orden" aria-label="Mover antes"
+              disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
+            <span className="adm-mie__pos">{i + 1}º</span>
+            <button type="button" className="adm-btn adm-btn--default adm-btn--sm adm-mie__ordbtn" title="Bajar en el orden" aria-label="Mover después"
+              disabled={i === imgs.length - 1} onClick={() => move(i, 1)}>↓</button>
           </div>
           {img.url
             ? <img src={img.url} alt="" className="adm-thumb" style={{ width: 34, height: 34 }} />
             : <div className="adm-thumb adm-thumb--ph" style={{ width: 34, height: 34 }}>🖼</div>}
-          <input className="adm-input" value={img.url} onChange={(e) => upd(i, "url", e.target.value)} placeholder="URL de la imagen" />
-          <input className="adm-input" value={img.alt} onChange={(e) => upd(i, "alt", e.target.value)} placeholder="Alt text" />
-          <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: uploadingIdx === i ? "wait" : "pointer", opacity: uploadingIdx === i ? 0.6 : 1 }}>
-            {uploadingIdx === i ? "Subiendo…" : "Subir"}
-            <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploadingIdx === i} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadFile(i, f); }} />
-          </label>
-          <label style={{ fontSize: 11.5, color: "var(--text-2)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-            <input type="radio" name={`prim-${variant.id}`} checked={img.is_primary} onChange={() => setPrim(i)} /> Destacada
-          </label>
-          <Btn size="sm" variant="danger" onClick={() => del(i)}>×</Btn>
+          <input className="adm-input adm-mie__url" value={img.url} onChange={(e) => upd(i, "url", e.target.value)} placeholder="URL de la imagen" />
+          <input className="adm-input adm-mie__alt" value={img.alt} onChange={(e) => upd(i, "alt", e.target.value)} placeholder="Alt text" />
+          <div className="adm-mie__acts">
+            <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: uploadingIdx === i ? "wait" : "pointer", opacity: uploadingIdx === i ? 0.6 : 1 }}>
+              {uploadingIdx === i ? "Subiendo…" : "Subir"}
+              <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploadingIdx === i} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadFile(i, f); }} />
+            </label>
+            <label style={{ fontSize: 11.5, color: "var(--text-2)", display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+              <input type="radio" name={`prim-${variant.id}`} checked={img.is_primary} onChange={() => setPrim(i)} /> Destacada
+            </label>
+            <Btn size="sm" variant="danger" onClick={() => del(i)}>×</Btn>
+          </div>
         </div>
       ))}
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 2 }}>
@@ -2209,19 +2211,20 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                 <Card title="Variantes y medidas" hint="Configuración de la familia / kit por medida.">
                   {isBundle && (
                     <Field label="Medidas del kit" hint='Agregá o quitá medidas del kit (controla las fotos, precios y portada por medida de acá abajo). OJO: el selector de medida que ve el cliente sale de los productos de la línea — si falta una medida en la tienda, abrí cada producto de la línea y usá "+ Agregar medida" ahí.'>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                      <div className="adm-chips" style={{ marginBottom: 0 }}>
                         {kitMedidas.map((m) => (
-                          <span key={m} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, color: "var(--text)", background: "var(--surface-2)", border: "1px solid var(--border-2)", borderRadius: 999, padding: "4px 6px 4px 12px" }}>
+                          <span key={m} className="adm-chip">
                             {m}
-                            <button type="button" onClick={() => removeKitMedida(m)} title={`Quitar la medida ${m}`} aria-label={`Quitar la medida ${m}`}
-                              style={{ width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "none", fontSize: 11, fontWeight: 900 }}>×</button>
+                            <button type="button" onClick={() => removeKitMedida(m)} title={`Quitar la medida ${m}`} aria-label={`Quitar la medida ${m}`}>×</button>
                           </span>
                         ))}
-                        {kitMedidas.length === 0 && <span style={{ fontSize: 12, color: "var(--text-3)" }}>Sin medidas — agregá la primera:</span>}
-                        <input className="adm-input" list="kit-fmt-options" value={nuevaPresentacion}
+                        {kitMedidas.length === 0 && <span className="adm-fpm__empty">Sin medidas — agregá la primera:</span>}
+                      </div>
+                      <div className="adm-addmedida" style={{ marginTop: 8 }}>
+                        <input className="adm-input adm-addmedida__fmt" list="kit-fmt-options" value={nuevaPresentacion}
                           onChange={(e) => setNuevaPresentacion(e.target.value)}
                           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addKitMedida(); } }}
-                          placeholder="Nueva medida (ej: 20L)" style={{ width: 150, flex: "0 0 auto" }} />
+                          placeholder="Nueva medida (ej: 20L)" />
                         <datalist id="kit-fmt-options">
                           {FORMATO_ORDER.filter((f) => !kitMedidas.some((m) => m.toLowerCase() === f.toLowerCase())).map((f) => <option key={f} value={f} />)}
                         </datalist>
@@ -2239,7 +2242,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                   )}
                   {isBundle && kitMedidas.length > 0 && (
                     <Field label="Fotos por medida" hint='La galería del kit en cada medida muestra SOLO las fotos de la fila (subidas con ⬆ o traídas de los potes con ＋), en ese orden (◀ ▶). Tocá una para marcarla PORTADA (abre la ficha, siempre primera); la × la saca del kit (no borra nada del pote). En "Potes" están las fotos de los productos de la línea: ＋ la suma al kit, tocarla la hace portada, la × la borra DEL POTE. Si una medida no tiene fotos propias, la ficha muestra las de los potes.'>
-                      <div style={{ display: "grid", gap: 14 }}>
+                      <div className="adm-fpm">
                         {kitMedidas.map((m) => {
                           // Curadas del kit (lo que muestra la ficha) + paleta de potes.
                           const curated = orderedFotosMedida(m);
@@ -2247,39 +2250,34 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                           const portada = heroPorMedida[m] || "";
                           const up = uploadingFoto === m;
                           return (
-                            <div key={m} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <span style={{ fontSize: 12, fontWeight: 800, minWidth: 46, color: "var(--accent-hover)" }}>{m}</span>
+                            <div key={m} className="adm-fpm__row">
+                              <span className="adm-fpm__medida">{m}</span>
                               <button type="button" onClick={() => setHero(m, "")}
                                 className={`adm-btn adm-btn--sm ${portada === "" ? "adm-btn--primary" : "adm-btn--default"}`}
                                 style={{ flex: "0 0 auto" }} title="Usar la foto unificada del kit como portada">Portada automática</button>
-                              {/* Tira con scroll horizontal: "Subir" siempre visible al final. */}
-                              <div style={{ display: "flex", alignItems: "center", gap: 14, overflowX: "auto", padding: "12px 2px 4px", flex: 1, minWidth: 0 }}>
+                              {/* Tira con scroll horizontal; en mobile baja a su propia línea. */}
+                              <div className="adm-fpm__strip">
                                 {curated.length === 0 && (
-                                  <span style={{ fontSize: 12, color: "var(--text-3)", flex: "0 0 auto" }}>
+                                  <span className="adm-fpm__empty">
                                     Sin fotos propias{potes.length > 0 ? " — la ficha muestra las de los potes" : ""}
                                   </span>
                                 )}
                                 {curated.map((u, idx) => {
                                   const isPortada = portada === u;
                                   return (
-                                    <div key={u} style={{ position: "relative", flex: "0 0 auto", display: "grid", justifyItems: "center", gap: 4 }}>
+                                    <div key={u} className="adm-fpm__tile">
                                       <button type="button" onClick={() => setHero(m, u)} title={isPortada ? "Es la portada de esta medida" : "Marcar como portada"}
-                                        style={{ position: "relative", padding: 2, borderRadius: 8, cursor: "pointer", background: "transparent", border: `2px solid ${isPortada ? "var(--accent)" : "var(--border-2)"}` }}>
-                                        <img src={u} alt="" style={{ width: 48, height: 48, objectFit: "contain", display: "block", borderRadius: 4, background: "var(--surface-3)" }} />
-                                        {isPortada && (
-                                          <span style={{ position: "absolute", bottom: -2, left: "50%", transform: "translateX(-50%)", fontSize: 8.5, fontWeight: 900, letterSpacing: "0.03em", color: "#fff", background: "var(--accent)", borderRadius: 4, padding: "1px 5px", whiteSpace: "nowrap" }}>★ PORTADA</span>
-                                        )}
+                                        className={`adm-fpm__imgbtn${isPortada ? " is-portada" : ""}`}>
+                                        <img src={u} alt="" className="adm-fpm__img" />
+                                        {isPortada && <span className="adm-fpm__flag">★ PORTADA</span>}
                                       </button>
                                       {/* Orden en la galería: ◀ posición ▶ */}
-                                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                                        <button type="button" onClick={() => moveFotoMedida(m, u, -1)} disabled={idx === 0} title="Mover antes" aria-label="Mover antes"
-                                          style={{ width: 18, height: 18, padding: 0, lineHeight: 1, fontSize: 10, borderRadius: 4, cursor: idx === 0 ? "default" : "pointer", opacity: idx === 0 ? 0.3 : 1, background: "var(--surface-3)", color: "var(--text-2)", border: "1px solid var(--border-2)" }}>◀</button>
-                                        <span style={{ fontSize: 10, fontWeight: 800, minWidth: 18, textAlign: "center", color: "var(--accent-hover)" }}>{idx + 1}º</span>
-                                        <button type="button" onClick={() => moveFotoMedida(m, u, 1)} disabled={idx === curated.length - 1} title="Mover después" aria-label="Mover después"
-                                          style={{ width: 18, height: 18, padding: 0, lineHeight: 1, fontSize: 10, borderRadius: 4, cursor: idx === curated.length - 1 ? "default" : "pointer", opacity: idx === curated.length - 1 ? 0.3 : 1, background: "var(--surface-3)", color: "var(--text-2)", border: "1px solid var(--border-2)" }}>▶</button>
+                                      <div className="adm-fpm__ord">
+                                        <button type="button" className="adm-fpm__ordbtn" onClick={() => moveFotoMedida(m, u, -1)} disabled={idx === 0} title="Mover antes" aria-label="Mover antes">◀</button>
+                                        <span className="adm-fpm__pos">{idx + 1}º</span>
+                                        <button type="button" className="adm-fpm__ordbtn" onClick={() => moveFotoMedida(m, u, 1)} disabled={idx === curated.length - 1} title="Mover después" aria-label="Mover después">▶</button>
                                       </div>
-                                      <button type="button" onClick={() => removeMedidaFoto(m, u)} title="Sacar esta foto del kit (no borra la foto del pote)" aria-label="Sacar del kit"
-                                        style={{ position: "absolute", top: -7, right: -7, width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "1.5px solid var(--surface)", fontSize: 12, fontWeight: 900 }}>×</button>
+                                      <button type="button" className="adm-fpm__del" onClick={() => removeMedidaFoto(m, u)} title="Sacar esta foto del kit (no borra la foto del pote)" aria-label="Sacar del kit">×</button>
                                     </div>
                                   );
                                 })}
@@ -2287,29 +2285,25 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                                     medida. NO se muestran en el kit — ＋ las suma, tocar = portada. */}
                                 {potes.length > 0 && (
                                   <>
-                                    <span style={{ flex: "0 0 auto", alignSelf: "stretch", display: "flex", alignItems: "center", gap: 6, borderLeft: "1px dashed var(--border-2)", paddingLeft: 12, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.04em", color: "var(--text-3)", textTransform: "uppercase" }}>Potes</span>
+                                    <span className="adm-fpm__sep">Potes</span>
                                     {potes.map((u) => {
                                       const isPortada = portada === u;
                                       return (
-                                        <div key={u} style={{ position: "relative", flex: "0 0 auto", display: "grid", justifyItems: "center", gap: 4 }}>
+                                        <div key={u} className="adm-fpm__tile">
                                           <button type="button" onClick={() => setHero(m, u)} title={isPortada ? "Es la portada de esta medida" : "Marcar como portada (sin sumarla a la galería)"}
-                                            style={{ position: "relative", padding: 2, borderRadius: 8, cursor: "pointer", background: "transparent", border: `2px solid ${isPortada ? "var(--accent)" : "var(--border-2)"}`, opacity: isPortada ? 1 : 0.6 }}>
-                                            <img src={u} alt="" style={{ width: 48, height: 48, objectFit: "contain", display: "block", borderRadius: 4, background: "var(--surface-3)" }} />
-                                            {isPortada && (
-                                              <span style={{ position: "absolute", bottom: -2, left: "50%", transform: "translateX(-50%)", fontSize: 8.5, fontWeight: 900, letterSpacing: "0.03em", color: "#fff", background: "var(--accent)", borderRadius: 4, padding: "1px 5px", whiteSpace: "nowrap" }}>★ PORTADA</span>
-                                            )}
+                                            className={`adm-fpm__imgbtn is-pote${isPortada ? " is-portada" : ""}`}>
+                                            <img src={u} alt="" className="adm-fpm__img" />
+                                            {isPortada && <span className="adm-fpm__flag">★ PORTADA</span>}
                                           </button>
-                                          <button type="button" onClick={() => addFotoMedida(m, u)} title="Sumar esta foto a la galería del kit"
-                                            style={{ height: 18, padding: "0 8px", lineHeight: 1, fontSize: 10, fontWeight: 800, borderRadius: 4, cursor: "pointer", background: "var(--surface-3)", color: "var(--text-2)", border: "1px solid var(--border-2)" }}>＋ al kit</button>
-                                          <button type="button" onClick={() => deleteHeroCandidate(m, u)} title="Borrar esta foto DEL POTE (el producto de la línea)" aria-label="Borrar foto del pote"
-                                            style={{ position: "absolute", top: -7, right: -7, width: 18, height: 18, lineHeight: "16px", textAlign: "center", padding: 0, borderRadius: "50%", cursor: "pointer", background: "var(--danger, #e5484d)", color: "#fff", border: "1.5px solid var(--surface)", fontSize: 12, fontWeight: 900 }}>×</button>
+                                          <button type="button" className="adm-fpm__use" onClick={() => addFotoMedida(m, u)} title="Sumar esta foto a la galería del kit">＋ al kit</button>
+                                          <button type="button" className="adm-fpm__del" onClick={() => deleteHeroCandidate(m, u)} title="Borrar esta foto DEL POTE (el producto de la línea)" aria-label="Borrar foto del pote">×</button>
                                         </div>
                                       );
                                     })}
                                   </>
                                 )}
                               </div>
-                              <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, flex: "0 0 auto" }}>
+                              <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, flex: "0 0 auto", marginLeft: "auto" }}>
                                 {up ? "Subiendo…" : "⬆ Subir fotos"}
                                 <input type="file" accept="image/*" multiple style={{ display: "none" }} disabled={up} onChange={(e) => { const files = Array.from(e.target.files || []); e.target.value = ""; uploadFotosMedida(m, files); }} />
                               </label>
@@ -2371,24 +2365,22 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                           const isThis = sib.id === product?.id;
                           const n = sib.images?.length || 0;
                           return (
-                            <div key={sib.id} style={{ border: "1px solid var(--border)", borderRadius: 9, overflow: "hidden", background: "var(--surface)" }}>
-                              <div style={{ display: "flex", alignItems: "stretch", background: "var(--surface-2)" }}>
-                                <button type="button" onClick={() => setExpandedMedida(open ? null : sib.id)}
-                                  style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: "transparent", border: "none", color: "var(--text)", cursor: "pointer", textAlign: "left" }}>
+                            <div key={sib.id} className="adm-acc">
+                              <div className="adm-acc__head">
+                                <button type="button" className="adm-acc__toggle" onClick={() => setExpandedMedida(open ? null : sib.id)}>
                                   {sib.primary_image
                                     ? <img src={sib.primary_image} alt="" className="adm-thumb" style={{ width: 30, height: 30 }} />
                                     : <div className="adm-thumb adm-thumb--ph" style={{ width: 30, height: 30 }}>🖼</div>}
                                   {sib.meta?.formato && <Badge tone="ok">{sib.meta.formato}</Badge>}
-                                  <span style={{ fontWeight: 700, fontSize: 13 }}>{sib.name}{isThis && <span style={{ color: "var(--text-3)", fontWeight: 400 }}> · esta</span>}</span>
-                                  <span style={{ fontSize: 11.5, color: "var(--text-3)" }}>{n} {n === 1 ? "foto" : "fotos"}</span>
-                                  <span style={{ marginLeft: "auto", color: "var(--text-3)" }}>{open ? "▲" : "▼"}</span>
+                                  <span className="adm-acc__name">{sib.name}{isThis && <span className="adm-acc__muted"> · esta</span>}</span>
+                                  <span className="adm-acc__count">{n} {n === 1 ? "foto" : "fotos"}</span>
+                                  <span className="adm-acc__caret">{open ? "▲" : "▼"}</span>
                                 </button>
                                 {isVariant && !isThis && (
-                                  <button type="button" onClick={() => deleteMedida(sib)} title={`Borrar la medida ${sib.meta?.formato || ""} de la tienda`} aria-label={`Borrar la medida ${sib.meta?.formato || ""}`}
-                                    style={{ flex: "0 0 auto", padding: "0 12px", background: "transparent", border: "none", borderLeft: "1px solid var(--border)", color: "var(--danger, #e5484d)", cursor: "pointer", fontSize: 14 }}>🗑</button>
+                                  <button type="button" className="adm-acc__del" onClick={() => deleteMedida(sib)} title={`Borrar la medida ${sib.meta?.formato || ""} de la tienda`} aria-label={`Borrar la medida ${sib.meta?.formato || ""}`}>🗑</button>
                                 )}
                               </div>
-                              {open && <div style={{ padding: "0 12px 6px" }}>
+                              {open && <div className="adm-acc__body">
                                 <MedidaImageEditor
                                   key={sib.id}
                                   variant={sib}
@@ -2411,18 +2403,18 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                       {/* Agregar una medida nueva: crea el producto variante (clon de
                           este, sin fotos) y la tienda muestra el chip al instante. */}
                       {isVariant && !isNew && (
-                        <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                          <input className="adm-input" list="fam-fmt-options" value={newFmt}
+                        <div className="adm-addmedida">
+                          <input className="adm-input adm-addmedida__fmt" list="fam-fmt-options" value={newFmt}
                             onChange={(e) => setNewFmt(e.target.value)}
-                            placeholder="Medida nueva (ej: 20L)" style={{ width: 150, flex: "0 0 auto" }} />
+                            placeholder="Medida nueva (ej: 20L)" />
                           <datalist id="fam-fmt-options">
                             {FORMATO_ORDER.filter((f) => !medidaSiblings.some((s) => String(s.meta?.formato || "").toLowerCase() === f.toLowerCase())).map((f) => <option key={f} value={f} />)}
                           </datalist>
-                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                            <span style={{ fontSize: 13, color: "var(--text-3)" }}>$</span>
+                          <div className="adm-addmedida__price">
+                            <span className="adm-addmedida__cur">$</span>
                             <input className="adm-input" type="text" inputMode="numeric" value={newFmtPrice}
                               onChange={(e) => setNewFmtPrice(e.target.value.replace(/[^\d]/g, ""))}
-                              placeholder="Precio" aria-label="Precio de la medida nueva" style={{ width: 110 }} />
+                              placeholder="Precio" aria-label="Precio de la medida nueva" />
                           </div>
                           <Btn size="sm" variant="primary" disabled={creatingMedida || !newFmt.trim() || !newFmtPrice} onClick={createMedida}>
                             {creatingMedida ? "Creando…" : "+ Agregar medida"}
