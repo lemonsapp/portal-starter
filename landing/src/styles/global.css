@@ -4054,10 +4054,10 @@ html.is-loading body {
        que acá usamos doble clase (.eyebrow.eyebrow--headline) para GANARLE. */
     .ease-of-use__eyebrow.ease-of-use__eyebrow--headline {
         top: 3vh;
-        padding: 8px 16px;
-        gap: 8px;
-        font-size: 0.64rem;
-        letter-spacing: 0.12em;
+        padding: 9px 20px;
+        gap: 0;
+        font-size: 0.74rem;
+        letter-spacing: 0.11em;
         max-width: 94vw;
         /* Fondo sólido (no el gradiente translúcido del --headline) para que
            el cuadro/píldora se lea bien y el texto quede más visible. */
@@ -4067,15 +4067,16 @@ html.is-loading body {
         justify-content: center;
     }
 
-    /* El panel (01 / kicker / título / copy) estaba centrado en TODO el alto
-       del viewport (place-items:center) → mucho espacio muerto entre el
-       eyebrow de arriba y el bloque. En móvil lo anclamos más arriba, cerca
-       del eyebrow, para achicar ese gap. */
+    /* El panel (01 / kicker / título / copy) va centrado, pero subido un
+       poco: el padding-bottom recorta el área de centrado por abajo, así el
+       bloque sube y compensa la barra de URL del navegador (que come alto
+       abajo). Resultado: espacio balanceado arriba/abajo, sin el hueco
+       lopsided que dejaba el anclado-arriba. */
     .ease-of-use__stage {
-        align-items: start;
-        padding-top: clamp(100px, 18vh, 200px);
+        padding-bottom: clamp(70px, 12vh, 130px);
     }
-    .ease-of-use__dot { width: 6px; height: 6px; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06); }
+    /* Eyebrow "TRES RAZONES…": sin el punto amarillo, solo texto. */
+    .ease-of-use__dot { display: none; }
 
     .promise-panel { width: 92vw; }
     .promise-panel__idx { font-size: 1.3rem; margin-bottom: 6px; }
@@ -4105,7 +4106,7 @@ html.is-loading body {
 /* Celulares angostos: eyebrow y título un punto más chicos para que nada
    ("TRES RAZONES…", "RESULTADOS"/"SUPERIORES") se corte. */
 @media (max-width: 400px) {
-    .ease-of-use__eyebrow.ease-of-use__eyebrow--headline { font-size: 0.56rem; letter-spacing: 0.1em; padding: 7px 13px; }
+    .ease-of-use__eyebrow.ease-of-use__eyebrow--headline { font-size: 0.64rem; letter-spacing: 0.09em; padding: 8px 16px; }
     .promise-panel__title { font-size: clamp(2.35rem, 10.5vw, 3.1rem); }
     .promise-panel__kicker { font-size: 0.74rem; }
     .promise-panel__copy { font-size: 0.9rem; }
