@@ -12,6 +12,7 @@ import { useAdmCss, Btn, Card, Field, Badge } from "./admin/ui.jsx";
 // Contenido por línea (sincronizado desde las internas) para pre-cargar los
 // editores del producto con lo que HOY se muestra en la ficha del shop.
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
+import { fixImageUrl } from "../lib/shopImages.js";
 
 // Cross-sell default por línea en "Sumá para acompañar" — espeja LINE_CROSS_SELL
 // de ShopProduct.jsx para que el picker del admin arranque pre-cargado.
@@ -1234,7 +1235,7 @@ function ProductsTab() {
                   <tr key={p.id}>
                     <td>
                       {p.primary_image
-                        ? <img src={p.primary_image} alt="" className="adm-thumb" />
+                        ? <img src={fixImageUrl(p.primary_image)} alt="" className="adm-thumb" />
                         : <div className="adm-thumb adm-thumb--ph">🖼</div>}
                     </td>
                     <td>
@@ -1361,7 +1362,7 @@ function ProductPicker({ title, hint, options, selected, onToggle }) {
             <label key={o.slug} className={`adm-pickrow ${on ? "is-on" : ""}`}>
               <input type="checkbox" checked={on} onChange={() => onToggle(o.slug)} />
               {o.primary_image
-                ? <img src={o.primary_image} alt="" className="adm-thumb" style={{ width: 28, height: 28 }} />
+                ? <img src={fixImageUrl(o.primary_image)} alt="" className="adm-thumb" style={{ width: 28, height: 28 }} />
                 : <div className="adm-thumb adm-thumb--ph" style={{ width: 28, height: 28, fontSize: 12 }}>🖼</div>}
               <span style={{ flex: 1, fontSize: 13 }}>{o.name}</span>
               <span style={{ fontSize: 11.5, color: "var(--text-3)" }}>{o.price_formatted || ""}</span>
@@ -1478,7 +1479,7 @@ function MedidaImageEditor({ variant, onSaved }) {
               disabled={i === imgs.length - 1} onClick={() => move(i, 1)}>↓</button>
           </div>
           {img.url
-            ? <img src={img.url} alt="" className="adm-thumb" style={{ width: 34, height: 34 }} />
+            ? <img src={fixImageUrl(img.url)} alt="" className="adm-thumb" style={{ width: 34, height: 34 }} />
             : <div className="adm-thumb adm-thumb--ph" style={{ width: 34, height: 34 }}>🖼</div>}
           <input className="adm-input adm-mie__url" value={img.url} onChange={(e) => upd(i, "url", e.target.value)} placeholder="URL de la imagen" />
           <input className="adm-input adm-mie__alt" value={img.alt} onChange={(e) => upd(i, "alt", e.target.value)} placeholder="Alt text" />
@@ -2158,7 +2159,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                   {images.map((img, i) => (
                     <div key={i} className={`adm-tile ${img.is_primary ? "adm-tile--primary" : ""}`}>
                       {img.url
-                        ? <img src={img.url} alt={img.alt || ""} />
+                        ? <img src={fixImageUrl(img.url)} alt={img.alt || ""} />
                         : <span style={{ color: "var(--text-3)", fontSize: 12, textAlign: "center", padding: 8 }}>{img._pending ? "Subiendo…" : "Sin imagen"}</span>}
                       {/* Posición en la galería (1º se ve primero en la ficha).
                           Abajo a la izquierda para no pisar el flag "Destacada". */}
@@ -2186,7 +2187,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                     {images.map((img, i) => (
                       <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1.4fr 1fr auto", gap: 6, alignItems: "center" }}>
                         {img.url
-                          ? <img src={img.url} alt="" className="adm-thumb" style={{ width: 32, height: 32 }} />
+                          ? <img src={fixImageUrl(img.url)} alt="" className="adm-thumb" style={{ width: 32, height: 32 }} />
                           : <div className="adm-thumb adm-thumb--ph" style={{ width: 32, height: 32 }}>🖼</div>}
                         <input className="adm-input" value={img.url} onChange={(e) => updateImage(i, "url", e.target.value)} placeholder="URL de la imagen" />
                         <input className="adm-input" value={img.alt} onChange={(e) => updateImage(i, "alt", e.target.value)} placeholder="Alt text (a11y)" />
@@ -2241,7 +2242,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                     </Field>
                   )}
                   {isBundle && kitMedidas.length > 0 && (
-                    <Field label="Fotos por medida" hint='La galería del kit en cada medida muestra SOLO las fotos de la fila (subidas con ⬆ o traídas de los potes con ＋), en ese orden (◀ ▶). Tocá una para marcarla PORTADA (abre la ficha, siempre primera); la × la saca del kit (no borra nada del pote). En "Potes" están las fotos de los productos de la línea: ＋ la suma al kit, tocarla la hace portada, la × la borra DEL POTE. Si una medida no tiene fotos propias, la ficha muestra las de los potes.'>
+                    <Field label="Fotos por medida" hint='La ficha del kit muestra estas fotos, en este orden (◀ ▶). Tocá una para hacerla PORTADA. En "Potes": ＋ la suma al kit; su × la borra del producto de la línea.'>
                       <div className="adm-fpm">
                         {kitMedidas.map((m) => {
                           // Curadas del kit (lo que muestra la ficha) + paleta de potes.
@@ -2251,11 +2252,17 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                           const up = uploadingFoto === m;
                           return (
                             <div key={m} className="adm-fpm__row">
-                              <span className="adm-fpm__medida">{m}</span>
-                              <button type="button" onClick={() => setHero(m, "")}
-                                className={`adm-btn adm-btn--sm ${portada === "" ? "adm-btn--primary" : "adm-btn--default"}`}
-                                style={{ flex: "0 0 auto" }} title="Usar la foto unificada del kit como portada">Portada automática</button>
-                              {/* Tira con scroll horizontal; en mobile baja a su propia línea. */}
+                              {/* Header de la medida: nombre + portada + subir. La tira va abajo. */}
+                              <div className="adm-fpm__head">
+                                <span className="adm-fpm__medida">{m}</span>
+                                <button type="button" onClick={() => setHero(m, "")}
+                                  className={`adm-btn adm-btn--sm ${portada === "" ? "adm-btn--primary" : "adm-btn--default"}`}
+                                  title="Usar la foto unificada del kit como portada">Portada automática</button>
+                                <label className="adm-btn adm-btn--default adm-btn--sm adm-fpm__up" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1 }}>
+                                  {up ? "Subiendo…" : "⬆ Subir fotos"}
+                                  <input type="file" accept="image/*" multiple style={{ display: "none" }} disabled={up} onChange={(e) => { const files = Array.from(e.target.files || []); e.target.value = ""; uploadFotosMedida(m, files); }} />
+                                </label>
+                              </div>
                               <div className="adm-fpm__strip">
                                 {curated.length === 0 && (
                                   <span className="adm-fpm__empty">
@@ -2268,7 +2275,8 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                                     <div key={u} className="adm-fpm__tile">
                                       <button type="button" onClick={() => setHero(m, u)} title={isPortada ? "Es la portada de esta medida" : "Marcar como portada"}
                                         className={`adm-fpm__imgbtn${isPortada ? " is-portada" : ""}`}>
-                                        <img src={u} alt="" className="adm-fpm__img" />
+                                        <img src={fixImageUrl(u)} alt="" className="adm-fpm__img" loading="lazy"
+                                          onError={(e) => e.currentTarget.parentElement.classList.add("is-broken")} />
                                         {isPortada && <span className="adm-fpm__flag">★ PORTADA</span>}
                                       </button>
                                       {/* Orden en la galería: ◀ posición ▶ */}
@@ -2292,7 +2300,8 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                                         <div key={u} className="adm-fpm__tile">
                                           <button type="button" onClick={() => setHero(m, u)} title={isPortada ? "Es la portada de esta medida" : "Marcar como portada (sin sumarla a la galería)"}
                                             className={`adm-fpm__imgbtn is-pote${isPortada ? " is-portada" : ""}`}>
-                                            <img src={u} alt="" className="adm-fpm__img" />
+                                            <img src={fixImageUrl(u)} alt="" className="adm-fpm__img" loading="lazy"
+                                          onError={(e) => e.currentTarget.parentElement.classList.add("is-broken")} />
                                             {isPortada && <span className="adm-fpm__flag">★ PORTADA</span>}
                                           </button>
                                           <button type="button" className="adm-fpm__use" onClick={() => addFotoMedida(m, u)} title="Sumar esta foto a la galería del kit">＋ al kit</button>
@@ -2303,10 +2312,6 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                                   </>
                                 )}
                               </div>
-                              <label className="adm-btn adm-btn--default adm-btn--sm" style={{ cursor: up ? "wait" : "pointer", opacity: up ? 0.6 : 1, flex: "0 0 auto", marginLeft: "auto" }}>
-                                {up ? "Subiendo…" : "⬆ Subir fotos"}
-                                <input type="file" accept="image/*" multiple style={{ display: "none" }} disabled={up} onChange={(e) => { const files = Array.from(e.target.files || []); e.target.value = ""; uploadFotosMedida(m, files); }} />
-                              </label>
                             </div>
                           );
                         })}
@@ -2369,7 +2374,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                               <div className="adm-acc__head">
                                 <button type="button" className="adm-acc__toggle" onClick={() => setExpandedMedida(open ? null : sib.id)}>
                                   {sib.primary_image
-                                    ? <img src={sib.primary_image} alt="" className="adm-thumb" style={{ width: 30, height: 30 }} />
+                                    ? <img src={fixImageUrl(sib.primary_image)} alt="" className="adm-thumb" style={{ width: 30, height: 30 }} />
                                     : <div className="adm-thumb adm-thumb--ph" style={{ width: 30, height: 30 }}>🖼</div>}
                                   {sib.meta?.formato && <Badge tone="ok">{sib.meta.formato}</Badge>}
                                   <span className="adm-acc__name">{sib.name}{isThis && <span className="adm-acc__muted"> · esta</span>}</span>
@@ -2899,7 +2904,7 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
                     <tr key={it.id}>
                       <td style={styles.td}>
                         {it.image_url
-                          ? <img src={it.image_url} alt="" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 4, background: "rgba(17,24,39,.03)" }} />
+                          ? <img src={fixImageUrl(it.image_url)} alt="" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 4, background: "rgba(17,24,39,.03)" }} />
                           : <div style={{ width: 36, height: 36, background: "rgba(17,24,39,.05)", borderRadius: 4 }} />
                         }
                       </td>
