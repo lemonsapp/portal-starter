@@ -175,7 +175,10 @@ function initEaseOfUse() {
             // filtro es compartido, los paneles que estan saliendo y
             // entrando ambos quedan disueltos en ruido al pico — el viewer
             // nunca ve un "salto" porque ambos son indistinguibles.
-            if (warpDisp) {
+            // En móvil NO: el filtro está desactivado por CSS (sin boil el
+            // displacement estático distorsionaba el texto). La transición
+            // queda como cross-fade + letras pétalo, suave y sin filtro SVG.
+            if (warpDisp && !isMobile) {
                 tl.to(warpDisp, {
                     attr: { scale: 25 },
                     duration: transDur * 0.35,

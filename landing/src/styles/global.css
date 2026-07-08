@@ -3973,6 +3973,17 @@ html.is-loading body {
     filter: url(#promise-warp);
     will-change: filter;
 }
+/* Móvil: quitamos el filtro warp (feTurbulence + feDisplacementMap). Sin el
+   "boil" (apagado por perf), el displacement subía a scale 25 con ruido
+   ESTÁTICO y distorsionaba feo el texto en cada transición. Además el filtro
+   SVG es caro por frame en celular. La transición queda como cross-fade +
+   letras "pétalo", que es suave y no depende del filtro. */
+@media (max-width: 900px) {
+    .promise-panel__title {
+        filter: none;
+        will-change: auto;
+    }
+}
 @media (prefers-reduced-motion: reduce) {
     .promise-panel__title {
         filter: none;
