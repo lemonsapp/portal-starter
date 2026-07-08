@@ -151,8 +151,10 @@ const CSS = `
 .adm-pickrow.is-on { background:var(--accent-soft); }
 
 /* ---- fotos por medida (kit): tarjeta por medida = header + tira ---- */
-.adm-fpm { display:grid; gap:10px; }
-.adm-fpm__row { border:1px solid var(--border); border-radius:var(--r-sm); background:var(--surface-2); padding:8px 12px 2px; }
+/* minmax(0,1fr): sin esto la columna del grid crece al contenido y la
+   tarjeta se desborda por abajo del sidebar del editor. */
+.adm-fpm { display:grid; gap:10px; grid-template-columns:minmax(0,1fr); }
+.adm-fpm__row { border:1px solid var(--border); border-radius:var(--r-sm); background:var(--surface-2); padding:8px 12px 2px; min-width:0; }
 .adm-fpm__head { display:flex; align-items:center; gap:8px; }
 .adm-fpm__up { margin-left:auto; flex:0 0 auto; }
 .adm-fpm__medida { font-size:12px; font-weight:800; min-width:46px; color:var(--accent-hover); flex:0 0 auto; }
@@ -173,7 +175,11 @@ const CSS = `
 .adm-fpm__ordbtn:disabled { opacity:.3; cursor:default; }
 .adm-fpm__pos { font-size:10px; font-weight:800; min-width:18px; text-align:center; color:var(--accent-hover); }
 .adm-fpm__del { position:absolute; top:-7px; right:-7px; width:18px; height:18px; line-height:16px; text-align:center; padding:0; border-radius:50%; cursor:pointer; background:var(--danger,#e5484d); color:#fff; border:1.5px solid var(--surface); font-size:12px; font-weight:900; }
-.adm-fpm__sep { flex:0 0 auto; align-self:stretch; display:flex; align-items:center; gap:6px; border-left:1px dashed var(--border-2); padding-left:12px; font-size:10.5px; font-weight:800; letter-spacing:.04em; color:var(--text-3); text-transform:uppercase; }
+/* Toggle de la paleta de potes (plegada por defecto: evita ver cada foto
+   dos veces — la copia subida al kit + la original del pote). */
+.adm-fpm__potes { flex:0 0 auto; align-self:center; display:inline-flex; align-items:center; gap:5px; height:26px; padding:0 10px; margin-left:4px; font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--text-3); background:var(--surface); border:1px dashed var(--border-2); border-radius:999px; cursor:pointer; white-space:nowrap; }
+.adm-fpm__potes:hover { color:var(--text-2); border-color:var(--text-3); }
+.adm-fpm__potes.is-open { color:var(--accent-hover); border-color:var(--accent-border); background:var(--accent-soft); }
 .adm-fpm__use { height:18px; padding:0 8px; line-height:1; font-size:10px; font-weight:800; border-radius:4px; cursor:pointer; background:var(--surface-3); color:var(--text-2); border:1px solid var(--border-2); white-space:nowrap; }
 .adm-fpm__use:hover { background:var(--accent-soft); color:var(--accent-hover); border-color:var(--accent-border); }
 @media (max-width:700px){
@@ -185,7 +191,7 @@ const CSS = `
 }
 
 /* ---- editor de imágenes por medida (familias) ---- */
-.adm-mie { display:grid; gap:8px; padding:10px 0; }
+.adm-mie { display:grid; gap:8px; padding:10px 0; grid-template-columns:minmax(0,1fr); }
 .adm-mie__row { display:grid; grid-template-columns:auto auto 1.3fr 1fr auto; grid-template-areas:"ord thumb url alt acts"; gap:6px; align-items:center; }
 .adm-mie__ord { grid-area:ord; display:flex; align-items:center; gap:2px; }
 .adm-mie__ordbtn { padding:2px 6px; }

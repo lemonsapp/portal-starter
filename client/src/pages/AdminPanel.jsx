@@ -1612,6 +1612,11 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
     return out;
   });
   const [uploadingFoto, setUploadingFoto] = useState(null);
+  // Paleta "Potes" abierta/cerrada por medida. Cerrada por defecto (las fotos
+  // de los potes suelen ser las MISMAS que las subidas al kit, con otra url —
+  // verlas siempre duplicaba todo visualmente). Si la medida no tiene fotos
+  // propias, arranca abierta: ahí los potes son lo único que hay.
+  const [potesOpen, setPotesOpen] = useState({});
   const addFotoMedida = (m, url) =>
     setFotosPorMedida((prev) => ({ ...prev, [m]: [...(prev[m] || []), url] }));
   const removeFotoMedida = (m, url) =>
@@ -1670,6 +1675,9 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   const heroCandidates = (m) => {
     const urls = [];
     for (const v of allProducts) {
+      // Sólo productos ACTIVOS: los stale/ocultos de la línea metían fotos
+      // viejas repetidas en la paleta (el público nunca las ve).
+      if (v.active === false) continue;
       if (v.meta?.linea === lineKey && v.meta?.formato === m && !v.meta?.bundle) {
         for (const im of (v.images || [])) if (im.url && !urls.includes(im.url)) urls.push(im.url);
       }
@@ -2250,6 +2258,8 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                           const potes = poteFotosMedida(m);
                           const portada = heroPorMedida[m] || "";
                           const up = uploadingFoto === m;
+                          // Sin fotos propias, los potes son lo único → abierta.
+                          const showPotes = potesOpen[m] ?? curated.length === 0;
                           return (
                             <div key={m} className="adm-fpm__row">
                               {/* Header de la medida: nombre + portada + subir. La tira va abajo. */}
@@ -2290,11 +2300,17 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
                                   );
                                 })}
                                 {/* Paleta de POTES: fotos de los productos de la línea en esta
-                                    medida. NO se muestran en el kit — ＋ las suma, tocar = portada. */}
+                                    medida. NO se muestran en el kit — ＋ las suma, tocar = portada.
+                                    Plegada por defecto: suelen ser las mismas fotos que las del
+                                    kit (otra url) y verlas siempre duplicaba todo. */}
                                 {potes.length > 0 && (
                                   <>
-                                    <span className="adm-fpm__sep">Potes</span>
-                                    {potes.map((u) => {
+                                    <button type="button" className={`adm-fpm__potes${showPotes ? " is-open" : ""}`}
+                                      onClick={() => setPotesOpen((prev) => ({ ...prev, [m]: !showPotes }))}
+                                      title="Fotos de los productos de la línea en esta medida. No se muestran en el kit salvo que las sumes con ＋.">
+                                      Potes ({potes.length}) {showPotes ? "◂" : "▸"}
+                                    </button>
+                                    {showPotes && potes.map((u) => {
                                       const isPortada = portada === u;
                                       return (
                                         <div key={u} className="adm-fpm__tile">
