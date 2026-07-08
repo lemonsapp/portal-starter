@@ -87,10 +87,14 @@ function initEaseOfUse() {
             });
         }
 
-        // ---- Eyebrow grande con SplitText words: cada palabra entra
-        // independiente con stagger, mucho más impactante que un fade en bloque.
+        // ---- Eyebrow grande.
+        // DESKTOP: SplitText words, cada palabra entra con stagger.
+        // MÓVIL: NO se splitea — el `mask` del SplitText le deja un ancho
+        // fantasma que corría el texto y lo dejaba desprolijo dentro de la
+        // píldora. En móvil es texto plano centrado con un fade simple del
+        // pill entero (queda perfectamente centrado y prolijo).
         let eyebrowSplit = null;
-        if (eyebrowText) {
+        if (eyebrowText && !isMobile) {
             eyebrowSplit = SplitText.create(eyebrowText, {
                 type: "words, chars",
                 mask: "words",
@@ -114,6 +118,14 @@ function initEaseOfUse() {
                 ease: "back.out(1.6)",
                 scrollTrigger: {
                     trigger: root, start: "top 70%",
+                    toggleActions: "play none none reverse",
+                },
+            });
+        } else if (eyebrow) {
+            gsap.from(eyebrow, {
+                autoAlpha: 0, y: 18, duration: 0.5, ease: "power3.out",
+                scrollTrigger: {
+                    trigger: root, start: "top 78%",
                     toggleActions: "play none none reverse",
                 },
             });
