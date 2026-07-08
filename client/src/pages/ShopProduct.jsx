@@ -640,11 +640,9 @@ export default function ShopProduct() {
         for (const im of pool) {
           if (im.url !== hero) imgs.push(im);
         }
-        // Foto unificada del kit al final (si no quedó ya), para que el
-        // "todos juntos" siga estando disponible como miniatura.
-        if (product.primary_image && hero !== product.primary_image && !pool.some((im) => im.url === product.primary_image)) {
-          imgs.push({ url: product.primary_image, alt: product.name });
-        }
+        // La foto unificada del kit (la Destacada de "Fotos") NO se agrega más
+        // al final de cada medida: duplicaba la destacada como última miniatura.
+        // Sigue siendo la portada automática y la imagen del catálogo.
         return imgs;
       })()
     : [];
