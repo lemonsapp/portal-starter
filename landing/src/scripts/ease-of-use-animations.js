@@ -119,9 +119,12 @@ function initEaseOfUse() {
             });
         }
 
-        // ---- Split chars de cada panel title para petal in/out por panel
+        // ---- Split chars de cada panel title para petal in/out por panel.
+        // En MÓVIL no splitteamos: animar char-por-char (SplitText) scrubbeado
+        // en cada transición es de lo más pesado en celular. El título entra/
+        // sale con el cross-fade del panel (transform+opacity), suave y barato.
         const panelSplits = panelTitles.map((t) => {
-            if (!t) return null;
+            if (!t || isMobile) return null;
             return SplitText.create(t, {
                 type: "chars",
                 mask: "chars",
@@ -238,20 +241,26 @@ function initEaseOfUse() {
                 );
             }
 
-            // Liquid paint splash en bg (wipe de color subyacente).
-            tl.set(blobs, { attr: { fill: colors[i] } }, transStart);
-            tl.to(blobs, {
-                attr: {
-                    r: () => gsap.utils.random(420, 580, 10),
-                    cx: () => gsap.utils.random(150, 850, 10),
-                    cy: () => gsap.utils.random(200, 800, 10),
-                },
-                duration: transDur * 0.7,
-                ease: "power3.out",
-                stagger: { amount: transDur * 0.2, from: "random" },
-            }, transStart);
+            // Liquid paint splash en bg (wipe de color subyacente). En MÓVIL
+            // no: animar r/cx/cy de círculos SVG por frame repinta todo el SVG
+            // (caro en celular). El fondo igual cambia de color abajo.
+            if (!isMobile) {
+                tl.set(blobs, { attr: { fill: colors[i] } }, transStart);
+                tl.to(blobs, {
+                    attr: {
+                        r: () => gsap.utils.random(420, 580, 10),
+                        cx: () => gsap.utils.random(150, 850, 10),
+                        cy: () => gsap.utils.random(200, 800, 10),
+                    },
+                    duration: transDur * 0.7,
+                    ease: "power3.out",
+                    stagger: { amount: transDur * 0.2, from: "random" },
+                }, transStart);
+            }
             tl.set(bg, { backgroundColor: colors[i] }, transStart + transDur * 0.85);
-            tl.set(blobs, { attr: { r: 0 } }, transStart + transDur * 0.9);
+            if (!isMobile) {
+                tl.set(blobs, { attr: { r: 0 } }, transStart + transDur * 0.9);
+            }
 
             // Underline draw — despues de la transicion, mientras el panel
             // ya esta limpio.
