@@ -52,7 +52,7 @@ function initEaseOfUse() {
     });
 
     mm.add(BREAKPOINTS, (context) => {
-        const { reduceMotion } = context.conditions;
+        const { reduceMotion, isMobile } = context.conditions;
 
         // Estado base: paneles invisibles. Panel 0 visible.
         gsap.set(panels, { autoAlpha: 0, yPercent: 8 });
@@ -73,8 +73,12 @@ function initEaseOfUse() {
         // del displacement esta > 0, el texto "ebulle" en lugar de
         // moverse uniformemente. Cuando scale = 0, no hay efecto visible
         // (el seed cambia "por dentro" sin costo).
+        // En móvil NO corremos el boil: cambiar el `seed` de feTurbulence
+        // recomputa TODO el campo de ruido fractal cada ~100ms para siempre
+        // (aunque scale=0), y es de lo más caro que hay en GPU/CPU de celular.
+        // El warp de transición entre paneles sigue funcionando igual.
         let warpBoil = null;
-        if (warpNoise) {
+        if (warpNoise && !isMobile) {
             warpBoil = gsap.timeline({ repeat: -1, repeatRefresh: true });
             warpBoil.to(warpNoise, {
                 attr: { seed: () => Math.floor(gsap.utils.random(0, 999)) },

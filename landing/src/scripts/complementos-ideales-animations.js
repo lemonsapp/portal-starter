@@ -62,7 +62,7 @@ function initComplementosIdeales() {
     const splits = [];
 
     mm.add(BREAKPOINTS, (ctx) => {
-        const { reduceMotion } = ctx.conditions;
+        const { reduceMotion, isMobile } = ctx.conditions;
 
         // ============================================================
         // 1) HEADER — SplitText por línea (CHARS, no words como antes).
@@ -118,17 +118,19 @@ function initComplementosIdeales() {
                 // Énfasis vertical (drift desde arriba/abajo), poco x
                 x: gsap.utils.random(-30, 30),
                 y: gsap.utils.random(-80, 80),
-                z: gsap.utils.random(-200, 200),
+                // En móvil sin 3D ni blur: animar filter:blur() por char en
+                // cada frame de scrub + contexto 3D es el stutter principal.
+                z: isMobile ? 0 : gsap.utils.random(-200, 200),
                 // Rotación sutil sobre Y (página flip feel) sin volteretas
                 rotation: 0,
-                rotationY: gsap.utils.random(-45, 45),
-                rotationX: gsap.utils.random(-20, 20),
+                rotationY: isMobile ? 0 : gsap.utils.random(-45, 45),
+                rotationX: isMobile ? 0 : gsap.utils.random(-20, 20),
                 scale: gsap.utils.random(0.7, 0.95),
                 autoAlpha: 0,
-                filter: "blur(14px)",
+                filter: isMobile ? "none" : "blur(14px)",
                 transformOrigin: "50% 50%",
                 transformPerspective: 800,
-                willChange: "transform, opacity, filter",
+                willChange: isMobile ? "transform, opacity" : "transform, opacity, filter",
             });
         });
         lineInners.forEach((inner) => {
@@ -163,7 +165,7 @@ function initComplementosIdeales() {
             rotation: 0, rotationX: 0, rotationY: 0,
             scale: 1,
             autoAlpha: 1,
-            filter: "blur(0px)",
+            ...(isMobile ? {} : { filter: "blur(0px)" }),
             duration: 0.85,
             stagger: { each: 0.012, from: "center" },
             ease: "expo.out",
@@ -172,7 +174,7 @@ function initComplementosIdeales() {
         // Acto 3: micro-glow burst — los chars ganan brillo sutil al
         // landing (efecto "premium punch"). Se aplica vía text-shadow
         // intensification via filter brightness pulse.
-        if (allChars.length) {
+        if (!isMobile && allChars.length) {
             assembleTl.to(allChars, {
                 filter: "blur(0px) brightness(1.15)",
                 duration: 0.10, ease: "sine.out",
@@ -244,7 +246,9 @@ function initComplementosIdeales() {
         // Skill: gsap-plugins DrawSVGPlugin + gsap-scrolltrigger scrub.
         // El thread se "dibuja" mientras el usuario scrollea por la
         // sección, conectando visualmente header → 01 → 02.
-        if (threadLine) {
+        // display:none en móvil (<=900px) → animar su drawSVG por frame es
+        // trabajo tirado. Sólo desktop.
+        if (threadLine && !isMobile) {
             gsap.set(threadLine, { drawSVG: "0% 0%" });
             gsap.to(threadLine, {
                 drawSVG: "0% 100%",
@@ -390,7 +394,9 @@ function initComplementosIdeales() {
             // Skill: gsap-scrolltrigger scrub + gsap-utils trabajando solo
             // con transforms (gsap-performance).
             // ============================================================
-            if (img) {
+            // Parallax decorativo — apagado en móvil (el halo escala una capa
+            // blur(28px) → re-rasteriza el blur por frame; 2 scrubs × panel).
+            if (img && !isMobile) {
                 gsap.fromTo(img,
                     { yPercent: -6 },
                     {
@@ -404,7 +410,7 @@ function initComplementosIdeales() {
                     }
                 );
             }
-            if (halo) {
+            if (halo && !isMobile) {
                 gsap.fromTo(halo,
                     { yPercent: -10, scale: 1 },
                     {
@@ -419,8 +425,9 @@ function initComplementosIdeales() {
                 );
             }
 
-            // Idle: img float suave (independiente del scroll)
-            if (img) {
+            // Idle: img float suave (independiente del scroll). En móvil no:
+            // loop infinito sobre img con drop-shadow (repinta sin parar).
+            if (img && !isMobile) {
                 gsap.to(img, {
                     y: gsap.utils.random(-8, -16, 1),
                     rotation: gsap.utils.random(-1.2, 1.2, 0.1),
