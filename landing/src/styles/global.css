@@ -4081,14 +4081,14 @@ html.is-loading body {
        abajo). Resultado: espacio balanceado arriba/abajo, sin el hueco
        lopsided que dejaba el anclado-arriba. */
     .ease-of-use__stage {
-        padding-bottom: clamp(70px, 12vh, 130px);
+        padding-bottom: clamp(24px, 5vh, 56px);
     }
     /* Eyebrow "TRES RAZONES…": sin el punto amarillo, solo texto. */
     .ease-of-use__dot { display: none; }
 
     .promise-panel { width: 92vw; }
-    .promise-panel__idx { font-size: 1.3rem; margin-bottom: 6px; }
-    .promise-panel__kicker { font-size: 0.8rem; letter-spacing: 0.14em; margin-bottom: 12px; }
+    .promise-panel__idx { font-size: 1.5rem; margin-bottom: 6px; }
+    .promise-panel__kicker { font-size: 0.9rem; letter-spacing: 0.14em; margin-bottom: 12px; }
 
     /* Palabra por línea (ej. "RESULTADOS" / "SUPERIORES"), CENTRADA
        (el base usa align-items:baseline, que en columna tiraba el texto a la
@@ -4097,12 +4097,12 @@ html.is-loading body {
         flex-direction: column;
         align-items: center;
         gap: 0.05em;
-        font-size: clamp(2.7rem, 12vw, 4.2rem);
+        font-size: clamp(3.2rem, 14.5vw, 5rem);
         letter-spacing: -0.03em;
-        margin: 6px 0 18px;
+        margin: 8px 0 20px;
     }
     .promise-panel__copy {
-        font-size: 0.95rem;
+        font-size: 1rem;
         line-height: 1.55;
         max-width: 40ch;
         padding: 0 6px;
@@ -4117,9 +4117,9 @@ html.is-loading body {
     .ease-of-use__eyebrow.ease-of-use__eyebrow--headline { font-size: 0.64rem; letter-spacing: 0.09em; padding: 8px 16px; }
     /* Compensación del trailing letter-spacing (ver comentario en 640px). */
     .ease-of-use__eyebrow.ease-of-use__eyebrow--headline .ease-of-use__eyebrow-text { margin-right: -0.09em; }
-    .promise-panel__title { font-size: clamp(2.35rem, 10.5vw, 3.1rem); }
-    .promise-panel__kicker { font-size: 0.74rem; }
-    .promise-panel__copy { font-size: 0.9rem; }
+    .promise-panel__title { font-size: clamp(2.9rem, 13vw, 3.7rem); }
+    .promise-panel__kicker { font-size: 0.82rem; }
+    .promise-panel__copy { font-size: 0.94rem; }
 }
 
 /* =====================================================================
