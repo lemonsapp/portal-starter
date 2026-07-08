@@ -594,24 +594,27 @@ export default function ShopProduct() {
           ? fotosByMedida[kitSel].map(fixImageUrl).filter(Boolean) : [];
         const orden = (kitSel && Array.isArray(ordenByMedida[kitSel]))
           ? ordenByMedida[kitSel].map(fixImageUrl).filter(Boolean) : [];
-        // Pool de la medida (dedup): fotos comunes + TODAS las fotos de cada
-        // parte del kit en la medida elegida (no sólo la primaria). Así las
-        // imágenes que el admin sube a una medida (ej. Elite 20L) aparecen en
-        // la galería. Cae a primary_image si el server viejo todavía no manda
-        // el array `images`.
+        // Pool de la medida (dedup). Si el admin CURÓ fotos para esta medida
+        // (fotos_por_medida), la galería muestra SOLO esas: antes se
+        // inyectaban además TODAS las fotos de cada pote y una medida curada
+        // con 6 fotos terminaba mostrando 16 (x3). Si la medida no tiene nada
+        // curado (ej. Pro entera, Elite 500ml/1L/5L), se cae a las fotos de
+        // las partes como siempre, para no dejar la galería vacía.
         const seen = new Set();
         const pool = [];
         for (const url of fotosMedida) {
           if (url && !seen.has(url)) { seen.add(url); pool.push({ url, alt: product.name }); }
         }
-        for (const v of kitParts) {
-          const partImgs = (v.images && v.images.length)
-            ? v.images
-            : (v.primary_image ? [{ url: v.primary_image, alt: v.name, is_primary: true }] : []);
-          for (const im of partImgs) {
-            if (im.url && !seen.has(im.url)) {
-              seen.add(im.url);
-              pool.push({ url: im.url, alt: im.alt || v.name });
+        if (!pool.length) {
+          for (const v of kitParts) {
+            const partImgs = (v.images && v.images.length)
+              ? v.images
+              : (v.primary_image ? [{ url: v.primary_image, alt: v.name, is_primary: true }] : []);
+            for (const im of partImgs) {
+              if (im.url && !seen.has(im.url)) {
+                seen.add(im.url);
+                pool.push({ url: im.url, alt: im.alt || v.name });
+              }
             }
           }
         }
