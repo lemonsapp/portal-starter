@@ -42,6 +42,23 @@ async function safeQuery(sql, label = "seed") {
   catch (e) { console.error(`[SHOP MIGRATE ${label}]`, e.message || e); }
 }
 
+// Migración ONE-SHOT: corre una única vez por DB (flag en shop_migration_flags)
+// y después NO se re-aplica. Es el patrón para los toggles de `active`: si
+// quedaran como UPDATEs incondicionales, cada boot del server pisaría lo que
+// el admin activó/desactivó desde el panel (bug real: elite-max-10l activado
+// desde el admin volvía a apagarse en cada deploy). El flag se setea sólo si
+// el SQL corrió sin error, así una corrida fallida se reintenta al próximo boot.
+async function oneShot(key, sql, label = key) {
+  try {
+    const { rows } = await db.query(
+      `SELECT 1 FROM shop_migration_flags WHERE key = $1`, [key]);
+    if (rows.length) return;
+    await db.query(sql);
+    await db.query(
+      `INSERT INTO shop_migration_flags (key) VALUES ($1) ON CONFLICT DO NOTHING`, [key]);
+  } catch (e) { console.error(`[SHOP MIGRATE oneshot:${label}]`, e.message || e); }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Auto-migración + seed (idempotente). Patrón inherited de routes/profile.js:
 // se corre una vez al hacer require() del módulo. Todas las queries son
@@ -98,6 +115,13 @@ async function migrate() {
   `);
   await db.query(`CREATE INDEX IF NOT EXISTS idx_product_images_product ON product_images(product_id, sort_order)`);
   await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uniq_product_images_primary ON product_images(product_id) WHERE is_primary = TRUE`);
+  // Flags de migraciones one-shot (ver oneShot() arriba).
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS shop_migration_flags (
+      key         TEXT PRIMARY KEY,
+      applied_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
 
   // Seed categorías + 6 productos del catálogo Holistic con imágenes existentes
   // en landing/public/imagenes-web/* (servidas al raíz por build-vercel.sh).
@@ -673,8 +697,8 @@ async function migrate() {
   // los pisa. Verificado contra la API de producción 2026-06-05: estos 8
   // slugs son los únicos que existen en prod y no en el seed actual.
   // Se desactivan (no DELETE: pueden estar referenciados por orders viejas).
-  // Idempotente: tras la 1ª corrida ya están inactive → no-op.
-  await safeQuery(`
+  // One-shot: después de la 1ª corrida manda el admin.
+  await oneShot("deactivate-stale-race", `
     UPDATE products SET active = FALSE
     WHERE active = TRUE AND slug IN (
       'race-1-vegetativo-250ml',        'race-1-vegetativo-500ml',
@@ -987,8 +1011,9 @@ async function migrate() {
     WHERE p.slug = v.slug AND pi.product_id = p.id AND pi.url = v.old_url
   `, "elite max fotos par");
   // Bidones "Parte B" industriales fuera del catálogo (no se venden sueltos).
-  // Desactivación, no DELETE: pueden estar en orders viejas.
-  await safeQuery(`
+  // Desactivación, no DELETE: pueden estar en orders viejas. One-shot: si el
+  // admin los quiere de vuelta, los activa desde el panel y queda.
+  await oneShot("deactivate-elite-max-parte-b", `
     UPDATE products SET active = FALSE
     WHERE active = TRUE AND slug IN (
       'elite-max-5l-b','elite-max-10l-b'
@@ -996,7 +1021,7 @@ async function migrate() {
   `, "deactivate elite bidones parte B");
   // Elite Parte 1 y Parte 2 SE VENDEN SUELTAS (pedido cliente 2026-06-08).
   // Re-activación explícita para DBs donde la migración anterior las apagó.
-  await safeQuery(`
+  await oneShot("reactivate-elite-partes-sueltas", `
     UPDATE products SET active = TRUE
     WHERE active = FALSE AND slug IN (
       'elite-parte-1-500ml','elite-parte-1-1l',
@@ -1051,11 +1076,22 @@ async function migrate() {
   `, "elite parte 1 5l/10l → foto doble");
   // elite-max-5l/10l eran la representación "combo/par" (foto doble) de esas
   // mismas medidas que ahora vende Parte 1 sola → se desactivan para no
-  // duplicar. No DELETE (pueden estar en orders viejas). Idempotente.
-  await safeQuery(`
+  // duplicar. No DELETE (pueden estar en orders viejas). One-shot: como
+  // UPDATE incondicional era el bug que re-apagaba en cada deploy lo que el
+  // admin activaba desde el panel.
+  await oneShot("deactivate-elite-max-5l-10l", `
     UPDATE products SET active = FALSE
     WHERE active = TRUE AND slug IN ('elite-max-5l','elite-max-10l')
   `, "deactivate elite-max 5l/10l (duplican Parte 1)");
+  // Elite Max — Parte 1 + Parte 2 con selector de medidas (cliente 2026-07-09):
+  // la familia quedaba con el 20L solo → la ficha ni mostraba el chip de
+  // medida. Se re-activa el 10L (mismo variantGroup elite-max-a) para que la
+  // ficha ofrezca 10L y 20L. El 5L queda inactivo (duplica Elite Parte 1 5L);
+  // si el cliente lo quiere, lo activa desde el admin y ahora SÍ queda.
+  await oneShot("reactivate-elite-max-10l-selector", `
+    UPDATE products SET active = TRUE
+    WHERE active = FALSE AND slug = 'elite-max-10l'
+  `, "reactivate elite-max-10l (medidas 10L+20L)");
 
   // 3) Precios reales (hgrowshop.com, jun 2026). Guard por placeholder.
   await safeQuery(`
@@ -1130,8 +1166,8 @@ async function migrate() {
     UPDATE products SET price_cents=36000000 WHERE slug='pack-100-puntos' AND price_cents=16000000;
   `, "repricing packs puntos v1.0");
   // Alineación v9 §11.4: lineup 10/25/50/100. Reordenar los packs que ya existían
-  // y desactivar pack-250 (no DELETE: puede estar en orders viejas). Idempotente.
-  await safeQuery(`
+  // y desactivar pack-250 (no DELETE: puede estar en orders viejas). One-shot.
+  await oneShot("lineup-packs-puntos-v9", `
     UPDATE products SET sort_order=52 WHERE slug='pack-50-puntos'  AND sort_order=50;
     UPDATE products SET sort_order=53 WHERE slug='pack-100-puntos' AND sort_order=51;
     UPDATE products SET active=FALSE  WHERE slug='pack-250-puntos' AND active=TRUE;
@@ -1170,8 +1206,9 @@ async function migrate() {
   // ─── Day-0 y Bio: sacar la presentación 1L (sin stock — cliente 2026-07-02) ──
   // Desactivar los SKUs -1l (no DELETE: pueden estar en orders viejas) y limpiar
   // meta.presentaciones de los kits base. jsonb_set preserva otras keys del meta.
-  // Idempotente (corre en prod y en instalaciones nuevas tras el seed).
-  await safeQuery(`
+  // One-shot (corre en prod y en instalaciones nuevas tras el seed); si el
+  // cliente re-activa el 1L desde el admin, queda.
+  await oneShot("sacar-1l-day0-bio", `
     UPDATE products SET active = FALSE
       WHERE active = TRUE AND slug IN ('bio-estimulante-1l','day-0-1l');
     UPDATE products SET meta = jsonb_set(meta, '{presentaciones}', '["500ml"]'::jsonb)
@@ -1207,8 +1244,8 @@ async function migrate() {
   `, "img accesorios");
   // Croper / Tutores / Maceta fuera del catálogo (pedido cliente 2026-06-10).
   // Desactivación, no DELETE: pueden estar en orders viejas (FK ON DELETE SET NULL,
-  // pero conservamos la fila para el historial). Idempotente por el guard active=TRUE.
-  await safeQuery(`
+  // pero conservamos la fila para el historial). One-shot.
+  await oneShot("deactivate-croper-tutores-maceta", `
     UPDATE products SET active = FALSE
     WHERE active = TRUE AND slug IN (
       'croper-simple-x10','croper-regulable-x10','tutores-x10','maceta-x10'
