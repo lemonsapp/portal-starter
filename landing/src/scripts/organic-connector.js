@@ -34,14 +34,6 @@ if (root) {
     mm.add(BREAKPOINTS, (ctx) => {
         const { reduceMotion, isMobile } = ctx.conditions;
 
-        // Perf móvil: el feGaussianBlur SVG sobre el grupo de gotas EN
-        // MOVIMIENTO (MotionPath) re-rasteriza toda la región del filtro en
-        // cada frame de scroll — de lo más caro en celular. Lo sacamos: las
-        // gotas pierden un glow sutil imperceptible a tamaño teléfono.
-        if (isMobile) {
-            root.querySelector("[data-oc-drops]")?.removeAttribute("filter");
-        }
-
         // ====== Estados iniciales ======
         gsap.set(stems, { drawSVG: "0% 0%" });
 
@@ -121,19 +113,15 @@ if (root) {
 
             // Idle respiration — pequeña oscilación de rotación post-bloom.
             // Fuera del timeline (independent loop), arranca solo después
-            // de que la hoja apareció. En móvil NO: son 6 loops infinitos
-            // sobre hojas con drop-shadow que repintan sin parar y compiten
-            // con el scroll (la hoja igual queda visible por el bloom scale).
-            if (!isMobile) {
-                gsap.to(leaf, {
-                    rotation: baseRot + (baseRot < -90 ? 3 : -3),
-                    duration: gsap.utils.random(3.5, 5.2),
-                    ease: "sine.inOut",
-                    yoyo: true,
-                    repeat: -1,
-                    delay: gsap.utils.random(0, 1.5),
-                });
-            }
+            // de que la hoja apareció.
+            gsap.to(leaf, {
+                rotation: baseRot + (baseRot < -90 ? 3 : -3),
+                duration: gsap.utils.random(3.5, 5.2),
+                ease: "sine.inOut",
+                yoyo: true,
+                repeat: -1,
+                delay: gsap.utils.random(0, 1.5),
+            });
         });
 
         // --- LAYER 4: GOTAS DE FERTILIZANTE ascienden ---

@@ -335,16 +335,4 @@
     @media (max-width: 700px) {
         .oc { min-height: 45vh; }
     }
-
-    /* ── Perf móvil ─────────────────────────────────────────────────────
-       Los filtros SVG (drop-shadow / blur) sobre elementos animados y el
-       blend-mode se re-rasterizan por frame de scroll en celular. Los
-       aligeramos: cosmético imperceptible a tamaño teléfono. */
-    @media (max-width: 900px) {
-        .oc__leaf-wrap use { filter: none; }        /* drop-shadow por hoja */
-        .oc__drop--lead    { filter: none; }        /* drop-shadow del líder */
-        .oc__mist-dot      { filter: none; }        /* blur por partícula ×12 */
-        .oc__halo          { mix-blend-mode: normal; }
-        .oc__leaf-wrap, .oc__drop { will-change: auto; }
-    }
 </style>

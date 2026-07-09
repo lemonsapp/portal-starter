@@ -641,12 +641,6 @@ const complementos = [
        MOBILE STACK
        ===================================================================== */
     @media (max-width: 900px) {
-        /* Perf móvil: radios de blur grandes + will-change permanentes
-           mantienen capas borrosas vivas todo el tiempo. Los aligeramos. */
-        .cmp__panel-blob { filter: blur(30px) saturate(1.1); will-change: auto; }
-        .cmp__panel-halo { filter: blur(16px); will-change: auto; }
-        .cmp__line-inner { will-change: auto; }
-
         .cmp__panel {
             grid-template-columns: 1fr;
             gap: clamp(24px, 4vh, 40px);

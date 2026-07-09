@@ -693,17 +693,6 @@ const lineas = [
        MOBILE STACK
        ===================================================================== */
     @media (max-width: 900px) {
-        /* Perf móvil: con los idle/parallax apagados por JS en celular,
-           estos will-change permanentes son capas promovidas de puro gasto
-           de memoria. Los liberamos + bajamos blurs grandes. */
-        .le__panel-blob { filter: blur(34px); will-change: auto; }
-        .le__panel-halo { filter: blur(16px); will-change: auto; }
-        .le__panel-img,
-        .le__panel-num,
-        .le__line-inner,
-        .le__mark,
-        .le__divider-glow { will-change: auto; }
-
         .le__panel {
             grid-template-columns: 1fr;
             gap: clamp(24px, 4vh, 40px);

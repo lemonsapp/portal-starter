@@ -57,7 +57,7 @@ function initLineasEstrella() {
     const splits = [];
 
     mm.add(BREAKPOINTS, (ctx) => {
-        const { reduceMotion, isMobile } = ctx.conditions;
+        const { reduceMotion } = ctx.conditions;
 
         // SplitText chars de las 3 líneas no-mark (la mark line tiene
         // el <mark> dentro del inner — no se splittea).
@@ -114,12 +114,10 @@ function initLineasEstrella() {
                 rotationX: gsap.utils.random(-20, 20),
                 scale: gsap.utils.random(0.7, 0.95),
                 autoAlpha: 0,
-                // En móvil sin blur: animar filter:blur() por char en cada
-                // frame de scrub es el mayor costo de repaint en celular.
-                filter: isMobile ? "none" : "blur(14px)",
+                filter: "blur(14px)",
                 transformOrigin: "50% 50%",
                 transformPerspective: 800,
-                willChange: isMobile ? "transform, opacity" : "transform, opacity, filter",
+                willChange: "transform, opacity, filter",
             });
         });
         lineInners.forEach((inner) => gsap.set(inner, { perspective: 1000 }));
@@ -147,14 +145,14 @@ function initLineasEstrella() {
             rotation: 0, rotationX: 0, rotationY: 0,
             scale: 1,
             autoAlpha: 1,
-            ...(isMobile ? {} : { filter: "blur(0px)" }),
+            filter: "blur(0px)",
             duration: 0.85,
             stagger: { each: 0.012, from: "center" },
             ease: "expo.out",
         }, 0.10);
 
-        // Micro-glow burst post-assemble (desktop: usa filter brightness)
-        if (!isMobile && allChars.length) {
+        // Micro-glow burst post-assemble
+        if (allChars.length) {
             assembleTl.to(allChars, {
                 filter: "blur(0px) brightness(1.15)",
                 duration: 0.10, ease: "sine.out",
@@ -227,9 +225,7 @@ function initLineasEstrella() {
         // ============================================================
         // THREAD VERTICAL DrawSVG scroll-linked
         // ============================================================
-        // El thread está display:none en móvil (<=900px): animar su drawSVG
-        // por frame de scroll es 100% trabajo tirado. Sólo desktop.
-        if (threadLine && !isMobile) {
+        if (threadLine) {
             gsap.set(threadLine, { drawSVG: "0% 0%" });
             gsap.to(threadLine, {
                 drawSVG: "0% 100%",
@@ -349,11 +345,9 @@ function initLineasEstrella() {
                 duration: 0.8, ease: "elastic.out(1, 0.62)",
             }, 0.72);
 
-            // PARALLAX continuo — decorativo. En móvil lo apagamos: el del
-            // halo escala una capa con blur(28px) (re-rasteriza el blur por
-            // frame) y son 2 scrubs vivos por panel × 3 paneles.
+            // PARALLAX continuo — img simple OR stage layered (lo que haya)
             const parallaxTarget = img || stage;
-            if (parallaxTarget && !isMobile) {
+            if (parallaxTarget) {
                 gsap.fromTo(parallaxTarget,
                     { yPercent: -6 },
                     {
@@ -367,7 +361,7 @@ function initLineasEstrella() {
                     }
                 );
             }
-            if (halo && !isMobile) {
+            if (halo) {
                 gsap.fromTo(halo,
                     { yPercent: -10, scale: 1 },
                     {
@@ -382,10 +376,8 @@ function initLineasEstrella() {
                 );
             }
 
-            // Idle: img float suave + micro-rotation (modo simple). En móvil
-            // no: loop infinito sobre una img con drop-shadow (repinta la
-            // sombra sin parar aunque esté fuera de viewport).
-            if (img && !isMobile) {
+            // Idle: img float suave + micro-rotation (modo simple)
+            if (img) {
                 gsap.to(img, {
                     y: gsap.utils.random(-8, -16, 1),
                     rotation: gsap.utils.random(-1.2, 1.2, 0.1),
