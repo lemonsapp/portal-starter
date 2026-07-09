@@ -17,7 +17,7 @@ const express = require("express");
 const { z } = require("zod");
 const multer = require("multer");
 const db = require("../db");
-const { reauthorProductImages } = require("./shopImageSet");
+const { reauthorProductImages, CANONICAL_PRODUCT_IMAGES } = require("./shopImageSet");
 const { migrateImagesToCloudinary } = require("./shopImageMigrate");
 // Upload de imágenes de producto: mismo patrón probado que profile.js (avatar)
 // y chat.js (emojis) — multer en memoria + Cloudinary configurado por request
@@ -1269,6 +1269,80 @@ async function migrate() {
     if (res.applied) console.log(`[SHOP MIGRATE] re-author imágenes: ${res.slugs} productos`);
   } catch (e) {
     console.error("[SHOP MIGRATE reauthor images]", e.message || e);
+  }
+
+  // ─── Portadas Race = medida 500ml (cliente 2026-07-09) ─────────────────────
+  // El cliente quiere que la PORTADA de cada familia Race (la foto de la
+  // tarjeta del catálogo y con la que abre la ficha) sea la del tarro 500ml.
+  // Como la tarjeta muestra la foto de la medida CABECERA (por defecto la más
+  // chica, 250ml), subió los renders "de 500ml" al producto 250ml y le pisó la
+  // galería ("si pongo como destacadas las de 500ml se aplican en la medida de
+  // 250ml, se reemplazan"). Reparación one-shot, familia por familia:
+  //   1. Si la destacada actual del 250ml es un upload de Cloudinary (el render
+  //      subido por accidente) y el 500ml conserva la foto vieja de carpeta →
+  //      ese render se MUEVE al 500ml como su nueva destacada (era para ahí).
+  //   2. La galería del 250ml vuelve al set canónico (tarro 250 + botella F1).
+  //      Sólo si sigue en estado "accidente" (destacada = Cloudinary): si el
+  //      admin ya la arregló a mano, no se toca.
+  //   3. meta.medida_destacada = true en la variante 500ml → la familia se
+  //      muestra y abre en 500ml SIN tocar las fotos de las otras medidas.
+  //      (Es el mecanismo existente de groupIntoFamilies para elegir cabecera.)
+  try {
+    const FLAG = "race-portadas-500ml";
+    const { rows: done } = await db.query(
+      `SELECT 1 FROM shop_migration_flags WHERE key = $1`, [FLAG]);
+    if (!done.length) {
+      const RACE_FAMS = [
+        "race-1-npk", "race-2-calcio-nitrogeno", "race-3-pk-1",
+        "race-3-pk-2", "race-4-micro-magnesio",
+      ];
+      const isCloud = (u) => /res\.cloudinary\.com/.test(u || "");
+      for (const fam of RACE_FAMS) {
+        const s250 = `${fam}-250ml`, s500 = `${fam}-500ml`;
+        const { rows: pr } = await db.query(
+          `SELECT id, slug, name FROM products WHERE slug = ANY($1::text[])`, [[s250, s500]]);
+        const p250 = pr.find((r) => r.slug === s250);
+        const p500 = pr.find((r) => r.slug === s500);
+        if (!p250 || !p500) continue;
+        const { rows: pi250 } = await db.query(
+          `SELECT url FROM product_images WHERE product_id = $1 AND is_primary = TRUE`, [p250.id]);
+        const { rows: pi500 } = await db.query(
+          `SELECT url FROM product_images WHERE product_id = $1 AND is_primary = TRUE`, [p500.id]);
+        const upload = pi250[0]?.url || "";
+        if (isCloud(upload)) {
+          // 1) El render subido va al 500ml (si el 500ml no tiene ya uno propio).
+          if (!isCloud(pi500[0]?.url)) {
+            await db.query(
+              `UPDATE product_images SET is_primary = FALSE WHERE product_id = $1 AND is_primary = TRUE`,
+              [p500.id]);
+            await db.query(
+              `INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+               VALUES ($1, $2, $3, -1, TRUE)`,
+              [p500.id, upload, `${p500.name} — tarro dosificador`]);
+          }
+          // 2) El 250ml recupera su galería canónica.
+          const canon = CANONICAL_PRODUCT_IMAGES[s250];
+          if (Array.isArray(canon) && canon.length) {
+            await db.query(`DELETE FROM product_images WHERE product_id = $1`, [p250.id]);
+            for (const [url, alt, sort, primary] of canon) {
+              await db.query(
+                `INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
+                 VALUES ($1, $2, $3, $4, $5)`,
+                [p250.id, url, alt, sort, primary]);
+            }
+          }
+        }
+        // 3) La familia abre y se muestra en 500ml.
+        await db.query(
+          `UPDATE products SET meta = meta || '{"medida_destacada":true}'::jsonb WHERE id = $1`,
+          [p500.id]);
+      }
+      await db.query(
+        `INSERT INTO shop_migration_flags (key) VALUES ($1) ON CONFLICT DO NOTHING`, [FLAG]);
+      console.log("[SHOP MIGRATE] race portadas → 500ml aplicado");
+    }
+  } catch (e) {
+    console.error("[SHOP MIGRATE race-portadas-500ml]", e.message || e);
   }
 
   // ═════════════════════════════════════════════════════════════════════════
