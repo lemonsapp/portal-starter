@@ -1028,6 +1028,16 @@ async function migrate() {
       'elite-parte-2-500ml','elite-parte-2-1l'
     )
   `, "reactivate elite partes sueltas");
+  // elite-parte-1-500g: variante en GRAMOS creada por accidente desde el admin
+  // ("+ Agregar medida") en una línea líquida — Elite se mide en ml/L (cliente
+  // 2026-07-09: "500gr y nada que ver"). Se desactiva (no DELETE: el admin
+  // puede borrarla con 🗑 desde el panel si quiere limpiar la fila). Al ser
+  // one-shot, si alguna vez existiera una presentación real en gramos, el
+  // admin puede activarla y queda.
+  await oneShot("deactivate-elite-parte-1-500g", `
+    UPDATE products SET active = FALSE
+    WHERE active = TRUE AND slug = 'elite-parte-1-500g'
+  `, "deactivate elite-parte-1-500g (medida errónea)");
 
   // Item 5 (cliente 2026-07-02): Elite Parte 1 con TODAS sus medidas.
   // Faltaban 250ml, 5L y 10L en su selector de medida (sólo tenía 500ml/1L).
@@ -1074,24 +1084,18 @@ async function migrate() {
     ) AS v(slug, url, old_url), products p
     WHERE p.slug = v.slug AND pi.product_id = p.id AND pi.url = v.old_url
   `, "elite parte 1 5l/10l → foto doble");
-  // elite-max-5l/10l eran la representación "combo/par" (foto doble) de esas
-  // mismas medidas que ahora vende Parte 1 sola → se desactivan para no
-  // duplicar. No DELETE (pueden estar en orders viejas). One-shot: como
-  // UPDATE incondicional era el bug que re-apagaba en cada deploy lo que el
-  // admin activaba desde el panel.
-  await oneShot("deactivate-elite-max-5l-10l", `
-    UPDATE products SET active = FALSE
-    WHERE active = TRUE AND slug IN ('elite-max-5l','elite-max-10l')
-  `, "deactivate elite-max 5l/10l (duplican Parte 1)");
   // Elite Max — Parte 1 + Parte 2 con selector de medidas (cliente 2026-07-09):
   // la familia quedaba con el 20L solo → la ficha ni mostraba el chip de
-  // medida. Se re-activa el 10L (mismo variantGroup elite-max-a) para que la
-  // ficha ofrezca 10L y 20L. El 5L queda inactivo (duplica Elite Parte 1 5L);
-  // si el cliente lo quiere, lo activa desde el admin y ahora SÍ queda.
-  await oneShot("reactivate-elite-max-10l-selector", `
+  // medida. Historia: elite-max-5l/10l se habían desactivado en junio por
+  // "duplicar" a Elite Parte 1 5L/10L, con un UPDATE incondicional que además
+  // re-apagaba EN CADA BOOT lo que el admin activaba desde el panel (el bug
+  // reportado: el cliente los prendía y un deploy después desaparecían). El
+  // cliente los quiere a la venta: se re-activan una vez y de acá en más
+  // manda el admin. Mismo variantGroup elite-max-a → la ficha ofrece 5/10/20L.
+  await oneShot("reactivate-elite-max-5l-10l", `
     UPDATE products SET active = TRUE
-    WHERE active = FALSE AND slug = 'elite-max-10l'
-  `, "reactivate elite-max-10l (medidas 10L+20L)");
+    WHERE active = FALSE AND slug IN ('elite-max-5l','elite-max-10l')
+  `, "reactivate elite-max 5l/10l (medidas 5L+10L+20L)");
 
   // 3) Precios reales (hgrowshop.com, jun 2026). Guard por placeholder.
   await safeQuery(`
