@@ -145,6 +145,9 @@ const KEY_CATALOG = {
   // Shop config no-secrets
   "shop.currency":              { type: "string", isSecret: false, default: "ARS" },
   "shop.shipping_cost_cents":   { type: "int",    isSecret: false, default: 0 },
+  // Datos bancarios para pagar por transferencia (multilínea, se muestran
+  // al comprador en el checkout/success). Vacío = la opción no se ofrece.
+  "shop.transfer_details":      { type: "string", isSecret: false, default: "" },
 };
 
 function isKnownKey(key) {

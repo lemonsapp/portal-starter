@@ -23,10 +23,37 @@
 
 const express = require("express");
 const crypto = require("crypto");
+const multer = require("multer");
 const { z } = require("zod");
 const db = require("../db");
 const cs = require("../lib/configStore");
 const shopNotify = require("../lib/shopNotify");
+const { configureCloudinary } = require("../lib/cloudinaryConfig");
+const { uploadLimiter } = require("../security");
+
+// Comprobantes de transferencia: el comprador sube una foto/captura desde la
+// success page. Allow-list explícita de formatos raster — nada de SVG (puede
+// embeber <script> y el admin lo abre en el navegador). 10MB alcanza de sobra
+// (una captura de home banking pesa <1MB).
+const MAX_RECEIPT_MB = 10;
+const RECEIPT_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
+const uploadReceipt = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_RECEIPT_MB * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (RECEIPT_MIMES.has(file.mimetype)) cb(null, true);
+    else cb(new Error("Formato no soportado — subí una foto o captura (JPG/PNG/WebP/HEIC)"));
+  },
+});
+
+// Extrae el public_id de una URL de Cloudinary para poder borrar el asset
+// viejo cuando el comprador reemplaza el comprobante (evita huérfanos).
+// Ej: https://res.cloudinary.com/x/image/upload/v123/portal-receipts/abc.png
+//     → portal-receipts/abc
+function cloudinaryPublicId(url) {
+  const m = /\/upload\/(?:v\d+\/)?(.+)\.[a-z0-9]+$/i.exec(url || "");
+  return m ? m[1] : null;
+}
 
 const MP_API = "https://api.mercadopago.com";
 
@@ -108,6 +135,8 @@ function serializeOrder(order, items = []) {
     mp_preference_id: order.mp_preference_id,
     mp_payment_id: order.mp_payment_id,
     mp_status_raw: order.mp_status_raw,
+    payment_method: order.payment_method || "mercadopago",
+    transfer_receipt_url: order.transfer_receipt_url || null,
     paid_at: order.paid_at,
     dispatched_at: order.dispatched_at,
     completed_at: order.completed_at,
@@ -222,6 +251,14 @@ async function createMpPreference({ order, items, appUrl, webhookSecret }) {
   }
 }
 
+// Datos bancarios para transferencia, normalizados: whitespace-only = no
+// configurado (la opción no se ofrece en el checkout).
+async function getTransferDetails() {
+  const raw = await cs.getConfig("shop.transfer_details");
+  const trimmed = String(raw || "").trim();
+  return trimmed || null;
+}
+
 // Lookup de pago en MP API para confirmar status real.
 async function fetchMpPayment(paymentId) {
   const accessToken = await cs.getConfig("mercadopago.access_token");
@@ -295,6 +332,9 @@ const checkoutSchema = z.object({
   })).min(1).max(40),
   // F5: código de promoción opcional
   promo_code: z.string().trim().max(40).optional().nullable(),
+  // Transferencia bancaria: la orden queda pending_payment, el comprador ve
+  // los datos bancarios y sube el comprobante; el admin aprueba a mano.
+  payment_method: z.enum(["mercadopago", "transfer"]).optional().default("mercadopago"),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -411,9 +451,9 @@ function publicRouter({ authRequired } = {}) {
             `INSERT INTO orders
                (public_id, status, customer_email, customer_first_name, customer_last_name,
                 customer_phone, shipping_address, subtotal_cents, shipping_cents, total_cents,
-                promo_code, discount_cents,
+                promo_code, discount_cents, payment_method,
                 paid_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
                      CASE WHEN $2 = 'paid' THEN NOW() ELSE NULL END)
              RETURNING *`,
             [publicId, initialStatus,
@@ -423,7 +463,8 @@ function publicRouter({ authRequired } = {}) {
              body.customer.phone,
              JSON.stringify(body.shipping_address),
              subtotalCents, shippingCents, totalCents,
-             appliedPromoCode, discountCents]
+             appliedPromoCode, discountCents,
+             body.payment_method]
           );
           inserted = rows[0];
           break;
@@ -483,6 +524,21 @@ function publicRouter({ authRequired } = {}) {
           init_point: null,
           free: true,           // flag → frontend redirige a success directo
           total_cents: 0,
+        });
+      }
+
+      // 5c. Transferencia bancaria: no hay preferencia MP. La orden queda
+      //     pending_payment; el frontend muestra los datos bancarios y la
+      //     success page permite subir el comprobante para que el admin
+      //     apruebe con "Marcar pagado".
+      if (body.payment_method === "transfer") {
+        const transferDetails = await getTransferDetails();
+        return res.json({
+          public_id: inserted.public_id,
+          init_point: null,
+          transfer: true,
+          transfer_details: transferDetails || null,
+          total_cents: totalCents,
         });
       }
 
@@ -601,6 +657,25 @@ a{color:${color};text-decoration:underline dotted;}
     });
   });
 
+  // GET /api/shop/payment-methods — público. Le dice al checkout qué opciones
+  // ofrecer: MP si hay access_token cargado, transferencia si hay datos
+  // bancarios en shop.transfer_details (los datos son públicos por diseño:
+  // el comprador los necesita para transferir).
+  router.get("/payment-methods", async (_req, res) => {
+    try {
+      const mpToken = await cs.getConfig("mercadopago.access_token");
+      const transferDetails = await getTransferDetails();
+      res.json({
+        mercadopago: !!mpToken,
+        transfer: !!transferDetails,
+        transfer_details: transferDetails || null,
+      });
+    } catch (e) {
+      console.error("[checkout payment-methods]", e);
+      res.status(500).json({ error: "Error al consultar métodos de pago" });
+    }
+  });
+
   // GET /api/shop/orders/:public_id — consulta pública (para success page)
   router.get("/orders/:public_id", async (req, res) => {
     try {
@@ -611,12 +686,91 @@ a{color:${color};text-decoration:underline dotted;}
       const safe = serializeOrder(data.order, data.items);
       delete safe.admin_notes;
       delete safe.mp_status_raw;
+      // Orden por transferencia pendiente: adjuntar los datos bancarios para
+      // que la success page pueda re-mostrarlos (refresh, link del email).
+      if (safe.payment_method === "transfer" && safe.status === "pending_payment") {
+        safe.transfer_details = await getTransferDetails();
+      }
       res.json({ order: safe });
     } catch (e) {
       console.error("[checkout get order]", e);
       res.status(500).json({ error: "Error al consultar la orden" });
     }
   });
+
+  // POST /api/shop/orders/:public_id/receipt — el comprador sube el comprobante
+  // de la transferencia (imagen, multipart campo `receipt`). Público: la llave
+  // es el public_id (no adivinable). Solo órdenes por transferencia pendientes;
+  // re-subir reemplaza el comprobante (caso "me equivoqué de captura").
+  router.post(
+    "/orders/:public_id/receipt",
+    uploadLimiter,
+    (req, res, next) => {
+      uploadReceipt.single("receipt")(req, res, (err) => {
+        if (err) {
+          const msg = err.code === "LIMIT_FILE_SIZE"
+            ? `La imagen supera el límite de ${MAX_RECEIPT_MB}MB. Probá con una captura más liviana.`
+            : err.message;
+          return res.status(400).json({ error: msg });
+        }
+        next();
+      });
+    },
+    async (req, res) => {
+      try {
+        const pid = String(req.params.public_id || "");
+        if (!req.file) return res.status(400).json({ error: "No se recibió el comprobante" });
+        const { rows } = await db.query(`SELECT * FROM orders WHERE public_id = $1`, [pid]);
+        const order = rows[0];
+        if (!order) return res.status(404).json({ error: "Orden no encontrada" });
+        if (order.payment_method !== "transfer" || order.status !== "pending_payment") {
+          return res.status(409).json({ error: "Esta orden no está esperando un comprobante" });
+        }
+
+        const cloudinary = await configureCloudinary();
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "portal-receipts", resource_type: "image" },
+            (error, out) => { if (error) reject(error); else resolve(out); }
+          );
+          stream.end(req.file.buffer);
+        });
+
+        await db.query(
+          `UPDATE orders SET transfer_receipt_url = $1, updated_at = NOW() WHERE id = $2`,
+          [result.secure_url, order.id]
+        );
+
+        // Reemplazo: borrar el comprobante anterior de Cloudinary (best-effort,
+        // fail-silent — un huérfano no es crítico pero suma costo de storage).
+        if (order.transfer_receipt_url) {
+          const oldId = cloudinaryPublicId(order.transfer_receipt_url);
+          if (oldId && oldId !== cloudinaryPublicId(result.secure_url)) {
+            cloudinary.uploader.destroy(oldId).catch(() => {});
+          }
+        }
+
+        // Aviso in-app al admin para que revise y apruebe. Fail-silent.
+        db.query(
+          `INSERT INTO broadcast_notifications (message, emoji, type, active, target_role)
+           VALUES ($1, '🏦', 'order', TRUE, 'admin')`,
+          [`Comprobante de transferencia subido · ${order.public_id} · ${formatARS(order.total_cents)} — revisar y aprobar`]
+        ).catch(() => {});
+
+        const data = await loadOrderById(order.id);
+        const safe = serializeOrder(data.order, data.items);
+        delete safe.admin_notes;
+        delete safe.mp_status_raw;
+        res.json({ ok: true, order: safe });
+      } catch (e) {
+        console.error("[checkout receipt upload]", e);
+        if (e.code === "CLOUDINARY_NOT_CONFIGURED") {
+          return res.status(503).json({ error: "La subida de comprobantes no está disponible en este momento — mandanos el comprobante por WhatsApp y lo validamos igual." });
+        }
+        res.status(500).json({ error: "No se pudo subir el comprobante. Intentá de nuevo." });
+      }
+    }
+  );
 
   // POST /api/shop/orders/:public_id/received — el cliente confirma que recibió
   // el pedido (despachado → entregado). Público: el public_id es la llave y sólo

@@ -562,7 +562,7 @@ function StepMercadoPago({ goNext, goSkip }) {
 
 // ── Step: Shop (envío + moneda) ─────────────────────────────────────────────
 function StepShop({ goNext, goSkip }) {
-  const [v, setV] = useState({ currency: "ARS", shipping_cost_cents: 0 });
+  const [v, setV] = useState({ currency: "ARS", shipping_cost_cents: 0, transfer_details: "" });
   const [msg, setMsg] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -571,6 +571,7 @@ function StepShop({ goNext, goSkip }) {
       ...p,
       currency: d.currency || "ARS",
       shipping_cost_cents: d.shipping_cost_cents != null ? Number(d.shipping_cost_cents) : 0,
+      transfer_details: d.transfer_details || "",
     })));
   }, []);
 
@@ -579,6 +580,7 @@ function StepShop({ goNext, goSkip }) {
     const payload = {
       currency: v.currency,
       shipping_cost_cents: String(Math.max(0, Math.round(Number(v.shipping_cost_cents) || 0))),
+      transfer_details: v.transfer_details,
     };
     const r = await saveSection("shop", payload);
     setSaving(false);
@@ -615,6 +617,17 @@ function StepShop({ goNext, goSkip }) {
         placeholder="0 = a coordinar"
       />
       <div style={S.hint}>0 = se coordina con cada cliente (recomendado mientras armás logística). Si poneé un monto fijo se agrega automáticamente al total.</div>
+
+      <label style={S.label}>Datos para transferencia bancaria</label>
+      <textarea
+        style={{ ...S.input, minHeight: 130, fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13, resize: "vertical" }}
+        value={v.transfer_details}
+        onChange={e => setV({ ...v, transfer_details: e.target.value })}
+        placeholder={"Banco\nTitular\nCBU: …\nALIAS: …\nCUIL: …"}
+      />
+      <div style={S.hint}>
+        Si cargás datos acá, el checkout ofrece <b>pagar por transferencia</b>: el cliente ve estos datos, sube el comprobante y vos aprobás el pago desde /admin → Pedidos. Dejalo vacío para ofrecer solo MercadoPago.
+      </div>
     </StepShell>
   );
 }

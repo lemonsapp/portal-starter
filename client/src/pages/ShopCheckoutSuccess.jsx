@@ -24,11 +24,33 @@ export default function ShopCheckoutSuccess() {
     const orderParam = params.get("order") || sessionStorage.getItem("holistic.lastOrder");
     const isPending = params.get("pending") === "1";
     const isFree    = params.get("free") === "1" || sessionStorage.getItem("holistic.lastOrderFree") === "1";
+    const isTransferParam = params.get("transfer") === "1";
     const { clear } = useCart();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     // `verifying` = seguimos esperando la confirmación del webhook de MP.
     const [verifying, setVerifying] = useState(false);
+    // Comprobante de transferencia
+    const [uploading, setUploading] = useState(false);
+    const [uploadMsg, setUploadMsg] = useState(null);
+
+    async function uploadReceipt(file) {
+        if (!file || !orderParam) return;
+        setUploading(true); setUploadMsg(null);
+        try {
+            const fd = new FormData();
+            fd.append("receipt", file);
+            const r = await fetch(`${API}/api/shop/orders/${encodeURIComponent(orderParam)}/receipt`, {
+                method: "POST", body: fd,
+            });
+            const d = await r.json();
+            if (!r.ok) setUploadMsg({ type: "err", text: d.error || "No se pudo subir el comprobante." });
+            else { setOrder(d.order); setUploadMsg({ type: "ok", text: "¡Comprobante recibido! Lo revisamos y te confirmamos por email." }); }
+        } catch {
+            setUploadMsg({ type: "err", text: "Error de conexión. Intentá de nuevo." });
+        }
+        setUploading(false);
+    }
 
     const rootRef        = useRef(null);
     const checkRef       = useRef(null);
@@ -68,8 +90,10 @@ export default function ShopCheckoutSuccess() {
                 setLoading(false);
                 tries += 1;
                 // Seguimos sondeando sólo si el pago todavía está en tránsito.
+                // Transferencia: no hay webhook que esperar — un fetch alcanza.
+                const isTransferOrder = o?.payment_method === "transfer" || isTransferParam;
                 const pendingStill = !o || o.status === "pending_payment";
-                const willContinue = !isFree && pendingStill && tries < MAX_TRIES;
+                const willContinue = !isFree && !isTransferOrder && pendingStill && tries < MAX_TRIES;
                 if (willContinue) timer = setTimeout(poll, POLL_MS);
                 else setVerifying(false);
             } catch {
@@ -81,10 +105,10 @@ export default function ShopCheckoutSuccess() {
                 else setVerifying(false);
             }
         }
-        if (!isFree) setVerifying(true);
+        if (!isFree && !isTransferParam) setVerifying(true);
         poll();
         return () => { alive = false; clearTimeout(timer); };
-    }, [orderParam, isFree]);
+    }, [orderParam, isFree, isTransferParam]);
 
     // ── GSAP master timeline ──
     useEffect(() => {
@@ -177,8 +201,12 @@ export default function ShopCheckoutSuccess() {
 
     const status = order?.status;
     const isPaid = ["paid", "dispatched", "completed"].includes(status) || isFree;
+    // Transferencia pendiente: mostramos datos bancarios + subir comprobante.
+    const isTransfer = order?.payment_method === "transfer" || isTransferParam;
+    const transferPending = isTransfer && status === "pending_payment";
+    const hasReceipt = !!order?.transfer_receipt_url;
     // Manual = pendiente Y ya no estamos esperando la confirmación de MP.
-    const isManual = status === "pending_payment" && !isFree && !verifying;
+    const isManual = status === "pending_payment" && !isFree && !verifying && !isTransfer;
 
     // Headline narrativo (no exclamativo) según el estado real del pedido.
     const headlineText = isPaid
@@ -193,13 +221,17 @@ export default function ShopCheckoutSuccess() {
     // se renderiza aparte como step list (ver flowSteps abajo).
     const subText = isPaid
         ? "El equipo va a empezar a preparar tus productos. Te mantenemos al tanto por email."
-        : verifying
-            ? "Estamos confirmando el pago con MercadoPago. Puede tardar unos segundos…"
-            : isPending
-                ? "MercadoPago todavía está procesando el pago. Te avisamos por email cuando se confirme."
-                : isManual
-                    ? "Guardamos tu pedido. Te contactamos por WhatsApp para coordinar pago y envío."
-                    : "Te contactamos por WhatsApp para coordinar.";
+        : transferPending
+            ? (hasReceipt
+                ? "Recibimos tu comprobante. Lo estamos verificando — te confirmamos por email y empezamos a preparar tu pedido."
+                : "Guardamos tu pedido. Transferí el total con los datos de abajo y subí el comprobante para que podamos confirmarlo.")
+            : verifying
+                ? "Estamos confirmando el pago con MercadoPago. Puede tardar unos segundos…"
+                : isPending
+                    ? "MercadoPago todavía está procesando el pago. Te avisamos por email cuando se confirme."
+                    : isManual
+                        ? "Guardamos tu pedido. Te contactamos por WhatsApp para coordinar pago y envío."
+                        : "Te contactamos por WhatsApp para coordinar.";
 
     // Step list visible cuando la compra ya está confirmada (paid o free).
     // Refleja el flujo real del post-checkout: armado → email confirmación →
@@ -314,7 +346,68 @@ export default function ShopCheckoutSuccess() {
                         <div style={S.orderId}>{orderParam}</div>
                         {status && (
                             <div style={S.statusBadge(isPaid ? "paid" : "pending")}>
-                                {isPaid ? "✓ Pagado" : verifying ? "⏳ Confirmando…" : isPending ? "⏳ Pendiente MP" : "📋 En revisión"}
+                                {isPaid ? "✓ Pagado" : transferPending ? (hasReceipt ? "🏦 Comprobante en revisión" : "🏦 Esperando transferencia") : verifying ? "⏳ Confirmando…" : isPending ? "⏳ Pendiente MP" : "📋 En revisión"}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Transferencia bancaria — datos + subir comprobante */}
+                {transferPending && (
+                    <div style={{ marginTop: 18, background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: "var(--r-3,14px)", padding: "22px 20px", textAlign: "left" }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--c-accent-2)", marginBottom: 10, textAlign: "center" }}>
+                            🏦 Datos para la transferencia
+                        </div>
+                        {order?.total_formatted && (
+                            <div style={{ textAlign: "center", fontSize: 13, color: "var(--c-text-2)", marginBottom: 12 }}>
+                                Monto a transferir: <strong style={{ color: "var(--c-text)", fontSize: 16 }}>{order.total_formatted}</strong>
+                            </div>
+                        )}
+                        {order?.transfer_details && (
+                            <>
+                                <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace", fontSize: 13.5, lineHeight: 1.75, background: "rgba(0,0,0,.18)", border: "1px solid var(--c-border)", borderRadius: 10, padding: "14px 16px", color: "var(--c-text)" }}>
+                                    {order.transfer_details}
+                                </pre>
+                                <button
+                                    type="button"
+                                    onClick={() => { navigator.clipboard?.writeText(order.transfer_details).catch(() => {}); }}
+                                    style={{ marginTop: 10, width: "100%", padding: "10px 14px", fontSize: 12.5, fontWeight: 800, borderRadius: 10, border: "1px solid var(--c-border)", background: "transparent", color: "var(--c-text-2)", cursor: "pointer", fontFamily: "inherit" }}
+                                >
+                                    📋 Copiar datos bancarios
+                                </button>
+                            </>
+                        )}
+
+                        <div style={{ borderTop: "1px solid var(--c-border)", margin: "18px 0 14px" }} />
+
+                        {hasReceipt ? (
+                            <div style={{ textAlign: "center" }}>
+                                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--c-accent)", marginBottom: 6 }}>✓ Comprobante recibido</div>
+                                <div style={{ fontSize: 12.5, color: "var(--c-text-2)", marginBottom: 12 }}>
+                                    Lo estamos verificando. Si te equivocaste de archivo, podés subir otro y lo reemplaza.
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: "center", fontSize: 12.5, color: "var(--c-text-2)", marginBottom: 12 }}>
+                                Cuando hagas la transferencia, subí acá la foto o captura del comprobante — así la validamos rápido.
+                            </div>
+                        )}
+
+                        <label style={{ display: "block", textAlign: "center" }}>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: "none" }}
+                                disabled={uploading}
+                                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; uploadReceipt(f); }}
+                            />
+                            <span style={{ display: "inline-block", padding: "13px 26px", borderRadius: "var(--r-pill,999px)", background: uploading ? "rgba(46,143,110,.4)" : "var(--c-accent-2)", color: "#fff", fontWeight: 800, fontSize: 14, cursor: uploading ? "wait" : "pointer" }}>
+                                {uploading ? "Subiendo…" : hasReceipt ? "Reemplazar comprobante" : "📎 Subir comprobante"}
+                            </span>
+                        </label>
+                        {uploadMsg && (
+                            <div style={{ marginTop: 10, textAlign: "center", fontSize: 13, fontWeight: 700, color: uploadMsg.type === "ok" ? "var(--c-accent)" : "#fca5a5" }}>
+                                {uploadMsg.text}
                             </div>
                         )}
                     </div>

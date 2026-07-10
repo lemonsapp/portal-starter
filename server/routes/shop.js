@@ -1407,6 +1407,43 @@ async function migrate() {
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier         TEXT`);
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number TEXT`);
 
+  // Pago por transferencia (2026-07-10): payment_method ∈ mercadopago | transfer.
+  // transfer_receipt_url = comprobante (Cloudinary) que sube el comprador;
+  // el admin lo revisa desde Pedidos y aprueba con "Marcar pagado".
+  await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method       TEXT NOT NULL DEFAULT 'mercadopago'`);
+  await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_receipt_url TEXT`);
+  await db.query(`
+    DO $$ BEGIN
+      ALTER TABLE orders ADD CONSTRAINT orders_payment_method_chk
+        CHECK (payment_method IN ('mercadopago', 'transfer'));
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+  `);
+
+  // Seed one-shot de los datos bancarios del cliente (Banco Galicia) en
+  // app_config → shop.transfer_details. Después del seed manda el admin:
+  // se edita desde el wizard (/setup-admin, paso Shop) y no se re-pisa.
+  try {
+    const { rows: tf } = await db.query(
+      `SELECT 1 FROM shop_migration_flags WHERE key = 'seed-transfer-details'`);
+    if (!tf.length) {
+      const cs = require("../lib/configStore");
+      const current = await cs.getConfig("shop.transfer_details");
+      if (!current) {
+        await cs.setConfig("shop.transfer_details", [
+          "Banco Galicia",
+          "GONZALO JAVIER FERNANDEZ",
+          "CTA: 0009398-5 063-7",
+          "CBU: 00700634-20000009398573",
+          "ALIAS: Holistic.arg",
+          "CUIL: 20-37345548-3",
+        ].join("\n"));
+      }
+      await db.query(
+        `INSERT INTO shop_migration_flags (key) VALUES ('seed-transfer-details') ON CONFLICT DO NOTHING`);
+      console.log("[SHOP MIGRATE seed-transfer-details] datos de transferencia cargados");
+    }
+  } catch (e) { console.error("[SHOP MIGRATE seed-transfer-details]", e.message || e); }
+
   await db.query(`
     CREATE TABLE IF NOT EXISTS order_items (
       id                  SERIAL PRIMARY KEY,

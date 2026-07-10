@@ -2719,7 +2719,14 @@ function OrdersTab() {
                   const meta = ORDER_STATUS_META[o.status] || ORDER_STATUS_META.pending_payment;
                   return (
                     <tr key={o.id} onClick={() => setDetail(o.id)} style={{ cursor: "pointer" }}>
-                      <td><span className="adm-mono" style={{ fontWeight: 700 }}>{o.public_id}</span></td>
+                      <td>
+                        <span className="adm-mono" style={{ fontWeight: 700 }}>{o.public_id}</span>
+                        {o.payment_method === "transfer" && (
+                          <div style={{ fontSize: 10.5, fontWeight: 800, color: "var(--accent-hover)", marginTop: 2 }}>
+                            🏦 Transferencia{o.transfer_receipt_url ? " · 📎 comprobante" : " · sin comprobante"}
+                          </div>
+                        )}
+                      </td>
                       <td>
                         <div style={{ fontWeight: 700 }}>{o.customer_first_name} {o.customer_last_name || ""}</div>
                         <div style={{ fontSize: 11.5, color: "var(--text-3)" }}>{o.customer_email}</div>
@@ -2861,6 +2868,37 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
                 Flujo típico: Pendiente → Pagado → Despachado → Completado.
               </div>
             </div>
+
+            {/* Pago por transferencia: comprobante subido por el comprador.
+                El admin lo mira y aprueba con el botón "Pagado" de arriba. */}
+            {order.payment_method === "transfer" && (
+              <div style={{ ...styles.card, marginBottom: 16, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)", marginBottom: 10 }}>
+                  🏦 Pago por transferencia
+                </div>
+                {order.transfer_receipt_url ? (
+                  <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+                    <a href={order.transfer_receipt_url} target="_blank" rel="noopener noreferrer">
+                      <img src={order.transfer_receipt_url} alt="Comprobante de transferencia"
+                        style={{ width: 110, height: 110, objectFit: "cover", borderRadius: 10, border: "1px solid rgba(17,24,39,.12)", display: "block" }} />
+                    </a>
+                    <div style={{ flex: 1, minWidth: 180 }}>
+                      <a href={order.transfer_receipt_url} target="_blank" rel="noopener noreferrer"
+                        style={{ fontWeight: 800, fontSize: 13, color: "var(--brand-primary, #2E8F6E)" }}>
+                        Ver comprobante completo ↗
+                      </a>
+                      <div style={{ fontSize: 12, color: "rgba(90,102,117,.6)", marginTop: 6 }}>
+                        Verificá que la transferencia haya llegado a la cuenta y aprobá el pago cambiando el estado a <b>💰 Pagado</b> (arriba). El cliente recibe el email de confirmación automáticamente.
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: "rgba(90,102,117,.7)" }}>
+                    El cliente eligió transferencia pero todavía <b>no subió el comprobante</b>. Puede subirlo desde el link de su orden; si te lo manda por WhatsApp, verificá el ingreso y marcá el pedido como 💰 Pagado.
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Tracking de envío — visible desde que el pedido está pagado */}
             {["paid", "dispatched", "completed"].includes(order.status) && (

@@ -64,6 +64,19 @@ export default function ShopCheckout() {
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState("");
 
+  // ── Método de pago ──────────────────────────────────────────────────────
+  // El server dice qué hay disponible (MP configurado / datos de transferencia
+  // cargados). Si la transferencia no está configurada, no se ofrece y el
+  // flujo queda idéntico al de siempre (solo MP).
+  const [payMethod, setPayMethod] = useState("mercadopago");
+  const [transferAvailable, setTransferAvailable] = useState(false);
+  useEffect(() => {
+    fetch(`${API}/api/shop/payment-methods`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.transfer) setTransferAvailable(true); })
+      .catch(() => {});
+  }, []);
+
   // ── Promo code state (F5) ───────────────────────────────────────────────
   const [promoInput, setPromoInput] = useState("");
   const [promoApplied, setPromoApplied] = useState(null);  // { code, discount_cents, ... } | null
@@ -156,6 +169,7 @@ export default function ShopCheckout() {
             ...(i.kit_formato ? { kit_formato: i.kit_formato } : {}),
           })),
           promo_code: promoApplied?.code || null,
+          payment_method: payMethod,
         }),
       });
       const data = await r.json();
@@ -175,6 +189,11 @@ export default function ShopCheckout() {
       }
       if (data.init_point) {
         window.location.href = data.init_point;
+        return;
+      }
+      // Transferencia: success page muestra datos bancarios + subir comprobante.
+      if (data.transfer) {
+        navigate(`/shop/checkout/success?order=${encodeURIComponent(data.public_id || "")}&transfer=1`, { replace: true });
         return;
       }
       // Free purchase OR manual fallback → success page directo.
@@ -198,7 +217,9 @@ export default function ShopCheckout() {
         </Link>
         <h1 className="co-title">Finalizar <span className="co-em">compra</span></h1>
         <p className="co-sub">
-          Completá tus datos de contacto y envío. El pago se procesa por MercadoPago — aceptamos tarjetas y efectivo.
+          {transferAvailable
+            ? "Completá tus datos de contacto y envío. Pagás con MercadoPago (tarjetas y efectivo) o por transferencia bancaria."
+            : "Completá tus datos de contacto y envío. El pago se procesa por MercadoPago — aceptamos tarjetas y efectivo."}
         </p>
 
         {isGuest && (
@@ -357,6 +378,40 @@ export default function ShopCheckout() {
                 )}
               </div>
 
+              {/* ── Método de pago (solo si hay más de una opción) ── */}
+              {transferAvailable && totalCents > 0 && (
+                <div style={{ margin: "18px 0 4px" }}>
+                  <label className="co-promo-label">💳 Método de pago</label>
+                  {[
+                    { key: "mercadopago", title: "MercadoPago", desc: "Tarjetas, cuotas y efectivo (Rapipago/PagoFácil)." },
+                    { key: "transfer", title: "Transferencia bancaria", desc: "Te mostramos los datos al confirmar. Subís el comprobante y validamos el pago." },
+                  ].map((m) => (
+                    <button
+                      key={m.key}
+                      type="button"
+                      onClick={() => setPayMethod(m.key)}
+                      style={{
+                        display: "flex", alignItems: "flex-start", gap: 10, width: "100%",
+                        textAlign: "left", padding: "12px 14px", marginTop: 8,
+                        borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
+                        border: payMethod === m.key ? "2px solid var(--c-accent-2, #2E8F6E)" : "1px solid var(--c-border, rgba(0,0,0,.14))",
+                        background: payMethod === m.key ? "rgba(46,143,110,.07)" : "transparent",
+                      }}
+                    >
+                      <span aria-hidden="true" style={{
+                        marginTop: 2, width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
+                        border: payMethod === m.key ? "5px solid var(--c-accent-2, #2E8F6E)" : "2px solid var(--c-border, rgba(0,0,0,.25))",
+                        boxSizing: "border-box",
+                      }} />
+                      <span>
+                        <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>{m.title}</span>
+                        <span style={{ display: "block", fontSize: 12.5, opacity: 0.7, marginTop: 2 }}>{m.desc}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <button
                 onClick={submit}
                 disabled={!isValid || submitting}
@@ -369,6 +424,8 @@ export default function ShopCheckout() {
                   </span>
                 ) : totalCents === 0 ? (
                   "Finalizar compra GRATIS →"
+                ) : payMethod === "transfer" ? (
+                  "Confirmar pedido →"
                 ) : (
                   "Pagar con MercadoPago →"
                 )}
