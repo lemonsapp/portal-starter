@@ -2149,7 +2149,7 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
           {!isNew && (active ? <Badge tone="ok"><span className="adm-dot" />Activo</Badge> : <Badge tone="muted">Oculto</Badge>)}
           <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
             {savedMsg && <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--accent-hover)" }}>{savedMsg}</span>}
-            <Btn onClick={onClose} disabled={saving}>Cerrar</Btn>
+            <Btn className="adm-hide-mobile" onClick={onClose} disabled={saving}>Cerrar</Btn>
             <Btn variant="primary" onClick={save} disabled={saving || !name || !slug || priceArs === ""}>
               {saving ? "Guardando…" : (isNew ? "Crear producto" : "Guardar cambios")}
             </Btn>

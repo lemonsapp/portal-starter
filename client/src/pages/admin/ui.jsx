@@ -264,6 +264,14 @@ const CSS = `
   .adm-editor__wrap { grid-template-columns:1fr; padding-bottom:80px; }
   .adm-editor__side { position:static; }
 }
+/* Mobile: la barra sticky del editor no entra en una fila (390px) y "Guardar
+   cambios" quedaba cortado fuera de pantalla. Título arriba a fila completa,
+   acciones abajo; "Cerrar" se oculta (duplica a "← Volver"). */
+@media (max-width:700px){
+  .adm-editor__top { flex-wrap:wrap; row-gap:8px; padding:10px 12px; }
+  .adm-editor__title { order:-1; flex:1 1 100%; }
+  .adm-editor__top .adm-hide-mobile { display:none; }
+}
 `;
 
 let injected = false;
