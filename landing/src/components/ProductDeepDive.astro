@@ -77,7 +77,14 @@ const GUIDES_BY_SLUG = {
         { label: "Pro · Exterior",       file: "/guias/linea-pro/pro-exterior.pdf" },
     ],
     "linea-race": [
-        { label: "Guía de uso en sustrato",     file: "/guias/linea-race/race-sustrato.pdf" },
+        // 2026-07-10: la guía de sustrato fue reemplazada por la de hidroponía
+        // (pedido cliente). El PDF viejo (race-sustrato.pdf) queda en public/
+        // por si se quiere volver a linkear.
+        { label: "Guía de uso en hidroponía",   file: "/guias/linea-race/race-hidroponia.pdf" },
+        // ⚠ 2026-07-10: el cliente mandó una guía de sustrato nueva pero el
+        // archivo llegó corrupto (binario pasado por encoding de texto).
+        // Cuando llegue el PDF sano: optimizar con gs /ebook →
+        // race-sustrato-inerte-compuesto.pdf y apuntar acá.
         { label: "Sustrato inerte y compuesto", file: "/guias/linea-race/race-inerte-compuesto.pdf" },
         { label: "Recomendaciones de uso",      file: "/guias/linea-race/race-recomendaciones.pdf" },
     ],
