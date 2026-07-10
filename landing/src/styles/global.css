@@ -5462,6 +5462,17 @@ html.is-loading body {
     object-fit: cover; /* el banner cubre todo el hero (producto centrado) */
     object-position: center;
 }
+/* Cloner: el hero es mucho más alto (1440×~1780) que el banner (2560×1707)
+   y el cover zoomeaba hasta dejar solo el fondo — los potes quedaban fuera
+   de cuadro. contain muestra el banner entero (potes visibles) y el fondo
+   del contenedor rellena el resto con el mismo blanco del banner (sampleado
+   RGB 248,246,249); el scrim tiñe parejo y el empalme no se nota.
+   Pedido cliente 2026-07-10. */
+[data-slug="cloner"] .pdd__hero-fullimg { background: rgb(248, 246, 249); }
+[data-slug="cloner"] .pdd__hero-fullimg-el {
+    object-fit: contain;
+    object-position: center top;
+}
 /* Scrim: 3 de 4 banners tienen fondo claro → tinte oscuro parejo +
    refuerzo arriba/abajo para que el texto blanco siempre se lea. */
 .pdd__hero-fullimg-scrim {
