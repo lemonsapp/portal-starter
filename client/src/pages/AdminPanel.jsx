@@ -3,7 +3,7 @@
 // Panel admin post-wizard. Spec § 9.
 // Tabs: Coins / Feed / Settings (re-abre el wizard por sección).
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { useBranding } from "../lib/branding.js";
@@ -1081,6 +1081,26 @@ function SettingsTab() {
 
 // ── Tab: Productos (Shop fase 1) ────────────────────────────────────────────
 // Lista + CRUD de productos. Imágenes por URL (file upload llega en fase 2).
+
+// Agrupa el catálogo como lo ve la tienda: 1 tarjeta por familia de medidas
+// (famKeyOf) o por producto suelto. `products` ya viene ordenado por sort_order
+// del server, así que el orden de aparición acá ES el orden de la tienda.
+function catalogCards(products) {
+  const buckets = new Map();
+  const order = [];
+  for (const p of products) {
+    const key = famKeyOf(p.meta) || `solo:${p.slug}`;
+    if (!buckets.has(key)) { buckets.set(key, []); order.push(key); }
+    buckets.get(key).push(p);
+  }
+  return order.map((key) => {
+    const items = buckets.get(key);
+    // Cabecera = la medida destacada si hay (igual que la tarjeta del shop).
+    const head = items.find((p) => p.meta?.medida_destacada === true) || items[0];
+    return { key, items, head };
+  });
+}
+
 function ProductsTab() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -1091,6 +1111,12 @@ function ProductsTab() {
   const [migrateMsg, setMigrateMsg] = useState("");
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("all"); // all | active | hidden | featured
+  // Modo "Ordenar tienda": buffer local de tarjetas (familias) reordenables.
+  // Nada pega al server hasta "Guardar orden".
+  const [ordering, setOrdering] = useState(false);
+  const [cards, setCards] = useState([]);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const dragIdx = useRef(-1);
   useAdmCss();
 
   async function load() {
@@ -1151,6 +1177,58 @@ function ProductsTab() {
     setMigrating(false);
   }
 
+  function startOrdering() {
+    setCards(catalogCards(products));
+    setOrdering(true);
+    setErr("");
+    setMigrateMsg("");
+  }
+  const moveCard = (i, dir) => setCards((a) => {
+    const j = i + dir;
+    if (j < 0 || j >= a.length) return a;
+    const n = [...a];
+    [n[i], n[j]] = [n[j], n[i]];
+    return n;
+  });
+  // Drag & drop nativo (desktop). En touch quedan las flechas.
+  const onDragStart = (i) => (e) => { dragIdx.current = i; e.dataTransfer.effectAllowed = "move"; };
+  const onDragOver = (i) => (e) => {
+    e.preventDefault();
+    const from = dragIdx.current;
+    if (from === -1 || from === i) return;
+    setCards((a) => {
+      const n = [...a];
+      const [moved] = n.splice(from, 1);
+      n.splice(i, 0, moved);
+      return n;
+    });
+    dragIdx.current = i;
+  };
+  const onDragEnd = () => { dragIdx.current = -1; };
+
+  async function saveOrder() {
+    setSavingOrder(true);
+    setErr("");
+    try {
+      // Familias expandidas: la posición de la primera variante define dónde
+      // aparece la tarjeta en la tienda; las medidas viajan juntas.
+      const order = cards.flatMap((c) => c.items.map((p) => p.id));
+      const r = await fetch(`${API}/api/admin/shop/products/reorder`, {
+        method: "POST", headers: jsonHdr(), body: JSON.stringify({ order }),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        setErr(d.error || "No se pudo guardar el orden");
+      } else {
+        setOrdering(false);
+        await load();
+      }
+    } catch {
+      setErr("Error de red al guardar el orden");
+    }
+    setSavingOrder(false);
+  }
+
   const needle = q.trim().toLowerCase();
   const counts = {
     all: products.length,
@@ -1180,16 +1258,78 @@ function ProductsTab() {
           <div className="adm-sub">{counts.all} en el catálogo · {counts.active} publicados</div>
         </div>
         <div className="adm-toolbar">
-          <Btn size="sm" disabled={migrating} onClick={migrateImages} title="Sube a Cloudinary las imágenes que todavía son archivos de carpeta, para poder editarlas desde el panel">
-            {migrating ? "Migrando…" : "☁ Migrar imágenes"}
-          </Btn>
-          <Btn variant="primary" onClick={() => setEditing("new")}>+ Nuevo producto</Btn>
+          {ordering ? (
+            <>
+              <Btn size="sm" disabled={savingOrder} onClick={() => setOrdering(false)}>Cancelar</Btn>
+              <Btn variant="primary" disabled={savingOrder} onClick={saveOrder}>
+                {savingOrder ? "Guardando…" : "Guardar orden"}
+              </Btn>
+            </>
+          ) : (
+            <>
+              <Btn size="sm" disabled={loading || products.length < 2} onClick={startOrdering} title="Elegí qué publicación aparece primera en la tienda">
+                ↕ Ordenar tienda
+              </Btn>
+              <Btn size="sm" disabled={migrating} onClick={migrateImages} title="Sube a Cloudinary las imágenes que todavía son archivos de carpeta, para poder editarlas desde el panel">
+                {migrating ? "Migrando…" : "☁ Migrar imágenes"}
+              </Btn>
+              <Btn variant="primary" onClick={() => setEditing("new")}>+ Nuevo producto</Btn>
+            </>
+          )}
         </div>
       </div>
 
       {migrateMsg && <div className={`adm-alert ${migrateMsg.startsWith("Error") ? "adm-alert--err" : "adm-alert--ok"}`} style={{ marginBottom: 12 }}>{migrateMsg}</div>}
       {err && <div className="adm-alert adm-alert--err" style={{ marginBottom: 12 }}>{err}</div>}
 
+      {ordering ? (
+        <div className="adm-card">
+          <div className="adm-card__bd" style={{ borderBottom: "1px solid var(--border)" }}>
+            <div className="adm-help" style={{ marginTop: 0 }}>
+              Este es el orden en que se ven las publicaciones en la tienda: la primera de la
+              lista aparece primera. Arrastrá las filas o usá las flechas (las medidas de una
+              misma familia se mueven juntas). Nada cambia hasta tocar <strong>Guardar orden</strong>.
+            </div>
+          </div>
+          {cards.map((c, i) => {
+            const img = c.head.primary_image || c.items.find((p) => p.primary_image)?.primary_image;
+            const formatos = c.items.map((p) => p.meta?.formato).filter(Boolean);
+            const hidden = c.items.every((p) => !p.active);
+            return (
+              <div
+                key={c.key}
+                draggable
+                onDragStart={onDragStart(i)}
+                onDragOver={onDragOver(i)}
+                onDragEnd={onDragEnd}
+                style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: "10px 16px", borderBottom: "1px solid var(--border)",
+                  cursor: "grab", opacity: hidden ? 0.55 : 1,
+                }}
+              >
+                <span className="adm-mono" style={{ width: 26, textAlign: "right", color: "var(--text-3)", fontSize: 12, flex: "0 0 auto" }}>{i + 1}</span>
+                {img
+                  ? <img src={fixImageUrl(img)} alt="" className="adm-thumb" draggable={false} />
+                  : <div className="adm-thumb adm-thumb--ph">🖼</div>}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700 }}>{c.head.name}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--text-3)" }}>
+                    {c.items.length > 1
+                      ? `${c.items.length} medidas${formatos.length ? ` · ${formatos.join(" / ")}` : ""}`
+                      : `/${c.head.slug}`}
+                    {hidden ? " · Oculto en la tienda" : ""}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flex: "0 0 auto" }}>
+                  <Btn size="sm" disabled={i === 0} onClick={() => moveCard(i, -1)} title="Subir">↑</Btn>
+                  <Btn size="sm" disabled={i === cards.length - 1} onClick={() => moveCard(i, 1)} title="Bajar">↓</Btn>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
       <div className="adm-card">
         <div className="adm-card__bd adm-spread" style={{ borderBottom: "1px solid var(--border)", gap: 12 }}>
           <div className="adm-search" style={{ flex: "1 1 240px", minWidth: 0 }}>
@@ -1267,6 +1407,7 @@ function ProductsTab() {
           </div>
         )}
       </div>
+      )}
 
       {editing && (
         <ProductModal
@@ -1547,7 +1688,13 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
   const [categoryId, setCategoryId] = useState(product?.category?.id || "");
   const [active, setActive] = useState(product?.active !== false);
   const [featured, setFeatured] = useState(product?.featured === true);
-  const [sortOrder, setSortOrder] = useState(product?.sort_order ?? 0);
+  // Producto nuevo → al FINAL de la tienda (max sort_order + 10). Con 0 saltaba
+  // al primer puesto del catálogo apenas el admin usaba "Ordenar tienda".
+  const [sortOrder, setSortOrder] = useState(() =>
+    product
+      ? (product.sort_order ?? 0)
+      : Math.max(0, ...allProducts.map((p) => p.sort_order ?? 0)) + 10
+  );
   // Galería fija: si está activo, la interna muestra SOLO las fotos subidas acá
   // (la destacada primero) en vez de armar la galería por medida (kits).
   const [galleryFixed, setGalleryFixed] = useState(metaBase.gallery_fixed === true);

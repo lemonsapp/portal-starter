@@ -2216,6 +2216,39 @@ function build({ authRequired, requireRole }) {
     }
   );
 
+  // ── POST /api/admin/shop/products/reorder — orden del catálogo en bloque
+  // Recibe { order: [productId, ...] } con TODOS los ids en el orden deseado
+  // (el admin manda las familias expandidas: la posición de la primera variante
+  // define dónde aparece la tarjeta en la tienda). Asigna sort_order = posición
+  // × 10 (gaps para intercalar a mano si hiciera falta). Ids que no estén en la
+  // lista conservan su sort_order actual.
+  router.post("/products/reorder", ...writeMw, async (req, res) => {
+    const raw = req.body?.order;
+    if (!Array.isArray(raw) || raw.length === 0 || raw.length > 1000) {
+      return res.status(400).json({ error: "order debe ser una lista de ids de producto" });
+    }
+    const ids = raw.map((v) => parseInt(v, 10));
+    if (ids.some((n) => !Number.isInteger(n) || n <= 0)) {
+      return res.status(400).json({ error: "order contiene ids inválidos" });
+    }
+    if (new Set(ids).size !== ids.length) {
+      return res.status(400).json({ error: "order contiene ids repetidos" });
+    }
+    try {
+      const { rowCount } = await db.query(
+        `UPDATE products p
+         SET sort_order = o.pos * 10, updated_at = NOW()
+         FROM unnest($1::int[]) WITH ORDINALITY AS o(id, pos)
+         WHERE p.id = o.id`,
+        [ids]
+      );
+      res.json({ ok: true, updated: rowCount });
+    } catch (e) {
+      console.error("[shop.admin products reorder]", e);
+      res.status(500).json({ error: "Error al guardar el orden" });
+    }
+  });
+
   // ── POST /api/admin/shop/migrate-images-to-cloudinary — one-shot
   // Sube a Cloudinary las imágenes de producto que todavía son paths estáticos
   // y reapunta las filas de product_images, para que el admin las controle de
@@ -2252,7 +2285,10 @@ function build({ authRequired, requireRole }) {
                                 price_cents, stock, sku, category_id,
                                 active, featured, sort_order, meta)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,
-                 COALESCE($9,TRUE), COALESCE($10,FALSE), COALESCE($11,0),
+                 COALESCE($9,TRUE), COALESCE($10,FALSE),
+                 -- Sin sort_order explícito → al final del catálogo (no al
+                 -- principio, que es lo que hacía el default 0 tras reordenar).
+                 COALESCE($11,(SELECT COALESCE(MAX(sort_order),0)+10 FROM products)),
                  COALESCE($12,'{}'::jsonb))
          RETURNING *`,
         [body.slug, body.name, body.short_description || null, body.long_description || null,
