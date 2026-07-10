@@ -315,9 +315,9 @@ export const productDetails = {
         // para 250/500/1L, bidón -f1 para 5/10/20L. Race 1 verde como
         // representativo; sublabel "Las 5 fórmulas" (son 5 sistemas).
         formats: [
-            { name: "250 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp",        imgScale: 0.85 },
-            { name: "500 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp", imgScale: 0.85 },
-            { name: "1 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp",        imgScale: 0.85 },
+            { name: "250 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp",        imgScale: 0.75 },
+            { name: "500 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp", imgScale: 0.75 },
+            { name: "1 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp",        imgScale: 0.75 },
             { name: "5 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp",          imgScale: 0.85 },
             { name: "10 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/10l/race-1-verde-10l-f1.webp",        imgScale: 0.85 },
             { name: "20 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp",        imgScale: 0.6 },
