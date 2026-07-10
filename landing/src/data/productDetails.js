@@ -90,13 +90,19 @@ export const productDetails = {
         //   • 5L/10L/20L → bidones DOBLES (Parte 1 + Parte 2 juntos), las mismas
         //     fotos que usa el carrito del shop (elite-max-*juntos). Pedido cliente
         //     2026-07-02: los bidones deben mostrarse como el combo doble.
+        // Renders del selector = los mismos que el shop (2026-07-10, pedido
+        // cliente: las fotos jpg de 5/10/20L tenían fondo blanco). Bajados de
+        // las publicaciones del shop (Cloudinary), recortados y convertidos a
+        // webp con transparencia. 250ml/1L = pack Parte 1+2 (elite-juntos);
+        // 5/10/20L = bidones dobles Elite Max. 500ml conserva el render viejo:
+        // el shop no tiene upload transparente para esa medida todavía.
         formats: [
-            { name: "250 ML",   size: "250ml",  image: "/imagenes-web/productos/linea-elite/elite-250ml-unificado.png" },
+            { name: "250 ML",   size: "250ml",  image: "/imagenes-web/productos/linea-elite/elite-250ml-doble.webp" },
             { name: "500 ML",   size: "500ml",  image: "/imagenes-web/productos/linea-elite/elite-500ml-unificado.png" },
-            { name: "1 LITRO",  size: "1L",     image: "/imagenes-web/productos/linea-elite/elite-1l-unificado.png" },
-            { name: "5 LITROS", size: "5L",     image: "/imagenes-web/fotos-productos/5lts-juntos.jpg" },
-            { name: "10 LITROS",size: "10L",    image: "/imagenes-web/fotos-productos/10-litros-juntos.jpg" },
-            { name: "20 LITROS",size: "20L",    image: "/imagenes-web/fotos-productos/max20ltjuntos.jpg" },
+            { name: "1 LITRO",  size: "1L",     image: "/imagenes-web/productos/linea-elite/elite-1l-doble.webp" },
+            { name: "5 LITROS", size: "5L",     image: "/imagenes-web/productos/linea-elite/elite-max-5l-doble.webp" },
+            { name: "10 LITROS",size: "10L",    image: "/imagenes-web/productos/linea-elite/elite-max-10l-doble.webp" },
+            { name: "20 LITROS",size: "20L",    image: "/imagenes-web/productos/linea-elite/elite-max-20l-doble.webp" },
         ],
         system: {
             title: "Diseñado para integrar el sistema Holistic.",
