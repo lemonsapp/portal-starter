@@ -169,9 +169,17 @@ async function createMpPreference({ order, items, appUrl, webhookSecret }) {
       : undefined,
   }));
 
+  // El webhook tiene que pegarle a la API (Render), no al sitio (Vercel):
+  // el dominio público no tiene rewrite /api/* → Render, así que un
+  // notification_url con appUrl daría 404 y las órdenes quedarían
+  // pending_payment para siempre.
+  const apiUrl = getApiPublicUrl() || appUrl;
+  if (!getApiPublicUrl()) {
+    console.warn("[checkout] Sin API_PUBLIC_URL ni RENDER_EXTERNAL_URL — notification_url cae a APP_URL; si el sitio no proxya /api, el webhook de MP no va a llegar");
+  }
   const notificationUrl = webhookSecret
-    ? `${appUrl}/api/webhooks/mercadopago?secret=${encodeURIComponent(webhookSecret)}`
-    : `${appUrl}/api/webhooks/mercadopago`;
+    ? `${apiUrl}/api/webhooks/mercadopago?secret=${encodeURIComponent(webhookSecret)}`
+    : `${apiUrl}/api/webhooks/mercadopago`;
 
   const body = {
     items: mpItems,
@@ -233,8 +241,18 @@ async function fetchMpPayment(paymentId) {
   }
 }
 
-// Determina la base URL del deploy para back_urls + notification_url.
-// Prioridad: header `origin` del request → APP_URL del env → fallback localhost.
+// Base pública de la API (para notification_url del webhook MP).
+// API_PUBLIC_URL manda si está seteada; RENDER_EXTERNAL_URL la setea Render
+// automáticamente (https://<servicio>.onrender.com). Si no hay ninguna
+// (dev local), el caller cae a appUrl.
+function getApiPublicUrl() {
+  const url = process.env.API_PUBLIC_URL || process.env.RENDER_EXTERNAL_URL;
+  return url ? url.replace(/\/$/, "") : null;
+}
+
+// Determina la base URL del deploy para back_urls (success/failure del
+// checkout — páginas del SITIO, no de la API).
+// Prioridad: APP_URL del env → header `origin` del request → fallback localhost.
 function getAppUrl(req) {
   const fromEnv = process.env.APP_URL || process.env.PUBLIC_APP_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, "");

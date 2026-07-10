@@ -133,9 +133,10 @@ function build({ authRequired, requireRole }) {
     try {
       let result;
       switch (provider) {
-        case "cloudinary": result = await testCloudinary(); break;
-        case "resend":     result = await testResend();     break;
-        case "telegram":   result = await testTelegram();   break;
+        case "cloudinary":  result = await testCloudinary();  break;
+        case "resend":      result = await testResend();      break;
+        case "telegram":    result = await testTelegram();    break;
+        case "mercadopago": result = await testMercadoPago(); break;
         default:
           return res.status(400).json({ error: `Provider desconocido: ${provider}` });
       }
@@ -210,6 +211,27 @@ async function testTelegram() {
     return { ok: true, message: `Bot @${d.result?.username} OK · mensaje enviado a chat_id` };
   } catch (e) {
     return { ok: false, message: `Error de red al testear Telegram: ${e.message}` };
+  }
+}
+
+async function testMercadoPago() {
+  const token = await cs.getConfig("mercadopago.access_token");
+  if (!token) return { ok: false, message: "Falta mercadopago.access_token" };
+  const isSandbox = token.startsWith("TEST-");
+  try {
+    const r = await fetch("https://api.mercadopago.com/users/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.status === 401 || r.status === 403) {
+      return { ok: false, message: "Access token de MercadoPago inválido o vencido (revisá que sea el de la app correcta)" };
+    }
+    if (!r.ok) return { ok: false, message: `MercadoPago respondió ${r.status}` };
+    const who = d.nickname || d.email || `user ${d.id}`;
+    const mode = isSandbox ? "🧪 credenciales de PRUEBA (los pagos no son reales)" : "credenciales de producción";
+    return { ok: true, message: `MercadoPago OK · cuenta ${who} (${d.site_id || "?"}) · ${mode}` };
+  } catch (e) {
+    return { ok: false, message: `Error de red al testear MercadoPago: ${e.message}` };
   }
 }
 

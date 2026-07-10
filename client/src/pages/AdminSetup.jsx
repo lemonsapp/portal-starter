@@ -500,6 +500,7 @@ function StepMercadoPago({ goNext, goSkip }) {
   const [v, setV] = useState({ access_token: "", public_key: "", webhook_secret: "" });
   const [msg, setMsg] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     loadSection("mercadopago").then(d => setV(p => ({
@@ -518,6 +519,13 @@ function StepMercadoPago({ goNext, goSkip }) {
     setMsg(r.ok ? { type: "ok", text: "✓ Guardado." } : { type: "err", text: "Error" });
   };
 
+  const test = async () => {
+    setTesting(true); setMsg(null);
+    const r = await testProvider("mercadopago");
+    setTesting(false);
+    setMsg(r.ok ? { type: "ok", text: `✓ ${r.message}` } : { type: "err", text: `✗ ${r.message || r.error || "Error"}` });
+  };
+
   return (
     <StepShell
       title="6. MercadoPago (pagos del shop)"
@@ -530,12 +538,12 @@ function StepMercadoPago({ goNext, goSkip }) {
           <>En tu app → tab <b>Credenciales de producción</b> → copiá el <code>Access Token</code> y el <code>Public Key</code>. Si querés probar primero, usá las <b>Credenciales de prueba</b> (mismo lugar, otro tab).</>,
           <>Pegá el access_token abajo (es secreto — se encripta). public_key es opcional acá: solo lo necesitás si en el futuro pasamos a Checkout Bricks embebido.</>,
           <><b>webhook_secret</b> (opcional pero recomendado): cualquier string random que vos elijas, ej. <code>hl-mp-2026-xyz</code>. Lo usa el server para validar que las notificaciones vienen realmente de MercadoPago.</>,
-          <>Después de guardar, en tu app de MP → <b>Webhooks</b> → URL: <code>{`${typeof window !== "undefined" ? window.location.origin : ""}/api/webhooks/mercadopago?secret=TU_WEBHOOK_SECRET`}</code> → eventos: payment.</>,
+          <>Después de guardar, en tu app de MP → <b>Webhooks</b> → URL: <code>{`${API}/api/webhooks/mercadopago?secret=${v.webhook_secret || "TU_WEBHOOK_SECRET"}`}</code> → eventos: <b>Pagos</b>. Ojo: es la URL de la <b>API</b> (no la del sitio).</>,
         ]}
       />}
-      onSave={save} onNext={goNext} onSkip={goSkip}
+      onSave={save} onTest={test} onNext={goNext} onSkip={goSkip}
       msg={msg || (!v.access_token ? { type: "warn", text: "⚠ Sin MP el shop funciona en modo manual — las órdenes se crean pero no se cobran online." } : null)}
-      saving={saving}
+      saving={saving} testing={testing}
     >
       <label style={S.label}>Access Token (secreto)</label>
       <input style={S.input} value={v.access_token} onChange={e => setV({ ...v, access_token: e.target.value })} placeholder="APP_USR-xxx-xxx-xxx" type="password" autoComplete="off" />
