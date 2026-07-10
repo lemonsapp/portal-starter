@@ -4097,7 +4097,11 @@ html.is-loading body {
         flex-direction: column;
         align-items: center;
         gap: 0.05em;
-        font-size: clamp(3.2rem, 14.5vw, 5rem);
+        /* 13vw (no 14.5): el panel mide 92vw y "RESULTADOS" a 14.5vw lo
+           desbordaba entre ~400 y 640px — quedaba descentrado y al borde
+           del recorte. A 13vw la palabra más larga entra con margen en
+           todo el rango (pedido cliente 2026-07-10). */
+        font-size: clamp(3.1rem, 13vw, 5rem);
         letter-spacing: -0.03em;
         margin: 8px 0 20px;
     }
