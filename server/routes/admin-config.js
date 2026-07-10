@@ -217,7 +217,6 @@ async function testTelegram() {
 async function testMercadoPago() {
   const token = await cs.getConfig("mercadopago.access_token");
   if (!token) return { ok: false, message: "Falta mercadopago.access_token" };
-  const isSandbox = token.startsWith("TEST-");
   try {
     const r = await fetch("https://api.mercadopago.com/users/me", {
       headers: { Authorization: `Bearer ${token}` },
@@ -228,6 +227,11 @@ async function testMercadoPago() {
     }
     if (!r.ok) return { ok: false, message: `MercadoPago respondió ${r.status}` };
     const who = d.nickname || d.email || `user ${d.id}`;
+    // Sandbox: formato viejo TEST-..., o formato nuevo APP_USR-... pero del
+    // usuario de prueba (MP lo marca con tag test_user / nickname TESTUSER...).
+    const isSandbox = token.startsWith("TEST-")
+      || (Array.isArray(d.tags) && d.tags.includes("test_user"))
+      || String(d.nickname || "").toUpperCase().startsWith("TESTUSER");
     const mode = isSandbox ? "🧪 credenciales de PRUEBA (los pagos no son reales)" : "credenciales de producción";
     return { ok: true, message: `MercadoPago OK · cuenta ${who} (${d.site_id || "?"}) · ${mode}` };
   } catch (e) {
