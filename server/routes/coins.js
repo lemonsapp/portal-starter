@@ -150,7 +150,7 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
         ('premio-pack',     'premio', 'Pack Accesorios Holistic', 'Pack de accesorios de marca',          200, NULL, 3500000,  NULL, 20),
         ('premio-tensores', 'premio', 'Tensores de red',          'Tensores de red para cultivo',         200, NULL, 3500000,  NULL, 21),
         ('premio-gel',      'premio', 'Gel Cloner Holistic',      'Gel enraizante de la línea Holistic',  200, NULL, 4000000,  NULL, 22),
-        ('premio-dije',     'premio', 'Dije Don Rouch',           'Joya exclusiva de la marca',           1500, NULL, 42000000, NULL, 23)
+        ('premio-dije',     'premio', 'Dije Don Rouch',           'Dije de plata 925 full ice hecho a mano', 1500, NULL, 42000000, NULL, 23)
       ON CONFLICT (slug) DO NOTHING`);
 
     // Migración v1.0: actualizar deploys existentes a los nuevos costos. Cada UPDATE
@@ -169,9 +169,12 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
       UPDATE point_rewards SET cost_points=200  WHERE slug='premio-tensores' AND cost_points=22;
       UPDATE point_rewards SET cost_points=200  WHERE slug='premio-gel'      AND cost_points=25;
       UPDATE point_rewards SET cost_points=500, market_value_cents=42000000 WHERE slug='premio-dije' AND cost_points=88;
-      -- 2026-07-11: el dije pasa de 500 a 1500 puntos (pedido del cliente).
-      -- Acotado al valor previo → si el admin lo re-edita desde el panel, no se pisa.
+      -- 2026-07-11: el dije pasa de 500 a 1500 puntos + descripción real de la
+      -- joya (pedido del cliente). Acotados al valor previo → si el admin los
+      -- re-edita desde el panel, no se pisan.
       UPDATE point_rewards SET cost_points=1500 WHERE slug='premio-dije' AND cost_points=500;
+      UPDATE point_rewards SET description='Dije de plata 925 full ice hecho a mano'
+        WHERE slug='premio-dije' AND description='Joya exclusiva de la marca';
     `);
     console.log("[MIGRATION] canjes ready (point_rewards + point_redemptions)");
   } catch (e) { console.error("[MIGRATION canjes ERROR]", e.message); }
