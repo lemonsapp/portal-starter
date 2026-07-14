@@ -269,6 +269,16 @@ export default function ShopCheckout() {
             : "Completá tus datos de contacto y envío. El pago se procesa por MercadoPago — aceptamos tarjetas y efectivo."}
         </p>
 
+        {/* Carrito con monedas + sin sesión: las monedas se acreditan a la
+            cuenta cuyo email coincida con el del checkout — avisar antes. */}
+        {isGuest && cartHasMonedaPack && (
+          <div className="co-error" style={{ background: "rgba(46,143,110,.08)", border: "1px solid var(--c-accent-2, #2E8F6E)", color: "inherit" }}>
+            🪙 <b>Tu carrito tiene monedas.</b> Se acreditan a la cuenta registrada con el email
+            que uses acá. Si todavía no tenés cuenta, <Link to="/register" style={{ fontWeight: 800 }}>creala antes de pagar</Link> con
+            ese mismo email — si no, las monedas no tienen dónde acreditarse.
+          </div>
+        )}
+
         {isGuest && (
           <div className="co-guest">
             <span className="co-guest-ico" aria-hidden="true">💚</span>

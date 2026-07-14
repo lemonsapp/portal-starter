@@ -400,6 +400,43 @@ async function resolveOrderUserId(order) {
   } catch (_) { return null; }
 }
 
+// Devuelve las monedas de una orden pagada con monedas cuando el admin la
+// cancela (o la marca fallida). El monto sale del movimiento original de
+// débito (reason única por public_id). Idempotente y a prueba de requests
+// concurrentes: el índice único parcial uniq_coin_tx_devolucion_pedido hace
+// que sólo UN insert de devolución entre (ON CONFLICT DO NOTHING) y el saldo
+// se acredita únicamente si ese INSERT insertó.
+async function refundOrderMonedas(order) {
+  if (!order?.id || order.payment_method !== "monedas") return;
+  try {
+    const debitReason  = `Pago con monedas · ${order.public_id}`;
+    const refundReason = `Devolución monedas · ${order.public_id}`;
+    const deb = await db.query(
+      `SELECT user_id, amount FROM coin_transactions
+       WHERE type = 'pago_pedido' AND currency = 'monedas' AND reason = $1 LIMIT 1`,
+      [debitReason]
+    );
+    const d = deb.rows[0];
+    const monto = d ? Math.abs(parseInt(d.amount, 10)) || 0 : 0;
+    if (!monto) return;
+    const ins = await db.query(
+      `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, currency)
+       VALUES ($1, 'devolucion_pedido', $2, $3, 'web', 'sistema', 'monedas')
+       ON CONFLICT (reason) WHERE type = 'devolucion_pedido' DO NOTHING
+       RETURNING id`,
+      [d.user_id, monto, refundReason]
+    );
+    if (!ins.rows[0]) return; // ya devuelta
+    await db.query(
+      `UPDATE coins SET monedas_balance = monedas_balance + $1, updated_at = NOW() WHERE user_id = $2`,
+      [monto, d.user_id]
+    );
+    console.log(`[shopNotify] devueltas ${monto} monedas por cancelación de ${order.public_id}`);
+  } catch (e) {
+    console.error("[shopNotify refundOrderMonedas]", e.message);
+  }
+}
+
 // F3: acreditación automática al confirmarse el pago de una orden web.
 // Idempotente (orders.points_credited). El usuario se resuelve por user_id o
 // por email (checkout guest). Dos economías separadas (2026-07-14):
@@ -408,7 +445,13 @@ async function resolveOrderUserId(order) {
 async function creditOrderPoints(order) {
   if (!order?.id) return;
   const orderUserId = await resolveOrderUserId(order);
-  if (!orderUserId) return;
+  if (!orderUserId) {
+    // Sin cuenta con ese email → no hay a quién acreditar. Queda el rastro
+    // para que soporte pueda acreditar a mano si el cliente reclama
+    // (points_credited sigue FALSE, así que un re-pago sí acreditaría).
+    console.log(`[shopNotify] orden ${order.public_id} pagada sin cuenta asociada (${order.customer_email}) — sin acreditación`);
+    return;
+  }
   try {
     const guard = await db.query(
       `UPDATE orders SET points_credited = TRUE WHERE id = $1 AND points_credited IS NOT TRUE RETURNING id`,
@@ -443,7 +486,12 @@ async function creditOrderPoints(order) {
       await addMonedas(orderUserId, packPoints, "compra_monedas",
         `Compra de ${packPoints} monedas · ${order.public_id}`, "compra_monedas", packCents);
     }
-    if (earnPoints > 0) {
+    // Las órdenes pagadas CON monedas no ganan puntos: la plata real ya se
+    // gastó al comprar el pack (que tampoco los gana) y el incentivo de las
+    // monedas es el spread compra $3.600 / gasto $4.000. Si además ganaran
+    // puntos, pagar con monedas sería estrictamente mejor que pagar en plata
+    // (mismo producto + mismos puntos por ~10% menos) en cada compra.
+    if (earnPoints > 0 && order.payment_method !== "monedas") {
       await addPoints(orderUserId, earnPoints, "compra_web",
         `Compra web ${order.public_id}`, "web", baseCents);
     }
@@ -727,6 +775,7 @@ module.exports = {
   onOrderCreated,
   onOrderPaid,
   onOrderDispatched,
+  refundOrderMonedas,
   notifyAdminInApp,
   // F4 exports
   sendCampaign,

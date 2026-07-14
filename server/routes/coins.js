@@ -64,6 +64,10 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
     // Cada movimiento queda etiquetado con su moneda en coin_transactions.currency.
     await db.query(`ALTER TABLE coins ADD COLUMN IF NOT EXISTS monedas_balance BIGINT NOT NULL DEFAULT 0`);
     await db.query(`ALTER TABLE coin_transactions ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'puntos'`);
+    // Una sola devolución por orden cancelada (reason = 'Devolución monedas · <public_id>').
+    // El índice hace atómico el guard de refundOrderMonedas ante requests concurrentes.
+    await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uniq_coin_tx_devolucion_pedido
+                    ON coin_transactions(reason) WHERE type = 'devolucion_pedido'`);
     await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uniq_users_customer_code ON users(customer_code) WHERE customer_code IS NOT NULL`);
     await db.query(`ALTER TABLE coin_transactions ADD COLUMN IF NOT EXISTS canal TEXT`);
     await db.query(`ALTER TABLE coin_transactions ADD COLUMN IF NOT EXISTS operador TEXT`);
