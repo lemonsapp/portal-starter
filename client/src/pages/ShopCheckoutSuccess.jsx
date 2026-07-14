@@ -208,6 +208,17 @@ export default function ShopCheckoutSuccess() {
     // Manual = pendiente Y ya no estamos esperando la confirmación de MP.
     const isManual = status === "pending_payment" && !isFree && !verifying && !isTransfer;
 
+    // Monedas (2026-07-14): si la orden incluye packs de monedas, avisar que se
+    // acreditan solas al confirmarse el pago (o que ya están si está pagada).
+    // Replica el cálculo del server (meta.points_pack) desde los slugs de los
+    // packs, que son estables por compat (ver seed en routes/shop.js).
+    const monedasEnOrden = (order?.items || []).reduce((sum, it) => {
+        const m = /^pack-(\d+)-puntos$/.exec(it.product_slug || "");
+        if (m) return sum + parseInt(m[1], 10) * (it.quantity || 1);
+        if (it.product_slug === "puntos-custom") return sum + (it.quantity || 1);
+        return sum;
+    }, 0);
+
     // Headline narrativo (no exclamativo) según el estado real del pedido.
     const headlineText = isPaid
         ? "Hemos recibido tu compra"
@@ -349,6 +360,16 @@ export default function ShopCheckoutSuccess() {
                                 {isPaid ? "✓ Pagado" : transferPending ? (hasReceipt ? "🏦 Comprobante en revisión" : "🏦 Esperando transferencia") : verifying ? "⏳ Confirmando…" : isPending ? "⏳ Pendiente MP" : "📋 En revisión"}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* Monedas del pedido — se acreditan al confirmarse el pago */}
+                {monedasEnOrden > 0 && (
+                    <div style={{ marginTop: 18, background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: "var(--r-3,14px)", padding: "16px 18px", textAlign: "left", fontSize: 13.5, lineHeight: 1.6, color: "var(--c-text-2)" }}>
+                        🪙 <b style={{ color: "var(--c-text)" }}>{monedasEnOrden.toLocaleString("es-AR")} monedas</b>{" "}
+                        {isPaid
+                            ? <>ya se acreditaron a tu cuenta. Las ves en <b style={{ color: "var(--c-text)" }}>Coins → Balance</b> y las usás para pagar pedidos desde el checkout.</>
+                            : <>se van a acreditar a tu cuenta automáticamente cuando se confirme el pago.</>}
                     </div>
                 )}
 

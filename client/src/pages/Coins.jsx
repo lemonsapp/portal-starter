@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import { useToast } from "../components/ToastReward.jsx";
 import { Pop, FadeUp, Pulse, Jumbo, CountUp } from "../components/MotionPop.jsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1166,9 +1167,12 @@ export default function Coins() {
             <BuyCTA variant="inline" label="COMPRAR" />
           </div>
 
-          {/* HERO EDITORIAL — sólo bajo la pestaña "Balance" (mobile y desktop) */}
+          {/* HERO EDITORIAL — sólo bajo la pestaña "Balance" (mobile y desktop).
+              Dos paneles lado a lado (2026-07-14): PUNTOS (se ganan) y MONEDAS
+              (se compran). En mobile apilan por el minmax del grid. */}
           {tab === "balance" && (<>
-          <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"clamp(20px,5vw,32px) clamp(16px,5vw,36px)",marginBottom:28,overflow:"hidden",display:"block" }}>
+          <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,340px),1fr))",gap:20,marginBottom:28,alignItems:"stretch" }}>
+          <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"clamp(20px,5vw,32px) clamp(16px,5vw,36px)",overflow:"hidden",display:"block" }}>
             <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--lemon),var(--orange),transparent)" }}/>
             <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px)",backgroundSize:"48px 48px",pointerEvents:"none",opacity:.7 }}/>
             <div style={{ position:"absolute",right:-30,bottom:-50,fontFamily:"'Gotham', sans-serif",fontSize:"clamp(140px,18vw,260px)",lineHeight:.78,letterSpacing:"-6px",color:"transparent",WebkitTextStroke:"1px rgba(var(--brand-primary-rgb),.04)",pointerEvents:"none",userSelect:"none" }}>PUNTOS</div>
@@ -1178,8 +1182,8 @@ export default function Coins() {
                 <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:10,letterSpacing:"2.4px",textTransform:"uppercase",color:"var(--orange)",display:"flex",alignItems:"center",gap:12,marginBottom:14 }}>
                   <span style={{ width:28,height:1,background:"var(--orange)" }}/>Puntos
                 </div>
-                <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:"clamp(48px,6.4vw,80px)",lineHeight:.92,letterSpacing:"-0.03em",color:"var(--text)",marginBottom:6 }}>
-                  TU <em style={{ fontStyle:"normal",color:"var(--lemon)" }}>BALANCE</em>
+                <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:"clamp(40px,5vw,64px)",lineHeight:.92,letterSpacing:"-0.03em",color:"var(--text)",marginBottom:6 }}>
+                  TUS <em style={{ fontStyle:"normal",color:"var(--lemon)" }}>PUNTOS</em>
                 </div>
                 <div style={{ display:"flex",alignItems:"baseline",gap:12,marginBottom:8 }}>
                   <CountUp value={balance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
@@ -1192,15 +1196,6 @@ export default function Coins() {
                   ≈ <span style={{ color:"var(--lemon)",fontWeight:900 }}>${(balance*pesoPerPoint).toLocaleString("es-AR")}</span> en valor de canje
                   <span style={{ color:"rgba(237,233,224,.6)",marginLeft:8 }}>· 1 punto = ${pesoPerPoint.toLocaleString("es-AR")}</span>
                 </div>
-
-                {/* Monedas — saldo comprado, para pagar pedidos en la tienda */}
-                <div style={{ display:"inline-flex",alignItems:"center",gap:10,background:"rgba(255,255,255,.04)",border:"1px solid var(--border2)",borderRadius:12,padding:"8px 12px",marginBottom:10,marginRight:10 }}>
-                  <span style={{ fontSize:16 }}>🪙</span>
-                  <span style={{ fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"var(--muted2)",fontWeight:700 }}>Monedas</span>
-                  <span style={{ fontFamily:"'Gotham', sans-serif",fontSize:15,fontWeight:900,color:"var(--lemon)" }}>{Number(monedasBalance).toLocaleString()}</span>
-                  <span style={{ fontSize:11,color:"rgba(237,233,224,.6)" }}>· se compran en la tienda y pagan tus pedidos</span>
-                </div>
-                <br/>
 
                 {/* Código de cliente — para sumar puntos en compras externas */}
                 {customerCode && (
@@ -1235,6 +1230,44 @@ export default function Coins() {
               </div>
             </div>
           </FadeUp>
+
+          {/* Panel MONEDAS — saldo comprado, sólo sirve para pagar pedidos.
+              Se acreditan solas al confirmarse el pago del pack (MP/transferencia). */}
+          <FadeUp style={{ position:"relative",background:"linear-gradient(135deg,var(--mid) 0%,var(--deep) 100%)",border:"1px solid var(--border2)",padding:"clamp(20px,5vw,32px) clamp(16px,5vw,36px)",overflow:"hidden",display:"flex",flexDirection:"column" }}>
+            <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--orange),var(--lemon),transparent)" }}/>
+            <div style={{ position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px)",backgroundSize:"48px 48px",pointerEvents:"none",opacity:.7 }}/>
+            <div style={{ position:"absolute",right:-30,bottom:-50,fontFamily:"'Gotham', sans-serif",fontSize:"clamp(120px,15vw,220px)",lineHeight:.78,letterSpacing:"-6px",color:"transparent",WebkitTextStroke:"1px rgba(var(--brand-primary-rgb),.04)",pointerEvents:"none",userSelect:"none" }}>MONEDAS</div>
+
+            <div style={{ position:"relative",zIndex:2,display:"flex",flexDirection:"column",flex:1 }}>
+              <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:700,fontSize:10,letterSpacing:"2.4px",textTransform:"uppercase",color:"var(--orange)",display:"flex",alignItems:"center",gap:12,marginBottom:14 }}>
+                <span style={{ width:28,height:1,background:"var(--orange)" }}/>Monedas
+              </div>
+              <div style={{ fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:"clamp(40px,5vw,64px)",lineHeight:.92,letterSpacing:"-0.03em",color:"var(--text)",marginBottom:6 }}>
+                TUS <em style={{ fontStyle:"normal",color:"var(--lemon)" }}>MONEDAS</em>
+              </div>
+              <div style={{ display:"flex",alignItems:"baseline",gap:12,marginBottom:8 }}>
+                <CountUp value={monedasBalance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
+                  {loading?"—":Number(monedasBalance).toLocaleString()}
+                </CountUp>
+                <span style={{ fontSize:30,transform:"translateY(2px)" }}>🪙</span>
+              </div>
+              {/* Equivalencia: al pagar, 1 moneda vale $peso_per_point del pedido */}
+              <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:13,color:"var(--muted2)",marginBottom:14 }}>
+                ≈ <span style={{ color:"var(--lemon)",fontWeight:900 }}>${(monedasBalance*pesoPerPoint).toLocaleString("es-AR")}</span> para pagar pedidos
+                <span style={{ color:"rgba(237,233,224,.6)",marginLeft:8 }}>· 1 moneda = ${pesoPerPoint.toLocaleString("es-AR")}</span>
+              </div>
+              <div style={{ fontSize:12,color:"rgba(237,233,224,.65)",lineHeight:1.5,marginBottom:18,maxWidth:380 }}>
+                Se compran en la tienda y se acreditan solas cuando se confirma el pago.
+                Después las usás en el checkout con <b style={{ color:"var(--text)" }}>"Pagar con monedas"</b> y el pedido queda pagado al instante.
+              </div>
+              <div style={{ marginTop:"auto" }}>
+                <Link to="/shop/puntos-custom" style={{ display:"inline-flex",alignItems:"center",gap:10,background:"linear-gradient(135deg,var(--brand-primary),var(--brand-accent))",color:"#000",borderRadius:14,padding:"14px 22px",fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:14,letterSpacing:.5,textDecoration:"none",boxShadow:"0 8px 32px rgba(var(--brand-primary-rgb),.35)" }}>
+                  Comprar monedas 🪙 →
+                </Link>
+              </div>
+            </div>
+          </FadeUp>
+          </div>
 
           <ReferralCard />
           </>)}
