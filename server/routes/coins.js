@@ -58,6 +58,12 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
   // ── F1 Sistema de Puntos: customer_code + columnas de movimiento + config ──
   try {
     await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS customer_code TEXT`);
+    // ── Monedas (2026-07-14): saldo SEPARADO del de puntos. Los puntos se
+    // GANAN (compras + acciones en redes) y se canjean; las monedas se COMPRAN
+    // (packs del shop) y sirven únicamente para pagar pedidos en el carrito.
+    // Cada movimiento queda etiquetado con su moneda en coin_transactions.currency.
+    await db.query(`ALTER TABLE coins ADD COLUMN IF NOT EXISTS monedas_balance BIGINT NOT NULL DEFAULT 0`);
+    await db.query(`ALTER TABLE coin_transactions ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'puntos'`);
     await db.query(`CREATE UNIQUE INDEX IF NOT EXISTS uniq_users_customer_code ON users(customer_code) WHERE customer_code IS NOT NULL`);
     await db.query(`ALTER TABLE coin_transactions ADD COLUMN IF NOT EXISTS canal TEXT`);
     await db.query(`ALTER TABLE coin_transactions ADD COLUMN IF NOT EXISTS operador TEXT`);
@@ -454,6 +460,7 @@ router.get("/:userId", authRequired, async (req, res) => {
 
     res.json({
       balance:               coins.balance,
+      monedas_balance:       Number(coins.monedas_balance) || 0,
       total_earned:          coins.total_earned,
       customer_code:         customerCode,
       peso_per_point:        pesoPerPoint,

@@ -2873,6 +2873,11 @@ function OrdersTab() {
                             🏦 Transferencia{o.transfer_receipt_url ? " · 📎 comprobante" : " · sin comprobante"}
                           </div>
                         )}
+                        {o.payment_method === "monedas" && (
+                          <div style={{ fontSize: 10.5, fontWeight: 800, color: "var(--accent-hover)", marginTop: 2 }}>
+                            🪙 Pagado con monedas
+                          </div>
+                        )}
                       </td>
                       <td>
                         <div style={{ fontWeight: 700 }}>{o.customer_first_name} {o.customer_last_name || ""}</div>
@@ -3015,6 +3020,18 @@ function OrderDetailModal({ orderId, onClose, onChanged }) {
                 Flujo típico: Pendiente → Pagado → Despachado → Completado.
               </div>
             </div>
+
+            {/* Pago con monedas: la orden nació pagada con débito del saldo. */}
+            {order.payment_method === "monedas" && (
+              <div style={{ ...styles.card, marginBottom: 16, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase", color: "rgba(90,102,117,.5)" }}>
+                  🪙 Pagado con monedas
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(90,102,117,.6)", marginTop: 6 }}>
+                  El comprador pagó con su saldo de monedas — el débito ya se hizo y la orden entró como pagada.
+                </div>
+              </div>
+            )}
 
             {/* Pago por transferencia: comprobante subido por el comprador.
                 El admin lo mira y aprueba con el botón "Pagado" de arriba. */}

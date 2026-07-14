@@ -734,14 +734,19 @@ function ComoFunciona({ pesoPerPoint = 4000, code }) {
     { ic: "🛒", t: "Comprando en la web", d: `Ganás 1 punto cada ${money(12000)} de tu pedido. Se acreditan solos al completarse el pago.` },
     { ic: "💬", t: "Comprando por otros canales", d: `Compras por WhatsApp, MercadoLibre o efectivo también suman: informá tu código de cliente${code ? ` (${code})` : ""} y el monto dentro de los 7 días.` },
     { ic: "📸", t: "Mostrando tu cultivo", d: "Mencioná @holistic.arg en Instagram: likes, comentarios, fotos y ciclos completos suman puntos extra (pestaña Instagram)." },
-    { ic: "⚡", t: "Comprando puntos", d: "Si te faltan pocos para un premio, podés comprar puntos directos desde la tienda y se acreditan al instante." },
+  ];
+  // Monedas (2026-07-14): saldo separado — se compran, no se ganan, y pagan pedidos.
+  const monedas = [
+    { ic: "🪙", t: "Se compran en la tienda", d: "Packs de 10/25/50/100 o la cantidad que quieras. Se acreditan al instante cuando se confirma el pago." },
+    { ic: "🛒", t: "Pagan tus pedidos", d: `En el checkout elegís "Pagar con monedas" y el pedido queda pagado al toque. Cada moneda vale ${money(pesoPerPoint)}.` },
+    { ic: "↔️", t: "No se mezclan con los puntos", d: "Los puntos se ganan y se canjean por descuentos o premios; las monedas se compran y sirven sólo para pagar compras." },
   ];
   const canjear = [
     { ic: "🎟️", t: "Descuentos", d: "Del 5% al 40% off en tu próximo pedido. Generás un cupón de un solo uso que aplicás en el checkout." },
     { ic: "🎁", t: "Premios físicos", d: "Pack Accesorios, Gel Cloner, Tensores de red y el Dije Don Rouch. Coordinamos el envío al canjear." },
   ];
   const reglas = [
-    `Cada punto vale ${money(pesoPerPoint)} de valor de canje. Comprarlos cuesta menos que ese valor.`,
+    `Cada punto vale ${money(pesoPerPoint)} de valor de canje.`,
     "Los puntos no vencen: quedan en tu cuenta hasta que los canjees.",
     "Son personales e intransferibles. No se suman entre cuentas ni se ceden.",
     "Los descuentos no son acumulables con otras promociones y aplican sobre el subtotal (sin envío).",
@@ -772,6 +777,7 @@ function ComoFunciona({ pesoPerPoint = 4000, code }) {
       </div>
       <Section title="Cómo ganás puntos" items={ganar} />
       <Section title="Cómo los canjeás" items={canjear} />
+      <Section title="Y las monedas 🪙" items={monedas} />
       <div style={{ marginBottom: 6 }}>
         <div style={{ fontWeight: 900, fontSize: 16, color: "#fff", margin: "0 0 12px" }}>Reglas claras</div>
         <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 8 }}>
@@ -1034,6 +1040,9 @@ export default function Coins() {
   const [particles, setParticles] = useState([]);
   const [customerCode, setCustomerCode] = useState("");
   const [pesoPerPoint, setPesoPerPoint] = useState(4000);
+  // Monedas (2026-07-14): saldo separado del de puntos — se compran en la
+  // tienda (packs) y sirven únicamente para pagar pedidos en el carrito.
+  const [monedasBalance, setMonedasBalance] = useState(0);
   const [copiedCode, setCopiedCode] = useState(false);
   const [userId, setUserId] = useState(null);
 
@@ -1047,7 +1056,7 @@ export default function Coins() {
         if (d.user.id) {
           fetch(`${API}/coins/${d.user.id}`,{headers:hdrs()})
             .then(r=>r.json())
-            .then(c=>{ setCustomerCode(c.customer_code||""); setPesoPerPoint(c.peso_per_point||4000); })
+            .then(c=>{ setCustomerCode(c.customer_code||""); setPesoPerPoint(c.peso_per_point||4000); setMonedasBalance(c.monedas_balance||0); })
             .catch(()=>{});
         }
       }
@@ -1183,6 +1192,15 @@ export default function Coins() {
                   ≈ <span style={{ color:"var(--lemon)",fontWeight:900 }}>${(balance*pesoPerPoint).toLocaleString("es-AR")}</span> en valor de canje
                   <span style={{ color:"rgba(237,233,224,.6)",marginLeft:8 }}>· 1 punto = ${pesoPerPoint.toLocaleString("es-AR")}</span>
                 </div>
+
+                {/* Monedas — saldo comprado, para pagar pedidos en la tienda */}
+                <div style={{ display:"inline-flex",alignItems:"center",gap:10,background:"rgba(255,255,255,.04)",border:"1px solid var(--border2)",borderRadius:12,padding:"8px 12px",marginBottom:10,marginRight:10 }}>
+                  <span style={{ fontSize:16 }}>🪙</span>
+                  <span style={{ fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"var(--muted2)",fontWeight:700 }}>Monedas</span>
+                  <span style={{ fontFamily:"'Gotham', sans-serif",fontSize:15,fontWeight:900,color:"var(--lemon)" }}>{Number(monedasBalance).toLocaleString()}</span>
+                  <span style={{ fontSize:11,color:"rgba(237,233,224,.6)" }}>· se compran en la tienda y pagan tus pedidos</span>
+                </div>
+                <br/>
 
                 {/* Código de cliente — para sumar puntos en compras externas */}
                 {customerCode && (

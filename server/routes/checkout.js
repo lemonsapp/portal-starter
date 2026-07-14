@@ -334,7 +334,9 @@ const checkoutSchema = z.object({
   promo_code: z.string().trim().max(40).optional().nullable(),
   // Transferencia bancaria: la orden queda pending_payment, el comprador ve
   // los datos bancarios y sube el comprobante; el admin aprueba a mano.
-  payment_method: z.enum(["mercadopago", "transfer"]).optional().default("mercadopago"),
+  // Monedas: saldo comprado en la tienda (packs) — requiere sesión; la orden
+  // nace paid con el débito atómico del saldo.
+  payment_method: z.enum(["mercadopago", "transfer", "monedas"]).optional().default("mercadopago"),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -344,8 +346,15 @@ const checkoutSchema = z.object({
 function publicRouter({ authRequired } = {}) {
   const router = express.Router();
 
+  // Auth condicional: sólo el pago con monedas exige sesión (hay que saber de
+  // qué cuenta debitar). El resto del checkout sigue siendo guest.
+  const authIfMonedas = (req, res, next) => {
+    if (req.body?.payment_method === "monedas") return authRequired(req, res, next);
+    next();
+  };
+
   // POST /api/shop/checkout
-  router.post("/checkout", async (req, res) => {
+  router.post("/checkout", authIfMonedas, async (req, res) => {
     let body;
     try { body = checkoutSchema.parse(req.body); }
     catch (e) { return res.status(400).json({ error: "Datos inválidos", issues: e.issues }); }
@@ -435,11 +444,37 @@ function publicRouter({ authRequired } = {}) {
 
       const totalCents = Math.max(0, subtotalCents - discountCents + shippingCents);
 
+      // ── Pago con monedas (2026-07-14) ─────────────────────────────────────
+      // 1 moneda vale peso_per_point ($4.000) al pagar; se compra a buy_price
+      // ($3.600) vía packs — mismo spread 10% del sistema v9. El débito es
+      // atómico dentro de la transacción, después de crear la orden.
+      const isMonedasOrder = body.payment_method === "monedas" && totalCents > 0;
+      let costMonedas = 0;
+      if (isMonedasOrder) {
+        // Los packs de monedas no se pueden pagar con monedas: comprarlas a
+        // $3.600 y gastarlas a $4.000 imprimiría saldo infinito (9 → 10).
+        const hasPack = lineItems.some((li) => {
+          const meta = productMap.get(li.product_id)?.meta;
+          return !!(meta && (meta.points_pack || meta.points_custom));
+        });
+        if (hasPack) {
+          await client.query("ROLLBACK");
+          return res.status(400).json({ error: "Los packs de monedas no se pueden pagar con monedas" });
+        }
+        let pesoPerPoint = 4000;
+        try {
+          const cfg = await client.query(`SELECT value FROM point_config WHERE key='peso_per_point'`);
+          const v = parseInt(cfg.rows[0]?.value, 10);
+          if (Number.isFinite(v) && v > 0) pesoPerPoint = v;
+        } catch (_) {}
+        costMonedas = Math.ceil(totalCents / (pesoPerPoint * 100));
+      }
+
       // F5+: si el descuento cubre el 100% (total=0), la orden se marca
       // directamente como pagada — no hay nada que cobrar via MP.
       // Caso de uso: códigos 100% off (giveaways, comp tester, etc.)
       const isFreeOrder = totalCents === 0;
-      const initialStatus = isFreeOrder ? "paid" : "pending_payment";
+      const initialStatus = (isFreeOrder || isMonedasOrder) ? "paid" : "pending_payment";
 
       // 2. Crear orden con public_id único.
       let publicId;
@@ -451,9 +486,9 @@ function publicRouter({ authRequired } = {}) {
             `INSERT INTO orders
                (public_id, status, customer_email, customer_first_name, customer_last_name,
                 customer_phone, shipping_address, subtotal_cents, shipping_cents, total_cents,
-                promo_code, discount_cents, payment_method,
+                promo_code, discount_cents, payment_method, user_id,
                 paid_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
                      CASE WHEN $2 = 'paid' THEN NOW() ELSE NULL END)
              RETURNING *`,
             [publicId, initialStatus,
@@ -464,7 +499,8 @@ function publicRouter({ authRequired } = {}) {
              JSON.stringify(body.shipping_address),
              subtotalCents, shippingCents, totalCents,
              appliedPromoCode, discountCents,
-             body.payment_method]
+             body.payment_method,
+             req.user?.id || null]
           );
           inserted = rows[0];
           break;
@@ -492,6 +528,29 @@ function publicRouter({ authRequired } = {}) {
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
           [inserted.id, li.product_id, li.product_slug, li.name_snapshot,
            li.price_cents_snapshot, li.quantity, li.line_total_cents, li.image_url_snapshot]
+        );
+      }
+
+      // 3b. Pago con monedas: débito atómico del saldo — si no alcanza, el
+      //     UPDATE no matchea y la orden entera se revierte (ROLLBACK).
+      if (isMonedasOrder) {
+        const deb = await client.query(
+          `UPDATE coins SET monedas_balance = monedas_balance - $1, updated_at = NOW()
+           WHERE user_id = $2 AND monedas_balance >= $1
+           RETURNING monedas_balance`,
+          [costMonedas, req.user.id]
+        );
+        if (!deb.rows[0]) {
+          await client.query("ROLLBACK");
+          return res.status(400).json({
+            error: `Monedas insuficientes: este pedido cuesta ${costMonedas} monedas. Comprá más en la tienda.`,
+            monedas_needed: costMonedas,
+          });
+        }
+        await client.query(
+          `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, currency, amount_cents)
+           VALUES ($1, 'pago_pedido', $2, $3, 'web', 'sistema', 'monedas', $4)`,
+          [req.user.id, -costMonedas, `Pago con monedas · ${inserted.public_id}`, totalCents]
         );
       }
 
@@ -524,6 +583,20 @@ function publicRouter({ authRequired } = {}) {
           init_point: null,
           free: true,           // flag → frontend redirige a success directo
           total_cents: 0,
+        });
+      }
+
+      // 5c'. Pago con monedas: la orden ya nació paid y el saldo se debitó en
+      //      la transacción. Disparar flow de pago confirmado (acredita los
+      //      puntos que la compra GANA + emails) y mandar al success directo.
+      if (isMonedasOrder) {
+        shopNotify.onOrderPaid(inserted, lineItems).catch(() => {});
+        return res.json({
+          public_id: inserted.public_id,
+          init_point: null,
+          monedas: true,
+          monedas_spent: costMonedas,
+          total_cents: totalCents,
         });
       }
 

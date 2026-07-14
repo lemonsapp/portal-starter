@@ -366,18 +366,49 @@ async function addPoints(userId, points, type, reason, canal, amountCents) {
     [userId, points]
   );
   await db.query(
-    `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, amount_cents)
-     VALUES ($1, $2, $3, $4, $5, 'sistema', $6)`,
+    `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, amount_cents, currency)
+     VALUES ($1, $2, $3, $4, $5, 'sistema', $6, 'puntos')`,
     [userId, type, points, reason, canal, amountCents || null]
   );
 }
 
-// F3: acreditación automática de puntos al confirmarse el pago de una orden web.
-// Idempotente (orders.points_credited). Solo para compras de usuarios logueados.
-// Excluye envío y descuento. Detecta "packs de puntos" (product.meta.points_pack)
-// y los acredita aparte como compra_puntos (sin ganar 1pt/$12.000 sobre ese ítem).
+// Acredita MONEDAS (saldo separado del de puntos — se compran, no se ganan).
+async function addMonedas(userId, monedas, type, reason, canal, amountCents) {
+  if (!userId || monedas <= 0) return;
+  await db.query(
+    `INSERT INTO coins (user_id, balance, total_earned, monedas_balance) VALUES ($1, 0, 0, $2)
+     ON CONFLICT (user_id) DO UPDATE SET monedas_balance = coins.monedas_balance + $2,
+       updated_at = NOW()`,
+    [userId, monedas]
+  );
+  await db.query(
+    `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, amount_cents, currency)
+     VALUES ($1, $2, $3, $4, $5, 'sistema', $6, 'monedas')`,
+    [userId, type, monedas, reason, canal, amountCents || null]
+  );
+}
+
+// Resuelve el usuario dueño de una orden: user_id si está, si no por email
+// (el checkout es guest — my-orders usa el mismo matcheo por email).
+async function resolveOrderUserId(order) {
+  if (order?.user_id) return order.user_id;
+  const email = String(order?.customer_email || "").trim().toLowerCase();
+  if (!email) return null;
+  try {
+    const r = await db.query(`SELECT id FROM users WHERE LOWER(email) = $1 LIMIT 1`, [email]);
+    return r.rows[0]?.id || null;
+  } catch (_) { return null; }
+}
+
+// F3: acreditación automática al confirmarse el pago de una orden web.
+// Idempotente (orders.points_credited). El usuario se resuelve por user_id o
+// por email (checkout guest). Dos economías separadas (2026-07-14):
+//   • PUNTOS: se GANAN — 1 pt cada $12.000 de compra (excluye packs).
+//   • MONEDAS: se COMPRAN — los packs (meta.points_pack) acreditan monedas.
 async function creditOrderPoints(order) {
-  if (!order?.user_id || !order?.id) return;
+  if (!order?.id) return;
+  const orderUserId = await resolveOrderUserId(order);
+  if (!orderUserId) return;
   try {
     const guard = await db.query(
       `UPDATE orders SET points_credited = TRUE WHERE id = $1 AND points_credited IS NOT TRUE RETURNING id`,
@@ -409,11 +440,11 @@ async function creditOrderPoints(order) {
     const earnPoints = Math.floor((baseCents / 100) / earnPerPoint);
 
     if (packPoints > 0) {
-      await addPoints(order.user_id, packPoints, "compra_puntos",
-        `Compra de ${packPoints} puntos · ${order.public_id}`, "compra_puntos", packCents);
+      await addMonedas(orderUserId, packPoints, "compra_monedas",
+        `Compra de ${packPoints} monedas · ${order.public_id}`, "compra_monedas", packCents);
     }
     if (earnPoints > 0) {
-      await addPoints(order.user_id, earnPoints, "compra_web",
+      await addPoints(orderUserId, earnPoints, "compra_web",
         `Compra web ${order.public_id}`, "web", baseCents);
     }
   } catch (e) {

@@ -77,6 +77,30 @@ export default function ShopCheckout() {
       .catch(() => {});
   }, []);
 
+  // ── Monedas (2026-07-14): saldo comprado en la tienda, paga pedidos ─────
+  // Si hay sesión, traemos el saldo de monedas + valor por moneda para
+  // ofrecer "Pagar con monedas". 1 moneda vale $peso_per_point al pagar.
+  const [monedasBalance, setMonedasBalance] = useState(0);
+  const [pesoPerPoint, setPesoPerPoint] = useState(4000);
+  useEffect(() => {
+    if (isGuest) return;
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const hdrs = { Authorization: `Bearer ${token}` };
+    fetch(`${API}/profile`, { headers: hdrs })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d?.user?.id) return;
+        return fetch(`${API}/coins/${d.user.id}`, { headers: hdrs })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((c) => {
+            if (!c) return;
+            setMonedasBalance(Number(c.monedas_balance) || 0);
+            setPesoPerPoint(Number(c.peso_per_point) || 4000);
+          });
+      })
+      .catch(() => {});
+  }, [isGuest]);
+
   // ── Promo code state (F5) ───────────────────────────────────────────────
   const [promoInput, setPromoInput] = useState("");
   const [promoApplied, setPromoApplied] = useState(null);  // { code, discount_cents, ... } | null
@@ -126,6 +150,19 @@ export default function ShopCheckout() {
   const discountCents = promoApplied?.discount_cents || 0;
   const totalCents = Math.max(0, subtotalCents - discountCents);
 
+  // Costo del pedido en monedas (1 moneda = $peso_per_point). Los packs de
+  // monedas no se pueden pagar con monedas (el server también lo bloquea).
+  const cartHasMonedaPack = items.some((i) => (i.slug || "").includes("puntos"));
+  const costMonedas = Math.ceil(totalCents / (pesoPerPoint * 100));
+  const monedasOffered = !isGuest && !cartHasMonedaPack && monedasBalance > 0 && totalCents > 0;
+  const monedasEnough = monedasBalance >= costMonedas;
+
+  // Si el método elegido deja de estar disponible (ej: agregó un pack de
+  // monedas al carrito), volvemos a MercadoPago.
+  useEffect(() => {
+    if (payMethod === "monedas" && (!monedasOffered || !monedasEnough)) setPayMethod("mercadopago");
+  }, [payMethod, monedasOffered, monedasEnough]);
+
   function set(k, v) { setForm((f) => ({ ...f, [k]: v })); }
 
   const isValid = useMemo(() => {
@@ -143,9 +180,14 @@ export default function ShopCheckout() {
     }
     setSubmitting(true);
     try {
+      // Pago con monedas: el server exige sesión para saber de qué cuenta debitar.
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const r = await fetch(`${API}/api/shop/checkout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(payMethod === "monedas" && token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           customer: {
             email: form.email.trim().toLowerCase(),
@@ -194,6 +236,11 @@ export default function ShopCheckout() {
       // Transferencia: success page muestra datos bancarios + subir comprobante.
       if (data.transfer) {
         navigate(`/shop/checkout/success?order=${encodeURIComponent(data.public_id || "")}&transfer=1`, { replace: true });
+        return;
+      }
+      // Monedas: la orden ya quedó pagada con el débito del saldo → success directo.
+      if (data.monedas) {
+        navigate(`/shop/checkout/success?order=${encodeURIComponent(data.public_id || "")}`, { replace: true });
         return;
       }
       // Free purchase OR manual fallback → success page directo.
@@ -379,21 +426,33 @@ export default function ShopCheckout() {
               </div>
 
               {/* ── Método de pago (solo si hay más de una opción) ── */}
-              {transferAvailable && totalCents > 0 && (
+              {(transferAvailable || monedasOffered) && totalCents > 0 && (
                 <div style={{ margin: "18px 0 4px" }}>
                   <label className="co-promo-label">💳 Método de pago</label>
                   {[
                     { key: "mercadopago", title: "MercadoPago", desc: "Tarjetas, cuotas y efectivo (Rapipago/PagoFácil)." },
-                    { key: "transfer", title: "Transferencia bancaria", desc: "Te mostramos los datos al confirmar. Subís el comprobante y validamos el pago." },
+                    ...(transferAvailable ? [
+                      { key: "transfer", title: "Transferencia bancaria", desc: "Te mostramos los datos al confirmar. Subís el comprobante y validamos el pago." },
+                    ] : []),
+                    ...(monedasOffered ? [{
+                      key: "monedas",
+                      title: `Monedas 🪙 (tenés ${monedasBalance.toLocaleString("es-AR")})`,
+                      desc: monedasEnough
+                        ? `Este pedido cuesta ${costMonedas.toLocaleString("es-AR")} monedas. Se debitan de tu saldo y el pedido queda pagado al instante.`
+                        : `Este pedido cuesta ${costMonedas.toLocaleString("es-AR")} monedas — te faltan ${(costMonedas - monedasBalance).toLocaleString("es-AR")}. Comprá más en la tienda.`,
+                      disabled: !monedasEnough,
+                    }] : []),
                   ].map((m) => (
                     <button
                       key={m.key}
                       type="button"
-                      onClick={() => setPayMethod(m.key)}
+                      disabled={m.disabled}
+                      onClick={() => { if (!m.disabled) setPayMethod(m.key); }}
                       style={{
                         display: "flex", alignItems: "flex-start", gap: 10, width: "100%",
                         textAlign: "left", padding: "12px 14px", marginTop: 8,
-                        borderRadius: 12, cursor: "pointer", fontFamily: "inherit",
+                        borderRadius: 12, cursor: m.disabled ? "not-allowed" : "pointer", fontFamily: "inherit",
+                        opacity: m.disabled ? 0.55 : 1,
                         border: payMethod === m.key ? "2px solid var(--c-accent-2, #2E8F6E)" : "1px solid var(--c-border, rgba(0,0,0,.14))",
                         background: payMethod === m.key ? "rgba(46,143,110,.07)" : "transparent",
                       }}
@@ -426,6 +485,8 @@ export default function ShopCheckout() {
                   "Finalizar compra GRATIS →"
                 ) : payMethod === "transfer" ? (
                   "Confirmar pedido →"
+                ) : payMethod === "monedas" ? (
+                  `Pagar con ${costMonedas.toLocaleString("es-AR")} monedas 🪙 →`
                 ) : (
                   "Pagar con MercadoPago →"
                 )}
