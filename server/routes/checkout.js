@@ -30,6 +30,7 @@ const cs = require("../lib/configStore");
 const shopNotify = require("../lib/shopNotify");
 const { configureCloudinary } = require("../lib/cloudinaryConfig");
 const { uploadLimiter } = require("../security");
+const { authOptional } = require("../auth");
 
 // Comprobantes de transferencia: el comprador sube una foto/captura desde la
 // success page. Allow-list explícita de formatos raster — nada de SVG (puede
@@ -347,10 +348,13 @@ function publicRouter({ authRequired } = {}) {
   const router = express.Router();
 
   // Auth condicional: sólo el pago con monedas exige sesión (hay que saber de
-  // qué cuenta debitar). El resto del checkout sigue siendo guest.
+  // qué cuenta debitar). El resto del checkout sigue siendo guest, pero si el
+  // comprador tiene sesión la linkeamos igual (authOptional → orders.user_id):
+  // así la acreditación de puntos/monedas no depende de que el email tipeado
+  // coincida con el de la cuenta.
   const authIfMonedas = (req, res, next) => {
     if (req.body?.payment_method === "monedas") return authRequired(req, res, next);
-    next();
+    return authOptional(req, res, next);
   };
 
   // POST /api/shop/checkout
@@ -424,8 +428,6 @@ function publicRouter({ authRequired } = {}) {
         });
       }
 
-      const shippingCents = parseInt(await cs.getConfig("shop.shipping_cost_cents"), 10) || 0;
-
       // F5: validar + aplicar promo_code si vino
       let discountCents = 0;
       let appliedPromoCode = null;
@@ -441,6 +443,21 @@ function publicRouter({ authRequired } = {}) {
         discountCents = promoResult.discount_cents;
         appliedPromoCode = promoResult.promo.code;
       }
+
+      // Envío: costo fijo de config, con dos excepciones (2026-07-14):
+      //  • Carrito 100% digital (sólo packs de monedas): no hay nada que
+      //    despachar, no corresponde cobrar envío.
+      //  • Código que cubre todo el subtotal (comp/giveaway 100% off): la
+      //    orden es una cortesía — cobrar sólo el envío dejaría un pago
+      //    residual en MP y rompería la auto-aprobación (total=0 → paid).
+      const cartAllPacks = lineItems.every((li) => {
+        const meta = productMap.get(li.product_id)?.meta;
+        return !!(meta && (meta.points_pack || meta.points_custom));
+      });
+      const isFullComp = subtotalCents > 0 && discountCents >= subtotalCents;
+      const shippingCents = (cartAllPacks || isFullComp)
+        ? 0
+        : (parseInt(await cs.getConfig("shop.shipping_cost_cents"), 10) || 0);
 
       const totalCents = Math.max(0, subtotalCents - discountCents + shippingCents);
 

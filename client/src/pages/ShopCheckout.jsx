@@ -180,13 +180,17 @@ export default function ShopCheckout() {
     }
     setSubmitting(true);
     try {
-      // Pago con monedas: el server exige sesión para saber de qué cuenta debitar.
+      // Si hay sesión mandamos SIEMPRE el token: el server linkea la orden a
+      // la cuenta (orders.user_id) y la acreditación de puntos/monedas al
+      // pagar no depende de que el email tipeado coincida con el registrado.
+      // Para pago con monedas además es obligatorio (hay que saber de qué
+      // cuenta debitar).
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const r = await fetch(`${API}/api/shop/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(payMethod === "monedas" && token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           customer: {

@@ -14,6 +14,19 @@ function authRequired(req, res, next) {
   }
 }
 
+// authOptional: si viene un Bearer válido, popula req.user; si no viene o es
+// inválido sigue como guest (req.user queda undefined). Para rutas públicas
+// que quieren linkear la sesión cuando existe (ej: checkout → orders.user_id,
+// que después usa la acreditación de puntos/monedas al confirmarse el pago).
+function authOptional(req, _res, next) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  if (token) {
+    try { req.user = jwt.verify(token, process.env.JWT_SECRET); } catch { /* guest */ }
+  }
+  next();
+}
+
 // Cache simple de scopes por user_id (TTL 5min). El JWT solo tiene id+role;
 // los scopes viven en DB y pueden cambiar — con TTL corto evitamos tener que rotar tokens.
 const scopesCache = new Map();
@@ -52,4 +65,4 @@ function requireRole(roles = [], scope = "general") {
   };
 }
 
-module.exports = { authRequired, requireRole, getUserScopes, invalidateUserScopesCache };
+module.exports = { authRequired, authOptional, requireRole, getUserScopes, invalidateUserScopesCache };
