@@ -747,7 +747,6 @@ function ComoFunciona({ pesoPerPoint = 4000, code }) {
     { ic: "🎁", t: "Premios físicos", d: "Pack Accesorios, Gel Cloner, Tensores de red y el Dije Don Rouch. Coordinamos el envío al canjear." },
   ];
   const reglas = [
-    `Cada punto vale ${money(pesoPerPoint)} de valor de canje.`,
     "Los puntos no vencen: quedan en tu cuenta hasta que los canjees.",
     "Son personales e intransferibles. No se suman entre cuentas ni se ceden.",
     "Los descuentos no son acumulables con otras promociones y aplican sobre el subtotal (sin envío).",
@@ -1191,12 +1190,6 @@ export default function Coins() {
                   </CountUp>
                   <span style={{ display:"inline-flex", transform:"translateY(8px)" }}><Coin size={30} /></span>
                 </div>
-                {/* Equivalencia en $ (Sistema de Puntos: 1 punto = $peso_per_point) */}
-                <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:13,color:"var(--muted2)",marginBottom:14 }}>
-                  ≈ <span style={{ color:"var(--lemon)",fontWeight:900 }}>${(balance*pesoPerPoint).toLocaleString("es-AR")}</span> en valor de canje
-                  <span style={{ color:"rgba(237,233,224,.6)",marginLeft:8 }}>· 1 punto = ${pesoPerPoint.toLocaleString("es-AR")}</span>
-                </div>
-
                 {/* Código de cliente — para sumar puntos en compras externas */}
                 {customerCode && (
                   <div style={{ display:"inline-flex",alignItems:"center",gap:10,background:"rgba(255,255,255,.04)",border:"1px solid var(--border2)",borderRadius:12,padding:"8px 12px",marginBottom:16 }}>
