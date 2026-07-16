@@ -729,7 +729,7 @@ function Gift({ balance, onGift }) {
 // ── CÓMO FUNCIONA / REGLAS (Sistema de Puntos v9, doc §3/§5/§8) ──────────────
 // Explica en lenguaje accesible cómo se ganan, cómo se canjean y las reglas
 // del programa. Los números reflejan SISTEMADEPUNTOS9 (= el config del server).
-function ComoFunciona({ pesoPerPoint = 4000, code }) {
+function ComoFunciona({ code }) {
   const money = (n) => "$" + Number(n).toLocaleString("es-AR");
   const ganar = [
     { ic: "🛒", t: "Comprando en la web", d: `Ganás 1 punto cada ${money(12000)} de tu pedido. Se acreditan solos al completarse el pago.` },
@@ -739,7 +739,7 @@ function ComoFunciona({ pesoPerPoint = 4000, code }) {
   // Monedas (2026-07-14): saldo separado — se compran, no se ganan, y pagan pedidos.
   const monedas = [
     { ic: "🪙", t: "Se compran en la tienda", d: "Packs de 10/25/50/100 o la cantidad que quieras. Se acreditan al instante cuando se confirma el pago." },
-    { ic: "🛒", t: "Pagan tus pedidos", d: `En el checkout elegís "Pagar con monedas" y el pedido queda pagado al toque. Cada moneda vale ${money(pesoPerPoint)}.` },
+    { ic: "🛒", t: "Pagan tus pedidos", d: `En el checkout elegís "Pagar con monedas" y el pedido queda pagado al toque.` },
     { ic: "↔️", t: "No se mezclan con los puntos", d: "Los puntos se ganan y se canjean por descuentos o premios; las monedas se compran y sirven sólo para pagar compras." },
   ];
   const canjear = [
@@ -1039,7 +1039,6 @@ export default function Coins() {
   const [showSpin, setShowSpin] = useState(false);
   const [particles, setParticles] = useState([]);
   const [customerCode, setCustomerCode] = useState("");
-  const [pesoPerPoint, setPesoPerPoint] = useState(4000);
   // Monedas (2026-07-14): saldo separado del de puntos — se compran en la
   // tienda (packs) y sirven únicamente para pagar pedidos en el carrito.
   const [monedasBalance, setMonedasBalance] = useState(0);
@@ -1056,7 +1055,7 @@ export default function Coins() {
         if (d.user.id) {
           fetch(`${API}/coins/${d.user.id}`,{headers:hdrs()})
             .then(r=>r.json())
-            .then(c=>{ setCustomerCode(c.customer_code||""); setPesoPerPoint(c.peso_per_point||4000); setMonedasBalance(c.monedas_balance||0); })
+            .then(c=>{ setCustomerCode(c.customer_code||""); setMonedasBalance(c.monedas_balance||0); })
             .catch(()=>{});
         }
       }
@@ -1244,11 +1243,6 @@ export default function Coins() {
                 </CountUp>
                 <span style={{ fontSize:30,transform:"translateY(2px)" }}>🪙</span>
               </div>
-              {/* Equivalencia: al pagar, 1 moneda vale $peso_per_point del pedido */}
-              <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:13,color:"var(--muted2)",marginBottom:14 }}>
-                ≈ <span style={{ color:"var(--lemon)",fontWeight:900 }}>${(monedasBalance*pesoPerPoint).toLocaleString("es-AR")}</span> para pagar pedidos
-                <span style={{ color:"rgba(237,233,224,.6)",marginLeft:8 }}>· 1 moneda = ${pesoPerPoint.toLocaleString("es-AR")}</span>
-              </div>
               <div style={{ fontSize:12,color:"rgba(237,233,224,.65)",lineHeight:1.5,marginBottom:18,maxWidth:380 }}>
                 Se compran en la tienda y se acreditan solas cuando se confirma el pago.
                 Después las usás en el checkout con <b style={{ color:"var(--text)" }}>"Pagar con monedas"</b> y el pedido queda pagado al instante.
@@ -1266,7 +1260,7 @@ export default function Coins() {
           </>)}
 
           {tab==="canjes"   && <Canjes balance={balance} userId={userId} onRedeem={c=>{ setBalance(b=>b-c); }} />}
-          {tab==="comofunciona" && <ComoFunciona pesoPerPoint={pesoPerPoint} code={customerCode} />}
+          {tab==="comofunciona" && <ComoFunciona code={customerCode} />}
           {tab==="instagram" && <Instagram />}
           {tab==="tienda"   && <Store balance={balance} onBuy={c=>{ setBalance(b=>b-c); spawn(6); }} />}
           {tab==="misiones" && <Missions onClaim={c=>{ setBalance(b=>b+c); spawn(14); }} />}
