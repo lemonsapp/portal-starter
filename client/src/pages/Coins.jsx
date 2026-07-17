@@ -374,10 +374,10 @@ function ReferralCard() {
             <span style={{ width: 18, height: 1, background: "#a78bfa" }} />Programa de referidos
           </div>
           <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: 32, letterSpacing: "1px", color: "#fff", lineHeight: 1 }}>
-            Invitá amigos · ganá <span style={{ color: "var(--brand-primary)" }}>25 <Coin size={22} /></span>
+            Invitá amigos · ganá <span style={{ color: "var(--brand-primary)" }}>2 <Coin size={22} /></span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginTop: 6, lineHeight: 1.5 }}>
-            Tu amigo recibe 25 <Coin size={13} /> al activar su cuenta. Vos también ganás 25 <Coin size={13} />.
+            Tu amigo recibe 2 <Coin size={13} /> al activar su cuenta. Vos también ganás 2 <Coin size={13} /> por cada invitación.
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, fontFamily: "'Gotham', monospace" }}>
@@ -403,7 +403,7 @@ function ReferralCard() {
             style={{ padding: "8px 14px", background: copied ? "#22c55e" : "linear-gradient(135deg,#a78bfa,#ec4899)", color: "#000", border: "none", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0 }}>
             {copied ? "✓ Copiado" : "📋 Copiar link"}
           </Pop>
-          <Pop as="a" href={`https://wa.me/?text=${encodeURIComponent(`Te paso mi link: ${link} — sumá 25 💎 al activar tu cuenta`)}`} target="_blank" rel="noreferrer"
+          <Pop as="a" href={`https://wa.me/?text=${encodeURIComponent(`Te paso mi link: ${link} — sumá 2 💎 al activar tu cuenta`)}`} target="_blank" rel="noreferrer"
             style={{ padding: "8px 14px", background: "rgba(34,197,94,.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,.4)", borderRadius: 8, fontWeight: 800, fontSize: 11, cursor: "pointer", letterSpacing: "1px", textTransform: "uppercase", flexShrink: 0, textDecoration: "none" }}>
             💬 WA
           </Pop>
@@ -738,7 +738,7 @@ function ComoFunciona({ code }) {
   ];
   // Monedas (2026-07-14): saldo separado — se compran, no se ganan, y pagan pedidos.
   const monedas = [
-    { ic: "🪙", t: "Se compran en la tienda", d: "Packs de 10/25/50/100 o la cantidad que quieras. Se acreditan al instante cuando se confirma el pago." },
+    { ic: "🛍️", t: "Se compran en la tienda", d: "Packs de 10/25/50/100 o la cantidad que quieras. Se acreditan al instante cuando se confirma el pago." },
     { ic: "🛒", t: "Pagan tus pedidos", d: `En el checkout elegís "Pagar con monedas" y el pedido queda pagado al toque.` },
     { ic: "↔️", t: "No se mezclan con los puntos", d: "Los puntos se ganan y se canjean por descuentos o premios; las monedas se compran y sirven sólo para pagar compras." },
   ];
@@ -777,7 +777,7 @@ function ComoFunciona({ code }) {
       </div>
       <Section title="Cómo ganás puntos" items={ganar} />
       <Section title="Cómo los canjeás" items={canjear} />
-      <Section title="Y las monedas 🪙" items={monedas} />
+      <Section title="Y las monedas" items={monedas} />
       <div style={{ marginBottom: 6 }}>
         <div style={{ fontWeight: 900, fontSize: 16, color: "#fff", margin: "0 0 12px" }}>Reglas claras</div>
         <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 8 }}>
@@ -839,7 +839,6 @@ function Canjes({ balance, userId, onRedeem }) {
 
   const descuentos = rewards.filter(r => r.kind === "descuento");
   const premios = rewards.filter(r => r.kind === "premio");
-  const fmt$ = (cents) => "$" + Math.round((cents || 0) / 100).toLocaleString("es-AR");
 
   function Card({ rw }) {
     const can = balance >= rw.cost_points;
@@ -850,8 +849,8 @@ function Canjes({ balance, userId, onRedeem }) {
           <div>
             <div style={{ fontWeight: 900, fontSize: 16, color: "#fff" }}>{rw.label}</div>
             {rw.description && <div style={{ fontSize: 12, color:"rgba(237,233,224,.6)", marginTop: 3, lineHeight: 1.4 }}>{rw.description}</div>}
-            {rw.kind === "premio" && rw.market_value_cents && (
-              <div style={{ fontSize: 11, color:"rgba(237,233,224,.6)", marginTop: 4 }}>Valor: {fmt$(rw.market_value_cents)}{rw.stock != null ? ` · stock: ${rw.stock}` : ""}</div>
+            {rw.kind === "premio" && rw.stock != null && (
+              <div style={{ fontSize: 11, color:"rgba(237,233,224,.6)", marginTop: 4 }}>Stock: {rw.stock}</div>
             )}
           </div>
           <div style={{ textAlign: "right", flexShrink: 0 }}>
@@ -1187,7 +1186,6 @@ export default function Coins() {
                   <CountUp value={balance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
                     {loading?"—":Number(balance).toLocaleString()}
                   </CountUp>
-                  <span style={{ display:"inline-flex", transform:"translateY(8px)" }}><Coin size={30} /></span>
                 </div>
                 {/* Código de cliente — para sumar puntos en compras externas */}
                 {customerCode && (
@@ -1241,7 +1239,6 @@ export default function Coins() {
                 <CountUp value={monedasBalance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
                   {loading?"—":Number(monedasBalance).toLocaleString()}
                 </CountUp>
-                <span style={{ fontSize:30,transform:"translateY(2px)" }}>🪙</span>
               </div>
               <div style={{ fontSize:12,color:"rgba(237,233,224,.65)",lineHeight:1.5,marginBottom:18,maxWidth:380 }}>
                 Se compran en la tienda y se acreditan solas cuando se confirma el pago.
@@ -1249,7 +1246,7 @@ export default function Coins() {
               </div>
               <div style={{ marginTop:"auto" }}>
                 <Link to="/shop/puntos-custom" style={{ display:"inline-flex",alignItems:"center",gap:10,background:"linear-gradient(135deg,var(--brand-primary),var(--brand-accent))",color:"#000",borderRadius:14,padding:"14px 22px",fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:14,letterSpacing:.5,textDecoration:"none",boxShadow:"0 8px 32px rgba(var(--brand-primary-rgb),.35)" }}>
-                  Comprar monedas 🪙 →
+                  Comprar monedas →
                 </Link>
               </div>
             </div>
