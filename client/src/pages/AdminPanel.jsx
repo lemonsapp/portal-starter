@@ -553,7 +553,7 @@ function IgQueueTab() {
                 <td style={styles.td}>{s.label}</td>
                 <td style={styles.td}>+{s.points}</td>
                 <td style={styles.td}>
-                  {s.evidence_url ? <a href={s.evidence_url} target="_blank" rel="noreferrer" style={{ color: "var(--brand-primary, #3B82F6)" }}>Ver link</a> : null}
+                  {s.evidence_url && /^https?:\/\//i.test(s.evidence_url) ? <a href={s.evidence_url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--brand-primary, #3B82F6)" }}>Ver link</a> : s.evidence_url ? <span style={{ fontSize: 11, color: "rgba(90,102,117,.5)", wordBreak: "break-all" }}>{s.evidence_url}</span> : null}
                   {s.note ? <div style={{ fontSize: 11, color: "rgba(90,102,117,.5)" }}>{s.note}</div> : null}
                   {!s.evidence_url && !s.note ? "—" : null}
                 </td>

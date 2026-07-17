@@ -1032,11 +1032,17 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
     );
     const user = userQ.rows[0];
 
-    // Marcar código como usado
-    await db.query(
-      `UPDATE invite_codes SET used_by=$1, used_at=NOW() WHERE code=$2`,
+    // Marcar código como usado — atómico: si otra request lo tomó primero,
+    // used_by IS NULL falla y no se consume dos veces el mismo código.
+    const claimQ = await db.query(
+      `UPDATE invite_codes SET used_by=$1, used_at=NOW() WHERE code=$2 AND used_by IS NULL RETURNING code`,
       [user.id, invite_code.toUpperCase().trim()]
     );
+    if (!claimQ.rows[0]) {
+      // Perdió la carrera: revertir el usuario recién creado.
+      await db.query(`DELETE FROM users WHERE id=$1`, [user.id]);
+      return res.status(400).json({ error: "Código de invitación inválido o ya usado" });
+    }
 
     // Registrar referido si vino con referrer (username del que lo invitó)
     if (referrer) {
@@ -1758,11 +1764,8 @@ function isEmail(x) {
 }
 
 function makeResetToken() {
-  return (
-    Date.now().toString(36) +
-    Math.random().toString(36).slice(2) +
-    Math.random().toString(36).slice(2)
-  );
+  // CSPRNG — nunca Math.random() para un secreto de account-takeover.
+  return require("crypto").randomBytes(32).toString("hex");
 }
 
 async function hashToken(token) {
@@ -1929,7 +1932,7 @@ app.post("/auth/resend-verification", authLimiter, async (req, res) => {
   }
 });
 
-app.post("/auth/reset-password", async (req, res) => {
+app.post("/auth/reset-password", forgotLimiter, async (req, res) => {
   try {
     const schema = z.object({
       email: z.string().email(),
@@ -2001,8 +2004,13 @@ app.post(
       if (!p.success) return res.status(400).json({ error: "Datos inválidos" });
 
       const d = p.data;
-      const password_hash = await bcrypt.hash(d.password, 10);
-      const role = d.role || "client";
+      // Escalada de privilegios: sólo un admin puede crear cuentas operator/admin.
+      // Un operator sólo puede crear clientes, ignorando cualquier `role` elevado del body.
+      let role = d.role || "client";
+      if (role !== "client" && req.user.role !== "admin") {
+        return res.status(403).json({ error: "Sólo un admin puede crear cuentas de staff" });
+      }
+      const password_hash = await bcrypt.hash(d.password, 12);
 
       const ins = await db.query(
         `INSERT INTO users (client_number, name, email, password_hash, role)
@@ -2496,8 +2504,18 @@ io.on("connection", (socket) => {
   // ── Mensaje privado ──────────────────────────────────────────────────────────
   socket.on("private_message", async ({ to_user_id, message }) => {
     try {
-      const msg = String(message || "").trim().slice(0, 1000);
+      const msg = sanitizeText(String(message || ""), 1000).trim();
       if (!msg || !to_user_id) return;
+
+      // Respetar bloqueos: si cualquiera de los dos bloqueó al otro, se descarta.
+      const blockQ = await db.query(
+        `SELECT 1 FROM chat_friendships
+          WHERE status='blocked'
+            AND ((user_id=$1 AND friend_id=$2) OR (user_id=$2 AND friend_id=$1))
+          LIMIT 1`,
+        [user.id, to_user_id]
+      );
+      if (blockQ.rows[0]) return;
 
       // Guardar en DB
       const ins = await db.query(`

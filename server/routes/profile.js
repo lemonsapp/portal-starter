@@ -4,6 +4,7 @@ const express = require("express");
 const router  = express.Router();
 const db      = require("../db");
 const { authRequired } = require("../auth");
+const { sanitizeText } = require("../security");
 const multer = require('multer');
 // Sprint 14 fix: el SDK de Cloudinary se configura por request leyendo
 // las API keys de configStore (DB encriptada via wizard /admin/setup),
@@ -265,8 +266,9 @@ router.post("/buy", authRequired, async (req, res) => {
       if (balance < item.cost_coins) {
         return res.status(400).json({ error: `Coins insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
       }
-      // Descontar coins
-      await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [item.cost_coins, userId]);
+      // Descontar coins — atómico con guard (evita doble gasto por concurrencia).
+      const debit = await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`, [item.cost_coins, userId]);
+      if (!debit.rows[0]) return res.status(400).json({ error: "Coins insuficientes." });
       await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'redeem',$2,$3)`,
         [userId, -item.cost_coins, `Compra de perfil: ${item.name}`]);
     }
@@ -327,7 +329,7 @@ router.patch("/", authRequired, async (req, res) => {
           updated_at      = NOW()
       `, [userId, name_color||null, name_glow_color||null, name_glow!=null?name_glow:null,
           name_grad_from||null, name_grad_to||null, nickname||null,
-          nick_color||null, nick_glow!=null?name_glow:null, icon_slug||null]);
+          nick_color||null, nick_glow!=null?nick_glow:null, icon_slug||null]);
     }
 
     // Verificar que el usuario tiene los items que quiere equipar
@@ -463,10 +465,12 @@ router.post("/unlock", authRequired, async (req, res) => {
       return res.status(400).json({ error: `Coins insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
     }
 
-    await db.query(
-      `UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`,
+    // Cobro atómico con guard (evita doble gasto / balance negativo por concurrencia).
+    const debit = await db.query(
+      `UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`,
       [item.cost_coins, userId]
     );
+    if (!debit.rows[0]) return res.status(400).json({ error: "Coins insuficientes." });
 
     // Dar item
     await db.query(`INSERT INTO user_items (user_id, item_key) VALUES ($1, $2)`, [userId, item_key]);
@@ -576,11 +580,17 @@ router.get("/spin", authRequired, async (req, res) => {
 
 // ── POST /profile/spin ────────────────────────────────────────────────────────
 router.post("/spin", authRequired, async (req, res) => {
+  const client = await db.connect();
   try {
     const userId = req.user.id;
-    const last = await db.query(`SELECT * FROM daily_spin WHERE user_id=$1 ORDER BY spun_at DESC LIMIT 1`, [userId]);
+    // Serializamos los giros del mismo usuario con un advisory lock transaccional:
+    // evita que N requests concurrentes pasen el chequeo de cooldown a la vez.
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock($1)", [userId]);
+    const last = await client.query(`SELECT spun_at FROM daily_spin WHERE user_id=$1 ORDER BY spun_at DESC LIMIT 1`, [userId]);
     const lastSpin = last.rows[0];
     if (lastSpin && (new Date() - new Date(lastSpin.spun_at)) < 24*60*60*1000) {
+      await client.query("ROLLBACK");
       return res.status(400).json({ error: "Ya giraste hoy. Volvé mañana!" });
     }
     // ORDEN EXACTO igual al frontend (8 segmentos). Escala acorde al sistema de
@@ -605,12 +615,20 @@ router.post("/spin", authRequired, async (req, res) => {
       if (i === prizes.length - 1) wonIdx = i;
     }
     const won = prizes[wonIdx];
-    await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [won.coins, userId]);
-    await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, won.coins, 'Ruleta diaria: ' + won.label]);
-    await db.query(`INSERT INTO daily_spin (user_id, coins_won, prize_label) VALUES ($1,$2,$3)`, [userId, won.coins, won.label]);
+    await client.query(`INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
+    await client.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [won.coins, userId]);
+    await client.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, won.coins, 'Ruleta diaria: ' + won.label]);
+    await client.query(`INSERT INTO daily_spin (user_id, coins_won, prize_label) VALUES ($1,$2,$3)`, [userId, won.coins, won.label]);
+    await client.query("COMMIT");
     const prizeIndex = wonIdx;
     res.json({ ok: true, prize: won, prize_index: prizeIndex, prizes });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    try { await client.query("ROLLBACK"); } catch {}
+    console.error("SPIN ERROR:", e);
+    res.status(500).json({ error: "Error interno" });
+  } finally {
+    client.release();
+  }
 });
 
 // ── GET /profile/missions ─────────────────────────────────────────────────────
@@ -653,7 +671,10 @@ router.post("/missions/:slug/claim", authRequired, async (req, res) => {
     const um = umQ.rows[0];
     if (!um?.completed_at) return res.status(400).json({ error: "Misión no completada aún" });
     if (um.claimed_at) return res.status(400).json({ error: "Ya reclamaste esta misión" });
-    await db.query(`UPDATE user_missions SET claimed_at=NOW() WHERE user_id=$1 AND mission_slug=$2 AND period=$3`, [userId, slug, period]);
+    // Claim atómico: el guard `claimed_at IS NULL` evita cobrar dos veces la misma
+    // misión con requests concurrentes. Si no devuelve fila, ya se reclamó.
+    const claim = await db.query(`UPDATE user_missions SET claimed_at=NOW() WHERE user_id=$1 AND mission_slug=$2 AND period=$3 AND claimed_at IS NULL RETURNING id`, [userId, slug, period]);
+    if (!claim.rows[0]) return res.status(400).json({ error: "Ya reclamaste esta misión" });
     await db.query(`INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
     await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [mission.coins_reward, userId]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, mission.coins_reward, 'Misión: ' + mission.title]);
@@ -748,19 +769,22 @@ router.get("/streak", authRequired, async (req, res) => {
 router.post("/gift", authRequired, async (req, res) => {
   try {
     const fromId = req.user.id;
-    const { to_client_number, amount, message } = req.body;
-    if (!amount || amount < 10) return res.status(400).json({ error: "Mínimo 10 coins" });
+    const { to_client_number, message } = req.body;
+    // Validar monto: entero positivo, mínimo 10, con tope defensivo (evita floats/negativos/gigantes).
+    const amount = Number(req.body.amount);
+    if (!Number.isInteger(amount) || amount < 10 || amount > 1000000) return res.status(400).json({ error: "Monto inválido (mínimo 10 coins)" });
+    const giftMsg = message ? sanitizeText(String(message), 200) : null;
     const toQ = await db.query(`SELECT id, name FROM users WHERE client_number=$1`, [to_client_number]);
     if (!toQ.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
     const toUser = toQ.rows[0];
     if (toUser.id === fromId) return res.status(400).json({ error: "No podés regalarte a vos mismo" });
-    const balQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [fromId]);
-    if ((balQ.rows[0]?.balance||0) < amount) return res.status(400).json({ error: "Coins insuficientes" });
-    await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [amount, fromId]);
+    // Cobro atómico con guard (evita doble gasto / balance negativo por concurrencia).
+    const debit = await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`, [amount, fromId]);
+    if (!debit.rows[0]) return res.status(400).json({ error: "Coins insuficientes" });
     await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`, [fromId, amount, 'Gift a ' + toUser.name]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [toUser.id, amount, 'Gift de ' + req.user.name]);
-    await db.query(`INSERT INTO coin_gifts (from_user_id, to_user_id, amount, message) VALUES ($1,$2,$3,$4)`, [fromId, toUser.id, amount, message||null]);
+    await db.query(`INSERT INTO coin_gifts (from_user_id, to_user_id, amount, message) VALUES ($1,$2,$3,$4)`, [fromId, toUser.id, amount, giftMsg]);
     res.json({ ok: true, message: '🎁 Regalaste ' + amount + ' coins a ' + toUser.name });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -801,11 +825,24 @@ router.get("/:id", authRequired, async (req, res) => {
     const userOut = { ...userQ.rows[0], level };
     if (!isOwnerOrStaff) delete userOut.email;
 
+    // Privacidad server-side: los flags NO se pueden aplicar sólo en el cliente
+    // (los datos ya salieron). Para no-dueño/no-staff ocultamos lo que el usuario
+    // marcó como privado. Polaridad (igual que el cliente):
+    //   coins/posts visibles si el flag !== false; amigos visible sólo si === true.
+    const prof = profileQ.rows[0] || {};
+    let coinsOut = { balance, total_earned: Number(coins.total_earned), peak_balance: peak };
+    let statsOut = stats;
+    if (!isOwnerOrStaff) {
+      if (prof.privacy_coins === false) coinsOut = null;
+      if (prof.privacy_posts === false) statsOut = { ...statsOut, posts: null, comments: null, likes: null };
+      if (prof.privacy_amigos !== true)  statsOut = { ...statsOut, friends: null, followers: null, following: null };
+    }
+
     res.json({
       user:    userOut,
-      profile: { ...profileQ.rows[0], owned_items: items },
-      coins:   { balance, total_earned: Number(coins.total_earned), peak_balance: peak },
-      stats,
+      profile: { ...prof, owned_items: items },
+      coins:   coinsOut,
+      stats:   statsOut,
     });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

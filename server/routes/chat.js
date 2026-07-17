@@ -441,7 +441,9 @@ router.post("/rooms/:slug/join", authRequired, async (req, res) => {
     const balance = Number(coinsQ.rows[0]?.balance || 0);
     if (balance < room.coins_required)
       return res.status(400).json({ error: `Necesitas ${room.coins_required} Coins. Tenes ${balance}.` });
-    await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [room.coins_required, userId]);
+    // Cobro atómico con guard (evita doble gasto / balance negativo por concurrencia).
+    const debit = await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`, [room.coins_required, userId]);
+    if (!debit.rows[0]) return res.status(400).json({ error: "Coins insuficientes." });
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`,
       [userId, room.coins_required, `Acceso a room: ${room.name}`]);
     await db.query(`INSERT INTO chat_room_access (user_id, room_id) VALUES ($1,$2) ON CONFLICT DO NOTHING`, [userId, room.id]);
@@ -713,6 +715,15 @@ router.post("/private/:targetId", authRequired, async (req, res) => {
     if (!targetId) return res.status(400).json({ error: "ID inválido" });
     const text = sanitizeText(String(req.body?.message || "").trim(), 500);
     if (!text) return res.status(400).json({ error: "Mensaje vacío" });
+    // Respetar bloqueos: si cualquiera de los dos bloqueó al otro, no se puede escribir.
+    const blockQ = await db.query(
+      `SELECT 1 FROM chat_friendships
+        WHERE status='blocked'
+          AND ((user_id=$1 AND friend_id=$2) OR (user_id=$2 AND friend_id=$1))
+        LIMIT 1`,
+      [req.user.id, targetId]
+    );
+    if (blockQ.rows[0]) return res.status(403).json({ error: "No podés enviar mensajes a este usuario" });
     const ins = await db.query(
       `INSERT INTO chat_private_messages (from_user_id, to_user_id, message, created_at)
        VALUES ($1,$2,$3,NOW()) RETURNING *`,
@@ -780,8 +791,9 @@ router.post("/powers/:slug/buy", authRequired, async (req, res) => {
     if (balance < power.coins_price)
       return res.status(400).json({ error: `Necesitás ${power.coins_price} coins. Tenés ${balance}.` });
 
-    // Descontar coins
-    await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`, [power.coins_price, userId]);
+    // Descontar coins — atómico con guard (evita doble gasto por concurrencia).
+    const debit = await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`, [power.coins_price, userId]);
+    if (!debit.rows[0]) return res.status(400).json({ error: "Coins insuficientes." });
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`,
       [userId, power.coins_price, `Power comprado: ${power.name}`]);
 

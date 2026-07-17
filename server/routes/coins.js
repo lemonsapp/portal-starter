@@ -4,6 +4,7 @@ const router  = express.Router();
 const db      = require("../db");
 const { authRequired, requireRole } = require("../auth");
 const { sendEmail } = require("../mailer");
+const { sanitizeText } = require("../security");
 
 // Template HTML simple para emails de canje (descuento con cupón / premio físico).
 function redemptionEmailHtml({ name, reward, couponCode }) {
@@ -352,13 +353,28 @@ router.post("/redeem-points", authRequired, async (req, res) => {
       return res.status(400).json({ error: `Puntos insuficientes. Tenés ${coins.balance}, necesitás ${reward.cost_points}.` });
     }
 
-    // Premio físico: descontar stock atómicamente antes de cobrar los puntos.
+    // Cobro atómico PRIMERO: el guard `balance >= costo` evita doble gasto y
+    // balance negativo ante requests concurrentes (TOCTOU). Si otra request ya
+    // gastó el saldo, no devuelve fila y abortamos sin generar cupón ni tocar stock.
+    const debit = await db.query(
+      `UPDATE coins SET balance = balance - $1, updated_at = NOW() WHERE user_id = $2 AND balance >= $1 RETURNING balance`,
+      [reward.cost_points, userId]
+    );
+    if (!debit.rows[0]) {
+      return res.status(400).json({ error: "Puntos insuficientes." });
+    }
+    const newBalance = debit.rows[0].balance;
+
+    // Premio físico: stock atómico. Si quedó sin stock, devolvemos los puntos.
     if (reward.kind === "premio" && reward.stock != null) {
       const st = await db.query(
         `UPDATE point_rewards SET stock = stock - 1 WHERE id=$1 AND stock > 0 RETURNING stock`,
         [reward.id]
       );
-      if (!st.rows[0]) return res.status(400).json({ error: "Premio temporalmente sin stock" });
+      if (!st.rows[0]) {
+        await db.query(`UPDATE coins SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2`, [reward.cost_points, userId]);
+        return res.status(400).json({ error: "Premio temporalmente sin stock" });
+      }
     }
 
     // Descuento: generar cupón de 1 uso (integra con el promo del checkout).
@@ -372,11 +388,7 @@ router.post("/redeem-points", authRequired, async (req, res) => {
       );
     }
 
-    // Cobrar los puntos + registrar movimiento y canje.
-    await db.query(
-      `UPDATE coins SET balance = balance - $1, updated_at = NOW() WHERE user_id = $2`,
-      [reward.cost_points, userId]
-    );
+    // Registrar movimiento y canje (el cobro ya se hizo arriba).
     await db.query(
       `INSERT INTO coin_transactions (user_id, type, amount, reason, operador)
        VALUES ($1, $2, $3, $4, 'sistema')`,
@@ -392,8 +404,6 @@ router.post("/redeem-points", authRequired, async (req, res) => {
       [userId, reward.slug, reward.kind, reward.label, reward.cost_points,
        reward.discount_pct || null, couponCode, reward.market_value_cents || null, status]
     );
-    const updQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId]);
-
     // Email de confirmación (no bloquea la respuesta si falla).
     try {
       const uq = await db.query(`SELECT name, email FROM users WHERE id=$1`, [userId]);
@@ -411,7 +421,7 @@ router.post("/redeem-points", authRequired, async (req, res) => {
       success: true,
       redemption: redQ.rows[0],
       coupon_code: couponCode,
-      new_balance: updQ.rows[0].balance,
+      new_balance: newBalance,
     });
   } catch (e) {
     console.error("COINS REDEEM-POINTS ERROR:", e);
@@ -505,10 +515,15 @@ router.post("/redeem", authRequired, async (req, res) => {
       });
     }
 
-    await db.query(
-      `UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2`,
+    // Cobro atómico con guard (previene doble gasto / balance negativo por concurrencia).
+    const debit = await db.query(
+      `UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`,
       [reward.coins, user_id]
     );
+    if (!debit.rows[0]) {
+      return res.status(400).json({ error: "Coins insuficientes." });
+    }
+    const newBalance = debit.rows[0].balance;
     await db.query(
       `INSERT INTO coin_transactions (user_id, type, amount, reason, shipment_id)
        VALUES ($1,'redeem',$2,$3,$4)`,
@@ -519,13 +534,12 @@ router.post("/redeem", authRequired, async (req, res) => {
        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
       [user_id, reward_key, reward.coins, shipment_id || null, notes || null]
     );
-    const updQ = await db.query(`SELECT * FROM coins WHERE user_id=$1`, [user_id]);
 
     res.json({
       success:     true,
       redemption:  redQ.rows[0],
-      new_balance: updQ.rows[0].balance,
-      level:       getLevel(updQ.rows[0].balance),
+      new_balance: newBalance,
+      level:       getLevel(newBalance),
     });
   } catch (e) {
     console.error("COINS REDEEM ERROR:", e);
@@ -804,7 +818,18 @@ router.post("/ig/submit", authRequired, async (req, res) => {
     const { action_key, evidence_url, note } = req.body;
     const action = IG_ACTION_MAP[action_key];
     if (!action) return res.status(400).json({ error: "Acción inválida" });
-    if (!evidence_url && !note) return res.status(400).json({ error: "Adjuntá un link o nota como evidencia" });
+    // El link de evidencia lo abre un admin desde el panel: sólo aceptamos
+    // http(s) para cerrar el XSS por `javascript:`/`data:` en el href del admin.
+    let cleanUrl = null;
+    if (evidence_url) {
+      const raw = String(evidence_url).trim();
+      if (!/^https?:\/\/\S+$/i.test(raw)) {
+        return res.status(400).json({ error: "El link debe empezar con http:// o https://" });
+      }
+      cleanUrl = raw.slice(0, 2000);
+    }
+    const cleanNote = note ? sanitizeText(String(note), 500) : null;
+    if (!cleanUrl && !cleanNote) return res.status(400).json({ error: "Adjuntá un link o nota como evidencia" });
     // Límite mensual por acción: los envíos pendientes/aprobados del mes en curso
     // cuentan para el tope (los rechazados no). Sólo aplica a acciones con perMonth.
     if (action.perMonth) {
@@ -821,7 +846,7 @@ router.post("/ig/submit", authRequired, async (req, res) => {
     const q = await db.query(
       `INSERT INTO ig_submissions (user_id, action_key, label, points, evidence_url, note)
        VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [req.user.id, action.key, action.label, action.points, evidence_url || null, note || null]
+      [req.user.id, action.key, action.label, action.points, cleanUrl, cleanNote]
     );
     res.json({ submission: q.rows[0] });
   } catch (e) {

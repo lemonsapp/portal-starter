@@ -325,7 +325,7 @@ function PostCard({ post, onDelete, isOwn }) {
         </div>
         <div style={{ marginLeft:"auto",padding:"3px 9px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color }}>{tc.label}</div>
       </div>
-      <div style={{ fontSize:12,color:"rgba(255,255,255,.65)",lineHeight:1.7,marginBottom:12 }} dangerouslySetInnerHTML={{__html:post.body}} />
+      <div style={{ fontSize:12,color:"rgba(255,255,255,.65)",lineHeight:1.7,marginBottom:12,whiteSpace:"pre-wrap" }}>{post.body}</div>
       {post.lootItem&&(
         <div style={{ background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.08),rgba(var(--brand-primary-rgb),.04))",border:"1px solid rgba(var(--brand-primary-rgb),.2)",borderRadius:12,padding:14,display:"flex",alignItems:"center",gap:14,marginBottom:12 }}>
           <div style={{ fontSize:28,animation:"float 3s ease-in-out infinite" }}>{post.lootItem.emoji}</div>
@@ -869,7 +869,7 @@ export default function ProfilePage() {
                     {usernameInput!==username&&<button onClick={saveUsername} disabled={savingUsername} style={{background:"rgba(var(--brand-primary-rgb),.15)",border:"1px solid rgba(var(--brand-primary-rgb),.3)",borderRadius:7,color:"var(--brand-primary)",fontSize:10,fontWeight:900,padding:"3px 10px",cursor:"pointer"}}>{savingUsername?"...":"Guardar"}</button>}
                   </div>
                   <PhoneEditor profile={profile} showToast={showToast}/>
-                  {username&&<a href={"/perfil/"+username} target="_blank" style={{fontSize:10,color:"rgba(255,255,255,.3)",textDecoration:"none",fontWeight:700}}>/perfil/{username} ↗</a>}
+                  {username&&<a href={"/perfil/"+username} target="_blank" rel="noopener noreferrer" style={{fontSize:10,color:"rgba(255,255,255,.3)",textDecoration:"none",fontWeight:700}}>/perfil/{username} ↗</a>}
                   {usernameMsg&&<span style={{fontSize:11,color:usernameMsg.startsWith("✓")?"#22c55e":"#f87171",fontWeight:700}}>{usernameMsg}</span>}
                 </div>
               )}

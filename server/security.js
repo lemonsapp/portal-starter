@@ -107,11 +107,13 @@ function buildUpdate(input, allowedCols) {
 function assertJwtSecret() {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret === "dev_secret_change_me") {
-    if (process.env.NODE_ENV === "production") {
-      console.error("[SECURITY] JWT_SECRET no está seteado en producción. Abortando.");
-      process.exit(1);
+    // Fail-closed salvo opt-in explícito de dev. No dependemos de NODE_ENV
+    // (un typo o env faltante haría bootear con la clave por defecto conocida).
+    if (process.env.ALLOW_INSECURE_JWT_SECRET === "1") {
+      console.warn("[SECURITY] WARNING: JWT_SECRET por defecto (ALLOW_INSECURE_JWT_SECRET=1). Sólo para dev local.");
     } else {
-      console.warn("[SECURITY] WARNING: usando JWT_SECRET por defecto. Setealo en .env antes de prod.");
+      console.error("[SECURITY] JWT_SECRET no está seteado. Abortando. (dev: ALLOW_INSECURE_JWT_SECRET=1)");
+      process.exit(1);
     }
   } else if (secret.length < 32) {
     console.warn("[SECURITY] JWT_SECRET es muy corto. Usá ≥32 chars (openssl rand -hex 32).");

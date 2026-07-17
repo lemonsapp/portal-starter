@@ -31,6 +31,16 @@ const shopNotify = require("../lib/shopNotify");
 const { configureCloudinary } = require("../lib/cloudinaryConfig");
 const { uploadLimiter } = require("../security");
 const { authOptional } = require("../auth");
+const rateLimit = require("express-rate-limit");
+
+// Limita el sondeo de códigos promo (validate-code es público): 20/min por IP.
+const codeLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, reason: "rate_limited" },
+});
 
 // Comprobantes de transferencia: el comprador sube una foto/captura desde la
 // success page. Allow-list explícita de formatos raster — nada de SVG (puede
@@ -292,12 +302,13 @@ function getApiPublicUrl() {
 // checkout — páginas del SITIO, no de la API).
 // Prioridad: APP_URL del env → header `origin` del request → fallback localhost.
 function getAppUrl(req) {
+  // Sólo confiamos en el env configurado del deploy. NO derivamos la base de
+  // headers del request (Origin/Referer): son controlables por el atacante y se
+  // usan para back_urls y como fallback del notification_url de MercadoPago —
+  // confiar en ellos permitiría redirect a phishing y fuga del secret del webhook.
   const fromEnv = process.env.APP_URL || process.env.PUBLIC_APP_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, "");
-  const origin = req.headers.origin || req.headers.referer;
-  if (origin) {
-    try { return new URL(origin).origin; } catch {}
-  }
+  console.warn("[checkout] APP_URL/PUBLIC_APP_URL no seteado — usando fallback localhost. Seteá APP_URL en prod.");
   return "http://localhost:5173";
 }
 
@@ -393,9 +404,19 @@ function publicRouter({ authRequired } = {}) {
           await client.query("ROLLBACK");
           return res.status(400).json({ error: `Cantidad máxima por producto: 99 (${p.name})` });
         }
-        if (p.stock != null && p.stock < reqItem.quantity) {
-          await client.query("ROLLBACK");
-          return res.status(409).json({ error: `Sin stock suficiente de "${p.name}". Disponible: ${p.stock}` });
+        // Stock: descuento atómico con guard. Antes sólo se comparaba y nunca se
+        // decrementaba (oversell + chequeo obsoleto). Ahora el UPDATE toma lock de
+        // la fila y falla si no alcanza, evitando venta concurrente por encima del
+        // stock. stock=null = producto sin control de stock (packs de puntos, etc.).
+        if (p.stock != null) {
+          const dec = await client.query(
+            `UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1 RETURNING stock`,
+            [reqItem.quantity, p.id]
+          );
+          if (!dec.rows[0]) {
+            await client.query("ROLLBACK");
+            return res.status(409).json({ error: `Sin stock suficiente de "${p.name}". Disponible: ${p.stock}` });
+          }
         }
 
         // Precio y nombre por defecto = los del producto. Si es una línea de
@@ -528,12 +549,27 @@ function publicRouter({ authRequired } = {}) {
       }
       if (!inserted) throw new Error("No se pudo generar public_id único");
 
-      // F5: incrementar current_uses del código (después de crear orden con éxito)
+      // F5: incrementar current_uses del código, atómico y con re-chequeo de
+      // max_uses/expiración DENTRO de la transacción. Esto cierra la race donde
+      // N requests concurrentes con el mismo código (ej: 100% off de un solo uso)
+      // pasan todas la validación previa: el UPDATE toma lock de la fila y sólo
+      // una gana; las demás no matchean y revierten la orden entera.
       if (appliedPromoCode) {
-        await client.query(
-          `UPDATE promo_codes SET current_uses = current_uses + 1, updated_at = NOW() WHERE UPPER(code) = UPPER($1)`,
+        const upd = await client.query(
+          `UPDATE promo_codes SET current_uses = current_uses + 1, updated_at = NOW()
+            WHERE UPPER(code) = UPPER($1) AND active
+              AND (expires_at IS NULL OR expires_at > NOW())
+              AND (max_uses IS NULL OR current_uses < max_uses)
+            RETURNING current_uses`,
           [appliedPromoCode]
         );
+        if (!upd.rows[0]) {
+          await client.query("ROLLBACK");
+          return res.status(400).json({
+            error: "El código promocional ya no está disponible.",
+            promo_invalid: true,
+          });
+        }
       }
 
       // 3. Insertar order_items.
@@ -718,7 +754,7 @@ a{color:${color};text-decoration:underline dotted;}
   // ── POST /api/shop/checkout/validate-code — preview de descuento
   // Permite al cliente probar un código antes de finalizar checkout.
   // Body: { code: "TEST10", subtotal_cents: 1000000 }
-  router.post("/checkout/validate-code", async (req, res) => {
+  router.post("/checkout/validate-code", codeLimiter, async (req, res) => {
     const { code, subtotal_cents } = req.body || {};
     const subtotal = parseInt(subtotal_cents, 10) || 0;
     const result = await validatePromoCode(code, subtotal);
@@ -988,8 +1024,13 @@ function webhookRouter() {
       ];
       const updateParams = [String(paymentId), String(payment.status)];
 
+      // Idempotencia: MP reintenta webhooks. Guardamos el estado previo para no
+      // reprocesar (email/broadcast duplicados, paid_at pisado) una orden ya pagada.
+      const prevQ = await db.query(`SELECT status FROM orders WHERE public_id = $1`, [externalRef]);
+      const prevStatus = prevQ.rows[0]?.status;
+
       if (newStatus === "paid") {
-        updateCols.push("status = 'paid'", "paid_at = NOW()");
+        updateCols.push("status = 'paid'", "paid_at = COALESCE(paid_at, NOW())");
       } else if (newStatus === "failed") {
         updateCols.push("status = 'failed'");
       }
@@ -1000,9 +1041,9 @@ function webhookRouter() {
         updateParams
       );
 
-      // F3: si la orden pasó a 'paid', disparar email de confirmación
-      //     al cliente + broadcast admin "pago confirmado".
-      if (newStatus === "paid") {
+      // F3: sólo al TRANSICIONAR a 'paid' (no en cada reintento) disparamos el
+      //     email de confirmación al cliente + broadcast admin "pago confirmado".
+      if (newStatus === "paid" && prevStatus !== "paid") {
         const data = await loadOrderByPublicId(externalRef);
         if (data) {
           shopNotify.onOrderPaid(data.order, data.items).catch(() => {});
@@ -1234,17 +1275,25 @@ function adminRouter({ authRequired, requireRole }) {
          ${onlyMarketing ? `WHERE opted_in_marketing = TRUE` : ""}
          ORDER BY last_order_at DESC NULLS LAST`
       );
+      // Escapa cada celda para CSV: comillas dobladas + wrap en comillas, y
+      // prefija `'` si empieza con =/+/-/@ (o tab/CR) para neutralizar formula
+      // injection al abrir el CSV en Excel/Sheets.
+      const csvCell = (v) => {
+        let s = v == null ? "" : String(v);
+        if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+        return `"${s.replace(/"/g, '""')}"`;
+      };
       const header = "email,first_name,last_name,phone,orders_count,total_spent_ars,last_order_at,opted_in_marketing";
       const csv = [header, ...rows.map((r) => [
         r.email,
-        (r.first_name || "").replace(/,/g, " "),
-        (r.last_name || "").replace(/,/g, " "),
-        (r.phone || "").replace(/,/g, " "),
+        r.first_name || "",
+        r.last_name || "",
+        r.phone || "",
         r.orders_count,
         (r.total_spent_cents || 0) / 100,
         r.last_order_at ? new Date(r.last_order_at).toISOString() : "",
         r.opted_in_marketing ? "yes" : "no",
-      ].join(","))].join("\n");
+      ].map(csvCell).join(","))].join("\n");
       res.setHeader("Content-Type", "text/csv; charset=utf-8");
       res.setHeader("Content-Disposition", `attachment; filename="holistic-customers-${new Date().toISOString().slice(0, 10)}.csv"`);
       res.send(csv);
