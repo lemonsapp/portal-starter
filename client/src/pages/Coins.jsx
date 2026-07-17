@@ -777,7 +777,7 @@ function ComoFunciona({ code }) {
       </div>
       <Section title="Cómo ganás puntos" items={ganar} />
       <Section title="Cómo los canjeás" items={canjear} />
-      <Section title="Y las monedas" items={monedas} />
+      <Section title={<>Y las monedas <Coin size={16} /></>} items={monedas} />
       <div style={{ marginBottom: 6 }}>
         <div style={{ fontWeight: 900, fontSize: 16, color: "#fff", margin: "0 0 12px" }}>Reglas claras</div>
         <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 8 }}>
@@ -1239,6 +1239,7 @@ export default function Coins() {
                 <CountUp value={monedasBalance} color="var(--lemon)" style={{ fontFamily:"'Gotham', sans-serif",fontSize:48,fontWeight:900,color:"var(--lemon)",lineHeight:1,letterSpacing:"-0.01em" }}>
                   {loading?"—":Number(monedasBalance).toLocaleString()}
                 </CountUp>
+                <span style={{ display:"inline-flex", transform:"translateY(8px)" }}><Coin size={30} /></span>
               </div>
               <div style={{ fontSize:12,color:"rgba(237,233,224,.65)",lineHeight:1.5,marginBottom:18,maxWidth:380 }}>
                 Se compran en la tienda y se acreditan solas cuando se confirma el pago.
