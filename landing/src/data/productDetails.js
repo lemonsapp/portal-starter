@@ -497,7 +497,7 @@ export const productDetails = {
         },
         features: [
             { title: "Sin contaminación",     body: "Tubo individual previene contaminación cruzada entre lotes.",                       emoji: "✓" },
-            { title: "Adherencia premium",    body: "Permanece en el corte hasta que el esqueje desarrolla raíces propias.",             emoji: "◆" },
+            { title: "Adherencia superior",   body: "Permanece en el corte hasta que el esqueje desarrolla raíces propias.",             emoji: "◆" },
             { title: "Espectro amplio",       body: "Funciona en esquejes herbáceos, leñosos y semi-leñosos.",                          emoji: "↯" },
             { title: "Combinable con Bio",    body: "Aplicar Bio Estimulante en el agua del propagador potencia la respuesta.",          emoji: "♥" },
             { title: "Trazable",              body: "Sabés exactamente con qué estás trabajando.",                                       emoji: "○" },

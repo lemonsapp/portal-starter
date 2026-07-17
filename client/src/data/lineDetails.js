@@ -365,7 +365,7 @@ export const lineDetails = {
         "emoji": "✓"
       },
       {
-        "title": "Adherencia premium",
+        "title": "Adherencia superior",
         "body": "Permanece en el corte hasta que el esqueje desarrolla raíces propias.",
         "emoji": "◆"
       },

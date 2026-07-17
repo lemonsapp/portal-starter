@@ -218,8 +218,8 @@ const IG_ACTIONS = [
   { key: "like",          label: "Like a publicación oficial",       points: 2,   limit: "Máx 1 por día" },
   { key: "comment",       label: "Comentario en publicación",        points: 5,   limit: "Máx 1 por publicación" },
   { key: "story",         label: "Compartir en stories",             points: 7,   limit: "Máx 1 por publicación" },
-  { key: "photo_product", label: "Foto del envase (sin planta)",     points: 17,  limit: "Máx 2 por mes" },
-  { key: "photo_plant",   label: "Foto con planta y producto",       points: 33,  limit: "Máx 4 por mes" },
+  { key: "photo_product", label: "Foto del envase (sin planta)",     points: 17,  limit: "Máx 1 por mes", perMonth: 1 },
+  { key: "photo_plant",   label: "Foto con planta y producto",       points: 33,  limit: "Máx 1 por mes", perMonth: 1 },
   { key: "stage",         label: "Compartir una etapa del ciclo",    points: 50,  limit: "Máx 1 por etapa" },
   { key: "full_cycle",    label: "Ciclo completo documentado",       points: 167, limit: "1 por ciclo (mín. 4 fotos)" },
 ];
@@ -805,6 +805,19 @@ router.post("/ig/submit", authRequired, async (req, res) => {
     const action = IG_ACTION_MAP[action_key];
     if (!action) return res.status(400).json({ error: "Acción inválida" });
     if (!evidence_url && !note) return res.status(400).json({ error: "Adjuntá un link o nota como evidencia" });
+    // Límite mensual por acción: los envíos pendientes/aprobados del mes en curso
+    // cuentan para el tope (los rechazados no). Sólo aplica a acciones con perMonth.
+    if (action.perMonth) {
+      const used = await db.query(
+        `SELECT COUNT(*)::int AS n FROM ig_submissions
+          WHERE user_id=$1 AND action_key=$2 AND status <> 'rejected'
+            AND created_at >= date_trunc('month', NOW())`,
+        [req.user.id, action.key]
+      );
+      if (used.rows[0].n >= action.perMonth) {
+        return res.status(429).json({ error: `Ya alcanzaste el límite de esta acción este mes (máx ${action.perMonth} por mes).` });
+      }
+    }
     const q = await db.query(
       `INSERT INTO ig_submissions (user_id, action_key, label, points, evidence_url, note)
        VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
