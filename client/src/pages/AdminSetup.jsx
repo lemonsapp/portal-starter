@@ -425,7 +425,7 @@ function StepTelegram({ goNext, goSkip }) {
 
 // ── Step 5: Rules + Features ────────────────────────────────────────────────
 function StepRules({ goNext, goSkip }) {
-  const [v, setV] = useState({ signup_mode: "open", email_verify_required: true, coins_on_register: 3 });
+  const [v, setV] = useState({ signup_mode: "open", email_verify_required: false, coins_on_register: 3 });
   const [msg, setMsg] = useState(null);
   const [saving, setSaving] = useState(false);
   const [features, setFeatures] = useState({ chat: true, stories: true, friends: true, coins: true, webauthn: true });

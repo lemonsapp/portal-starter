@@ -41,7 +41,7 @@ const BRANDING_DEFAULTS = {
   },
 };
 const FEATURE_DEFAULTS = { chat: true, stories: true, friends: true, coins: true, webauthn: true, shop: true };
-const RULE_DEFAULTS    = { signup_mode: "open", email_verify_required: true, coins_on_register: 3 };
+const RULE_DEFAULTS    = { signup_mode: "open", email_verify_required: false, coins_on_register: 3 };
 
 // ── Cache singleton ──────────────────────────────────────────────────────────
 let cachedConfig = null;       // { branding, features, rules } en estado actual (defaults o remoto)

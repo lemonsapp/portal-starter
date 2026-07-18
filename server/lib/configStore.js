@@ -123,7 +123,10 @@ const KEY_CATALOG = {
   "rules.coins_on_onboarding_complete":  { type: "int",  isSecret: false, default: 100 },
   "rules.email_verify_grace_days":       { type: "int",  isSecret: false, default: 7   },
   "rules.signup_mode":                   { type: "string", isSecret: false, default: "open" },
-  "rules.email_verify_required":         { type: "bool", isSecret: false, default: true },
+  // Default false 2026-07-18: mientras Resend no esté configurado el mail de
+  // verificación no sale; el registro usa captcha matemático (VERIFICÁ QUE
+  // SOS HUMANO). Re-activable desde el wizard paso 5 cuando el mail funcione.
+  "rules.email_verify_required":         { type: "bool", isSecret: false, default: false },
   "rules.allow_self_delete":             { type: "bool", isSecret: false, default: true },
 
   // Feature flags (no secretos)
@@ -286,7 +289,7 @@ async function getPublicConfig() {
   }
   // Rules: las non-sensitive sólo (signup_mode, email_verify_required, coins_on_register)
   out.rules.signup_mode           = await getConfig("rules.signup_mode")           ?? "open";
-  out.rules.email_verify_required = await getConfig("rules.email_verify_required") ?? true;
+  out.rules.email_verify_required = await getConfig("rules.email_verify_required") ?? false;
   out.rules.coins_on_register     = await getConfig("rules.coins_on_register")     ?? 3;
 
   return out;

@@ -990,6 +990,27 @@ app.post("/auth/bootstrap-admin", authLimiter, noStore, async (req, res) => {
 });
 
 // ── POST /auth/register ───────────────────────────────────────────────────────
+// ── Captcha matemático (VERIFICÁ QUE SOS HUMANO) ─────────────────────────────
+// Anti-bot del registro mientras la verificación por email está apagada
+// (rules.email_verify_required = false). El token JWT lleva el HASH de la
+// respuesta (no la respuesta) y vence a los 15 min; /auth/register lo valida
+// server-side — validar sólo en el front no frena ningún bot.
+function hashCaptchaAnswer(answer) {
+  return require("crypto").createHash("sha256")
+    .update(`captcha|${String(answer).trim()}|${JWT_SECRET}`)
+    .digest("hex");
+}
+app.get("/auth/captcha", authLimiter, noStore, (_req, res) => {
+  const a = 2 + Math.floor(Math.random() * 8);   // 2..9
+  const b = 2 + Math.floor(Math.random() * 8);   // 2..9
+  const token = jwt.sign(
+    { t: "captcha", h: hashCaptchaAnswer(a + b) },
+    JWT_SECRET,
+    { expiresIn: "15m" }
+  );
+  res.json({ question: `${a} + ${b}`, token });
+});
+
 app.post("/auth/register", authLimiter, noStore, async (req, res) => {
   try {
     const schema = z.object({
@@ -1000,11 +1021,31 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
       referrer:    z.string().min(2).max(40).optional(),  // username del que invitó
       terms_accepted: z.boolean().optional(),             // aceptación de T&C + Privacidad
       terms_version:  z.string().max(40).optional(),
+      // Captcha: opcionales en el schema (clients viejos cacheados no los
+      // mandan y el error de abajo es más claro que "Datos inválidos"),
+      // pero obligatorios en la lógica.
+      captcha_token:  z.string().max(600).optional(),
+      captcha_answer: z.union([z.string().max(10), z.number()]).optional(),
     });
     const p = schema.safeParse(req.body);
     if (!p.success) return res.status(400).json({ error: "Datos inválidos" });
 
-    const { invite_code, name, email, password, referrer, terms_accepted } = p.data;
+    const { invite_code, name, email, password, referrer, terms_accepted, captcha_token, captcha_answer } = p.data;
+
+    // Verificación anti-bot: la cuenta matemática tiene que estar bien.
+    let captchaOk = false;
+    if (captcha_token && captcha_answer !== undefined && captcha_answer !== "") {
+      try {
+        const dec = jwt.verify(captcha_token, JWT_SECRET);
+        captchaOk = dec.t === "captcha" && dec.h === hashCaptchaAnswer(captcha_answer);
+      } catch (_) { /* token inválido o vencido → captchaOk queda false */ }
+    }
+    if (!captchaOk) {
+      return res.status(400).json({
+        error: "La verificación no es correcta. Resolvé la cuenta e intentá de nuevo.",
+        code: "CAPTCHA_FAILED",
+      });
+    }
 
     // Aceptación de Términos y Condiciones + Privacidad: obligatoria para registrarse
     if (terms_accepted !== true) {
@@ -1022,6 +1063,14 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
     catch (e) { console.warn("[register signup_mode]", e.message); }
     const inviteRequired = signupMode === "invite";
     const normalizedCode = invite_code ? invite_code.toUpperCase().trim() : null;
+
+    // Verificación por email (regla del wizard, rules.email_verify_required):
+    // apagada → el usuario nace verificado, las coins de bienvenida se
+    // acreditan acá mismo y no se manda mail. El captcha de arriba es el
+    // reemplazo anti-bot mientras tanto.
+    let verifyRequired = false;
+    try { verifyRequired = (await configStore.getConfig("rules.email_verify_required")) === true; }
+    catch (e) { console.warn("[register email_verify_required]", e.message); }
 
     // Verificar código (sólo en modo invitación)
     if (inviteRequired) {
@@ -1046,9 +1095,9 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
     const userQ = await db.query(
       `INSERT INTO users (client_number, name, email, password_hash, role, invite_code, email_verified,
                           terms_accepted_at, terms_version, terms_accepted_ip)
-       VALUES ($1,$2,$3,$4,'client',$5,false, NOW(), $6, $7)
+       VALUES ($1,$2,$3,$4,'client',$5,$8, NOW(), $6, $7)
        RETURNING id, client_number, name, email`,
-      [clientNumber, name.trim(), email.toLowerCase(), hash, inviteRequired ? normalizedCode : null, termsVersion, termsIp]
+      [clientNumber, name.trim(), email.toLowerCase(), hash, inviteRequired ? normalizedCode : null, termsVersion, termsIp, !verifyRequired]
     );
     const user = userQ.rows[0];
 
@@ -1100,6 +1149,20 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
       `INSERT INTO user_profiles (user_id) VALUES ($1) ON CONFLICT DO NOTHING`,
       [user.id]
     );
+
+    if (!verifyRequired) {
+      // Sin verificación por email: coins de bienvenida al toque y a loguearse.
+      let welcomeCoins = 3;
+      try {
+        const v = await configStore.getConfig("rules.coins_on_register");
+        if (v !== null && v !== undefined && Number.isFinite(Number(v))) welcomeCoins = Math.max(0, Number(v));
+      } catch (e) { console.warn("[register coins_on_register]", e.message); }
+      if (welcomeCoins > 0) {
+        await db.query(`UPDATE coins SET balance=balance+$2, total_earned=total_earned+$2 WHERE user_id=$1`, [user.id, welcomeCoins]);
+        await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',$2,'¡Bienvenido! Cuenta creada')`, [user.id, welcomeCoins]);
+      }
+      return res.json({ ok: true, verified: true, message: "Cuenta creada. Ya podés iniciar sesión.", client_number: user.client_number });
+    }
 
     // Generar token de verificación (plano para email, bcrypt en DB)
     const token = require("crypto").randomBytes(32).toString("hex");
@@ -1166,7 +1229,14 @@ app.get("/auth/verify-email", async (req, res) => {
       const v = await configStore.getConfig("rules.coins_on_register");
       if (v !== null && v !== undefined && Number.isFinite(Number(v))) welcomeCoins = Math.max(0, Number(v));
     } catch (e) { console.warn("[verify-email coins_on_register]", e.message); }
-    if (welcomeCoins > 0) {
+    // Guard anti doble-crédito: si ya cobró la bienvenida (ej. se registró
+    // con la verificación apagada, que acredita en /auth/register) no se
+    // vuelve a acreditar al tocar un link de verificación.
+    const alreadyWelcomed = (await db.query(
+      `SELECT 1 FROM coin_transactions WHERE user_id=$1 AND type='earn' AND reason LIKE '¡Bienvenido!%' LIMIT 1`,
+      [row.user_id]
+    )).rows[0];
+    if (welcomeCoins > 0 && !alreadyWelcomed) {
       await db.query(`UPDATE coins SET balance=balance+$2, total_earned=total_earned+$2 WHERE user_id=$1`, [row.user_id, welcomeCoins]);
       await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',$2,'¡Bienvenido! Email verificado')`, [row.user_id, welcomeCoins]);
     }
@@ -1690,11 +1760,19 @@ app.post("/auth/login", authLimiter, loginSlowDown, noStore, async (req, res) =>
     if (!ok) return res.status(401).json({ error: "Credenciales inválidas" });
 
     if (user.role === "client" && !user.email_verified) {
-      return res.status(403).json({
-        error: "Tenés que verificar tu email para entrar. Revisá tu bandeja.",
-        code: "EMAIL_NOT_VERIFIED",
-        email: user.email,
-      });
+      // Sólo bloquea si la regla del wizard exige verificación. Con la regla
+      // apagada (rules.email_verify_required=false) entran también los users
+      // viejos que quedaron sin verificar cuando el mail no salía.
+      let verifyRequired = false;
+      try { verifyRequired = (await configStore.getConfig("rules.email_verify_required")) === true; }
+      catch (e) { console.warn("[login email_verify_required]", e.message); }
+      if (verifyRequired) {
+        return res.status(403).json({
+          error: "Tenés que verificar tu email para entrar. Revisá tu bandeja.",
+          code: "EMAIL_NOT_VERIFIED",
+          email: user.email,
+        });
+      }
     }
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {

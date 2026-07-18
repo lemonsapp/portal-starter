@@ -11,10 +11,14 @@ export default function Register() {
   const branding = useBranding();
   const rules = useRules();
   const inviteRequired = rules.signup_mode === "invite";
+  // Con la verificación por email apagada (regla del wizard) el registro usa
+  // el captcha matemático y la cuenta queda activa al crearse.
+  const emailVerifyOn = rules.email_verify_required !== false;
   const [searchParams] = useSearchParams();
   const referrer = searchParams.get("r") || searchParams.get("ref") || "";
   const [step, setStep] = useState("form"); // form | success
-  const [form, setForm] = useState({ invite_code:"", name:"", email:"", password:"", confirm:"", terms:false });
+  const [form, setForm] = useState({ invite_code:"", name:"", email:"", password:"", confirm:"", captcha:"", terms:false });
+  const [captcha, setCaptcha] = useState(null); // { question, token } de GET /auth/captcha
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resendStatus, setResendStatus] = useState("idle"); // idle | sending | sent | cooldown
@@ -23,6 +27,15 @@ export default function Register() {
   const cardRef = useRef(null);
 
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
+
+  async function loadCaptcha() {
+    try {
+      const r = await fetch(`${API}/auth/captcha`);
+      const d = await r.json();
+      if (r.ok && d?.token) setCaptcha(d);
+    } catch { /* sin captcha el submit avisa que falta; se reintenta al errar */ }
+  }
+  useEffect(() => { loadCaptcha(); }, []);
 
   async function resendVerification() {
     if (resendStatus !== "idle") return;
@@ -54,11 +67,16 @@ export default function Register() {
     if (!form.email.trim()) return setError("Ingresá tu email");
     if (form.password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres");
     if (form.password !== form.confirm) return setError("Las contraseñas no coinciden");
+    if (!form.captcha.trim()) return setError("Verificá que sos humano: resolvé la cuenta");
     if (!form.terms) return setError("Tenés que aceptar los Términos y Condiciones y la Política de Privacidad para registrarte");
 
     setLoading(true);
     try {
-      const body = { name: form.name, email: form.email, password: form.password, terms_accepted: true, terms_version: "2026-06-27" };
+      const body = {
+        name: form.name, email: form.email, password: form.password,
+        terms_accepted: true, terms_version: "2026-06-27",
+        captcha_token: captcha?.token || "", captcha_answer: form.captcha.trim(),
+      };
       if (inviteRequired) body.invite_code = form.invite_code;
       if (referrer) body.referrer = referrer;
       const r = await fetch(`${API}/auth/register`, {
@@ -67,7 +85,12 @@ export default function Register() {
         body: JSON.stringify(body),
       });
       const d = await r.json();
-      if (!r.ok) return setError(d.error || "Error al registrarse");
+      if (!r.ok) {
+        // Cuenta nueva en cada intento fallido (el token pudo vencer o quemarse)
+        loadCaptcha();
+        set("captcha", "");
+        return setError(d.error || "Error al registrarse");
+      }
       setStep("success");
     } catch { setError("Error de red"); }
     finally { setLoading(false); }
@@ -192,6 +215,27 @@ export default function Register() {
         .rg-input.code:focus {
           border-color: var(--c-accent, #A7F5C8);
           background: rgba(167,245,200,.07);
+        }
+
+        /* Captcha matemático (VERIFICÁ QUE SOS HUMANO) */
+        .rg-captcha-row {
+          display: flex; align-items: center; gap: 12px;
+          background: rgba(167,245,200,.04);
+          border: 1px solid rgba(167,245,200,.30);
+          border-radius: var(--r-2, 10px);
+          padding: 8px 8px 8px 16px;
+        }
+        .rg-captcha-q {
+          flex: 1; font-size: 15px;
+          color: var(--c-text, #F5F2EB);
+          white-space: nowrap;
+        }
+        .rg-captcha-q b { color: var(--c-accent, #A7F5C8); letter-spacing: 0.08em; }
+        .rg-input.rg-captcha-in {
+          width: 110px; flex: none;
+          text-align: center;
+          font-weight: 700; font-size: 16px;
+          padding: 10px 12px;
         }
 
         .rg-btn {
@@ -451,24 +495,28 @@ export default function Register() {
               <div className="rg-check-wrap">✓</div>
               <div className="rg-success-title">Cuenta <em>creada</em></div>
               <div className="rg-success-desc">
-                Te enviamos un email de verificación.<br/>Revisá tu bandeja de entrada para activar la cuenta.
+                {emailVerifyOn
+                  ? <>Te enviamos un email de verificación.<br/>Revisá tu bandeja de entrada para activar la cuenta.</>
+                  : <>Tu cuenta ya está activa.<br/>Iniciá sesión con tu email y contraseña.</>}
               </div>
               {(rules.coins_on_register ?? 0) > 0 && (
-                <div className="rg-coins-pill"><CoinIcon size={15} /> <b>+{rules.coins_on_register}</b> Coins de bienvenida al verificar</div>
+                <div className="rg-coins-pill"><CoinIcon size={15} /> <b>+{rules.coins_on_register}</b> Coins de bienvenida{emailVerifyOn ? " al verificar" : ""}</div>
               )}
               <button onClick={() => navigate("/")} className="rg-btn">
                 <span>Ir al login</span><span className="arr">→</span>
               </button>
-              <div style={{ marginTop: 18, fontSize: 12, color: "var(--c-text-3, rgba(245,242,235,.5))" }}>
-                {resendStatus === "cooldown" ? (
-                  <span>Mail reenviado{resendCooldown > 0 ? `. Podés reintentar en ${resendCooldown}s.` : "."}</span>
-                ) : (
-                  <button type="button" onClick={resendVerification} disabled={resendStatus === "sending"}
-                    style={{ background: "none", border: "none", color: "var(--c-accent, #A7F5C8)", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>
-                    {resendStatus === "sending" ? "Reenviando..." : "¿No te llegó? Reenviar mail"}
-                  </button>
-                )}
-              </div>
+              {emailVerifyOn && (
+                <div style={{ marginTop: 18, fontSize: 12, color: "var(--c-text-3, rgba(245,242,235,.5))" }}>
+                  {resendStatus === "cooldown" ? (
+                    <span>Mail reenviado{resendCooldown > 0 ? `. Podés reintentar en ${resendCooldown}s.` : "."}</span>
+                  ) : (
+                    <button type="button" onClick={resendVerification} disabled={resendStatus === "sending"}
+                      style={{ background: "none", border: "none", color: "var(--c-accent, #A7F5C8)", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: 0, textDecoration: "underline" }}>
+                      {resendStatus === "sending" ? "Reenviando..." : "¿No te llegó? Reenviar mail"}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <>
@@ -476,7 +524,9 @@ export default function Register() {
               <div className="rg-title">Sumate <em>al portal</em></div>
               <div className="rg-desc">{inviteRequired
                 ? "Necesitás un código de invitación para registrarte. Si no tenés, consultanos por WhatsApp."
-                : "Creá tu cuenta gratis y activala con el mail de verificación."}</div>
+                : emailVerifyOn
+                  ? "Creá tu cuenta gratis y activala con el mail de verificación."
+                  : "Creá tu cuenta gratis en un minuto y entrá al toque."}</div>
 
               {error && <div className="rg-err">{error}</div>}
 
@@ -505,8 +555,17 @@ export default function Register() {
 
               <div className="rg-field">
                 <label>Confirmá la contraseña *</label>
-                <input className="rg-input" type="password" placeholder="Repetí la contraseña" value={form.confirm} onChange={e => set("confirm", e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && submit()} />
+                <input className="rg-input" type="password" placeholder="Repetí la contraseña" value={form.confirm} onChange={e => set("confirm", e.target.value)} />
+              </div>
+
+              <div className="rg-field rg-captcha">
+                <label className="hot">🤖 Verificá que sos humano *</label>
+                <div className="rg-captcha-row">
+                  <span className="rg-captcha-q">{captcha ? <>¿Cuánto es <b>{captcha.question}</b>?</> : "Cargando…"}</span>
+                  <input className="rg-input rg-captcha-in" inputMode="numeric" autoComplete="off" placeholder="Resultado"
+                    value={form.captcha} onChange={e => set("captcha", e.target.value.replace(/[^0-9]/g, ""))}
+                    onKeyDown={e => e.key === "Enter" && submit()} maxLength={3} />
+                </div>
               </div>
 
               <label className="rg-terms">
