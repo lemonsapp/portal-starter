@@ -22,6 +22,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import "../styles/shop-product.css";
+import { CoinIcon } from "../lib/coin.js";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -854,7 +855,7 @@ export default function ShopProduct() {
                       className={`sp-pill${clampPoints(pointsQty) === n ? " is-active" : ""}`}
                       aria-pressed={clampPoints(pointsQty) === n}
                     >
-                      <span className="sp-pill-label">{n} 🪙</span>
+                      <span className="sp-pill-label">{n} <CoinIcon size={13} /></span>
                     </button>
                   ))}
                 </div>

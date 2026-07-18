@@ -18,6 +18,7 @@ import { fixImageUrl, PRODUCT_FALLBACK_IMG } from "../lib/shopImages.js";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import "../styles/shop-checkout.css";
+import { CoinIcon } from "../lib/coin.js";
 
 gsap.registerPlugin(useGSAP);
 
@@ -277,7 +278,7 @@ export default function ShopCheckout() {
             cuenta cuyo email coincida con el del checkout — avisar antes. */}
         {isGuest && cartHasMonedaPack && (
           <div className="co-error" style={{ background: "rgba(46,143,110,.08)", border: "1px solid var(--c-accent-2, #2E8F6E)", color: "inherit" }}>
-            🪙 <b>Tu carrito tiene monedas.</b> Se acreditan a la cuenta registrada con el email
+            <CoinIcon size={14} /> <b>Tu carrito tiene monedas.</b> Se acreditan a la cuenta registrada con el email
             que uses acá. Si todavía no tenés cuenta, <Link to="/register" style={{ fontWeight: 800 }}>creala antes de pagar</Link> con
             ese mismo email — si no, las monedas no tienen dónde acreditarse.
           </div>
@@ -450,7 +451,7 @@ export default function ShopCheckout() {
                     ] : []),
                     ...(monedasOffered ? [{
                       key: "monedas",
-                      title: `Monedas 🪙 (tenés ${monedasBalance.toLocaleString("es-AR")})`,
+                      title: <>Monedas <CoinIcon size={13} /> (tenés {monedasBalance.toLocaleString("es-AR")})</>,
                       desc: monedasEnough
                         ? `Este pedido cuesta ${costMonedas.toLocaleString("es-AR")} monedas. Se debitan de tu saldo y el pedido queda pagado al instante.`
                         : `Este pedido cuesta ${costMonedas.toLocaleString("es-AR")} monedas — te faltan ${(costMonedas - monedasBalance).toLocaleString("es-AR")}. Comprá más en la tienda.`,
@@ -500,7 +501,7 @@ export default function ShopCheckout() {
                 ) : payMethod === "transfer" ? (
                   "Confirmar pedido →"
                 ) : payMethod === "monedas" ? (
-                  `Pagar con ${costMonedas.toLocaleString("es-AR")} monedas 🪙 →`
+                  <>Pagar con {costMonedas.toLocaleString("es-AR")} monedas <CoinIcon size={14} /> →</>
                 ) : (
                   "Pagar con MercadoPago →"
                 )}

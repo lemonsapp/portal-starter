@@ -14,6 +14,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCart } from "../lib/useCart.js";
 import { useBranding } from "../lib/branding.js";
+import { CoinIcon } from "../lib/coin.js";
 import gsap from "gsap";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -366,7 +367,7 @@ export default function ShopCheckoutSuccess() {
                 {/* Monedas del pedido — se acreditan al confirmarse el pago */}
                 {monedasEnOrden > 0 && (
                     <div style={{ marginTop: 18, background: "var(--c-surface)", border: "1px solid var(--c-border)", borderRadius: "var(--r-3,14px)", padding: "16px 18px", textAlign: "left", fontSize: 13.5, lineHeight: 1.6, color: "var(--c-text-2)" }}>
-                        🪙 <b style={{ color: "var(--c-text)" }}>{monedasEnOrden.toLocaleString("es-AR")} monedas</b>{" "}
+                        <CoinIcon size={14} /> <b style={{ color: "var(--c-text)" }}>{monedasEnOrden.toLocaleString("es-AR")} monedas</b>{" "}
                         {isPaid
                             ? <>ya se acreditaron a tu cuenta. Las ves en <b style={{ color: "var(--c-text)" }}>Coins → Balance</b> y las usás para pagar pedidos desde el checkout.</>
                             : <>se van a acreditar a tu cuenta automáticamente cuando se confirme el pago.</>}
