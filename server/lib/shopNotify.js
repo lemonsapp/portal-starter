@@ -582,7 +582,7 @@ function parseUnsubscribeToken(token) {
 }
 
 function appUrlSafe() {
-  return (process.env.APP_URL || "https://portal-starter.vercel.app").replace(/\/$/, "");
+  return (process.env.APP_URL || "https://hgrowshop.com").replace(/\/$/, "");
 }
 
 /**

@@ -3376,7 +3376,7 @@ const CAMPAIGN_TEMPLATES = {
       <div style="font-size:14px;color:#666;margin-top:4px;">En toda la línea Race · Cupón: HOLISTIC20</div>
     </div>
     <p style="text-align:center;margin:24px 0;">
-      <a href="https://portal-starter.vercel.app/shop" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#25D366 0%,#2E8F6E 100%);color:#fff;text-decoration:none;font-weight:800;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;font-size:13px;">Aprovechar oferta →</a>
+      <a href="https://hgrowshop.com/shop" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#25D366 0%,#2E8F6E 100%);color:#fff;text-decoration:none;font-weight:800;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;font-size:13px;">Aprovechar oferta →</a>
     </p>
     <p style="font-size:13px;color:#666;text-align:center;margin:20px 0 0;">Válido hasta agotar stock.</p>
   </td></tr>
@@ -3395,7 +3395,7 @@ const CAMPAIGN_TEMPLATES = {
     <h2 style="margin:18px 0 8px;font-size:20px;">[Nombre del producto]</h2>
     <p style="margin:0 0 18px;font-size:15px;line-height:1.55;color:#444;">[Descripción corta del producto y por qué le interesa al cliente]</p>
     <p style="text-align:center;margin:24px 0;">
-      <a href="https://portal-starter.vercel.app/shop" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#25D366 0%,#2E8F6E 100%);color:#fff;text-decoration:none;font-weight:800;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;font-size:13px;">Ver en el catálogo →</a>
+      <a href="https://hgrowshop.com/shop" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#25D366 0%,#2E8F6E 100%);color:#fff;text-decoration:none;font-weight:800;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;font-size:13px;">Ver en el catálogo →</a>
     </p>
   </td></tr>
 </table>`,
@@ -3416,7 +3416,7 @@ const CAMPAIGN_TEMPLATES = {
     <h2 style="margin:0 0 10px;font-size:18px;color:#2E8F6E;">⚡ Tip 3: Título</h2>
     <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:#444;">[Texto del tercer tip]</p>
     <p style="text-align:center;margin:24px 0;">
-      <a href="https://portal-starter.vercel.app/shop" style="display:inline-block;padding:12px 24px;background:rgba(46,143,110,.1);color:#2E8F6E;text-decoration:none;font-weight:700;border-radius:999px;font-size:13px;">Ver catálogo</a>
+      <a href="https://hgrowshop.com/shop" style="display:inline-block;padding:12px 24px;background:rgba(46,143,110,.1);color:#2E8F6E;text-decoration:none;font-weight:700;border-radius:999px;font-size:13px;">Ver catálogo</a>
     </p>
   </td></tr>
 </table>`,
