@@ -64,7 +64,10 @@ function initProductHighlights(root) {
      * El play() del init puede no arrancar: iOS no reproduce videos
      * offscreen al cargar la página, y el modo bajo consumo rechaza
      * cualquier play() que no venga de un gesto. Se llama al entrar
-     * la sección al viewport y en el primer gesto del usuario.
+     * la sección al viewport y en CADA gesto del usuario (touchend/
+     * click) mientras el video siga pausado — un play() dentro de un
+     * gesto real no lo puede bloquear ni el modo bajo consumo, así
+     * que el primer toque/scroll con el video a la vista lo arranca.
      */
     function tryPlayActive() {
         const media = images[activeIdx];
@@ -73,8 +76,8 @@ function initProductHighlights(root) {
             if (p && typeof p.catch === "function") p.catch(() => {});
         }
     }
-    window.addEventListener("touchend", tryPlayActive, { once: true, passive: true });
-    window.addEventListener("click", tryPlayActive, { once: true });
+    window.addEventListener("touchend", tryPlayActive, { passive: true });
+    window.addEventListener("click", tryPlayActive);
 
     // Autoplay robusto: cada vez que un video activo del stage entra al
     // viewport y está pausado, se fuerza play(). Cubre los casos donde el

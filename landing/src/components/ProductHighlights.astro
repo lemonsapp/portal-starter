@@ -496,6 +496,14 @@ const colorList = highlights.map((h) => h.color || defaultAccent).join(",");
         object-fit: cover;
         background: #0a0a0a;
     }
+    /* iOS dibuja un botón de play gigante sobre el video cuando bloquea
+       el autoplay (modo bajo consumo). Lo escondemos: queda el poster
+       limpio y el script arranca el video con el primer gesto. */
+    video.ph__image::-webkit-media-controls-start-playback-button,
+    video.ph__image::-webkit-media-controls {
+        display: none !important;
+        -webkit-appearance: none;
+    }
     .ph__image.is-active {
         opacity: 1;
         filter: blur(0) saturate(1.05);
