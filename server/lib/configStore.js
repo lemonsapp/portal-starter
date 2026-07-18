@@ -118,7 +118,7 @@ const KEY_CATALOG = {
   "telegram.chat_id":   { type: "string", isSecret: true },
 
   // Reglas (no secretas — config del producto)
-  "rules.coins_on_register":             { type: "int",  isSecret: false, default: 100 },
+  "rules.coins_on_register":             { type: "int",  isSecret: false, default: 3 },
   "rules.coins_on_profile_complete":     { type: "int",  isSecret: false, default: 50  },
   "rules.coins_on_onboarding_complete":  { type: "int",  isSecret: false, default: 100 },
   "rules.email_verify_grace_days":       { type: "int",  isSecret: false, default: 7   },
@@ -284,9 +284,10 @@ async function getPublicConfig() {
     const sub = k.replace("features.", "");
     out.features[sub] = await getConfig(k) ?? true;
   }
-  // Rules: las non-sensitive sólo (signup_mode, email_verify_required)
+  // Rules: las non-sensitive sólo (signup_mode, email_verify_required, coins_on_register)
   out.rules.signup_mode           = await getConfig("rules.signup_mode")           ?? "open";
   out.rules.email_verify_required = await getConfig("rules.email_verify_required") ?? true;
+  out.rules.coins_on_register     = await getConfig("rules.coins_on_register")     ?? 3;
 
   return out;
 }

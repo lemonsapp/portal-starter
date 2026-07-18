@@ -1159,9 +1159,17 @@ app.get("/auth/verify-email", async (req, res) => {
     await db.query(`UPDATE users SET email_verified=true WHERE id=$1`, [row.user_id]);
     await db.query(`UPDATE email_verifications SET verified_at=NOW() WHERE id=$1`, [row.id]);
 
-    // Dar coins de bienvenida (15 por verificar email)
-    await db.query(`UPDATE coins SET balance=balance+15, total_earned=total_earned+15 WHERE user_id=$1`, [row.user_id]);
-    await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',15,'¡Bienvenido! Email verificado')`, [row.user_id]);
+    // Coins de bienvenida al verificar email — monto configurable desde el
+    // wizard (rules.coins_on_register, paso 5). Antes estaba hardcodeado en 15.
+    let welcomeCoins = 3;
+    try {
+      const v = await configStore.getConfig("rules.coins_on_register");
+      if (v !== null && v !== undefined && Number.isFinite(Number(v))) welcomeCoins = Math.max(0, Number(v));
+    } catch (e) { console.warn("[verify-email coins_on_register]", e.message); }
+    if (welcomeCoins > 0) {
+      await db.query(`UPDATE coins SET balance=balance+$2, total_earned=total_earned+$2 WHERE user_id=$1`, [row.user_id, welcomeCoins]);
+      await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',$2,'¡Bienvenido! Email verificado')`, [row.user_id, welcomeCoins]);
+    }
 
     res.json({ ok: true, message: "Email verificado. Ya podés ingresar." });
   } catch(e) {

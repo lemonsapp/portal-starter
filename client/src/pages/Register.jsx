@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import RotatingAuthBg from "../components/RotatingAuthBg";
 import { useBranding, useRules } from "../lib/branding.js";
+import { CoinIcon } from "../lib/coin.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -452,7 +453,9 @@ export default function Register() {
               <div className="rg-success-desc">
                 Te enviamos un email de verificación.<br/>Revisá tu bandeja de entrada para activar la cuenta.
               </div>
-              <div className="rg-coins-pill">🪙 <b>+15</b> Coins de bienvenida al verificar</div>
+              {(rules.coins_on_register ?? 0) > 0 && (
+                <div className="rg-coins-pill"><CoinIcon size={15} /> <b>+{rules.coins_on_register}</b> Coins de bienvenida al verificar</div>
+              )}
               <button onClick={() => navigate("/")} className="rg-btn">
                 <span>Ir al login</span><span className="arr">→</span>
               </button>
