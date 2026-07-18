@@ -215,12 +215,13 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
 // Catálogo de acciones de Instagram (puntos + límite, según el documento).
 // Puntos alineados al doc "holistic sistema puntos v9" — 9.2 Criterios
 // específicos por acción. Todas requieren mencionar @holistic.arg.
+// Ajuste 2026-07-18 (pedido del cliente): photo_plant 33 → 20.
 const IG_ACTIONS = [
   { key: "like",          label: "Like a publicación oficial",       points: 2,   limit: "Máx 1 por día" },
   { key: "comment",       label: "Comentario en publicación",        points: 5,   limit: "Máx 1 por publicación" },
   { key: "story",         label: "Compartir en stories",             points: 7,   limit: "Máx 1 por publicación" },
   { key: "photo_product", label: "Foto del envase (sin planta)",     points: 17,  limit: "Máx 1 por mes", perMonth: 1 },
-  { key: "photo_plant",   label: "Foto con planta y producto",       points: 33,  limit: "Máx 1 por mes", perMonth: 1 },
+  { key: "photo_plant",   label: "Foto con planta y producto",       points: 20,  limit: "Máx 1 por mes", perMonth: 1 },
   { key: "stage",         label: "Compartir una etapa del ciclo",    points: 50,  limit: "Máx 1 por etapa" },
   { key: "full_cycle",    label: "Ciclo completo documentado",       points: 167, limit: "1 por ciclo (mín. 4 fotos)" },
 ];
