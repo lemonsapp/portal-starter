@@ -2,6 +2,7 @@
 // Sección dentro del perfil del user para listar/revocar dispositivos
 // con biometría registrada (passkeys WebAuthn).
 import { useState, useEffect } from "react";
+import { useFeatureFlag } from "../lib/branding.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -10,6 +11,7 @@ function getToken() {
 }
 
 export default function ConnectedDevicesPanel() {
+  const webauthnEnabled = useFeatureFlag("webauthn");
   const [credentials, setCredentials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -84,6 +86,9 @@ export default function ConnectedDevicesPanel() {
     if (diff < 30 * day) return `hace ${Math.floor(diff / day)} días`;
     return d.toLocaleDateString("es-AR");
   }
+
+  // Feature flag: si webauthn está apagado para este deploy, el panel no existe.
+  if (!webauthnEnabled) return null;
 
   return (
     <div style={panel}>

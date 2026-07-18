@@ -11,13 +11,14 @@ import {
 } from "../lib/webauthn";
 import ActivateBiometricModal from "../components/ActivateBiometricModal";
 import RotatingAuthBg from "../components/RotatingAuthBg";
-import { useBranding } from "../lib/branding.js";
+import { useBranding, useFeatureFlag } from "../lib/branding.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 export default function Login() {
   const navigate = useNavigate();
   const branding = useBranding();
+  const webauthnEnabled = useFeatureFlag("webauthn");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
@@ -76,7 +77,7 @@ export default function Login() {
 
       // Si el server dice que el user no tiene biometría y este browser la soporta,
       // abrir el modal de activación ANTES de navegar.
-      if (data.prompt_biometric_setup && supportsWebAuthn()) {
+      if (webauthnEnabled && data.prompt_biometric_setup && supportsWebAuthn()) {
         const platformOk = await supportsPlatformBiometric();
         if (platformOk && shouldShowBiometricPrompt()) {
           setActivateModalToken(data.token);
@@ -561,7 +562,7 @@ export default function Login() {
 
           {msg && <div className="lg-err">{msg}</div>}
 
-          {biometricAvailable && (
+          {webauthnEnabled && biometricAvailable && (
             <button
               type="button"
               onClick={handleBiometricLogin}
