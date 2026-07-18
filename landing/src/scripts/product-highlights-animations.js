@@ -76,6 +76,23 @@ function initProductHighlights(root) {
     window.addEventListener("touchend", tryPlayActive, { once: true, passive: true });
     window.addEventListener("click", tryPlayActive, { once: true });
 
+    // Autoplay robusto: cada vez que un video activo del stage entra al
+    // viewport y está pausado, se fuerza play(). Cubre los casos donde el
+    // autoplay nativo no disparó (elemento offscreen al cargar, Safari
+    // que pausó y no reanudó al volver a la sección).
+    const vids = images.filter((el) => el.tagName === "VIDEO");
+    if (vids.length && "IntersectionObserver" in window) {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((e) => {
+                if (e.isIntersecting && e.target.paused && e.target.classList.contains("is-active")) {
+                    const p = e.target.play();
+                    if (p && typeof p.catch === "function") p.catch(() => {});
+                }
+            });
+        }, { threshold: 0.15 });
+        vids.forEach((v) => io.observe(v));
+    }
+
     /**
      * Aplica el highlight `nextIdx`: actualiza color tema, cross-fade
      * de imágenes/videos, big number, panel, rail tick, HUD.
