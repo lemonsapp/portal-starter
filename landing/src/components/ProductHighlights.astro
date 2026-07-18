@@ -38,6 +38,10 @@ interface Highlight {
     /** Si "video", el media path en `image` se renderiza como <video>
         (autoplay/muted/loop). Útil para Línea Pro que tiene clip MP4. */
     mediaType?: "image" | "video";
+    /** Poster para mediaType video — sin esto, iOS con preload=metadata
+        no pinta ningún frame y el video queda en blanco si el autoplay
+        no arranca (ej. modo bajo consumo). */
+    poster?: string;
 }
 interface Props {
     highlights: Highlight[];
@@ -125,7 +129,8 @@ const colorList = highlights.map((h) => h.color || defaultAccent).join(",");
                                 data-ph-image
                                 data-index={i}
                                 src={h.image}
-                                muted loop playsinline
+                                poster={h.poster}
+                                autoplay muted loop playsinline
                                 preload="metadata"
                                 aria-label={h.title}
                             ></video>

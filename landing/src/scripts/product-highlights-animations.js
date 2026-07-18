@@ -60,6 +60,23 @@ function initProductHighlights(root) {
     let splits = [];
 
     /**
+     * Reintenta play() del media activo si es un video pausado.
+     * El play() del init puede no arrancar: iOS no reproduce videos
+     * offscreen al cargar la página, y el modo bajo consumo rechaza
+     * cualquier play() que no venga de un gesto. Se llama al entrar
+     * la sección al viewport y en el primer gesto del usuario.
+     */
+    function tryPlayActive() {
+        const media = images[activeIdx];
+        if (media && media.tagName === "VIDEO" && media.paused) {
+            const p = media.play();
+            if (p && typeof p.catch === "function") p.catch(() => {});
+        }
+    }
+    window.addEventListener("touchend", tryPlayActive, { once: true, passive: true });
+    window.addEventListener("click", tryPlayActive, { once: true });
+
+    /**
      * Aplica el highlight `nextIdx`: actualiza color tema, cross-fade
      * de imágenes/videos, big number, panel, rail tick, HUD.
      */
@@ -199,11 +216,7 @@ function initProductHighlights(root) {
         });
         if (images[0]) {
             gsap.set(images[0], { autoAlpha: 1, filter: lite ? "blur(0px) saturate(1)" : "blur(0px) saturate(1.05)", scale: 1 });
-            // Si el primer media es un video, intentar play.
-            if (images[0].tagName === "VIDEO") {
-                const p = images[0].play();
-                if (p && typeof p.catch === "function") p.catch(() => {});
-            }
+            tryPlayActive();
         }
         gsap.set(bigDigits, { autoAlpha: 0, yPercent: 30 });
         if (bigDigits[0]) gsap.set(bigDigits[0], { autoAlpha: 1, yPercent: 0 });
@@ -276,6 +289,7 @@ function initProductHighlights(root) {
             defaults: { ease: "power3.out" },
         });
         revealTl
+            .add(tryPlayActive, 0)
             .from(stage, {
                 autoAlpha: 0, scale: 0.92,
                 duration: 1.0, ease: "back.out(1.4)",

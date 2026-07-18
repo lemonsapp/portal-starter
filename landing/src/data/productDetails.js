@@ -552,6 +552,7 @@ export const productDetails = {
                 body: "Aplicado en los últimos riegos antes del corte, ayuda a vaciar los reservorios internos de la planta de excesos minerales y mejora el bouquet final.",
                 image: "/video/internas/day-0/highlight-01.mp4",
                 mediaType: "video",
+                poster: "/imagenes-web/productos/day-0/highlight-01-poster.jpg",
                 color: "#D4B34A",
                 stat: "01",
             },
