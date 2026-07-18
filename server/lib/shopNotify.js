@@ -47,6 +47,7 @@ function esc(str) {
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+// Exportada: mailer.js (mails de auth) usa la misma resolución de config.
 async function getResendConfig() {
   // Prefer configStore (admin wizard); fallback a env si está seteado.
   const [csKey, csFromEmail, csFromName] = await Promise.all([
@@ -784,6 +785,7 @@ module.exports = {
   parseUnsubscribeToken,
   // helpers exportados por si otro módulo los necesita
   sendResendEmail,
+  getResendConfig,
   formatARS,
   // Carriers / tracking
   CARRIERS,

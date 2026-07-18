@@ -1,16 +1,26 @@
-const { Resend } = require("resend");
+// server/mailer.js — mails transaccionales de auth (verificación, reset, etc.)
+//
+// La config de Resend se resuelve con la MISMA cadena que los mails del shop
+// (lib/shopNotify.getResendConfig): primero configStore (API key que el admin
+// pega en el wizard, encriptada en app_config), fallback a env
+// (RESEND_API_KEY + MAIL_FROM). Antes este archivo sólo miraba env: si la key
+// vivía en el wizard, los mails de verificación salían "simulados" y no
+// llegaban nunca.
 const { render } = require("@react-email/render");
+const { getResendConfig } = require("./lib/shopNotify");
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const RESEND_API = "https://api.resend.com/emails";
 
 async function sendEmail({ to, subject, html, react }) {
   console.log("[MAIL] Intentando enviar a:", to, "subject:", subject);
 
-  if (!process.env.RESEND_API_KEY) {
-    console.log("[MAIL] RESEND_API_KEY no está seteada. (simulado)");
+  const { apiKey, from } = await getResendConfig();
+  if (!apiKey || !from) {
+    console.log("[MAIL] Resend no configurado (ni wizard ni env). (simulado)");
     return;
   }
 
+  // MAIL_TEST_TO: desvía todo a una casilla de prueba (sólo para debugging)
   const testTo = process.env.MAIL_TEST_TO;
   const finalTo = testTo ? testTo : to;
 
@@ -18,16 +28,19 @@ async function sendEmail({ to, subject, html, react }) {
   const finalHtml = react ? render(react) : html;
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: process.env.MAIL_FROM, // IMPORTANTE: formato válido "Nombre <email@dominio>"
-      to: finalTo,
-      subject,
-      html: finalHtml,
+    const res = await fetch(RESEND_API, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ from, to: finalTo, subject, html: finalHtml }),
     });
+    const data = await res.json().catch(() => ({}));
 
-    if (error) {
-      console.log("[MAIL] ERROR:", error);
-      throw new Error(error.message || "Resend error");
+    if (!res.ok) {
+      console.log("[MAIL] ERROR:", res.status, data);
+      throw new Error(data.message || `Resend HTTP ${res.status}`);
     }
 
     console.log("[MAIL] OK! id:", data?.id, "to:", finalTo);
