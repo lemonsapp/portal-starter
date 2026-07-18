@@ -103,9 +103,21 @@ export default function TopNav() {
         const token = getToken();
         if (!token) return;
         fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-            .then((r) => r.json())
+            .then((r) => {
+                // Token vencido/inválido (JWT dura 7 días): limpiar y caer al
+                // estado anónimo con "Iniciar sesión". Antes fallaba mudo y el
+                // nav quedaba como cliente común — para un admin, el botón
+                // Admin "desaparecía" sin explicación.
+                if (r.status === 401 || r.status === 403) {
+                    localStorage.removeItem("token");
+                    sessionStorage.removeItem("token");
+                    setMe(null);
+                    return null;
+                }
+                return r.json();
+            })
             .then((d) => {
-                if (!d.user) return;
+                if (!d?.user) return;
                 setMe(d.user);
                 // Fix: el endpoint es /coins/:userId, no /coins/me. Fetch sólo
                 // cuando tenemos el ID. Falla silenciosa si feature off o
