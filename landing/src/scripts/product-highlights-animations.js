@@ -69,12 +69,43 @@ function initProductHighlights(root) {
      * gesto real no lo puede bloquear ni el modo bajo consumo, así
      * que el primer toque/scroll con el video a la vista lo arranca.
      */
-    function tryPlayActive() {
-        const media = images[activeIdx];
-        if (media && media.tagName === "VIDEO" && media.paused) {
-            const p = media.play();
-            if (p && typeof p.catch === "function") p.catch(() => {});
+    /**
+     * Último recurso cuando el sistema bloquea el video (modo bajo consumo):
+     * reemplaza el <video> por su imagen animada (data-fallback, webp) —
+     * las imágenes animadas no tienen política de autoplay, se mueven
+     * siempre. Conserva clases, index, estilos inline de GSAP y el lugar
+     * en `images` para que el cross-fade siga funcionando igual.
+     */
+    function swapToFallback(video) {
+        if (!video || video.tagName !== "VIDEO" || !video.dataset.fallback) return;
+        if (video.dataset.phSwapped === "1") return;
+        video.dataset.phSwapped = "1";
+        const img = document.createElement("img");
+        img.className = video.className + " ph__image--cover";
+        img.setAttribute("data-ph-image", "");
+        img.dataset.index = video.dataset.index;
+        img.src = video.dataset.fallback;
+        img.alt = video.getAttribute("aria-label") || "";
+        img.draggable = false;
+        img.style.cssText = video.style.cssText;
+        video.replaceWith(img);
+        const i = images.indexOf(video);
+        if (i >= 0) images[i] = img;
+    }
+
+    function playOrFallback(video) {
+        if (!video || video.tagName !== "VIDEO" || !video.paused) return;
+        const p = video.play();
+        if (p && typeof p.catch === "function") {
+            // NotAllowedError = autoplay bloqueado por el sistema → swap.
+            p.catch((err) => {
+                if (err && err.name === "NotAllowedError") swapToFallback(video);
+            });
         }
+    }
+
+    function tryPlayActive() {
+        playOrFallback(images[activeIdx]);
     }
     window.addEventListener("touchend", tryPlayActive, { passive: true });
     window.addEventListener("click", tryPlayActive);
@@ -87,10 +118,17 @@ function initProductHighlights(root) {
     if (vids.length && "IntersectionObserver" in window) {
         const io = new IntersectionObserver((entries) => {
             entries.forEach((e) => {
-                if (e.isIntersecting && e.target.paused && e.target.classList.contains("is-active")) {
-                    const p = e.target.play();
-                    if (p && typeof p.catch === "function") p.catch(() => {});
-                }
+                const v = e.target;
+                if (!e.isIntersecting || v.tagName !== "VIDEO" || !v.paused) return;
+                if (!v.classList.contains("is-active")) return;
+                playOrFallback(v);
+                // Bloqueo silencioso (sin rechazo de promise): si 1.5s
+                // después de estar visible sigue pausado, swap igual.
+                setTimeout(() => {
+                    if (v.isConnected && v.paused && v.classList.contains("is-active")) {
+                        swapToFallback(v);
+                    }
+                }, 1500);
             });
         }, { threshold: 0.15 });
         vids.forEach((v) => io.observe(v));
@@ -121,10 +159,7 @@ function initProductHighlights(root) {
                     overwrite: "auto",
                 });
                 // Si es video, lo reproducimos cuando se hace activo.
-                if (img.tagName === "VIDEO") {
-                    const p = img.play();
-                    if (p && typeof p.catch === "function") p.catch(() => {});
-                }
+                playOrFallback(img);
             } else if (!isAct && img.classList.contains("is-active")) {
                 img.classList.remove("is-active");
                 gsap.to(img, {

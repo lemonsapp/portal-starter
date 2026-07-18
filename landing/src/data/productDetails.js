@@ -553,6 +553,7 @@ export const productDetails = {
                 image: "/video/internas/day-0/highlight-01.mp4",
                 mediaType: "video",
                 poster: "/imagenes-web/productos/day-0/highlight-01-poster.jpg",
+                fallback: "/imagenes-web/productos/day-0/highlight-01-animado.webp",
                 color: "#D4B34A",
                 stat: "01",
             },

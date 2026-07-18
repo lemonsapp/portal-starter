@@ -42,6 +42,11 @@ interface Highlight {
         no pinta ningún frame y el video queda en blanco si el autoplay
         no arranca (ej. modo bajo consumo). */
     poster?: string;
+    /** Imagen ANIMADA (webp) del mismo clip. Si el sistema bloquea el
+        autoplay del video (modo bajo consumo), el script reemplaza el
+        <video> por este <img>: las imágenes animadas no tienen política
+        de autoplay, así que el clip se mueve siempre, en todos lados. */
+    fallback?: string;
 }
 interface Props {
     highlights: Highlight[];
@@ -130,6 +135,7 @@ const colorList = highlights.map((h) => h.color || defaultAccent).join(",");
                                 data-index={i}
                                 src={h.image}
                                 poster={h.poster}
+                                data-fallback={h.fallback}
                                 autoplay muted loop playsinline
                                 preload="metadata"
                                 aria-label={h.title}
@@ -491,8 +497,11 @@ const colorList = highlights.map((h) => h.color || defaultAccent).join(",");
             filter 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
             transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    /* Si es video, ajustamos object-fit para llenar el frame con cover. */
-    video.ph__image {
+    /* Si es video, ajustamos object-fit para llenar el frame con cover.
+       .ph__image--cover replica ese encuadre en el <img> animado que lo
+       reemplaza cuando el sistema bloquea el autoplay. */
+    video.ph__image,
+    .ph__image--cover {
         object-fit: cover;
         background: #0a0a0a;
     }
