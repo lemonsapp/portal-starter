@@ -26,13 +26,15 @@ function addDismissed(id) {
 
 export default function AppNotification() {
   const { me } = useUser();
-  const isStaff = ["admin", "operator"].includes(me?.role);
   const [notif, setNotif]       = useState(null);
   const [visible, setVisible]   = useState(false);
   const [expanded, setExpanded] = useState(true);
   const [bounce, setBounce]     = useState(false);
 
   useEffect(() => {
+    // Sin sesión activa no se consulta ni muestra nada: un token viejo en
+    // localStorage hacía aparecer avisos en la pantalla de login pública.
+    if (!me) { setNotif(null); setVisible(false); return; }
     async function load() {
       try {
         const r = await fetch(`${API}/notifications/active`, {
@@ -55,7 +57,7 @@ export default function AppNotification() {
     // Re-chequea cada 5 minutos
     const interval = setInterval(load, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [me?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function dismiss() {
     if (notif) addDismissed(notif.id);
@@ -63,9 +65,9 @@ export default function AppNotification() {
     setTimeout(() => setVisible(false), 200);
   }
 
-  if (!notif || !visible) return null;
-  // Los avisos de pedidos (type='order') son sólo para staff logueado.
-  if (notif.type === "order" && !isStaff) return null;
+  if (!me || !notif || !visible) return null;
+  // Los avisos de pedidos (type='order') son sólo para el admin logueado.
+  if (notif.type === "order" && me.role !== "admin") return null;
 
   const style = TYPE_STYLES[notif.type] || TYPE_STYLES.info;
 

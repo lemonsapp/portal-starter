@@ -5,6 +5,7 @@ const router  = express.Router();
 const db      = require("../db");
 const { authRequired } = require("../auth");
 const { sanitizeText } = require("../security");
+const { REFERRAL_MAX_PER_USER } = require("../lib/referrals");
 const multer = require('multer');
 // Sprint 14 fix: el SDK de Cloudinary se configura por request leyendo
 // las API keys de configStore (DB encriptada via wizard /admin/setup),
@@ -714,7 +715,11 @@ router.get("/referrals", authRequired, async (req, res) => {
     res.json({
       ok: true,
       username, link,
-      stats: { total: refs.length, pending, rewarded, total_coins_earned: totalCoins },
+      stats: {
+        total: refs.length, pending, rewarded, total_coins_earned: totalCoins,
+        max: REFERRAL_MAX_PER_USER,
+        remaining: Math.max(0, REFERRAL_MAX_PER_USER - refs.length),
+      },
       referrals: refs,
     });
   } catch (e) { res.status(500).json({ error: e.message }); }

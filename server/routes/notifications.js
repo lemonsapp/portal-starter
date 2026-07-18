@@ -31,6 +31,16 @@ async function migrate() {
       updated_at  TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  // Data fix: avisos de pedido creados antes de la convención type='order'
+  // quedaron como info/'all' y los veía cualquier usuario logueado. Idempotente.
+  await db.query(`
+    UPDATE broadcast_notifications
+       SET type='order', target_role='admin'
+     WHERE (message LIKE 'Nuevo pedido%'
+            OR message LIKE 'Pago confirmado%'
+            OR message LIKE 'Comprobante de transferencia%')
+       AND (type <> 'order' OR target_role <> 'admin')
+  `);
 }
 migrate().catch(e => console.error("[NOTIF MIGRATE]", e));
 
@@ -40,12 +50,15 @@ router.get("/active", authRequired, async (req, res) => {
     const role = req.user.role;
     // Los avisos de pedidos (type='order') son SÓLO para staff, aunque alguna
     // fila vieja haya quedado con target_role='all'. Un cliente nunca los ve.
+    // Los avisos dirigidos al rol propio tienen prioridad sobre los 'all':
+    // sin esto, un anuncio general nuevo tapa el aviso de pedido del admin
+    // (LIMIT 1 se quedaba con el más reciente sin importar el target).
     const q = await db.query(`
       SELECT * FROM broadcast_notifications
       WHERE active = TRUE
         AND (target_role = 'all' OR target_role = $1)
-        AND (type <> 'order' OR $1 IN ('admin', 'operator'))
-      ORDER BY created_at DESC
+        AND (type <> 'order' OR $1 = 'admin')
+      ORDER BY (target_role = $1) DESC, created_at DESC
       LIMIT 1
     `, [role]);
     res.json({ notification: q.rows[0] || null });

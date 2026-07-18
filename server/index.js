@@ -33,6 +33,7 @@ const adminUsers         = require("./routes/admin-users");     // 👥 Coins ma
 const shop               = require("./routes/shop");             // 🛒 Shop fase 1: catálogo + admin productos
 const checkout           = require("./routes/checkout");          // 💳 Shop fase 2: checkout + MercadoPago + orders
 const { requireFeature } = require("./lib/featureFlags");        // 🚦 Toggle de features
+const { REFERRAL_MAX_PER_USER } = require("./lib/referrals");    // 🤝 Tope de invitaciones
 
 const app = express();
 
@@ -1049,17 +1050,25 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
       return res.status(400).json({ error: "Código de invitación inválido o ya usado" });
     }
 
-    // Registrar referido si vino con referrer (username del que lo invitó)
+    // Registrar referido si vino con referrer (username del que lo invitó).
+    // Tope: REFERRAL_MAX_PER_USER invitaciones por usuario — pasado el tope,
+    // el registro sigue normal pero sin crédito de referido para nadie.
     if (referrer) {
       try {
         const refQ = await db.query(`SELECT id FROM users WHERE LOWER(username)=LOWER($1) AND id<>$2`, [referrer.trim(), user.id]);
         if (refQ.rows[0]) {
           const referrerId = refQ.rows[0].id;
-          await db.query(`UPDATE users SET referrer_id=$1 WHERE id=$2`, [referrerId, user.id]);
-          await db.query(
-            `INSERT INTO referrals (referrer_id, referred_id, status) VALUES ($1,$2,'pending') ON CONFLICT (referred_id) DO NOTHING`,
-            [referrerId, user.id]
+          const countQ = await db.query(
+            `SELECT COUNT(*)::int AS n FROM referrals WHERE referrer_id=$1`,
+            [referrerId]
           );
+          if (countQ.rows[0].n < REFERRAL_MAX_PER_USER) {
+            await db.query(`UPDATE users SET referrer_id=$1 WHERE id=$2`, [referrerId, user.id]);
+            await db.query(
+              `INSERT INTO referrals (referrer_id, referred_id, status) VALUES ($1,$2,'pending') ON CONFLICT (referred_id) DO NOTHING`,
+              [referrerId, user.id]
+            );
+          }
         }
       } catch (e) { console.warn("[register referrer]", e.message); }
     }
@@ -1136,7 +1145,7 @@ app.get("/auth/verify-email", async (req, res) => {
 
     // Dar coins de bienvenida (15 por verificar email)
     await db.query(`UPDATE coins SET balance=balance+15, total_earned=total_earned+15 WHERE user_id=$1`, [row.user_id]);
-    await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',15,'Bienvenido a Lemons Portal!')`, [row.user_id]);
+    await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',15,'¡Bienvenido! Email verificado')`, [row.user_id]);
 
     res.json({ ok: true, message: "Email verificado. Ya podés ingresar." });
   } catch(e) {

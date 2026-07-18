@@ -356,6 +356,8 @@ function ReferralCard() {
   if (!data) return null;
   const link = data.link;
   const stats = data.stats || {};
+  const maxReferrals = stats.max ?? 2;
+  const capReached = (stats.total || 0) >= maxReferrals;
   function copy() {
     if (!link) return;
     navigator.clipboard.writeText(link);
@@ -377,7 +379,7 @@ function ReferralCard() {
             Invitá amigos · ganá <span style={{ color: "var(--brand-primary)" }}>2 <Coin size={22} /></span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginTop: 6, lineHeight: 1.5 }}>
-            Tu amigo recibe 2 <Coin size={13} /> al activar su cuenta. Vos también ganás 2 <Coin size={13} /> por cada invitación.
+            Tu amigo recibe 2 <Coin size={13} /> al activar su cuenta. Vos también ganás 2 <Coin size={13} /> por cada invitación. Máximo {maxReferrals} invitaciones por cuenta.
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, fontFamily: "'Gotham', monospace" }}>
@@ -396,7 +398,11 @@ function ReferralCard() {
         </div>
       </div>
 
-      {link ? (
+      {capReached ? (
+        <div style={{ position: "relative", zIndex: 1, padding: "12px 14px", background: "rgba(167,139,250,.08)", border: "1px solid rgba(167,139,250,.3)", borderRadius: 10, fontSize: 12, color: "#a78bfa", fontWeight: 600 }}>
+          🎉 Ya usaste tus {maxReferrals} invitaciones. ¡Gracias por compartir!
+        </div>
+      ) : link ? (
         <div style={{ position: "relative", zIndex: 1, display: "flex", gap: 8, alignItems: "center", padding: "12px 14px", background: "rgba(0,0,0,.4)", border: "1px solid rgba(167,139,250,.3)", borderRadius: 10 }}>
           <code style={{ flex: 1, fontFamily: "'Gotham', monospace", fontSize: 12, color: "#a78bfa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{link}</code>
           <Pop as="button" onClick={copy}
