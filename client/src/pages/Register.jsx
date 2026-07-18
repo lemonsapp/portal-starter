@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import RotatingAuthBg from "../components/RotatingAuthBg";
-import { useBranding } from "../lib/branding.js";
+import { useBranding, useRules } from "../lib/branding.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
 export default function Register() {
   const navigate = useNavigate();
   const branding = useBranding();
+  const rules = useRules();
+  const inviteRequired = rules.signup_mode === "invite";
   const [searchParams] = useSearchParams();
   const referrer = searchParams.get("r") || searchParams.get("ref") || "";
   const [step, setStep] = useState("form"); // form | success
@@ -46,7 +48,7 @@ export default function Register() {
 
   async function submit() {
     setError("");
-    if (!form.invite_code.trim()) return setError("Ingresá tu código de invitación");
+    if (inviteRequired && !form.invite_code.trim()) return setError("Ingresá tu código de invitación");
     if (!form.name.trim()) return setError("Ingresá tu nombre");
     if (!form.email.trim()) return setError("Ingresá tu email");
     if (form.password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres");
@@ -55,7 +57,8 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const body = { invite_code: form.invite_code, name: form.name, email: form.email, password: form.password, terms_accepted: true, terms_version: "2026-06-27" };
+      const body = { name: form.name, email: form.email, password: form.password, terms_accepted: true, terms_version: "2026-06-27" };
+      if (inviteRequired) body.invite_code = form.invite_code;
       if (referrer) body.referrer = referrer;
       const r = await fetch(`${API}/auth/register`, {
         method: "POST",
@@ -468,15 +471,19 @@ export default function Register() {
             <>
               <div className="rg-eyebrow">Crear cuenta</div>
               <div className="rg-title">Sumate <em>al portal</em></div>
-              <div className="rg-desc">Necesitás un código de invitación para registrarte. Si no tenés, consultanos por WhatsApp.</div>
+              <div className="rg-desc">{inviteRequired
+                ? "Necesitás un código de invitación para registrarte. Si no tenés, consultanos por WhatsApp."
+                : "Creá tu cuenta gratis y activala con el mail de verificación."}</div>
 
               {error && <div className="rg-err">{error}</div>}
 
-              <div className="rg-field">
-                <label className="hot">🔑 Código de invitación *</label>
-                <input className="rg-input code" placeholder="A1B2C3D4" value={form.invite_code}
-                  onChange={e => set("invite_code", e.target.value.toUpperCase())} maxLength={16} />
-              </div>
+              {inviteRequired && (
+                <div className="rg-field">
+                  <label className="hot">🔑 Código de invitación *</label>
+                  <input className="rg-input code" placeholder="A1B2C3D4" value={form.invite_code}
+                    onChange={e => set("invite_code", e.target.value.toUpperCase())} maxLength={16} />
+                </div>
+              )}
 
               <div className="rg-field">
                 <label>Nombre completo *</label>

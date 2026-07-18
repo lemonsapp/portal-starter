@@ -34,6 +34,7 @@ const shop               = require("./routes/shop");             // 🛒 Shop fa
 const checkout           = require("./routes/checkout");          // 💳 Shop fase 2: checkout + MercadoPago + orders
 const { requireFeature } = require("./lib/featureFlags");        // 🚦 Toggle de features
 const { REFERRAL_MAX_PER_USER } = require("./lib/referrals");    // 🤝 Tope de invitaciones
+const configStore = require("./lib/configStore");                // ⚙️ Reglas del wizard (signup_mode)
 
 const app = express();
 
@@ -992,7 +993,7 @@ app.post("/auth/bootstrap-admin", authLimiter, noStore, async (req, res) => {
 app.post("/auth/register", authLimiter, noStore, async (req, res) => {
   try {
     const schema = z.object({
-      invite_code: z.string().min(1),
+      invite_code: z.string().min(1).optional(),
       name:        z.string().min(2),
       email:       z.string().email(),
       password:    z.string().min(6),
@@ -1012,12 +1013,25 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
     const termsVersion = p.data.terms_version || TERMS_VERSION;
     const termsIp = String(req.headers["x-forwarded-for"] || req.ip || "").split(",")[0].trim() || null;
 
-    // Verificar código
-    const codeQ = await db.query(
-      `SELECT * FROM invite_codes WHERE code=$1 AND used_by IS NULL AND (expires_at IS NULL OR expires_at > NOW())`,
-      [invite_code.toUpperCase().trim()]
-    );
-    if (!codeQ.rows[0]) return res.status(400).json({ error: "Código de invitación inválido o ya usado" });
+    // Modo de registro (regla del wizard, rules.signup_mode):
+    //   'open'   → registro libre, sin código (default)
+    //   'invite' → código de invitación obligatorio
+    // Antes el endpoint ignoraba la regla y siempre exigía código.
+    let signupMode = "open";
+    try { signupMode = (await configStore.getConfig("rules.signup_mode")) || "open"; }
+    catch (e) { console.warn("[register signup_mode]", e.message); }
+    const inviteRequired = signupMode === "invite";
+    const normalizedCode = invite_code ? invite_code.toUpperCase().trim() : null;
+
+    // Verificar código (sólo en modo invitación)
+    if (inviteRequired) {
+      if (!normalizedCode) return res.status(400).json({ error: "Ingresá tu código de invitación" });
+      const codeQ = await db.query(
+        `SELECT * FROM invite_codes WHERE code=$1 AND used_by IS NULL AND (expires_at IS NULL OR expires_at > NOW())`,
+        [normalizedCode]
+      );
+      if (!codeQ.rows[0]) return res.status(400).json({ error: "Código de invitación inválido o ya usado" });
+    }
 
     // Verificar email no existe
     const existQ = await db.query(`SELECT id FROM users WHERE email=$1`, [email.toLowerCase()]);
@@ -1034,20 +1048,22 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
                           terms_accepted_at, terms_version, terms_accepted_ip)
        VALUES ($1,$2,$3,$4,'client',$5,false, NOW(), $6, $7)
        RETURNING id, client_number, name, email`,
-      [clientNumber, name.trim(), email.toLowerCase(), hash, invite_code.toUpperCase().trim(), termsVersion, termsIp]
+      [clientNumber, name.trim(), email.toLowerCase(), hash, inviteRequired ? normalizedCode : null, termsVersion, termsIp]
     );
     const user = userQ.rows[0];
 
     // Marcar código como usado — atómico: si otra request lo tomó primero,
     // used_by IS NULL falla y no se consume dos veces el mismo código.
-    const claimQ = await db.query(
-      `UPDATE invite_codes SET used_by=$1, used_at=NOW() WHERE code=$2 AND used_by IS NULL RETURNING code`,
-      [user.id, invite_code.toUpperCase().trim()]
-    );
-    if (!claimQ.rows[0]) {
-      // Perdió la carrera: revertir el usuario recién creado.
-      await db.query(`DELETE FROM users WHERE id=$1`, [user.id]);
-      return res.status(400).json({ error: "Código de invitación inválido o ya usado" });
+    if (inviteRequired) {
+      const claimQ = await db.query(
+        `UPDATE invite_codes SET used_by=$1, used_at=NOW() WHERE code=$2 AND used_by IS NULL RETURNING code`,
+        [user.id, normalizedCode]
+      );
+      if (!claimQ.rows[0]) {
+        // Perdió la carrera: revertir el usuario recién creado.
+        await db.query(`DELETE FROM users WHERE id=$1`, [user.id]);
+        return res.status(400).json({ error: "Código de invitación inválido o ya usado" });
+      }
     }
 
     // Registrar referido si vino con referrer (username del que lo invitó).
