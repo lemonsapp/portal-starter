@@ -10,6 +10,7 @@ import { UserNameHeader } from "../components/UserName.jsx";
 import ProfileStudio from "./ProfileStudio.jsx";
 import { BannerCanvas, BadgePreview } from "./ProfileStudio.jsx";
 import ConnectedDevicesPanel from "../components/ConnectedDevicesPanel";
+import { CoinIcon } from "../lib/coin.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -194,7 +195,7 @@ function ItemCard({ item, owned, equipped, onBuy, onEquip, loading, readOnly }) 
         </button>
       ) : (
         <button onClick={()=>onBuy(item)} disabled={loading===item.key} style={{ width:"100%",height:28,fontSize:8,fontWeight:900,letterSpacing:"1px",textTransform:"uppercase",background:item.cost_coins===0?"rgba(34,197,94,.1)":"var(--brand-primary)",border:"none",color:item.cost_coins===0?"#22c55e":"#04060d",borderRadius:8,cursor:"pointer",opacity:loading===item.key?.6:1 }}>
-          {loading===item.key?"...":item.cost_coins===0?"🎁 Gratis":"🪙 "+item.cost_coins.toLocaleString()}
+          {loading===item.key?"...":item.cost_coins===0?"🎁 Gratis":<><CoinIcon size={12} /> {item.cost_coins.toLocaleString()}</>}
         </button>
       ))}
     </div>
@@ -219,7 +220,7 @@ function AchievementCard({ ach, unlocked, stats }) {
       <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:14,fontWeight:800,color:"#e2e8f0",marginBottom:5,letterSpacing:".5px",textTransform:"uppercase" }}>{ach.name}</div>
       <div style={{ fontSize:11,color:"rgba(255,255,255,.4)",lineHeight:1.55,marginBottom:12 }}>{ach.desc}</div>
       <div style={{ fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",color:unlocked?r.color:"rgba(255,255,255,.2)",textTransform:"uppercase",display:"flex",alignItems:"center",gap:6 }}>
-        {unlocked?<>✦ Desbloqueado</>:<>{ach.reward>0?<>🪙 +{ach.reward}</>:"Bloqueado"}{pct!==null&&<span style={{marginLeft:"auto",color:"rgba(255,255,255,.45)"}}>{Math.floor(pct)}%</span>}</>}
+        {unlocked?<>✦ Desbloqueado</>:<>{ach.reward>0?<><CoinIcon size={12} /> +{ach.reward}</>:"Bloqueado"}{pct!==null&&<span style={{marginLeft:"auto",color:"rgba(255,255,255,.45)"}}>{Math.floor(pct)}%</span>}</>}
       </div>
       {!unlocked&&pct!==null&&<div style={{ height:3,background:"rgba(255,255,255,.07)",overflow:"hidden",marginTop:10,position:"relative" }}><div style={{ height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${r.color},${r.color}88)`,boxShadow:`0 0 8px ${r.color}66`,transition:"width 1s cubic-bezier(.2,.8,.2,1)" }} /></div>}
     </div>
@@ -318,7 +319,7 @@ function PostCard({ post, onDelete, isOwn }) {
   return (
     <div style={{ background:"rgba(255,255,255,.025)",border:"1px solid rgba(255,255,255,.07)",borderRadius:18,padding:18,position:"relative",overflow:"hidden",transition:"all .25s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.04)";e.currentTarget.style.borderColor="rgba(255,255,255,.12)";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.025)";e.currentTarget.style.borderColor="rgba(255,255,255,.07)";}}>
       <div style={{ display:"flex",alignItems:"center",gap:11,marginBottom:11 }}>
-        <div style={{ width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#1a0820,#0a1825)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,border:"1.5px solid rgba(var(--brand-primary-rgb),.22)",flexShrink:0 }}>🪙</div>
+        <div style={{ width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#1a0820,#0a1825)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,border:"1.5px solid rgba(var(--brand-primary-rgb),.22)",flexShrink:0 }}><CoinIcon size={20} /></div>
         <div>
           <div style={{ fontSize:13,fontWeight:800,background:"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{post.author||post.author_name||"ANON"}</div>
           <div style={{ fontSize:9,color:"rgba(255,255,255,.25)",marginTop:1 }}>{post.time||"ahora"} · {post.category||"Texto"}</div>
@@ -362,7 +363,7 @@ function PostCard({ post, onDelete, isOwn }) {
             <div key={c.id} style={{display:"flex",gap:8,marginBottom:10,alignItems:"flex-start"}}>
               {c.avatar_url
                 ? <img src={c.avatar_url} style={{width:28,height:28,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:"1px solid rgba(var(--brand-primary-rgb),.3)"}} alt=""/>
-                : <div style={{width:28,height:28,borderRadius:"50%",background:"rgba(var(--brand-primary-rgb),.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>🪙</div>
+                : <div style={{width:28,height:28,borderRadius:"50%",background:"rgba(var(--brand-primary-rgb),.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}><CoinIcon size={16} /></div>
               }
               <div style={{flex:1,background:"rgba(255,255,255,.03)",borderRadius:10,padding:"8px 12px"}}>
                 <div style={{fontSize:11,fontWeight:800,marginBottom:2,
@@ -890,7 +891,7 @@ export default function ProfilePage() {
                 {/* Coins card premium */}
                 <div style={{display:"inline-flex",alignItems:"center",gap:10,padding:"10px 16px",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.1),rgba(var(--brand-accent-rgb),.05))",border:"1px solid rgba(var(--brand-primary-rgb),.25)",position:"relative",overflow:"hidden",animation:"glowPulse 4s ease-in-out infinite"}}>
                   <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,rgba(var(--brand-primary-rgb),.15),transparent)",backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",pointerEvents:"none"}}/>
-                  <span style={{fontSize:20,filter:"drop-shadow(0 0 8px rgba(var(--brand-primary-rgb),.5))",position:"relative",zIndex:1}}>🪙</span>
+                  <span style={{fontSize:20,filter:"drop-shadow(0 0 8px rgba(var(--brand-primary-rgb),.5))",position:"relative",zIndex:1}}><CoinIcon size={20} /></span>
                   <div style={{position:"relative",zIndex:1}}>
                     <div style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(var(--brand-primary-rgb),.5)",lineHeight:1}}>Coins</div>
                     <CountUp value={profile?.coins?.balance||0} style={{fontFamily:"'Gotham', sans-serif",fontSize:24,letterSpacing:"1px",color:"var(--brand-primary)",lineHeight:1.1,marginTop:2,display:"block"}}>{(profile?.coins?.balance||0).toLocaleString()}</CountUp>
@@ -935,7 +936,7 @@ export default function ProfilePage() {
                 {ico:"📰",lbl:"Posts",         v:String(stats.posts||0),         c:"var(--brand-primary)", hide:privacyLoaded&&!privacy.envios},
                 {ico:"❤️",lbl:"Likes recibidos",v:String(stats.likes||0),         c:"#ef4444", hide:privacyLoaded&&!privacy.envios},
                 {ico:"👥",lbl:"Amigos",        v:String(stats.friends||0),       c:"#60a5fa", hide:privacyLoaded&&!privacy.envios},
-                {ico:"🪙",lbl:"Coins ganados", v:coinsTotal.toLocaleString(),    c:"var(--brand-primary)", hide:privacyLoaded&&!privacy.coins},
+                {ico:<CoinIcon size={18} />,lbl:"Coins ganados", v:coinsTotal.toLocaleString(),    c:"var(--brand-primary)", hide:privacyLoaded&&!privacy.coins},
               ].map((s,i)=>(
                 <div key={i} className="pf-stat-card" style={{padding:"22px 22px",borderRight:i<3?"1px solid rgba(255,255,255,.05)":"none",cursor:"pointer",position:"relative",overflow:"hidden",transition:"all .35s",animation:`slideUp .55s cubic-bezier(.2,.8,.2,1) ${i*70}ms both`}} onMouseEnter={e=>!s.hide&&(e.currentTarget.style.background=`${s.c}06`)} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                   <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,${s.c},transparent)`,opacity:.4}}/>
@@ -957,7 +958,7 @@ export default function ProfilePage() {
                   {isOwn&&(
                     <div style={{background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.08)",borderRadius:18,padding:16,marginBottom:20}}>
                       <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:12}}>
-                        <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#100820,#0a1825)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0,border:"1.5px solid rgba(var(--brand-primary-rgb),.22)"}}>🪙</div>
+                        <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#100820,#0a1825)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0,border:"1.5px solid rgba(var(--brand-primary-rgb),.22)"}}><CoinIcon size={20} /></div>
                         <textarea value={postInput} onChange={e=>setPostInput(e.target.value)} maxLength={280} placeholder="Compartí algo con la comunidad..." style={{flex:1,background:"none",border:"none",color:"#e2e8f0",fontFamily:"inherit",fontSize:13,lineHeight:1.6,resize:"none",outline:"none",minHeight:60}}/>
                       </div>
                       <div style={{display:"flex",alignItems:"center",gap:8,paddingTop:10,borderTop:"1px solid rgba(255,255,255,.06)"}}>
@@ -1094,7 +1095,7 @@ export default function ProfilePage() {
                         {[["all","⭐ Todo"],["avatar","🧑 Avatares"],["frame","🖼 Marcos"],["title","📛 Títulos"],["badge","⚡ Insignias"]].map(([v,l])=>(
                           <button key={v} onClick={()=>setTypeFilter(v)} style={{padding:"7px 16px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"2px",textTransform:"uppercase",cursor:"pointer",transition:"all .22s",border:typeFilter===v?"none":"1px solid rgba(255,255,255,.08)",background:typeFilter===v?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))":"rgba(255,255,255,.03)",color:typeFilter===v?"#000":"rgba(255,255,255,.35)",boxShadow:typeFilter===v?"0 4px 18px rgba(var(--brand-primary-rgb),.35)":"none"}}>{l}</button>
                         ))}
-                        <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700}}>🪙 {(profile?.coins?.balance||0).toLocaleString()} disp.</span>
+                        <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700}}><CoinIcon size={10} /> {(profile?.coins?.balance||0).toLocaleString()} disp.</span>
                       </div>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
                         {filtered.map(item=><ItemCard key={item.key} item={item} owned={owned.includes(item.key)} equipped={item.type==="badge"?(equip.badges?.includes(item.key)):equip[item.type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}

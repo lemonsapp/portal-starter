@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pop } from "./MotionPop.jsx";
 import { motion, AnimatePresence } from "framer-motion";
+import { CoinIcon } from "../lib/coin.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -77,7 +78,7 @@ export default function OnboardingModal({ user, onComplete }) {
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500),var(--brand-primary, #f5e03a))", backgroundSize: "200% 100%", animation: "obBar 3s linear infinite" }} />
             <style>{`@keyframes obBar{from{background-position:0 0}to{background-position:200% 0}}`}</style>
 
-            <div style={{ fontSize: 56, marginBottom: 18, lineHeight: 1, filter: "drop-shadow(0 0 16px rgba(var(--brand-primary-rgb),.5))" }}>🪙</div>
+            <div style={{ marginBottom: 18, lineHeight: 1, filter: "drop-shadow(0 0 16px rgba(var(--brand-primary-rgb),.5))" }}><CoinIcon size={56} /></div>
 
             <div style={{ fontFamily: "'Gotham', monospace", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--brand-accent, #ff8c2a)", marginBottom: 8, fontWeight: 600, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ width: 22, height: 1, background: "var(--brand-accent, #ff8c2a)" }} />
