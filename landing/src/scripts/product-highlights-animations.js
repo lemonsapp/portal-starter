@@ -88,9 +88,27 @@ function initProductHighlights(root) {
         img.alt = video.getAttribute("aria-label") || "";
         img.draggable = false;
         img.style.cssText = video.style.cssText;
+        // Guardamos el <video> para restaurarlo al primer gesto: un play()
+        // dentro de un gesto real no lo bloquea ni el modo bajo consumo,
+        // así que el usuario recupera el clip en calidad completa al tocar.
+        img._phVideo = video;
         video.replaceWith(img);
         const i = images.indexOf(video);
         if (i >= 0) images[i] = img;
+    }
+
+    // Inversa de swapToFallback: repone el <video> original en el lugar del
+    // <img> animado, sincronizando clases/estilos con el estado actual del
+    // cross-fade. Sólo se llama cuando play() ya arrancó (desde un gesto).
+    function swapBackToVideo(img) {
+        const video = img._phVideo;
+        if (!video || !img.isConnected) return;
+        video.dataset.phSwapped = "";
+        video.className = img.className.replace(/\s*ph__image--cover\s*/g, " ").trim();
+        video.style.cssText = img.style.cssText;
+        img.replaceWith(video);
+        const i = images.indexOf(img);
+        if (i >= 0) images[i] = video;
     }
 
     function playOrFallback(video) {
@@ -105,7 +123,18 @@ function initProductHighlights(root) {
     }
 
     function tryPlayActive() {
-        playOrFallback(images[activeIdx]);
+        const media = images[activeIdx];
+        // Si el activo es el fallback animado, aprovechamos el gesto para
+        // intentar reponer el video real en calidad completa.
+        if (media && media.tagName === "IMG" && media._phVideo) {
+            const vid = media._phVideo;
+            const p = vid.play();
+            if (p && typeof p.then === "function") {
+                p.then(() => swapBackToVideo(media)).catch(() => {});
+            }
+            return;
+        }
+        playOrFallback(media);
     }
     window.addEventListener("touchend", tryPlayActive, { passive: true });
     window.addEventListener("click", tryPlayActive);

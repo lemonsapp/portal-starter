@@ -85,6 +85,9 @@ const organizationSchema = {
         // Lenis se inicializa antes de que corran los demás scripts de página
         // así ScrollTrigger arranca con el proxy correcto.
         import "../scripts/smooth-scroll.js";
+        // Reintento global de play() para videos con autoplay que el
+        // sistema dejó pausados (modo bajo consumo / ahorro de datos).
+        import "../scripts/autoplay-rescue.js";
     </script>
 
     <Header />
