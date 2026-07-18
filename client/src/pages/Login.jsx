@@ -75,17 +75,9 @@ export default function Login() {
       const storage = remember ? localStorage : sessionStorage;
       storage.setItem("token", data.token);
 
-      // Si el server dice que el user no tiene biometría y este browser la soporta,
-      // abrir el modal de activación ANTES de navegar.
-      if (webauthnEnabled && data.prompt_biometric_setup && supportsWebAuthn()) {
-        const platformOk = await supportsPlatformBiometric();
-        if (platformOk && shouldShowBiometricPrompt()) {
-          setActivateModalToken(data.token);
-          setActivateModalUser(data.user);
-          setShowActivateModal(true);
-          return; // no navegar todavía, navegamos después de cerrar el modal
-        }
-      }
+      // 2026-07-18 (pedido del cliente): sin modal de activación de Face ID
+      // al entrar. La biometría sigue disponible para quien ya la tiene y
+      // se puede activar a mano desde Dispositivos conectados en el perfil.
 
       const role = data.user?.role;
       const scopes = data.user?.scopes;
