@@ -99,9 +99,14 @@ export default function TopNav() {
     // the previous render" si retornamos antes de algún useEffect).
     const hidden = HIDE_ON_PATHS.includes(location.pathname);
 
+    // /auth/me + coins. Re-corre en cada navegación (no sólo al montar):
+    // TopNav se monta en la pantalla de login SIN token, así que con deps []
+    // el fetch se salteaba y el rol real (ej. admin) recién aparecía al
+    // refrescar. Con el guard `if (me) return` sólo consulta cuando falta.
     useEffect(() => {
         const token = getToken();
-        if (!token) return;
+        if (!token) { if (me) setMe(null); return; }
+        if (me) return;
         fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
             .then((r) => {
                 // Token vencido/inválido (JWT dura 7 días): limpiar y caer al
@@ -128,7 +133,14 @@ export default function TopNav() {
                     .catch(() => {});
             })
             .catch(() => {});
-        // Unread chat + notificaciones — un solo loop de polling (30s).
+    }, [location.pathname, me]);
+
+    // Unread chat + notificaciones — polling 30s, arranca cuando hay sesión
+    // cargada (me) y se re-arma si cambia el usuario.
+    useEffect(() => {
+        if (!me) return;
+        const token = getToken();
+        if (!token) return;
         const refresh = async () => {
             try {
                 const r = await fetch(`${API}/api/chat/unread`, { headers: { Authorization: `Bearer ${token}` } });
@@ -144,7 +156,7 @@ export default function TopNav() {
         refresh();
         const t = setInterval(refresh, 30000);
         return () => clearInterval(t);
-    }, []);
+    }, [me?.id]);
 
     // Close dropdowns on outside click + on route change
     useEffect(() => {
