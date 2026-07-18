@@ -33,9 +33,16 @@ export default function Register() {
       const r = await fetch(`${API}/auth/captcha`);
       const d = await r.json();
       if (r.ok && d?.token) setCaptcha(d);
-    } catch { /* sin captcha el submit avisa que falta; se reintenta al errar */ }
+    } catch { /* sin captcha el submit avisa que falta; el efecto reintenta */ }
   }
-  useEffect(() => { loadCaptcha(); }, []);
+  // Reintenta cada 5s mientras no haya captcha (API caída o deploy a mitad
+  // de camino): el "Cargando…" se resuelve solo sin refrescar la página.
+  useEffect(() => {
+    if (captcha) return;
+    loadCaptcha();
+    const t = setInterval(loadCaptcha, 5000);
+    return () => clearInterval(t);
+  }, [captcha]);
 
   async function resendVerification() {
     if (resendStatus !== "idle") return;
