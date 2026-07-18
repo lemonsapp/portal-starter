@@ -102,11 +102,16 @@ app.use(express.json({ limit: "500kb" }));
 app.use(express.urlencoded({ limit: "500kb", extended: false }));
 
 // CORS — orígenes permitidos. En dev permitimos localhost y Codespaces
-// (cualquier subdominio *.app.github.dev). En prod sumamos APP_URL del .env.
+// (cualquier subdominio *.app.github.dev). En prod sumamos APP_URL del .env
+// y su variante www (el apex y www redirigen entre sí a nivel Vercel, pero
+// durante la ventana del redirect el browser manda el Origin en el que está).
+const APP_ORIGIN = (process.env.APP_URL || "").replace(/\/+$/, "");
+const APP_ORIGIN_WWW = APP_ORIGIN.replace(/^https:\/\/(?!www\.)/, "https://www.");
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:4173",   // vite preview
-  process.env.APP_URL,
+  APP_ORIGIN,
+  APP_ORIGIN_WWW !== APP_ORIGIN ? APP_ORIGIN_WWW : null,
 ].filter(Boolean);
 
 function isAllowedOrigin(origin) {
