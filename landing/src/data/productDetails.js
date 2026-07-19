@@ -375,7 +375,7 @@ export const productDetails = {
                 kicker: "BIORREACTOR",
                 title: "Producido en biorreactor industrial.",
                 body: "No es un té de compost casero: es un bioestimulante orgánico producido en fermentadores industriales controlados.",
-                image: "/imagenes-web/fotos-productos/BIOESTIMULANTE-SLIDER.png",
+                image: "/imagenes-web/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png",
                 color: "#E8A5B1",
                 stat: "01",
             },
