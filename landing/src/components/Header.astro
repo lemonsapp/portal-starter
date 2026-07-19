@@ -1,5 +1,6 @@
 ---
 import { CTAS } from "../data/contacto.js";
+import { productos } from "../data/productos.js";
 
 const links = [
     { href: "/", label: "Inicio" },
@@ -12,6 +13,21 @@ const links = [
     // Sprint 14 (2026-05-23): shop con destacado mint. Compra sin registro
     // — el cliente ve que puede comprar como invitado desde el primer click.
     { href: "/shop", label: "Tienda", highlight: true },
+];
+
+// Índice del buscador de la lupa: secciones del sitio + catálogo completo.
+// Los productos linkean a /shop?q=<nombre> (Shop.jsx ya filtra por ?q=).
+const searchIndex = [
+    ...links
+        .filter((l) => l.href !== "/")
+        .map((l) => ({ label: l.label, href: l.href, tipo: "seccion" })),
+    ...productos.map((p) => ({
+        label: p.nombre,
+        href: `/shop?q=${encodeURIComponent(p.nombre)}`,
+        tipo: "producto",
+        precio: p.precio,
+        imagen: p.imagen,
+    })),
 ];
 ---
 <header class="header">
@@ -35,7 +51,7 @@ const links = [
         </nav>
 
         <div class="header__icons">
-            <button class="header__icon" aria-label="Buscar">
+            <button class="header__icon" aria-label="Buscar" aria-expanded="false" data-search-open data-cursor="hover">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             </button>
 
@@ -83,6 +99,143 @@ const links = [
             </button>
         </div>
     </div>
+
+    {/* Buscador de la lupa — overlay bajo el header, web y mobile.
+        Busca en secciones + catálogo (índice generado en build). Enter
+        manda a /shop?q=<query>; cada resultado linkea directo. */}
+    <div class="header__search" data-search-panel aria-hidden="true">
+        <div class="header__search-inner" role="dialog" aria-modal="true" aria-label="Buscar en el sitio">
+            <form class="header__search-form" data-search-form role="search">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                <input
+                    type="search"
+                    class="header__search-input"
+                    placeholder="Buscar productos…"
+                    aria-label="Buscar productos"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    data-search-input
+                />
+                <button type="button" class="header__search-close" aria-label="Cerrar buscador" data-search-close>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+            </form>
+            <ul class="header__search-results" data-search-results></ul>
+        </div>
+    </div>
+    <script type="application/json" data-search-index set:html={JSON.stringify(searchIndex)}></script>
+    <script is:inline>
+      (function () {
+        var panel = document.querySelector("[data-search-panel]");
+        var openBtn = document.querySelector("[data-search-open]");
+        var closeBtn = document.querySelector("[data-search-close]");
+        var form = document.querySelector("[data-search-form]");
+        var input = document.querySelector("[data-search-input]");
+        var list = document.querySelector("[data-search-results]");
+        var indexEl = document.querySelector("[data-search-index]");
+        if (!panel || !openBtn || !form || !input || !list || !indexEl) return;
+
+        var items = [];
+        try { items = JSON.parse(indexEl.textContent) || []; } catch (e) { items = []; }
+
+        function norm(s) {
+          return String(s || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+        }
+        items.forEach(function (it) { it._n = norm(it.label); });
+
+        function precio(n) {
+          try { return "$ " + Number(n).toLocaleString("es-AR"); }
+          catch (e) { return "$ " + n; }
+        }
+
+        function esc(s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
+        }
+
+        var MAX = 8;
+        function render(q) {
+          var nq = norm(q).trim();
+          var results;
+          if (!nq) {
+            results = items.filter(function (it) { return it.tipo === "seccion"; });
+          } else {
+            var tokens = nq.split(/\s+/);
+            results = items.filter(function (it) {
+              return tokens.every(function (t) { return it._n.indexOf(t) !== -1; });
+            }).slice(0, MAX);
+          }
+          if (!results.length) {
+            list.innerHTML =
+              '<li class="header__search-empty">Sin resultados para “' + esc(q.trim()) + '”. ' +
+              '<a href="/shop">Ver toda la tienda →</a></li>';
+            return;
+          }
+          list.innerHTML = results.map(function (it) {
+            var thumb = it.imagen
+              ? '<img src="' + esc(it.imagen) + '" alt="" loading="lazy" width="40" height="40" />'
+              : '<span class="header__search-thumb-ph" aria-hidden="true">→</span>';
+            var meta = it.tipo === "producto"
+              ? '<span class="header__search-price">' + precio(it.precio) + "</span>"
+              : '<span class="header__search-tag">Sección</span>';
+            return (
+              '<li><a class="header__search-item" href="' + esc(it.href) + '">' +
+              '<span class="header__search-thumb">' + thumb + "</span>" +
+              '<span class="header__search-label">' + esc(it.label) + "</span>" +
+              meta +
+              "</a></li>"
+            );
+          }).join("");
+        }
+
+        function set(open) {
+          panel.dataset.open = open ? "1" : "";
+          panel.setAttribute("aria-hidden", open ? "false" : "true");
+          openBtn.setAttribute("aria-expanded", open ? "true" : "false");
+          if (open) {
+            // Si el menú hamburguesa estaba abierto, cerrarlo para no superponer.
+            var mob = document.querySelector("[data-mobile-nav]");
+            var burger = document.querySelector("[data-burger]");
+            if (mob && mob.dataset.open === "1") {
+              mob.dataset.open = "";
+              mob.setAttribute("aria-hidden", "true");
+              if (burger) {
+                burger.setAttribute("aria-expanded", "false");
+                burger.classList.remove("is-open");
+              }
+            }
+            render(input.value);
+            // rAF: esperar a que el panel sea visible para que iOS acepte el focus
+            requestAnimationFrame(function () { input.focus(); });
+          } else {
+            openBtn.focus();
+          }
+        }
+
+        openBtn.addEventListener("click", function () { set(panel.dataset.open !== "1"); });
+        if (closeBtn) closeBtn.addEventListener("click", function () { set(false); });
+        // Abrir la hamburguesa cierra el buscador (el inverso vive en set()).
+        var burgerBtn = document.querySelector("[data-burger]");
+        if (burgerBtn) burgerBtn.addEventListener("click", function () {
+          if (panel.dataset.open === "1") set(false);
+        });
+        panel.addEventListener("click", function (e) { if (e.target === panel) set(false); });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && panel.dataset.open === "1") set(false);
+        });
+        input.addEventListener("input", function () { render(input.value); });
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var q = input.value.trim();
+          if (q) window.location.href = "/shop?q=" + encodeURIComponent(q);
+        });
+      })();
+    </script>
 
     {/* Menú mobile (hamburguesa) — las opciones del topbar en celu. */}
     <div class="header__mobile" data-mobile-nav aria-hidden="true">
