@@ -23,7 +23,9 @@ const BRANDING_DEFAULTS = {
   // ve el texto viejo un instante y después el cambio (flash en el login).
   slogan: "Nutricion Superior",
   logo_url: "/portal/icons/holistic-logo.svg",
-  favicon_url: "/portal/icons/holistic-logo.svg",
+  // icon.svg = H blanca sobre cuadrado negro (misma marca que la web);
+  // holistic-logo.svg es H negra sobre transparente y desaparece en tabs oscuras.
+  favicon_url: "/portal/icons/icon.svg",
   color_primary: "#52b788",
   color_accent:  "#d4a574",
   color_bg:      "#080808",

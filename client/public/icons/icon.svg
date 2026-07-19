@@ -1,26 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Background circle navy -->
-  <circle cx="256" cy="256" r="256" fill="#0f1b2d"/>
-  
-  <!-- Lemon shape -->
-  <ellipse cx="256" cy="256" rx="130" ry="105" fill="#f5e642" transform="rotate(-20, 256, 256)"/>
-  
-  <!-- Lemon tip left -->
-  <ellipse cx="148" cy="220" rx="28" ry="16" fill="#f5e642" transform="rotate(-35, 148, 220)"/>
-  
-  <!-- Lemon tip right -->
-  <ellipse cx="364" cy="292" rx="28" ry="16" fill="#f5e642" transform="rotate(-35, 364, 292)"/>
-  
-  <!-- Lemon highlight -->
-  <ellipse cx="225" cy="225" rx="55" ry="38" fill="#fdf07a" opacity="0.55" transform="rotate(-20, 225, 225)"/>
-  
-  <!-- Lemon small shine dot -->
-  <ellipse cx="210" cy="210" rx="18" ry="12" fill="#fffde0" opacity="0.7" transform="rotate(-20, 210, 210)"/>
-  
-  <!-- Leaf -->
-  <ellipse cx="330" cy="168" rx="42" ry="18" fill="#2ecc71" transform="rotate(30, 330, 168)"/>
-  <line x1="310" y1="178" x2="350" y2="158" stroke="#27ae60" stroke-width="2.5" stroke-linecap="round"/>
-  
-  <!-- Stem -->
-  <path d="M298 193 Q310 172 325 162" stroke="#27ae60" stroke-width="4" fill="none" stroke-linecap="round"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generator: Adobe Illustrator 23.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;}
+</style>
+<path d="M13,16H3c-1.6,0-3-1.4-3-3L0,3c0-1.6,1.4-3,3-3l10,0c1.6,0,3,1.4,3,3v10C16,14.6,14.6,16,13,16z"></path>
+<g>
+	<path class="st0" d="M5,3.8h2.8L7,6.7h2.6l0.8-3h2.8l-2.3,8.4H8.1l0.8-3H6.4l-0.8,3H2.7L5,3.8z"></path>
+</g>
 </svg>
