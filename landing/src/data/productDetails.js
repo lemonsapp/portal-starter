@@ -607,7 +607,7 @@ export const productDetails = {
         // "Datos del producto"). Vacío → el bloque no se renderiza.
         pullquote: "",
         techSpecs: [
-            { label: "Forma",             value: "Líquido / 250 ml" },
+            { label: "Forma",             value: "Líquido" },
             { label: "Aplicación",         value: "Últimos 5 días pre-cosecha" },
             { label: "Dosis",              value: "1-2 ml/L según protocolo" },
             { label: "Compatibilidad",     value: "Cualquier línea Holistic + sustratos minerales" },
