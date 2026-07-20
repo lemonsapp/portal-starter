@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { useBranding } from "../lib/branding.js";
+import { useBranding, useRules } from "../lib/branding.js";
 // Kit de UI del admin — tema claro estilo Tiendanube (scopeado bajo `.adm`).
 import { useAdmCss, Btn, Card, Field, Badge } from "./admin/ui.jsx";
 // Contenido por línea (sincronizado desde las internas) para pre-cargar los
@@ -124,6 +124,7 @@ const ADMIN_NAV = [
   { key: "clientes",  label: "👥 Clientes",     Comp: CustomersTab },
   { key: "campaigns", label: "📧 Campañas",     Comp: CampaignsTab },
   { key: "promos",    label: "🎟️ Códigos",      Comp: PromoCodesTab },
+  { key: "invites",   label: "🔑 Invitaciones", Comp: InviteCodesTab },
   {
     key: "config", label: "⚙️ Configuración",
     subs: [
@@ -4084,6 +4085,259 @@ function PromoCodeModal({ code, onClose, onSaved }) {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Tab: Códigos de invitación (registro por invitación) ────────────────────
+// Restaura el panel de invites del portal original (vivía en OperatorPanel,
+// borrado en Sprint 0; los endpoints /admin/invite-codes sobrevivieron).
+// Los códigos sólo se exigen en /register cuando rules.signup_mode="invite";
+// el switch de acá escribe esa regla vía /api/admin/config/rules.
+const INVITE_VALIDITY_OPTS = [
+  { value: "1",  label: "24 horas" },
+  { value: "7",  label: "7 días" },
+  { value: "30", label: "30 días" },
+  { value: "",   label: "Sin vencimiento" },
+];
+
+function InviteCodesTab() {
+  const rules = useRules();
+  const [modeOverride, setModeOverride] = useState(null); // pisa rules tras togglear
+  const [codes, setCodes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [savingMode, setSavingMode] = useState(false);
+  const [qty, setQty] = useState(1);
+  const [notes, setNotes] = useState("");
+  const [validity, setValidity] = useState("1");
+  const [copied, setCopied] = useState(null);
+  const [err, setErr] = useState("");
+
+  const inviteOn = (modeOverride ?? rules.signup_mode) === "invite";
+
+  async function load() {
+    setLoading(true);
+    try {
+      const r = await fetch(`${API}/admin/invite-codes`, { headers: authHdr() });
+      const d = await r.json();
+      if (d.ok) setCodes(d.codes || []);
+      else setErr(d.error || "No se pudo cargar la lista de códigos");
+    } catch { setErr("Error de red al cargar los códigos"); }
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function toggleMode() {
+    const next = inviteOn ? "open" : "invite";
+    const warn = next === "invite"
+      ? "¿Activar registro por invitación? Nadie va a poder crear cuenta sin un código generado acá."
+      : "¿Volver al registro abierto? Cualquiera va a poder crear cuenta sin código.";
+    if (!confirm(warn)) return;
+    setSavingMode(true); setErr("");
+    try {
+      const r = await fetch(`${API}/api/admin/config/rules`, {
+        method: "POST", headers: jsonHdr(),
+        body: JSON.stringify({ signup_mode: next }),
+      });
+      const d = await r.json();
+      if (d.ok) setModeOverride(next);
+      else setErr(d.error || "No se pudo cambiar el modo de registro");
+    } catch { setErr("Error de red al cambiar el modo de registro"); }
+    setSavingMode(false);
+  }
+
+  async function generate() {
+    setGenerating(true); setErr("");
+    try {
+      const r = await fetch(`${API}/admin/invite-codes`, {
+        method: "POST", headers: jsonHdr(),
+        body: JSON.stringify({
+          notes: notes.trim() || null,
+          expires_days: validity ? Number(validity) : null,
+          quantity: qty,
+        }),
+      });
+      const d = await r.json();
+      if (d.ok) { setNotes(""); await load(); }
+      else setErr(d.error || "No se pudieron generar los códigos");
+    } catch { setErr("Error de red al generar los códigos"); }
+    setGenerating(false);
+  }
+
+  async function remove(c) {
+    if (!confirm(`¿Borrar el código ${c.code}?`)) return;
+    try {
+      const r = await fetch(`${API}/admin/invite-codes/${c.id}`, { method: "DELETE", headers: authHdr() });
+      if (r.ok) load(); else setErr("No se pudo borrar el código");
+    } catch { setErr("Error de red al borrar el código"); }
+  }
+
+  function copy(text, key) {
+    navigator.clipboard.writeText(text);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
+  const pending = codes.filter((c) => !c.used_by);
+  const used = codes.filter((c) => c.used_by);
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+        <div>
+          <h2 style={{ fontSize: 18, margin: 0, fontWeight: 700 }}>Códigos de invitación</h2>
+          <div style={{ fontSize: 12, color: "rgba(90,102,117,.55)", marginTop: 3 }}>
+            Para darle acceso al registro a clientes particulares. Uso único por código.
+          </div>
+        </div>
+      </div>
+
+      {err && (
+        <div style={{ ...styles.card, borderColor: "var(--danger-border)", color: "var(--danger)", fontSize: 13, fontWeight: 600 }}>
+          {err}
+        </div>
+      )}
+
+      {/* Estado del modo de registro + switch */}
+      <div style={{ ...styles.card, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: 220 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700 }}>
+            {inviteOn ? "🔒 Registro por invitación ACTIVADO" : "🌐 Registro abierto (sin código)"}
+          </div>
+          <div style={{ fontSize: 12, color: "rgba(90,102,117,.55)", marginTop: 3 }}>
+            {inviteOn
+              ? "Nadie puede crear cuenta sin un código de esta lista."
+              : "Los códigos no se piden en el registro hasta activar el modo invitación."}
+          </div>
+        </div>
+        <button style={styles.btn(!inviteOn, inviteOn)} onClick={toggleMode} disabled={savingMode}>
+          {savingMode ? "Guardando…" : inviteOn ? "Volver a registro abierto" : "Activar modo invitación"}
+        </button>
+      </div>
+
+      {/* Generador */}
+      <div style={styles.card}>
+        <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>Generar códigos</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div>
+            <label style={styles.label}>Cantidad</label>
+            <div style={{ display: "flex", gap: 6 }}>
+              {[1, 3, 5, 10].map((n) => (
+                <button key={n} onClick={() => setQty(n)}
+                  style={{ ...styles.btn(qty === n), width: 44, padding: "9px 0", textAlign: "center" }}>
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ width: 170 }}>
+            <label style={styles.label}>Validez</label>
+            <select style={styles.input} value={validity} onChange={(e) => setValidity(e.target.value)}>
+              {INVITE_VALIDITY_OPTS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <label style={styles.label}>Nota (opcional)</label>
+            <input style={styles.input} placeholder="Para qué cliente es…" value={notes}
+              onChange={(e) => setNotes(e.target.value)} maxLength={120} />
+          </div>
+          <button style={styles.btn(true)} onClick={generate} disabled={generating}>
+            {generating ? "Generando…" : "⚡ Generar"}
+          </button>
+        </div>
+      </div>
+
+      {/* Pendientes */}
+      <div style={styles.card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700 }}>Pendientes ({pending.length})</div>
+          <button style={styles.btn()} onClick={load}>↻ Actualizar</button>
+        </div>
+        {loading ? <div>Cargando…</div> : pending.length === 0 ? (
+          <div style={{ color: "rgba(90,102,117,.5)", padding: "14px 0" }}>
+            Sin códigos pendientes. Generá uno arriba y mandáselo al cliente.
+          </div>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Código</th>
+                <th style={styles.th}>Nota</th>
+                <th style={styles.th}>Vence</th>
+                <th style={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {pending.map((c) => {
+                const exp = c.expires_at ? new Date(c.expires_at) : null;
+                const hrs = exp ? Math.round((exp - Date.now()) / 3600000) : null;
+                const expired = hrs !== null && hrs <= 0;
+                return (
+                  <tr key={c.id}>
+                    <td style={styles.td}>
+                      <code style={{ fontFamily: "monospace", fontWeight: 800, fontSize: 14, letterSpacing: 2 }}>{c.code}</code>
+                    </td>
+                    <td style={styles.td}>
+                      {c.notes || <span style={{ color: "rgba(90,102,117,.4)" }}>—</span>}
+                    </td>
+                    <td style={styles.td}>
+                      {exp ? (
+                        <span style={{ fontSize: 12, color: expired ? "var(--danger)" : "rgba(90,102,117,.7)", fontWeight: expired ? 700 : 400 }}>
+                          {expired ? "⚠ Vencido" : hrs < 48 ? `⏳ ${hrs}h` : exp.toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
+                        </span>
+                      ) : <span style={{ color: "rgba(90,102,117,.4)" }}>—</span>}
+                    </td>
+                    <td style={{ ...styles.td, whiteSpace: "nowrap" }}>
+                      <button style={styles.btn()} onClick={() => copy(c.code, c.code)}>
+                        {copied === c.code ? "✓ Copiado" : "📋 Copiar"}
+                      </button>{" "}
+                      <button style={styles.btn()} onClick={() => copy(`${window.location.origin}/register?code=${c.code}`, c.code + "_l")}>
+                        {copied === c.code + "_l" ? "✓ Copiado" : "🔗 Link"}
+                      </button>{" "}
+                      <button style={styles.btn(false, true)} onClick={() => remove(c)}>✕</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Usados */}
+      {used.length > 0 && (
+        <div style={styles.card}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 10 }}>Usados ({used.length})</div>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Código</th>
+                <th style={styles.th}>Usado por</th>
+                <th style={styles.th}>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {used.slice(0, 15).map((c) => (
+                <tr key={c.id}>
+                  <td style={styles.td}>
+                    <code style={{ fontFamily: "monospace", fontSize: 13, color: "rgba(90,102,117,.6)" }}>{c.code}</code>
+                  </td>
+                  <td style={styles.td}>
+                    <div style={{ fontWeight: 700, fontSize: 13 }}>{c.used_by_name}</div>
+                    <div style={{ fontSize: 11.5, color: "rgba(90,102,117,.55)" }}>{c.used_by_email}</div>
+                  </td>
+                  <td style={styles.td}>
+                    <span style={{ fontSize: 12, color: "rgba(90,102,117,.7)" }}>
+                      {c.used_at ? new Date(c.used_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

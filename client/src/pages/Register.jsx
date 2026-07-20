@@ -16,8 +16,11 @@ export default function Register() {
   const emailVerifyOn = rules.email_verify_required !== false;
   const [searchParams] = useSearchParams();
   const referrer = searchParams.get("r") || searchParams.get("ref") || "";
+  // El botón "🔗 Link" del panel admin (Invitaciones) comparte /register?code=XXXX:
+  // el código llega pre-cargado y el cliente sólo completa sus datos.
+  const inviteParam = (searchParams.get("code") || searchParams.get("invite") || "").toUpperCase();
   const [step, setStep] = useState("form"); // form | success
-  const [form, setForm] = useState({ invite_code:"", name:"", email:"", password:"", confirm:"", captcha:"", terms:false });
+  const [form, setForm] = useState({ invite_code: inviteParam, name:"", email:"", password:"", confirm:"", captcha:"", terms:false });
   const [captcha, setCaptcha] = useState(null); // { question, token } de GET /auth/captcha
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
