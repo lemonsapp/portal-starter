@@ -1050,7 +1050,10 @@ export default function Coins() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [userId, setUserId] = useState(null);
 
-  useEffect(() => {
+  // Trae balance + datos del usuario. Se re-ejecuta al volver a la pestaña y
+  // cada 60s: si el admin confirma un pedido mientras el cliente está acá,
+  // los puntos acreditados aparecen solos (sin recargar la página a mano).
+  function loadData() {
     fetch(`${API}/profile`,{headers:hdrs()}).then(r=>r.json()).then(d=>{
       if (d.coins) { setBalance(d.coins.balance||0); setTotalEarned(d.coins.total_earned||0); }
       if (d.user) {
@@ -1065,7 +1068,23 @@ export default function Coins() {
         }
       }
       setLoading(false);
-    });
+    }).catch(()=>setLoading(false));
+  }
+
+  useEffect(() => {
+    loadData();
+    const onVisible = () => { if (document.visibilityState === "visible") loadData(); };
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") loadData();
+    }, 60_000);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Detecta si la barra de tabs tiene scroll horizontal pendiente para mostrar
