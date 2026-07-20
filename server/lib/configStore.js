@@ -196,6 +196,27 @@ function defaultFor(key) {
   return meta.default ?? null;
 }
 
+// ── Reparación de valores legacy de branding guardados por el wizard ─────────
+// La DB de prod quedó con URLs del deploy viejo y con el logo transparente
+// usado como favicon. Se corrige al LEER (no hay acceso directo a la DB desde
+// los deploys): espejo de normalizeBranding() en client/src/lib/branding.js.
+// 1. Absolutas a portal-starter.vercel.app → path relativo (sirve desde el
+//    dominio actual, sin cruzar origen).
+// 2. holistic-logo.svg como favicon → favicon default (la H negra sobre
+//    transparente desaparece en tabs oscuras).
+const LEGACY_ORIGIN = "https://portal-starter.vercel.app";
+
+function normalizeBrandingUrl(key, value) {
+  if (typeof value !== "string" || value === "") return value;
+  if (key !== "branding.logo_url" && key !== "branding.favicon_url") return value;
+  let v = value;
+  if (v.startsWith(LEGACY_ORIGIN)) v = v.slice(LEGACY_ORIGIN.length);
+  if (key === "branding.favicon_url" && v.endsWith("/holistic-logo.svg")) {
+    v = brandingDefaults().favicon_url || v;
+  }
+  return v;
+}
+
 // ── Public API ───────────────────────────────────────────────────────────────
 
 async function getConfig(key) {
@@ -210,7 +231,7 @@ async function getConfig(key) {
     return defaultFor(key);
   }
   const raw = row.is_secret ? decrypt(row.value_encrypted) : row.value_encrypted;
-  return castFromString(key, raw);
+  return normalizeBrandingUrl(key, castFromString(key, raw));
 }
 
 async function setConfig(key, value, opts = {}) {
@@ -340,6 +361,6 @@ module.exports = {
   getPublicConfig, getAllSection, getStatus,
   // helpers exportados para tests
   encrypt, decrypt, sha256Hex,
-  isKnownKey, isSecretKey, castFromString, castToString,
+  isKnownKey, isSecretKey, castFromString, castToString, normalizeBrandingUrl,
   KEY_CATALOG,
 };

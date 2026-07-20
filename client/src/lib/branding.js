@@ -115,12 +115,40 @@ function applyToDOM(b) {
   setMeta("name='msapplication-TileColor'", "content", "#06070A");
   if (b.logo_url) setMeta("property='og:image'", "content", b.logo_url);
 
-  // Favicon (si el admin subió uno custom)
-  if (b.favicon_url) {
-    let link = document.querySelector("link[rel='icon']");
-    if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+  // Favicon (si el admin subió uno custom). Si es el default no se toca el
+  // DOM: el index.html ya trae el par SVG + PNG 192 correcto y pisarlo acá
+  // rompería el fallback PNG (mobile Chrome prefiere el PNG para la tab).
+  if (b.favicon_url && b.favicon_url !== BRANDING_DEFAULTS.favicon_url) {
+    // Un favicon custom reemplaza TODOS los links de icono: si quedara el
+    // PNG default al lado, varios browsers (mobile sobre todo) lo eligen
+    // por tamaño y el custom nunca se ve.
+    for (const link of document.querySelectorAll("link[rel='icon']")) link.remove();
+    const link = document.createElement("link");
+    link.rel = "icon";
     link.href = b.favicon_url;
+    document.head.appendChild(link);
   }
+}
+
+// ── Reparación de valores legacy guardados por el wizard en la DB ────────────
+// 1. URLs absolutas al dominio del deploy viejo → path relativo, para que
+//    resuelvan contra el dominio actual (hgrowshop.com) y no crucen origen.
+// 2. holistic-logo.svg como favicon → icon.svg: el logo es H negra sobre
+//    transparente y desaparece en tabs oscuras; el favicon real es la H
+//    blanca sobre cuadrado negro.
+const LEGACY_ORIGIN = "https://portal-starter.vercel.app";
+
+function normalizeBranding(remote) {
+  const out = { ...remote };
+  for (const k of ["logo_url", "favicon_url"]) {
+    if (typeof out[k] === "string" && out[k].startsWith(LEGACY_ORIGIN)) {
+      out[k] = out[k].slice(LEGACY_ORIGIN.length);
+    }
+  }
+  if (typeof out.favicon_url === "string" && out.favicon_url.endsWith("/holistic-logo.svg")) {
+    out.favicon_url = BRANDING_DEFAULTS.favicon_url;
+  }
+  return out;
 }
 
 function ensureCachedDefaults() {
@@ -135,7 +163,7 @@ function fetchOnce() {
     .then(r => r.ok ? r.json() : null)
     .then(remote => {
       if (remote && (remote.branding || remote.features || remote.rules)) {
-        const branding = mergeDefined(BRANDING_DEFAULTS, remote.branding || {});
+        const branding = mergeDefined(BRANDING_DEFAULTS, normalizeBranding(remote.branding || {}));
         const features = { ...FEATURE_DEFAULTS, ...(remote.features || {}) };
         const rules    = { ...RULE_DEFAULTS,    ...(remote.rules    || {}) };
         cachedConfig = { branding, features, rules };
