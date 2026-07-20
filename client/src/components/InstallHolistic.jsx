@@ -21,7 +21,9 @@ export default function InstallHolistic() {
 
   if (isInstalled || installed) return null; // ya la tenés → no molestar
 
-  const name = branding.name || "Holistic";
+  // El branding.name puede venir con tagline ("Holistic | Nutricion Superior");
+  // acá usamos solo la marca corta.
+  const name = (branding.name || "Holistic").split("|")[0].trim() || "Holistic";
   const ios = isIOS();
 
   async function handleClick() {
@@ -44,7 +46,7 @@ export default function InstallHolistic() {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={S.eyebrow}>App</div>
-          <div style={S.title}>Instalá {name} en tu dispositivo</div>
+          <div style={S.title}>Instalá {name}</div>
           <div style={S.sub}>Acceso directo desde tu pantalla de inicio — más rápido y sin buscar el link.</div>
         </div>
         <button style={S.btn} onClick={handleClick}>
