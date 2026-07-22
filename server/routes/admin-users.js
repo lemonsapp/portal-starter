@@ -33,6 +33,7 @@ function build({ authRequired, requireRole }) {
            u.id, u.client_number, u.name, u.email, u.role,
            u.email_verified, u.active, u.last_seen_at, u.created_at,
            COALESCE(lc.balance, 0)     AS balance,
+           COALESCE(lc.monedas_balance, 0) AS monedas_balance,
            COALESCE(lc.total_earned, 0) AS total_earned
          FROM users u
          LEFT JOIN coins lc ON lc.user_id = u.id
@@ -123,14 +124,27 @@ function build({ authRequired, requireRole }) {
       const userId = parseInt(req.params.id, 10);
       if (!Number.isFinite(userId)) return res.status(400).json({ error: "ID inválido" });
       const r = await db.query(
-        `SELECT id, type, amount, reason, created_at
+        `SELECT id, type, amount, reason, currency, canal, operador, amount_cents, created_at
          FROM coin_transactions
          WHERE user_id = $1
          ORDER BY created_at DESC
          LIMIT 100`,
         [userId]
       );
-      res.json({ ok: true, transactions: r.rows });
+      // Desglose por origen sobre TODO el historial (no solo las últimas 100):
+      // el panel muestra "cómo ganó/gastó" cada moneda sin depender del límite.
+      const s = await db.query(
+        `SELECT COALESCE(currency, 'puntos') AS currency, type,
+                COALESCE(SUM(amount) FILTER (WHERE amount > 0), 0)::bigint AS earned,
+                COALESCE(SUM(amount) FILTER (WHERE amount < 0), 0)::bigint AS spent,
+                COUNT(*)::int AS count
+         FROM coin_transactions
+         WHERE user_id = $1
+         GROUP BY 1, 2
+         ORDER BY 1, earned DESC`,
+        [userId]
+      );
+      res.json({ ok: true, transactions: r.rows, summary: s.rows });
     } catch (e) {
       console.error("[admin-users tx]", e);
       res.status(500).json({ error: "Error al cargar historial" });

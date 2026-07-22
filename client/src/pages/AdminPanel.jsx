@@ -118,7 +118,7 @@ const ADMIN_NAV = [
       { key: "catalogo", label: "Catálogo",     Comp: RewardsCatalogTab },
       { key: "canjes",   label: "Canjes",       Comp: RedemptionsTab },
       { key: "instagram",label: "Instagram",    Comp: IgQueueTab },
-      { key: "ranking",  label: "Ranking",      Comp: CoinsTab },
+      { key: "ranking",  label: "Saldos",       Comp: CoinsTab },
     ],
   },
   { key: "clientes",  label: "👥 Clientes",     Comp: CustomersTab },
@@ -582,6 +582,7 @@ function CoinsTab() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);  // { user, action: 'gift' | 'adjust' }
+  const [historyUser, setHistoryUser] = useState(null); // user del modal de historial
 
   async function load() {
     setLoading(true);
@@ -610,14 +611,15 @@ function CoinsTab() {
               <th style={styles.th}>Nombre</th>
               <th style={styles.th}>Email</th>
               <th style={styles.th}>Role</th>
-              <th style={styles.th}>Balance</th>
+              <th style={styles.th}>💎 Puntos</th>
+              <th style={styles.th}>🪙 Monedas</th>
               <th style={styles.th}>Total ganado</th>
               <th style={styles.th}></th>
             </tr>
           </thead>
           <tbody>
-            {loading && <tr><td style={styles.td} colSpan={7}>Cargando…</td></tr>}
-            {!loading && users.length === 0 && <tr><td style={styles.td} colSpan={7}>(sin users)</td></tr>}
+            {loading && <tr><td style={styles.td} colSpan={8}>Cargando…</td></tr>}
+            {!loading && users.length === 0 && <tr><td style={styles.td} colSpan={8}>(sin users)</td></tr>}
             {users.map(u => (
               <tr key={u.id}>
                 <td style={styles.td}>{u.id}</td>
@@ -625,9 +627,11 @@ function CoinsTab() {
                 <td style={styles.td}>{u.email}</td>
                 <td style={styles.td}><Pill>{u.role}</Pill></td>
                 <td style={{ ...styles.td, fontWeight: 700, color: "var(--brand-primary, #3B82F6)" }}>{u.balance}</td>
+                <td style={{ ...styles.td, fontWeight: 700, color: "#f59e0b" }}>{u.monedas_balance}</td>
                 <td style={styles.td}>{u.total_earned}</td>
                 <td style={styles.td}>
                   <div style={{ display: "flex", gap: 6 }}>
+                    <button style={styles.btn()} onClick={() => setHistoryUser(u)}>📜 Historial</button>
                     <button style={styles.btn()} onClick={() => setModal({ user: u, action: "gift" })}>+ Regalar</button>
                     <button style={styles.btn()} onClick={() => setModal({ user: u, action: "adjust" })}>Ajustar</button>
                   </div>
@@ -639,6 +643,112 @@ function CoinsTab() {
       </div>
 
       {modal && <CoinModal modal={modal} onClose={() => setModal(null)} onSuccess={() => { setModal(null); load(); }} />}
+      {historyUser && <TxHistoryModal user={historyUser} onClose={() => setHistoryUser(null)} />}
+    </div>
+  );
+}
+
+// Etiquetas legibles para cada tipo de movimiento de coin_transactions.
+// El "cómo lo ganó" sale de acá: cada origen (compra web, Instagram, carga
+// manual, regalo del admin, etc.) tiene su tipo propio en la DB.
+const TX_TYPE_LABELS = {
+  compra_web:      "Compra en la tienda web",
+  compra_externa:  "Compra externa (carga manual)",
+  accion_ig:       "Acción de Instagram",
+  gift:            "Regalo del admin",
+  adjust:          "Ajuste del admin",
+  earn:            "Actividad del portal",
+  canje_descuento: "Canje de descuento",
+  canje_premio:    "Canje de premio",
+  correccion:      "Devolución por canje cancelado",
+  redeem:          "Canje",
+  spend:           "Gasto en el portal",
+  compra_monedas:  "Compra de pack de monedas",
+  pago_pedido:     "Pago de pedido con monedas",
+  devolucion_pedido: "Devolución de pedido",
+};
+const txLabel = (type) => TX_TYPE_LABELS[type] || type;
+
+// Modal de historial: cuántos puntos/monedas tiene el cliente y CÓMO los ganó
+// y gastó. Arriba el desglose por origen (todo el historial, calculado en el
+// server); abajo los últimos 100 movimientos con fecha, detalle y monto.
+function TxHistoryModal({ user, onClose }) {
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    fetch(`${API}/admin/users/${user.id}/transactions`, { headers: authHdr() })
+      .then(r => r.json())
+      .then(d => { if (d.ok) setData(d); else setErr(d.error || "Error al cargar historial"); })
+      .catch(() => setErr("Error de red"));
+  }, [user.id]);
+
+  const CUR = { puntos: { icon: "💎", color: "var(--brand-primary, #3B82F6)" }, monedas: { icon: "🪙", color: "#f59e0b" } };
+  const summary = data?.summary || [];
+  const earnedRows = summary.filter(s => Number(s.earned) > 0);
+  const spentRows  = summary.filter(s => Number(s.spent) < 0);
+
+  return (
+    <div style={styles.modalBackdrop} onClick={onClose}>
+      <div style={{ ...styles.modalCard, maxWidth: 640, maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Historial de {user.name}</div>
+        <div style={{ color: "rgba(90,102,117,.55)", fontSize: 13, marginBottom: 14 }}>
+          {user.email} · saldo actual: <b style={{ color: CUR.puntos.color }}>💎 {user.balance} puntos</b> · <b style={{ color: CUR.monedas.color }}>🪙 {user.monedas_balance} monedas</b>
+        </div>
+
+        {err && <div style={{ padding: 10, background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 6, fontSize: 12, color: "#fca5a5" }}>{err}</div>}
+        {!data && !err && <div style={{ color: "rgba(90,102,117,.5)", fontSize: 13 }}>Cargando…</div>}
+
+        {data && (
+          <>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Cómo los ganó</div>
+            {earnedRows.length === 0 && <div style={{ color: "rgba(90,102,117,.5)", fontSize: 12, marginBottom: 10 }}>(todavía no ganó puntos ni monedas)</div>}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+              {earnedRows.map((s, i) => (
+                <span key={i} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 12, border: "1px solid var(--border, rgba(17,24,39,.12))", background: "rgba(34,197,94,.06)" }}>
+                  {CUR[s.currency]?.icon || ""} {txLabel(s.type)}: <b style={{ color: "#16a34a" }}>+{s.earned}</b> <span style={{ color: "rgba(90,102,117,.5)" }}>({s.count}×)</span>
+                </span>
+              ))}
+            </div>
+
+            {spentRows.length > 0 && (
+              <>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Cómo los gastó</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+                  {spentRows.map((s, i) => (
+                    <span key={i} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 12, border: "1px solid var(--border, rgba(17,24,39,.12))", background: "rgba(239,68,68,.05)" }}>
+                      {CUR[s.currency]?.icon || ""} {txLabel(s.type)}: <b style={{ color: "#dc2626" }}>{s.spent}</b>
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>Movimientos ({data.transactions.length}{data.transactions.length === 100 ? " últimos" : ""})</div>
+            {data.transactions.length === 0 && <div style={{ color: "rgba(90,102,117,.5)", fontSize: 12 }}>(sin movimientos)</div>}
+            <table style={styles.table}>
+              <tbody>
+                {data.transactions.map(tx => (
+                  <tr key={tx.id}>
+                    <td style={{ ...styles.td, whiteSpace: "nowrap", fontSize: 11, color: "rgba(90,102,117,.55)" }}>{new Date(tx.created_at).toLocaleDateString("es-AR")}</td>
+                    <td style={styles.td}>
+                      <div style={{ fontWeight: 600, fontSize: 12.5 }}>{txLabel(tx.type)}</div>
+                      {tx.reason && <div style={{ fontSize: 11.5, color: "rgba(90,102,117,.6)" }}>{tx.reason}</div>}
+                    </td>
+                    <td style={{ ...styles.td, whiteSpace: "nowrap", textAlign: "right", fontWeight: 700, color: tx.amount >= 0 ? "#16a34a" : "#dc2626" }}>
+                      {tx.amount >= 0 ? "+" : ""}{tx.amount} {CUR[tx.currency]?.icon || "💎"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+
+        <div style={{ marginTop: 16 }}>
+          <button style={styles.btn()} onClick={onClose}>Cerrar</button>
+        </div>
+      </div>
     </div>
   );
 }
