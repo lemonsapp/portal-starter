@@ -741,8 +741,12 @@ async function migrate() {
   // las maneja el bloque "tarros" de abajo (2026-06-07): el envase chico real
   // es el tarro dosificador y la botella PART pasa a 2ª foto de galería.
   // Race 3 Parte B 20L sigue sin existir (no hay render).
-  // Idempotente: UPDATE a un valor fijo → segunda corrida es no-op.
-  await safeQuery(`
+  // ONE-SHOT (2026-07-22): antes corría en cada boot y pisaba la foto que el
+  // admin subía desde el panel — cada deploy/restart de Render "des-editaba"
+  // la primaria de estos SKUs (bug real: Race 1 NPK 20L volvía sola al render
+  // F1). Ahora corre una vez por DB y el guard NOT LIKE cloudinary hace que
+  // esa única corrida tampoco toque una primaria ya subida por el admin.
+  await oneShot("race-f1-primaries-bidones", `
     UPDATE product_images pi SET url = v.url, alt = v.alt
     FROM (VALUES
       ('race-1-npk-5l',                 '/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp',           'Race 1 NPK (verde) bidón 5L'),
@@ -761,6 +765,7 @@ async function migrate() {
       ('race-4-micro-magnesio-20l',     '/imagenes-web/productos/linea-race/20l/race-4-rosa-20l-f1.webp',          'Race 4 Micro + Magnesio (rosa) bidón 20L')
     ) AS v(slug, url, alt), products p
     WHERE p.slug = v.slug AND pi.product_id = p.id AND pi.is_primary = TRUE
+      AND pi.url NOT LIKE '%res.cloudinary.com%'
   `, "race renders F1: repoint primaries");
 
   // ─── Tarros Race de costado (2026-06-07, pedido del cliente) ──────────────
@@ -770,8 +775,10 @@ async function migrate() {
   // como segunda foto de la galería. Bidones 5/10/20L no cambian.
   // R3 Part A y B comparten arte violeta (la distinción A/B vive en la
   // botella con palanca, 2ª foto de la galería).
-  // Corre DESPUÉS del repoint F1 (pisa la primaria con el tarro). Idempotente.
-  await safeQuery(`
+  // Corre DESPUÉS del repoint F1 (pisa la primaria con el tarro).
+  // ONE-SHOT (2026-07-22): mismo fix que el bloque de bidones — corriendo en
+  // cada boot revertía las fotos que el admin cambiaba en estos SKUs.
+  await oneShot("race-tarros-primary", `
     UPDATE product_images pi SET url = v.url, alt = v.alt
     FROM (VALUES
       ('race-1-npk-250ml',              '/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp',      'Race 1 NPK — tarro dosificador (verde)'),
@@ -791,8 +798,11 @@ async function migrate() {
       ('race-4-micro-magnesio-1l',      '/imagenes-web/productos/linea-race/1l/race-4-rosa-tarro-1l.webp',       'Race 4 Micro + Magnesio — tarro dosificador 1L (rosa)')
     ) AS v(slug, url, alt), products p
     WHERE p.slug = v.slug AND pi.product_id = p.id AND pi.is_primary = TRUE
+      AND pi.url NOT LIKE '%res.cloudinary.com%'
   `, "race tarros: primary");
-  await safeQuery(`
+  // ONE-SHOT (2026-07-22): en cada boot re-insertaba la botella PART si el
+  // admin la había borrado de la galería — ahora corre una sola vez.
+  await oneShot("race-tarros-botella-2a-foto", `
     INSERT INTO product_images (product_id, url, alt, sort_order, is_primary)
     SELECT p.id, v.url, v.alt, 1, FALSE
     FROM (VALUES
