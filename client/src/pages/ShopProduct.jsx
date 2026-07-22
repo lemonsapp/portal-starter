@@ -13,7 +13,7 @@ import { useBranding } from "../lib/branding.js";
 import { useCart, formatARS } from "../lib/useCart.js";
 import {
   fixImageUrl, isStaleProduct, KIT_FAMILY_SHOTS, PRODUCT_FALLBACK_IMG,
-  sizeTokenFromUrl, variantOfSize,
+  sizeTokenFromUrl,
 } from "../lib/shopImages.js";
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
 // GSAP — reveal por scroll de las secciones (el hero ya anima solo via
@@ -104,37 +104,16 @@ function normalizeProduct(p) {
       })()
     : p.bundle;
 
-  // Galería de kit COMPLETA y de UNA MISMA MEDIDA: la interna de una línea
-  // muestra todos los envases que la componen. Si el backend (sin redeploy)
-  // manda menos imágenes que familias+1, sumamos la foto de cada familia que
-  // falte EN LA MEDIDA que ya usa la galería (los potes de 1kg se complementan
-  // con potes de 1kg, no con los de 25g — pedido del cliente 2026-06-07).
-  // Cuando el server nuevo deploye ya manda la galería completa → no-op.
-  let galleryImages = images;
-  const fams = bundle?.includes || [];
-  if (!galleryFixed && p.meta?.bundle && fams.length > 0 && images.length < fams.length + 1) {
-    const kitSize = images.map((im) => sizeTokenFromUrl(im.url)).find(Boolean) || null;
-    const seen = new Set(images.map((im) => im.url));
-    const extras = [];
-    for (const fam of fams) {
-      // Sin variante de esa medida (familias con formatos dispares) caemos a
-      // la primera con foto; si la URL ya está en la galería, la familia ya
-      // está representada (ej. tarro violeta compartido por R3 A y B) → skip.
-      const v = variantOfSize(fam.variants, kitSize) || fam.variants.find((x) => x.primary_image);
-      if (!v?.primary_image || seen.has(v.primary_image)) continue;
-      seen.add(v.primary_image);
-      extras.push({
-        id: `fam-${fam.group}`, url: v.primary_image, alt: fam.name,
-        sort_order: 90 + extras.length, is_primary: false,
-      });
-    }
-    galleryImages = [...images, ...extras];
-  }
+  // Galerías individuales (pedido cliente 2026-07-22): la interna de un pack
+  // muestra SOLO las fotos cargadas en su propia publicación. Antes acá se
+  // inyectaba la primaria de cada familia de la línea cuando la galería tenía
+  // "pocas" fotos — como los potes suelen tener las mismas fotos que el pack
+  // con otra URL, el dedup no las atrapaba y todo se veía duplicado.
 
   return {
     ...p,
     primary_image: fixedPrimary || (p.meta?.points_pack ? PRODUCT_FALLBACK_IMG : p.primary_image),
-    images: galleryImages,
+    images,
     bundle,
     variants: (p.variants || [])
       .filter((v) => !isStaleProduct(v.slug))
@@ -596,26 +575,22 @@ export default function ShopProduct() {
         const orden = (kitSel && Array.isArray(ordenByMedida[kitSel]))
           ? ordenByMedida[kitSel].map(fixImageUrl).filter(Boolean) : [];
         // Pool de la medida (dedup). Si el admin CURÓ fotos para esta medida
-        // (fotos_por_medida), la galería muestra SOLO esas: antes se
-        // inyectaban además TODAS las fotos de cada pote y una medida curada
-        // con 6 fotos terminaba mostrando 16 (x3). Si la medida no tiene nada
-        // curado (ej. Pro entera, Elite 500ml/1L/5L), se cae a las fotos de
-        // las partes como siempre, para no dejar la galería vacía.
+        // (fotos_por_medida), la galería muestra SOLO esas. Si la medida no
+        // tiene nada curado, cae a las fotos PROPIAS del pack (sección
+        // "Fotos") — ya no a las fotos de cada pote: solían ser las mismas
+        // fotos con otra URL y la galería mostraba todo por duplicado
+        // (pedido cliente 2026-07-22: el pack muestra sólo lo cargado en su
+        // propia publicación).
         const seen = new Set();
         const pool = [];
         for (const url of fotosMedida) {
           if (url && !seen.has(url)) { seen.add(url); pool.push({ url, alt: product.name }); }
         }
         if (!pool.length) {
-          for (const v of kitParts) {
-            const partImgs = (v.images && v.images.length)
-              ? v.images
-              : (v.primary_image ? [{ url: v.primary_image, alt: v.name, is_primary: true }] : []);
-            for (const im of partImgs) {
-              if (im.url && !seen.has(im.url)) {
-                seen.add(im.url);
-                pool.push({ url: im.url, alt: im.alt || v.name });
-              }
+          for (const im of (product.images || [])) {
+            if (im.url && !seen.has(im.url)) {
+              seen.add(im.url);
+              pool.push({ url: im.url, alt: im.alt || product.name });
             }
           }
         }
@@ -630,12 +605,10 @@ export default function ShopProduct() {
         //  1) portada por medida del admin (hero_por_medida)
         //  2) 1ª del orden elegido (si hay hint) — lo que el admin puso 1º
         //  3) 1ra foto común de la medida (fotos_por_medida)
-        //  4) foto de una parte del kit en esa medida
-        //  5) foto unificada del kit (fallback)
-        const partHero = kitParts.find((v) => v.primary_image)?.primary_image;
+        //  4) foto unificada del pack (fallback) — nunca la de una parte
         const hero = (kitSel && heroByMedida[kitSel])
           || (orden.length ? pool[0]?.url : "")
-          || fotosMedida[0] || partHero || product.primary_image;
+          || fotosMedida[0] || product.primary_image;
         const imgs = [];
         if (hero) imgs.push({ url: hero, alt: product.name, is_primary: true });
         for (const im of pool) {
