@@ -639,12 +639,19 @@ function Ranking() {
               </div>
             </div>
 
+            {/* Saldos actuales (2026-07-22): mismos valores que la pestaña
+                Balance — PUNTOS = coins.balance, MONEDAS = coins.monedas_balance.
+                El orden del ranking sigue siendo por total ganado (histórico). */}
             <div style={{ textAlign:"right",flexShrink:0 }}>
-              <div style={{ fontWeight:900,fontSize:24,color:isPod?PODIUM_COLORS[i]:"#e2e8f0",textShadow:isPod?`0 0 20px ${PODIUM_GLOW[i]}66`:"none" }}>
-                {Number(u.total_earned||0).toLocaleString()}
+              <div style={{ fontWeight:900,fontSize:22,color:isPod?PODIUM_COLORS[i]:"#e2e8f0",textShadow:isPod?`0 0 20px ${PODIUM_GLOW[i]}66`:"none",lineHeight:1.1 }}>
+                {Number(u.balance||0).toLocaleString()}
               </div>
-              <div style={{ color:"rgba(237,233,224,.6)",fontSize:10 }}><Coin size={11} /> ganados</div>
-              <div style={{ color:"rgba(237,233,224,.6)",fontSize:11,marginTop:2,fontWeight:700 }}>{Number(u.balance||0).toLocaleString()} disp.</div>
+              <div style={{ color:"rgba(237,233,224,.6)",fontSize:9,fontWeight:800,letterSpacing:1.2 }}>PUNTOS</div>
+              <div style={{ fontWeight:800,fontSize:15,color:"#e2e8f0",marginTop:6,display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4 }}>
+                {Number(u.monedas_balance||0).toLocaleString()} <Coin size={13} />
+              </div>
+              <div style={{ color:"rgba(237,233,224,.6)",fontSize:9,fontWeight:800,letterSpacing:1.2 }}>MONEDAS</div>
+              <div style={{ color:"rgba(237,233,224,.45)",fontSize:10,marginTop:4 }}>{Number(u.total_earned||0).toLocaleString()} ganados</div>
             </div>
           </div>
         );

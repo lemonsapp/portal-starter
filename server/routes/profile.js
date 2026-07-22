@@ -551,7 +551,7 @@ router.get("/ranking", async (req, res) => {
     // sobre indexed cols) y limit es <= 50.
     const q = await db.query(`
       SELECT u.id, u.name, u.client_number, u.role,
-        lc.balance, lc.total_earned,
+        lc.balance, lc.total_earned, COALESCE(lc.monedas_balance, 0) AS monedas_balance,
         up.name_color, up.name_glow, up.name_glow_color, up.name_grad_from, up.name_grad_to,
         up.nickname, up.nick_color, up.nick_glow, up.icon_slug, up.avatar_url, up.avatar_key,
         up.frame_key, up.badges,
