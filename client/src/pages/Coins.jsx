@@ -451,7 +451,8 @@ function LoginStreak({ refreshKey }) {
             const toBonus = streak % 7 === 0 ? (streak === 0 ? 7 : 0) : 7 - (streak % 7);
             return toBonus === 0 ? "¡BONUS! 🎉" : `Faltan ${toBonus} para el bonus`;
           })()}
-          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 <Coin size={11} /> cada 7 días seguidos</div>
+          {/* Los premios de misiones/racha son PUNTOS (coins.balance), no monedas (2026-07-23). */}
+          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 puntos cada 7 días seguidos</div>
         </div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6 }}>
@@ -497,7 +498,7 @@ function Missions({ onClaim }) {
       setMissions(p=>p.map(m=>m.slug===slug?{...m,claimed_at:new Date().toISOString()}:m));
       onClaim?.(d.coins_earned);
       const mission = missions.find(m=>m.slug===slug);
-      showToast({ title: mission?.title || "Mision completada", subtitle: `+${d.coins_earned} Coins acreditados`, icon: mission?.icon || "💎", color: "var(--brand-primary)" });
+      showToast({ title: mission?.title || "Mision completada", subtitle: `+${d.coins_earned} puntos acreditados`, icon: mission?.icon || "💎", color: "var(--brand-primary)" });
     } else alert(d.error);
     setClaiming(null);
   };
@@ -562,12 +563,12 @@ function Missions({ onClaim }) {
                       )}
                     </div>
                     <div style={{ flexShrink:0,textAlign:"right" }}>
-                      <div style={{ color:"var(--brand-primary)",fontWeight:900,fontSize:18,marginBottom:8,textShadow:"0 0 10px var(--brand-primary)44" }}>+{m.coins_reward} <Coin size={16} /></div>
+                      <div style={{ color:"var(--brand-primary)",fontWeight:900,fontSize:18,marginBottom:8,textShadow:"0 0 10px var(--brand-primary)44" }}>+{m.coins_reward} <span style={{ fontSize:9,fontWeight:800,letterSpacing:1.2,color:"rgba(237,233,224,.6)" }}>PUNTOS</span></div>
                       {claimed ? <div style={{ color:"#22c55e",fontSize:12,fontWeight:800,background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.3)",borderRadius:8,padding:"4px 10px" }}>✓ Listo</div>
                       : done2 ? <Pop as="button" onClick={()=>claim(m.slug)} disabled={claiming===m.slug}
                           hoverScale={1.08}
                           style={{ background:`linear-gradient(135deg,${g.color},${g.color}bb)`,color:"#000",border:"none",borderRadius:10,padding:"8px 18px",fontWeight:900,cursor:"pointer",fontSize:13,boxShadow:`0 4px 20px ${g.color}55` }}>
-                          {claiming===m.slug?"...":<>Reclamar <Coin size={14} /></>}
+                          {claiming===m.slug?"...":"Reclamar"}
                         </Pop>
                       : <div style={{ color:"rgba(237,233,224,.6)",fontSize:12,fontWeight:700 }}>Pendiente</div>}
                     </div>
