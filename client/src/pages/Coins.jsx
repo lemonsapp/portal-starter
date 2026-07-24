@@ -452,7 +452,7 @@ function LoginStreak({ refreshKey }) {
             return toBonus === 0 ? "¡BONUS! 🎉" : `Faltan ${toBonus} para el bonus`;
           })()}
           {/* Los premios de misiones/racha son PUNTOS (coins.balance), no monedas (2026-07-23). */}
-          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+25 puntos cada 7 días seguidos</div>
+          <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", marginTop:4 }}>+10 puntos cada 7 días seguidos</div>
         </div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6 }}>

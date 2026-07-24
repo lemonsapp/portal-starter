@@ -674,11 +674,11 @@ async function checkMissions(userId, eventType, extraData = {}) {
         [userId, today, yesterday]
       );
       const newStreak = up.rows[0]?.streak;
-      // Bonus recurrente cada 7 días seguidos (+25) — sin cortar la racha.
+      // Bonus recurrente cada 7 días seguidos (+10) — sin cortar la racha.
       if (newStreak && newStreak % 7 === 0) {
         await db.query(`INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
-        await db.query(`UPDATE coins SET balance=balance+25, total_earned=total_earned+25, updated_at=NOW() WHERE user_id=$1`, [userId]);
-        await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',25,$2)`, [userId, 'Bonus racha ' + newStreak + ' días']);
+        await db.query(`UPDATE coins SET balance=balance+10, total_earned=total_earned+10, updated_at=NOW() WHERE user_id=$1`, [userId]);
+        await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',10,$2)`, [userId, 'Bonus racha ' + newStreak + ' días']);
       }
     }
 
@@ -817,11 +817,11 @@ async function checkMissions(userId, eventType, extraData = {}) {
         [userId, today, yesterday]
       );
       const newStreak = up.rows[0]?.streak;
-      // Bonus recurrente cada 7 días seguidos (+25) — sin cortar la racha.
+      // Bonus recurrente cada 7 días seguidos (+10) — sin cortar la racha.
       if (newStreak && newStreak % 7 === 0) {
         await db.query(`INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
-        await db.query(`UPDATE coins SET balance=balance+25, total_earned=total_earned+25, updated_at=NOW() WHERE user_id=$1`, [userId]);
-        await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',25,$2)`, [userId, 'Bonus racha ' + newStreak + ' días']);
+        await db.query(`UPDATE coins SET balance=balance+10, total_earned=total_earned+10, updated_at=NOW() WHERE user_id=$1`, [userId]);
+        await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',10,$2)`, [userId, 'Bonus racha ' + newStreak + ' días']);
       }
     }
 
