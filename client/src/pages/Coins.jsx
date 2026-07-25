@@ -83,8 +83,9 @@ function SpinModal({ onClose, onWin }) {
   const [errorMsg, setErrorMsg] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // ORDEN EXACTO igual al backend. Los premios con coins muestran la moneda
-  // Holistic al lado del número (svg <image>, ver render de segmentos).
+  // ORDEN EXACTO igual al backend. Los premios son PUNTOS (coins.balance),
+  // no monedas — misma distinción que Misiones (2026-07-24). Nada de moneda
+  // Holistic en la rueda: la moneda es iconografía de MONEDAS compradas.
   const PRIZES = [
     { label:"Vuelve 24hs", coins:0,  color:"#1a1a2e", accent:"#64748b" },
     { label:"1",           coins:1,  color:"#0a2a0a", accent:"#4ade80" },
@@ -162,7 +163,7 @@ function SpinModal({ onClose, onWin }) {
 
         <div style={{ textAlign:"center" }}>
           <div style={{ fontSize:11,fontWeight:800,color:"var(--brand-primary)",letterSpacing:4,textTransform:"uppercase",marginBottom:4 }}>🎰 Ruleta Diaria</div>
-          <div style={{ fontSize:26,fontWeight:900,color:"#fff",textShadow:"0 0 30px var(--brand-primary)66",display:"flex",alignItems:"center",justifyContent:"center",gap:8 }}>Girá y Ganás <Coin size={26} /></div>
+          <div style={{ fontSize:26,fontWeight:900,color:"#fff",textShadow:"0 0 30px var(--brand-primary)66",display:"flex",alignItems:"center",justifyContent:"center",gap:8 }}>Girá y Ganás <span style={{ color:"var(--brand-primary)" }}>Puntos</span></div>
         </div>
 
         <div style={{ position:"relative",width:"100%",maxWidth:SIZE,aspectRatio:"1 / 1",margin:"6px 0 14px",display:"flex",alignItems:"center",justifyContent:"center" }}>
@@ -179,10 +180,10 @@ function SpinModal({ onClose, onWin }) {
                   <path d={`M${cx},${cy} L${x1},${y1} A${R},${R} 0 0,1 ${x2},${y2} Z`} fill={p.color} stroke="rgba(255,255,255,0.06)" strokeWidth="2"/>
                   <g transform={`translate(${tx},${ty}) rotate(${rot})`}>
                     {p.coins>0 ? (
-                      <>
-                        <text textAnchor="middle" dominantBaseline="middle" x={-9} fill={p.accent} fontSize="13" fontWeight="900">{p.label}</text>
-                        <image href={COIN_IMG} x={p.label.length*4-2} y={-8} width="16" height="16"/>
-                      </>
+                      <text textAnchor="middle" dominantBaseline="middle" fill={p.accent} fontWeight="900">
+                        <tspan x="0" dy="-0.2em" fontSize="14">+{p.label}</tspan>
+                        <tspan x="0" dy="1.25em" fontSize="7" letterSpacing="1">PTS</tspan>
+                      </text>
                     ) : (
                       <text textAnchor="middle" dominantBaseline="middle" fill={p.accent} fontSize="8.5" fontWeight="900" letterSpacing="0.5">
                         <tspan x="0" dy="-0.45em">VUELVE</tspan>
@@ -196,7 +197,7 @@ function SpinModal({ onClose, onWin }) {
             <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--brand-primary)" strokeWidth="3" opacity="0.5"/>
             <circle cx={cx} cy={cy} r={R-4} fill="none" stroke="var(--brand-primary)" strokeWidth="1" opacity="0.2"/>
             <circle cx={cx} cy={cy} r="32" fill="#0d0d0d" stroke="var(--brand-primary)" strokeWidth="3"/>
-            <image href={COIN_IMG} x={cx-22} y={cy-22} width="44" height="44"/>
+            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle" fill="var(--brand-primary)" fontSize="15" fontWeight="900" letterSpacing="1.5">PTS</text>
           </svg>
           <div style={{ position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",zIndex:10,filter:"drop-shadow(0 0 12px var(--brand-primary))" }}>
             <svg width="28" height="42" viewBox="0 0 28 42"><polygon points="0,0 28,0 14,42" fill="var(--brand-primary)"/><polygon points="6,0 22,0 14,36" fill="var(--brand-primary)"/></svg>
@@ -215,8 +216,8 @@ function SpinModal({ onClose, onWin }) {
             <div style={{ fontSize:52,marginBottom:8 }}>{result.coins>0?"🎉":"😢"}</div>
             {result.coins>0 ? <>
               <div style={{ color:"var(--brand-primary)",fontSize:12,marginBottom:4,letterSpacing:2,fontWeight:800,textTransform:"uppercase" }}>¡Ganaste!</div>
-              <div style={{ fontWeight:900,fontSize:52,color:"var(--brand-primary)",textShadow:"0 0 30px var(--brand-primary)88",display:"flex",alignItems:"center",justifyContent:"center",gap:10 }}>+{result.coins} <Coin size={44} /></div>
-              <div style={{ color:"#888",fontSize:13,marginTop:4 }}>Puntos acreditados</div>
+              <div style={{ fontWeight:900,fontSize:52,color:"var(--brand-primary)",textShadow:"0 0 30px var(--brand-primary)88",display:"flex",alignItems:"baseline",justifyContent:"center",gap:10 }}>+{result.coins} <span style={{ fontSize:14,fontWeight:800,letterSpacing:1.5,color:"rgba(237,233,224,.7)" }}>PUNTOS</span></div>
+              <div style={{ color:"#888",fontSize:13,marginTop:4 }}>Acreditados en tu balance de puntos</div>
             </> : <>
               <div style={{ color:"#64748b",fontSize:13,marginBottom:4,letterSpacing:1,textTransform:"uppercase" }}>¡Suerte la próxima!</div>
               <div style={{ fontWeight:900,fontSize:24,color:"#475569" }}>Seguí participando</div>
