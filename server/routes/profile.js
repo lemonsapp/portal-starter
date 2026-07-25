@@ -594,10 +594,10 @@ router.post("/spin", authRequired, async (req, res) => {
       await client.query("ROLLBACK");
       return res.status(400).json({ error: "Ya giraste hoy. Volvé mañana!" });
     }
-    // ORDEN EXACTO igual al frontend (8 segmentos). Escala acorde al sistema de
-    // puntos (1 punto = valor de canje real; el descuento más barato = 150 pts):
-    // ~92% cae en 0/1/2 y 3/5/10/25/50 son deliberadamente muy improbables.
-    // probs suman 100 (rand = Math.random()*100).
+    // ORDEN EXACTO igual al frontend (8 segmentos). Los premios son MONEDAS
+    // (coins.monedas_balance, la moneda con la que se pagan pedidos), no puntos
+    // (2026-07-25). ~92% cae en 0/1/2 y 3/5/10/25/50 son deliberadamente muy
+    // improbables. probs suman 100 (rand = Math.random()*100).
     const prizes = [
       { label:"Vuelve 24hs", coins:0,  prob:33   },
       { label:"1",           coins:1,  prob:45   },
@@ -617,8 +617,8 @@ router.post("/spin", authRequired, async (req, res) => {
     }
     const won = prizes[wonIdx];
     await client.query(`INSERT INTO coins (user_id,balance,total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
-    await client.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [won.coins, userId]);
-    await client.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, won.coins, 'Ruleta diaria: ' + won.label]);
+    await client.query(`UPDATE coins SET monedas_balance=monedas_balance+$1, updated_at=NOW() WHERE user_id=$2`, [won.coins, userId]);
+    await client.query(`INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, currency) VALUES ($1,'earn',$2,$3,'web','sistema','monedas')`, [userId, won.coins, 'Ruleta diaria: ' + won.label]);
     await client.query(`INSERT INTO daily_spin (user_id, coins_won, prize_label) VALUES ($1,$2,$3)`, [userId, won.coins, won.label]);
     await client.query("COMMIT");
     const prizeIndex = wonIdx;
