@@ -316,14 +316,15 @@ function Store({ balance, onBuy }) {
                 <div style={{ fontWeight:900,color:"#fff",fontSize:17,marginBottom:4 }}>{item.name}</div>
                 <div style={{ color:"rgba(237,233,224,.6)",fontSize:12,lineHeight:1.5,marginBottom:14 }}>{item.desc}</div>
                 <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-                  <div style={{ fontWeight:900,fontSize:20,color:"var(--brand-primary)",textShadow:"0 0 10px var(--brand-primary)44",display:"flex",alignItems:"center",gap:6 }}><Coin size={18} /> {item.cost.toLocaleString()}</div>
+                  {/* Los powers se pagan con PUNTOS (coins.balance) — 💎 como en el toast y el admin, no la moneda Holistic (esa es de MONEDAS). */}
+                  <div style={{ fontWeight:900,fontSize:20,color:"var(--brand-primary)",textShadow:"0 0 10px var(--brand-primary)44",display:"flex",alignItems:"baseline",gap:6 }}>💎 {item.cost.toLocaleString()} <span style={{ fontSize:10,fontWeight:800,letterSpacing:1,color:"rgba(237,233,224,.6)" }}>PTS</span></div>
                   <Pop as="button" onClick={e=>{ e.stopPropagation(); buy(item); }} disabled={isOwned||!canAfford||buying===item.id}
                     hoverScale={(!isOwned&&canAfford)?1.08:1}
                     style={{ background:isOwned?"rgba(34,197,94,0.15)":canAfford?`linear-gradient(135deg,${item.color},${item.color}cc)`:"rgba(255,255,255,0.05)",color:isOwned?"#22c55e":canAfford?"#000":"#444",border:isOwned?"1px solid rgba(34,197,94,0.4)":"none",borderRadius:10,padding:"8px 18px",fontWeight:900,cursor:isOwned||!canAfford?"not-allowed":"pointer",fontSize:13,boxShadow:(!isOwned&&canAfford)?`0 4px 20px ${item.color}55`:"none" }}>
                     {buying===item.id?"...":isOwned?"✓ Obtenido":canAfford?"Comprar":"Sin puntos"}
                   </Pop>
                 </div>
-                {!canAfford&&!isOwned&&<div style={{ color:"#ef4444",fontSize:11,marginTop:6,fontWeight:700 }}>Faltan {(item.cost-balance).toLocaleString()} <Coin size={12} /></div>}
+                {!canAfford&&!isOwned&&<div style={{ color:"#ef4444",fontSize:11,marginTop:6,fontWeight:700 }}>Faltan {(item.cost-balance).toLocaleString()} pts</div>}
               </div>
               <AnimatePresence initial={false}>
                 {isOpen&&(
