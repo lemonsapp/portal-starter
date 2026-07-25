@@ -273,6 +273,35 @@ el wizard del Sprint 2/3 esté activo).
 
 // ── Auto-migración: tabla coupons ────────────────────────────────────────────
 
+// ── Referidos: pago del premio ───────────────────────────────────────────────
+// Marca el referral 'rewarded' y acredita PUNTOS a ambas partes. El UPDATE con
+// WHERE status='pending' es el guard atómico: bajo requests concurrentes
+// (verify-email doble, backfill + registro) sólo una pasada acredita.
+// Los montos salen de la fila (coins_referrer/coins_referred, default 2).
+async function settleReferral(referredId) {
+  try {
+    const q = await db.query(
+      `UPDATE referrals SET status='rewarded', rewarded_at=NOW()
+        WHERE referred_id=$1 AND status='pending'
+        RETURNING referrer_id, coins_referrer, coins_referred`,
+      [referredId]
+    );
+    const ref = q.rows[0];
+    if (!ref) return;
+    const namesQ = await db.query(`SELECT id, name FROM users WHERE id = ANY($1)`, [[ref.referrer_id, referredId]]);
+    const nameOf = Object.fromEntries(namesQ.rows.map(r => [r.id, r.name]));
+    const credit = async (userId, amount, reason) => {
+      if (!(amount > 0)) return;
+      await db.query(`INSERT INTO coins (user_id, balance, total_earned) VALUES ($1,0,0) ON CONFLICT (user_id) DO NOTHING`, [userId]);
+      await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [amount, userId]);
+      await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [userId, amount, reason]);
+    };
+    await credit(ref.referrer_id, ref.coins_referrer, `Invitación: ${nameOf[referredId] || "tu invitado"} activó su cuenta`);
+    await credit(referredId, ref.coins_referred, `Bienvenida por invitación de ${nameOf[ref.referrer_id] || "un amigo"}`);
+    console.log(`[REFERRAL] pagado referral de user ${ref.referrer_id} → ${referredId}`);
+  } catch (e) { console.error("[REFERRAL settle ERROR]", e.message); }
+}
+
 // ── Auto-migración: referidos (users.referrer_id + tabla referrals) ──────────
 (async () => {
   try {
@@ -283,18 +312,30 @@ el wizard del Sprint 2/3 esté activo).
         referrer_id INT NOT NULL,
         referred_id INT NOT NULL UNIQUE,
         status      TEXT DEFAULT 'pending',
-        coins_referrer INTEGER DEFAULT 25,
-        coins_referred INTEGER DEFAULT 25,
+        coins_referrer INTEGER DEFAULT 2,
+        coins_referred INTEGER DEFAULT 2,
         rewarded_at TIMESTAMPTZ,
         created_at  TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    // Update default coins en filas existentes pending (que aún no se pagaron)
-    await db.query(`UPDATE referrals SET coins_referrer=25, coins_referred=25 WHERE status='pending'`).catch(()=>{});
-    await db.query(`ALTER TABLE referrals ALTER COLUMN coins_referrer SET DEFAULT 25`).catch(()=>{});
-    await db.query(`ALTER TABLE referrals ALTER COLUMN coins_referred SET DEFAULT 25`).catch(()=>{});
+    // Alinear filas pending (no pagadas) y defaults con el premio real: 2
+    // puntos por lado, lo que la UI de Referidos promete desde el rescale de
+    // la economía. El default viejo (25) quedó de antes del rescale.
+    await db.query(`UPDATE referrals SET coins_referrer=2, coins_referred=2 WHERE status='pending'`).catch(()=>{});
+    await db.query(`ALTER TABLE referrals ALTER COLUMN coins_referrer SET DEFAULT 2`).catch(()=>{});
+    await db.query(`ALTER TABLE referrals ALTER COLUMN coins_referred SET DEFAULT 2`).catch(()=>{});
     await db.query(`CREATE INDEX IF NOT EXISTS referrals_referrer_idx ON referrals(referrer_id)`);
     console.log("[MIGRATION] referrals ready");
+    // Backfill: referrals pending cuyo invitado ya está verificado — quedaron
+    // impagos porque hasta 2026-07-25 nadie los liquidaba. settleReferral es
+    // idempotente (guard status='pending'), correr esto en cada boot es seguro.
+    const stale = await db.query(
+      `SELECT r.referred_id FROM referrals r
+        JOIN users u ON u.id = r.referred_id
+       WHERE r.status='pending' AND u.email_verified = true`
+    );
+    for (const row of stale.rows) await settleReferral(row.referred_id);
+    if (stale.rows.length) console.log(`[MIGRATION] referrals backfill: ${stale.rows.length} pagados`);
   } catch (e) { console.error("[MIGRATION referrals ERROR]", e.message); }
 })();
 
@@ -1161,6 +1202,9 @@ app.post("/auth/register", authLimiter, noStore, async (req, res) => {
         await db.query(`UPDATE coins SET balance=balance+$2, total_earned=total_earned+$2 WHERE user_id=$1`, [user.id, welcomeCoins]);
         await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',$2,'¡Bienvenido! Cuenta creada')`, [user.id, welcomeCoins]);
       }
+      // Con la verificación apagada la cuenta nace activa → el referido (si
+      // hubo) se paga acá. Con verificación prendida se paga en /auth/verify-email.
+      await settleReferral(user.id);
       return res.json({ ok: true, verified: true, message: "Cuenta creada. Ya podés iniciar sesión.", client_number: user.client_number });
     }
 
@@ -1240,6 +1284,10 @@ app.get("/auth/verify-email", async (req, res) => {
       await db.query(`UPDATE coins SET balance=balance+$2, total_earned=total_earned+$2 WHERE user_id=$1`, [row.user_id, welcomeCoins]);
       await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'earn',$2,'¡Bienvenido! Email verificado')`, [row.user_id, welcomeCoins]);
     }
+
+    // Cuenta activada → pagar el referido pendiente si existe (idempotente:
+    // si ya se pagó en otro path, el guard status='pending' no hace nada).
+    await settleReferral(row.user_id);
 
     res.json({ ok: true, message: "Email verificado. Ya podés ingresar." });
   } catch(e) {

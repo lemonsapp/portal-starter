@@ -369,19 +369,20 @@ function ReferralCard() {
   return (
     <FadeUp style={{ background: "linear-gradient(135deg,rgba(167,139,250,.07),rgba(236,72,153,.04))", border: "1px solid rgba(167,139,250,.25)", borderRadius: 18, padding: "20px 24px", position: "relative", overflow: "hidden", display: "block", marginBottom: 22 }}>
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,transparent,#a78bfa,#ec4899,#a78bfa,transparent)", backgroundSize: "200% 100%", animation: "shimmerLoad 3s linear infinite" }} />
-      {/* Moneda decorativa gigante, asimétrica — desbordando la esquina sup. derecha */}
-      <img src={COIN_IMG} alt="" aria-hidden="true" draggable="false"
-        style={{ position: "absolute", top: -64, right: -52, width: 248, height: 248, transform: "rotate(18deg)", opacity: 0.18, pointerEvents: "none", userSelect: "none", filter: "drop-shadow(0 10px 30px rgba(167,139,250,.45))", zIndex: 0 }} />
+      {/* Gema decorativa gigante, asimétrica — desbordando la esquina sup. derecha (💎 = puntos, no moneda) */}
+      <div aria-hidden="true"
+        style={{ position: "absolute", top: -48, right: -40, fontSize: 200, lineHeight: 1, transform: "rotate(18deg)", opacity: 0.16, pointerEvents: "none", userSelect: "none", filter: "drop-shadow(0 10px 30px rgba(167,139,250,.45))", zIndex: 0 }}>💎</div>
       <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
         <div>
           <div style={{ fontFamily: "'Gotham', monospace", fontSize: 9, letterSpacing: "2.5px", textTransform: "uppercase", color: "#a78bfa", fontWeight: 600, marginBottom: 6, display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ width: 18, height: 1, background: "#a78bfa" }} />Programa de referidos
           </div>
           <div style={{ fontFamily: "'Gotham', sans-serif", fontSize: 32, letterSpacing: "1px", color: "#fff", lineHeight: 1 }}>
-            Invitá amigos · ganá <span style={{ color: "var(--brand-primary)" }}>2 <Coin size={22} /></span>
+            {/* El premio de referidos son PUNTOS (2026-07-25) — 💎 como el resto de las superficies de puntos, no la moneda Holistic. */}
+            Invitá amigos · ganá <span style={{ color: "var(--brand-primary)" }}>2 💎</span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginTop: 6, lineHeight: 1.5 }}>
-            Tu amigo recibe 2 <Coin size={13} /> al activar su cuenta. Vos también ganás 2 <Coin size={13} /> por cada invitación. Máximo {maxReferrals} invitaciones por cuenta.
+            Tu amigo recibe 2 💎 al activar su cuenta. Vos también ganás 2 💎 por cada invitación. Máximo {maxReferrals} invitaciones por cuenta.
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, fontFamily: "'Gotham', monospace" }}>
@@ -395,7 +396,7 @@ function ReferralCard() {
           </div>
           <div style={{ textAlign: "center" }}>
             <CountUp value={stats.total_coins_earned || 0} style={{ fontFamily: "'Gotham', sans-serif", fontSize: 28, color: "var(--brand-primary)", lineHeight: 1, display: "block" }}>{stats.total_coins_earned || 0}</CountUp>
-            <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}><Coin size={11} /> ganados</div>
+            <div style={{ fontSize: 9, letterSpacing: "1.5px", color: "rgba(255,255,255,.4)", textTransform: "uppercase", marginTop: 4 }}>💎 ganados</div>
           </div>
         </div>
       </div>
