@@ -690,7 +690,8 @@ function Gift({ balance, onGift }) {
         <div style={{ textAlign:"center",marginBottom:32 }}>
           <div style={{ fontSize:64,marginBottom:12,filter:"drop-shadow(0 0 20px var(--brand-primary)66)",display:"inline-block",animation:"wiggle 3s ease-in-out infinite" }}>🎁</div>
           <div style={{ fontWeight:900,fontSize:26,color:"#fff",marginBottom:6 }}>Regalar Puntos</div>
-          <div style={{ color:"rgba(237,233,224,.6)",fontSize:14 }}>Compartí tu amor con la comunidad <Coin size={14} /></div>
+          {/* Los regalos entre usuarios son PUNTOS (coins.balance) — 💎, no la moneda Holistic (esa es de MONEDAS). */}
+          <div style={{ color:"rgba(237,233,224,.6)",fontSize:14 }}>Compartí tu amor con la comunidad 💎</div>
         </div>
 
         {result && <div style={{ background:result.ok?"linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05))":"linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05))",border:`1px solid ${result.ok?"rgba(34,197,94,0.4)":"rgba(239,68,68,0.4)"}`,borderRadius:14,padding:"14px 20px",color:result.ok?"#22c55e":"#ef4444",fontSize:15,fontWeight:800,marginBottom:24,textAlign:"center",animation:"popInBounce 0.5s ease" }}>{result.text}</div>}
@@ -717,7 +718,7 @@ function Gift({ balance, onGift }) {
               ))}
             </div>
             <div style={{ background:"rgba(255,255,255,0.04)",border:"2px solid rgba(var(--brand-primary-rgb),0.2)",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12 }}>
-              <span style={{ fontSize:26,display:"inline-flex" }}><Coin size={26} /></span>
+              <span style={{ fontSize:26,display:"inline-flex" }}>💎</span>
               <input type="number" value={amount} onChange={e=>setAmount(Math.max(10,Math.min(balance,parseInt(e.target.value)||10)))} min={10} max={balance}
                 style={{ flex:1,background:"none",border:"none",color:"var(--brand-primary)",fontSize:28,fontWeight:900,outline:"none" }}/>
               <span style={{ color:"rgba(237,233,224,.6)",fontSize:12 }}>puntos</span>
@@ -735,7 +736,7 @@ function Gift({ balance, onGift }) {
           <Pop as="button" onClick={send} disabled={sending||!clientNum||amount>balance||amount<10}
             hoverScale={1.02}
             style={{ background:(!sending&&clientNum&&amount<=balance&&amount>=10)?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent))":"rgba(255,255,255,0.04)",color:(!sending&&clientNum&&amount<=balance&&amount>=10)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&clientNum&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&clientNum&&amount<=balance)?"0 8px 40px var(--brand-primary)55":"none",letterSpacing:1 }}>
-            {sending?"Enviando...":<>🎁 Regalar {amount.toLocaleString()} <Coin size={16} /></>}
+            {sending?"Enviando...":<>🎁 Regalar {amount.toLocaleString()} 💎</>}
           </Pop>
         </div>
       </div>
@@ -767,7 +768,7 @@ function ComoFunciona({ code }) {
   ];
   const reglas = [
     "Los puntos no vencen: quedan en tu cuenta hasta que los canjees.",
-    "Son personales e intransferibles. No se suman entre cuentas ni se ceden.",
+    "Podés regalarle puntos a otro cliente desde la pestaña Regalar (mínimo 10 por regalo).",
     "Los descuentos no son acumulables con otras promociones y aplican sobre el subtotal (sin envío).",
     "Una vez canjeados, los puntos no se revierten: el canje es definitivo.",
     "El código de cliente es único y permanente — no cambia aunque actualices tus datos.",

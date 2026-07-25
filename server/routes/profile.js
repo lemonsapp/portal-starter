@@ -777,7 +777,7 @@ router.post("/gift", authRequired, async (req, res) => {
     const { to_client_number, message } = req.body;
     // Validar monto: entero positivo, mínimo 10, con tope defensivo (evita floats/negativos/gigantes).
     const amount = Number(req.body.amount);
-    if (!Number.isInteger(amount) || amount < 10 || amount > 1000000) return res.status(400).json({ error: "Monto inválido (mínimo 10 coins)" });
+    if (!Number.isInteger(amount) || amount < 10 || amount > 1000000) return res.status(400).json({ error: "Monto inválido (mínimo 10 puntos)" });
     const giftMsg = message ? sanitizeText(String(message), 200) : null;
     const toQ = await db.query(`SELECT id, name FROM users WHERE client_number=$1`, [to_client_number]);
     if (!toQ.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
@@ -785,12 +785,12 @@ router.post("/gift", authRequired, async (req, res) => {
     if (toUser.id === fromId) return res.status(400).json({ error: "No podés regalarte a vos mismo" });
     // Cobro atómico con guard (evita doble gasto / balance negativo por concurrencia).
     const debit = await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`, [amount, fromId]);
-    if (!debit.rows[0]) return res.status(400).json({ error: "Coins insuficientes" });
+    if (!debit.rows[0]) return res.status(400).json({ error: "Puntos insuficientes" });
     await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`, [fromId, amount, 'Gift a ' + toUser.name]);
     await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [toUser.id, amount, 'Gift de ' + req.user.name]);
     await db.query(`INSERT INTO coin_gifts (from_user_id, to_user_id, amount, message) VALUES ($1,$2,$3,$4)`, [fromId, toUser.id, amount, giftMsg]);
-    res.json({ ok: true, message: '🎁 Regalaste ' + amount + ' coins a ' + toUser.name });
+    res.json({ ok: true, message: '🎁 Regalaste ' + amount + ' puntos a ' + toUser.name });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
