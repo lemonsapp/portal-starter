@@ -757,6 +757,8 @@ function CoinModal({ modal, onClose, onSuccess }) {
   const { user, action } = modal;
   const [amount, setAmount] = useState(action === "gift" ? "100" : "0");
   const [reason, setReason] = useState("");
+  // Qué saldo tocar: puntos (coins.balance) o monedas (coins.monedas_balance).
+  const [currency, setCurrency] = useState("puntos");
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState("");
 
@@ -765,7 +767,7 @@ function CoinModal({ modal, onClose, onSuccess }) {
     try {
       const r = await fetch(`${API}/admin/users/${user.id}/coins`, {
         method: "POST", headers: jsonHdr(),
-        body: JSON.stringify({ action, amount: parseInt(amount, 10) || 0, reason: reason || (action === "gift" ? "Regalo del admin" : "Ajuste manual") }),
+        body: JSON.stringify({ action, amount: parseInt(amount, 10) || 0, currency, reason: reason || (action === "gift" ? "Regalo del admin" : "Ajuste manual") }),
       });
       const d = await r.json();
       if (!r.ok) { setErr(d.error || "Error"); setSubmitting(false); return; }
@@ -780,7 +782,17 @@ function CoinModal({ modal, onClose, onSuccess }) {
       <div style={styles.modalCard} onClick={e => e.stopPropagation()}>
         <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{action === "gift" ? "Regalar coins" : "Ajustar saldo"}</div>
         <div style={{ color: "rgba(90,102,117,.55)", fontSize: 13, marginBottom: 16 }}>
-          {user.name} · {user.email} · balance actual: <b>{user.balance}</b>
+          {user.name} · {user.email} · 💎 <b>{user.balance}</b> puntos · 🪙 <b>{user.monedas_balance ?? 0}</b> monedas
+        </div>
+
+        <label style={styles.label}>Moneda</label>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          {[["puntos", "💎 Puntos"], ["monedas", "🪙 Monedas"]].map(([val, lbl]) => (
+            <button key={val} onClick={() => setCurrency(val)}
+              style={{ ...styles.btn(currency === val), flex: 1 }}>
+              {lbl}
+            </button>
+          ))}
         </div>
 
         <label style={styles.label}>{action === "adjust" ? "Cantidad (puede ser negativa)" : "Cantidad"}</label>

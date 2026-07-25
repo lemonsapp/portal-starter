@@ -56,14 +56,17 @@ function build({ authRequired, requireRole }) {
       if (!Number.isFinite(userId)) return res.status(400).json({ error: "ID inválido" });
 
       const schema = z.object({
-        action:  z.enum(["gift", "adjust"]),  // gift: regalar (positivo); adjust: ajustar saldo (+/-)
-        amount:  z.number().int(),
-        reason:  z.string().min(1).max(200),
+        action:   z.enum(["gift", "adjust"]),  // gift: regalar (positivo); adjust: ajustar saldo (+/-)
+        amount:   z.number().int(),
+        reason:   z.string().min(1).max(200),
+        // puntos = coins.balance (se ganan, dan nivel); monedas = coins.monedas_balance
+        // (pagan pedidos). Default puntos por compat con panels viejos.
+        currency: z.enum(["puntos", "monedas"]).default("puntos"),
       });
       const p = schema.safeParse(req.body);
       if (!p.success) return res.status(400).json({ error: "Datos inválidos" });
 
-      const { action, amount, reason } = p.data;
+      const { action, amount, reason, currency } = p.data;
       if (action === "gift" && amount <= 0) return res.status(400).json({ error: "gift requiere amount > 0" });
 
       // Asegurar coins row existe
@@ -75,12 +78,21 @@ function build({ authRequired, requireRole }) {
       // Insertar transaction
       const txType = action === "gift" ? "gift" : "adjust";
       await db.query(
-        `INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1, $2, $3, $4)`,
-        [userId, txType, amount, `[admin:${req.user.id}] ${reason}`]
+        `INSERT INTO coin_transactions (user_id, type, amount, reason, currency) VALUES ($1, $2, $3, $4, $5)`,
+        [userId, txType, amount, `[admin:${req.user.id}] ${reason}`, currency]
       );
 
-      // Actualizar balance + total_earned
-      if (amount > 0) {
+      // Actualizar el saldo de la moneda elegida. Las monedas no tienen
+      // total_earned/peak_balance (eso es progresión de puntos/niveles).
+      if (currency === "monedas") {
+        await db.query(
+          `UPDATE coins
+             SET monedas_balance = GREATEST(0, monedas_balance + $1),
+                 updated_at = NOW()
+           WHERE user_id = $2`,
+          [amount, userId]
+        );
+      } else if (amount > 0) {
         await db.query(
           `UPDATE coins
              SET balance = balance + $1,
@@ -101,17 +113,19 @@ function build({ authRequired, requireRole }) {
         );
       }
 
-      // Si es gift, también lo registramos en coin_gifts para audit
-      if (action === "gift") {
+      // Si es gift de puntos, también lo registramos en coin_gifts para audit
+      // (coin_gifts no tiene columna currency — los gifts de monedas quedan
+      // auditados sólo por coin_transactions.currency='monedas').
+      if (action === "gift" && currency === "puntos") {
         await db.query(
           `INSERT INTO coin_gifts (from_user, to_user, amount, message) VALUES ($1, $2, $3, $4)`,
           [req.user.id, userId, amount, reason]
         );
       }
 
-      // Devolver balance actualizado
-      const balR = await db.query("SELECT balance, total_earned FROM coins WHERE user_id=$1", [userId]);
-      res.json({ ok: true, balance: balR.rows[0]?.balance ?? 0, total_earned: balR.rows[0]?.total_earned ?? 0 });
+      // Devolver balances actualizados (ambas monedas)
+      const balR = await db.query("SELECT balance, total_earned, COALESCE(monedas_balance,0) AS monedas_balance FROM coins WHERE user_id=$1", [userId]);
+      res.json({ ok: true, balance: balR.rows[0]?.balance ?? 0, total_earned: balR.rows[0]?.total_earned ?? 0, monedas_balance: balR.rows[0]?.monedas_balance ?? 0 });
     } catch (e) {
       console.error("[admin-users coins]", e);
       res.status(500).json({ error: "Error al modificar coins" });
