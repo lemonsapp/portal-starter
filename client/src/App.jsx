@@ -128,6 +128,9 @@ function AppLayout({ children, me, refreshMe }) {
         {!isMobile && <Footer />}
       </main>
       {me && <OnboardingModal user={me} onComplete={(u) => refreshMe?.(u)} />}
+      {/* Avisos in-app SÓLO dentro del portal autenticado: montado global aparecía
+          en /login para browsers con sesión recordada (token viejo en localStorage). */}
+      <AppNotification />
     </div>
   );
 }
@@ -167,7 +170,6 @@ export default function App() {
     <BrowserRouter>
       <PremiumFX />
       <PWAManager />
-      <AppNotification />
       <TopNav />
       <CartDrawer />
       <ChunkErrorBoundary>
