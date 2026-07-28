@@ -4,6 +4,18 @@
   "outputDirectory": "dist",
   "installCommand": "echo 'install handled by build script'",
   "framework": null,
+  "redirects": [
+    { "source": "/tienda",                       "destination": "/shop", "permanent": true },
+    { "source": "/tienda/:path*",                "destination": "/shop", "permanent": true },
+    { "source": "/producto/:path*",              "destination": "/shop", "permanent": true },
+    { "source": "/categoria-producto/:path*",    "destination": "/shop", "permanent": true },
+    { "source": "/carrito",                      "destination": "/shop", "permanent": true },
+    { "source": "/finalizar-compra",             "destination": "/shop", "permanent": true },
+    { "source": "/mi-cuenta",                    "destination": "/login", "permanent": true },
+    { "source": "/mi-cuenta/:path*",             "destination": "/login", "permanent": true },
+    { "source": "/blog",                         "destination": "/", "permanent": true },
+    { "source": "/blog/:path*",                  "destination": "/", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/assets/productos/favicon.svg", "destination": "/imagenes-web/marca/favicon.svg" },
     { "source": "/assets/productos/:path*",      "destination": "/imagenes-web/fotos-productos/:path*" },

@@ -3,3 +3,5 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/
 Disallow: /portal/
+
+Sitemap: https://hgrowshop.com/sitemap-index.xml

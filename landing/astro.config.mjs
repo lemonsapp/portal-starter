@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 
 import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
 
 import tailwindcss from '@tailwindcss/vite';
 
@@ -13,7 +14,21 @@ export default defineConfig({
   // afecta meta tags y sitemap, no la accesibilidad del sitio.
   site: 'https://hgrowshop.com',
 
-  integrations: [react()],
+  integrations: [
+    react(),
+    // Sitemap para Search Console. /home-classic queda afuera: es la home
+    // vieja preservada como referencia, no queremos que Google la indexe
+    // como página aparte.
+    sitemap({
+      filter: (page) => !page.includes('/home-classic'),
+      // Las canonical del sitio son SIN barra final (/linea-race) — el
+      // sitemap tiene que coincidir o Search Console reporta duplicados.
+      serialize: (item) => ({
+        ...item,
+        url: item.url === 'https://hgrowshop.com/' ? item.url : item.url.replace(/\/$/, ''),
+      }),
+    }),
+  ],
 
   vite: {
     plugins: [tailwindcss()],
