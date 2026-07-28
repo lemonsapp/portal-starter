@@ -1,0 +1,91 @@
+---
+// Página 404 custom. Vercel sirve dist/404.html con status 404 para toda
+// ruta que no matchee páginas estáticas ni rewrites — reemplaza la pantalla
+// negra default "404: NOT_FOUND" de Vercel.
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+<BaseLayout
+    title="Página no encontrada — Holistic"
+    description="La página que buscás no existe o fue movida. Volvé al inicio o explorá la tienda Holistic."
+>
+    <main class="nf">
+        <div class="nf__inner">
+            <p class="nf__code">404</p>
+            <h1 class="nf__title">Esta página no existe</h1>
+            <p class="nf__text">
+                Puede que el enlace esté vencido o que la página se haya movido.
+                Lo que buscás seguro está en el inicio o en la tienda.
+            </p>
+            <div class="nf__actions">
+                <a class="nf__btn nf__btn--primary" href="/">Ir al inicio</a>
+                <a class="nf__btn nf__btn--ghost" href="/shop">Ver la tienda</a>
+            </div>
+        </div>
+    </main>
+</BaseLayout>
+
+<style>
+    .nf {
+        background: #f6f5f1;
+        color: #1c1c1a;
+        min-height: 72vh;
+        display: grid;
+        place-items: center;
+        padding: clamp(6rem, 5rem + 6vw, 9rem) clamp(1.1rem, 4vw, 2rem) 5rem;
+        font-family: 'Gotham', system-ui, sans-serif;
+        text-align: center;
+    }
+    .nf__inner { max-width: 560px; }
+    .nf__code {
+        font-size: clamp(4.5rem, 3rem + 8vw, 8rem);
+        line-height: 1;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        color: #2E8F6E;
+        margin: 0 0 0.4rem;
+    }
+    .nf__title {
+        font-size: clamp(1.5rem, 1.1rem + 2vw, 2.2rem);
+        line-height: 1.1;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+        margin: 0 0 0.9rem;
+        color: #14140f;
+    }
+    .nf__text {
+        font-size: 1rem;
+        line-height: 1.65;
+        color: #555;
+        margin: 0 0 2rem;
+    }
+    .nf__actions {
+        display: flex;
+        gap: 0.8rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .nf__btn {
+        display: inline-block;
+        padding: 0.85rem 1.8rem;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform 150ms ease, background 150ms ease, color 150ms ease;
+    }
+    .nf__btn:hover { transform: translateY(-2px); }
+    .nf__btn--primary {
+        background: #2E8F6E;
+        color: #fff;
+    }
+    .nf__btn--primary:hover { background: #257a5d; }
+    .nf__btn--ghost {
+        border: 1.5px solid #1c1c1a;
+        color: #1c1c1a;
+    }
+    .nf__btn--ghost:hover {
+        background: #1c1c1a;
+        color: #f6f5f1;
+    }
+</style>
