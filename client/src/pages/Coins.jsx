@@ -280,7 +280,7 @@ function Store({ balance, onBuy }) {
       else { url=`${API}/profile/redeem`; body={reward_id:item.id}; }
       const r = await fetch(url,{method:"POST",headers:hdrs(),body:JSON.stringify(body)});
       const d = await r.json();
-      if (d.ok) { setMsg({ok:true,text:`✅ ${item.name} activado!`}); onBuy?.(item.cost); showToast({ title: `${item.name} activado!`, subtitle: `Gastaste ${item.cost.toLocaleString()} 💎`, icon: item.icon, color: item.color }); }
+      if (d.ok) { setMsg({ok:true,text:`✅ ${item.name} activado!`}); onBuy?.(item.cost); showToast({ title: `${item.name} activado!`, subtitle: <>Gastaste {item.cost.toLocaleString()} <Coin size={12} /></>, icon: item.icon, color: item.color }); }
       else setMsg({ok:false,text:d.error||"Error"});
     } catch { setMsg({ok:false,text:"Error de red"}); }
     setBuying(null);
@@ -316,15 +316,15 @@ function Store({ balance, onBuy }) {
                 <div style={{ fontWeight:900,color:"#fff",fontSize:17,marginBottom:4 }}>{item.name}</div>
                 <div style={{ color:"rgba(237,233,224,.6)",fontSize:12,lineHeight:1.5,marginBottom:14 }}>{item.desc}</div>
                 <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between" }}>
-                  {/* Los powers se pagan con PUNTOS (coins.balance) — 💎 como en el toast y el admin, no la moneda Holistic (esa es de MONEDAS). */}
-                  <div style={{ fontWeight:900,fontSize:20,color:"var(--brand-primary)",textShadow:"0 0 10px var(--brand-primary)44",display:"flex",alignItems:"baseline",gap:6 }}>💎 {item.cost.toLocaleString()} <span style={{ fontSize:10,fontWeight:800,letterSpacing:1,color:"rgba(237,233,224,.6)" }}>PTS</span></div>
+                  {/* Se pagan con PUNTOS (coins.balance), pero el cliente pidió (2026-07-28) iconografía de moneda Holistic en toda la pestaña. */}
+                  <div style={{ fontWeight:900,fontSize:20,color:"var(--brand-primary)",textShadow:"0 0 10px var(--brand-primary)44",display:"flex",alignItems:"center",gap:6 }}><Coin size={18} /> {item.cost.toLocaleString()}</div>
                   <Pop as="button" onClick={e=>{ e.stopPropagation(); buy(item); }} disabled={isOwned||!canAfford||buying===item.id}
                     hoverScale={(!isOwned&&canAfford)?1.08:1}
                     style={{ background:isOwned?"rgba(34,197,94,0.15)":canAfford?`linear-gradient(135deg,${item.color},${item.color}cc)`:"rgba(255,255,255,0.05)",color:isOwned?"#22c55e":canAfford?"#000":"#444",border:isOwned?"1px solid rgba(34,197,94,0.4)":"none",borderRadius:10,padding:"8px 18px",fontWeight:900,cursor:isOwned||!canAfford?"not-allowed":"pointer",fontSize:13,boxShadow:(!isOwned&&canAfford)?`0 4px 20px ${item.color}55`:"none" }}>
                     {buying===item.id?"...":isOwned?"✓ Obtenido":canAfford?"Comprar":"Sin puntos"}
                   </Pop>
                 </div>
-                {!canAfford&&!isOwned&&<div style={{ color:"#ef4444",fontSize:11,marginTop:6,fontWeight:700 }}>Faltan {(item.cost-balance).toLocaleString()} pts</div>}
+                {!canAfford&&!isOwned&&<div style={{ color:"#ef4444",fontSize:11,marginTop:6,fontWeight:700 }}>Faltan {(item.cost-balance).toLocaleString()} <Coin size={12} /></div>}
               </div>
               <AnimatePresence initial={false}>
                 {isOpen&&(
@@ -691,8 +691,8 @@ function Gift({ balance, onGift }) {
         <div style={{ textAlign:"center",marginBottom:32 }}>
           <div style={{ fontSize:64,marginBottom:12,filter:"drop-shadow(0 0 20px var(--brand-primary)66)",display:"inline-block",animation:"wiggle 3s ease-in-out infinite" }}>🎁</div>
           <div style={{ fontWeight:900,fontSize:26,color:"#fff",marginBottom:6 }}>Regalar Puntos</div>
-          {/* Los regalos entre usuarios son PUNTOS (coins.balance) — 💎, no la moneda Holistic (esa es de MONEDAS). */}
-          <div style={{ color:"rgba(237,233,224,.6)",fontSize:14 }}>Compartí tu amor con la comunidad 💎</div>
+          {/* Los regalos transfieren PUNTOS (coins.balance), pero el cliente pidió (2026-07-28) iconografía de moneda Holistic. */}
+          <div style={{ color:"rgba(237,233,224,.6)",fontSize:14 }}>Compartí tu amor con la comunidad <Coin size={14} /></div>
         </div>
 
         {result && <div style={{ background:result.ok?"linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05))":"linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05))",border:`1px solid ${result.ok?"rgba(34,197,94,0.4)":"rgba(239,68,68,0.4)"}`,borderRadius:14,padding:"14px 20px",color:result.ok?"#22c55e":"#ef4444",fontSize:15,fontWeight:800,marginBottom:24,textAlign:"center",animation:"popInBounce 0.5s ease" }}>{result.text}</div>}
@@ -719,7 +719,7 @@ function Gift({ balance, onGift }) {
               ))}
             </div>
             <div style={{ background:"rgba(255,255,255,0.04)",border:"2px solid rgba(var(--brand-primary-rgb),0.2)",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12 }}>
-              <span style={{ fontSize:26,display:"inline-flex" }}>💎</span>
+              <span style={{ fontSize:26,display:"inline-flex" }}><Coin size={26} /></span>
               <input type="number" value={amount} onChange={e=>setAmount(Math.max(10,Math.min(balance,parseInt(e.target.value)||10)))} min={10} max={balance}
                 style={{ flex:1,background:"none",border:"none",color:"var(--brand-primary)",fontSize:28,fontWeight:900,outline:"none" }}/>
               <span style={{ color:"rgba(237,233,224,.6)",fontSize:12 }}>puntos</span>
@@ -728,7 +728,7 @@ function Gift({ balance, onGift }) {
 
           <div>
             <label style={{ color:"var(--brand-primary)",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>Mensaje (opcional)</label>
-            <input value={message} onChange={e=>setMessage(e.target.value)} placeholder="Un regalo para vos! 💎" maxLength={100}
+            <input value={message} onChange={e=>setMessage(e.target.value)} placeholder="Un regalo para vos! 🪙" maxLength={100}
               style={{ width:"100%",background:"rgba(255,255,255,0.04)",border:"2px solid rgba(255,255,255,0.08)",borderRadius:14,color:"#fff",fontSize:14,padding:"15px 18px",outline:"none",boxSizing:"border-box",transition:"all .2s" }}
               onFocus={e=>{e.target.style.borderColor="var(--brand-primary)";e.target.style.boxShadow="0 0 20px var(--brand-primary)22";}}
               onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.08)";e.target.style.boxShadow="none";}}/>
@@ -737,7 +737,7 @@ function Gift({ balance, onGift }) {
           <Pop as="button" onClick={send} disabled={sending||!clientNum||amount>balance||amount<10}
             hoverScale={1.02}
             style={{ background:(!sending&&clientNum&&amount<=balance&&amount>=10)?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent))":"rgba(255,255,255,0.04)",color:(!sending&&clientNum&&amount<=balance&&amount>=10)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&clientNum&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&clientNum&&amount<=balance)?"0 8px 40px var(--brand-primary)55":"none",letterSpacing:1 }}>
-            {sending?"Enviando...":<>🎁 Regalar {amount.toLocaleString()} 💎</>}
+            {sending?"Enviando...":<>🎁 Regalar {amount.toLocaleString()} <Coin size={16} /></>}
           </Pop>
         </div>
       </div>
