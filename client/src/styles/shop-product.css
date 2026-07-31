@@ -71,7 +71,6 @@
   border: 1px solid var(--c-border-2);
   overflow: hidden;
   display: grid; place-items: center;
-  padding: 9%;
   /* Fondo blanco uniforme para todos los productos (renders y fotos). */
   background: #fff;
   box-shadow: var(--shadow-lg);
