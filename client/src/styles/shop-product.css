@@ -82,6 +82,10 @@
   opacity: 0.8;
 }
 .sp-stage img {
+  /* Absoluto contra la tarjeta: Firefox/Safari no resuelven height:100% contra
+     la altura derivada de aspect-ratio y la imagen desbordaba (se cortaba el
+     pie de los renders más altos que anchos, ej: familia Race). */
+  position: absolute; inset: 0;
   width: 100%; height: 100%; object-fit: contain; display: block;
   filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.15));
 }
