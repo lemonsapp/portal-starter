@@ -84,9 +84,10 @@
 .sp-stage img {
   width: 100%; height: 100%; object-fit: contain; display: block;
   filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.15));
-  transition: transform var(--dur-slow, 400ms) var(--ease-out);
 }
-.sp-stage:hover img { transform: scale(1.035); }
+/* Sin zoom al hover: con la imagen borde a borde, el scale recortaba los
+   renders que llegan al límite del archivo (ej: familia Race). En mobile
+   además el :hover queda pegado tras el tap. */
 .sp-stage-empty {
   width: 100%; height: 100%; border-radius: 12px; background: var(--c-surface-2);
 }
@@ -515,7 +516,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sp-reveal { opacity: 1; animation: none; }
-  .sp-stage:hover img { transform: none; }
 }
 
 /* ════════════════════════ UX 2026-06-05 ════════════════════════ */
