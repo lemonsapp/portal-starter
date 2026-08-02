@@ -6417,6 +6417,19 @@ html.is-loading body {
     flex-wrap: wrap;
     justify-content: center;
     gap: 12px;
+    /* Las cards de la botella son position:absolute (pintan DESPUÉS del
+       flujo normal): cuando el selector escala la activa ~1.2× y desborda
+       el stage, la botella quedaba pintada ENCIMA de esta fila y tapaba
+       los formatos del medio (screenshot del cliente, 2026-08-02). La fila
+       se posiciona para ganar el orden de pintura — cero cambio de layout. */
+    position: relative;
+    z-index: 2;
+}
+/* Notebooks bajitas: con el stage a 68vh el título, la botella y la fila
+   no entraban juntos y la botella pisaba los formatos. Un stage más bajo
+   devuelve el aire sin tocar el look en monitores grandes. */
+@media (max-height: 780px) {
+    .pdd__formats-stage { height: clamp(380px, 56vh, 540px); }
 }
 .pdd__format-tab {
     background: transparent;

@@ -194,8 +194,13 @@ function initProductHighlights(root) {
                 gsap.to(img, {
                     autoAlpha: 0,
                     // En móvil no animamos blur (queda en 0): el cross-fade es
-                    // solo opacidad + escala. En desktop sí, para el look rico.
-                    filter: lite ? "blur(0px) saturate(1)" : "blur(20px) saturate(0.65)",
+                    // solo opacidad + escala. En desktop sí, para el look rico —
+                    // pero capado a 10px: 20px duplicaba el costo por frame del
+                    // scrub y en máquinas modestas el pin se sentía "trabado"
+                    // (reporte del cliente 2026-08-02; mismo síntoma que el fix
+                    // móvil del comentario de arriba). A 10px el look es igual
+                    // porque la imagen ya está yéndose a autoAlpha 0.
+                    filter: lite ? "blur(0px) saturate(1)" : "blur(10px) saturate(0.65)",
                     scale: lite ? 0.97 : 0.93,
                     duration: lite ? 0.4 : 0.6,
                     ease: "power2.in",
@@ -295,7 +300,7 @@ function initProductHighlights(root) {
         // Estados iniciales GSAP-controlled. En móvil sin blur (ver `lite`).
         gsap.set(images, {
             autoAlpha: 0,
-            filter: lite ? "blur(0px) saturate(1)" : "blur(20px) saturate(0.65)",
+            filter: lite ? "blur(0px) saturate(1)" : "blur(10px) saturate(0.65)",
             scale: lite ? 0.97 : 0.93,
         });
         if (images[0]) {
