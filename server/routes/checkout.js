@@ -1114,6 +1114,90 @@ function adminRouter({ authRequired, requireRole }) {
     }
   });
 
+  // GET /api/admin/shop/stats — dashboard de facturación.
+  // Venta = orden en paid/dispatched/completed, fechada por paid_at (fallback
+  // created_at) en hora argentina. Los pedidos pagados con MONEDAS se excluyen
+  // de los totales facturados (la plata real entró al comprar el pack — sumarlos
+  // duplicaría) pero se reportan aparte en el desglose por medio de pago.
+  router.get("/stats", ...readMw, async (_req, res) => {
+    try {
+      const TZ = "America/Argentina/Buenos_Aires";
+      const paidCte = `
+        WITH paid AS (
+          SELECT total_cents, payment_method,
+                 (COALESCE(paid_at, created_at) AT TIME ZONE '${TZ}') AS ts
+          FROM orders
+          WHERE status IN ('paid','dispatched','completed')
+        )`;
+
+      const totalsQ = await db.query(`${paidCte}
+        SELECT
+          COUNT(*) FILTER (WHERE payment_method <> 'monedas')::int                          AS orders_all,
+          COALESCE(SUM(total_cents) FILTER (WHERE payment_method <> 'monedas'), 0)::bigint  AS revenue_all,
+          COUNT(*) FILTER (WHERE payment_method <> 'monedas'
+            AND ts >= date_trunc('month', now() AT TIME ZONE '${TZ}'))::int                 AS orders_month,
+          COALESCE(SUM(total_cents) FILTER (WHERE payment_method <> 'monedas'
+            AND ts >= date_trunc('month', now() AT TIME ZONE '${TZ}')), 0)::bigint          AS revenue_month,
+          COUNT(*) FILTER (WHERE payment_method <> 'monedas'
+            AND ts >= date_trunc('month', now() AT TIME ZONE '${TZ}') - interval '1 month'
+            AND ts <  date_trunc('month', now() AT TIME ZONE '${TZ}'))::int                 AS orders_prev_month,
+          COALESCE(SUM(total_cents) FILTER (WHERE payment_method <> 'monedas'
+            AND ts >= date_trunc('month', now() AT TIME ZONE '${TZ}') - interval '1 month'
+            AND ts <  date_trunc('month', now() AT TIME ZONE '${TZ}')), 0)::bigint          AS revenue_prev_month
+        FROM paid`);
+
+      const pendingQ = await db.query(`
+        SELECT COUNT(*)::int AS n, COALESCE(SUM(total_cents), 0)::bigint AS cents
+        FROM orders WHERE status = 'pending_payment'`);
+
+      const dailyQ = await db.query(`${paidCte}
+        SELECT to_char(ts::date, 'YYYY-MM-DD') AS day,
+               COUNT(*)::int AS orders,
+               COALESCE(SUM(total_cents), 0)::bigint AS revenue_cents
+        FROM paid
+        WHERE payment_method <> 'monedas'
+          AND ts >= (now() AT TIME ZONE '${TZ}')::date - interval '29 days'
+        GROUP BY 1 ORDER BY 1`);
+
+      const monthlyQ = await db.query(`${paidCte}
+        SELECT to_char(date_trunc('month', ts), 'YYYY-MM') AS month,
+               COUNT(*)::int AS orders,
+               COALESCE(SUM(total_cents), 0)::bigint AS revenue_cents
+        FROM paid
+        WHERE payment_method <> 'monedas'
+          AND ts >= date_trunc('month', now() AT TIME ZONE '${TZ}') - interval '5 months'
+        GROUP BY 1 ORDER BY 1 DESC`);
+
+      const methodsQ = await db.query(`${paidCte}
+        SELECT payment_method,
+               COUNT(*)::int AS orders,
+               COALESCE(SUM(total_cents), 0)::bigint AS revenue_cents
+        FROM paid GROUP BY 1 ORDER BY revenue_cents DESC`);
+
+      // Top productos por facturación (incluye pedidos con monedas: acá interesa
+      // qué se vende, no la caja).
+      const topQ = await db.query(`
+        SELECT oi.name_snapshot AS name,
+               SUM(oi.quantity)::int AS units,
+               COALESCE(SUM(oi.line_total_cents), 0)::bigint AS revenue_cents
+        FROM order_items oi
+        JOIN orders o ON o.id = oi.order_id
+        WHERE o.status IN ('paid','dispatched','completed')
+        GROUP BY 1 ORDER BY revenue_cents DESC LIMIT 5`);
+
+      res.json({
+        totals: { ...totalsQ.rows[0], pending_orders: pendingQ.rows[0].n, pending_cents: pendingQ.rows[0].cents },
+        daily: dailyQ.rows,
+        monthly: monthlyQ.rows,
+        methods: methodsQ.rows,
+        top_products: topQ.rows,
+      });
+    } catch (e) {
+      console.error("[admin shop stats]", e);
+      res.status(500).json({ error: "Error al calcular estadísticas" });
+    }
+  });
+
   // GET /api/admin/shop/orders/:id — detalle completo
   router.get("/orders/:id", ...readMw, async (req, res) => {
     try {

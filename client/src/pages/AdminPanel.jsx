@@ -106,9 +106,10 @@ const ADMIN_NAV = [
   {
     key: "tienda", label: "🛒 Tienda",
     subs: [
-      { key: "products", label: "Productos", Comp: ProductsTab },
-      { key: "orders",   label: "Pedidos",   Comp: OrdersTab },
-      { key: "feed",     label: "Feed",      Comp: FeedTab },
+      { key: "products", label: "Productos",    Comp: ProductsTab },
+      { key: "orders",   label: "Pedidos",      Comp: OrdersTab },
+      { key: "billing",  label: "Facturación",  Comp: BillingTab },
+      { key: "feed",     label: "Feed",         Comp: FeedTab },
     ],
   },
   {
@@ -2884,6 +2885,148 @@ function ProductModal({ product, categories, allProducts = [], onClose, onSaved 
       </div>
     </div>,
     document.body
+  );
+}
+
+// ── Tab: Tienda → Facturación (dashboard de ventas) ─────────────────────────
+// Facturación = pedidos en paid/dispatched/completed pagados con plata real
+// (MercadoPago/transferencia). Los pagados con monedas no suman — la plata
+// entró al comprar el pack — pero aparecen en el desglose por medio de pago.
+function BillingTab() {
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    fetch(`${API}/api/admin/shop/stats`, { headers: authHdr() })
+      .then((r) => r.json())
+      .then((d) => (d.error ? setErr(d.error) : setData(d)))
+      .catch(() => setErr("Error de conexión"));
+  }, []);
+
+  if (err) return <p style={{ color: "#fca5a5", padding: 20 }}>{err}</p>;
+  if (!data) return <div style={{ color: "rgba(90,102,117,.5)", padding: 20 }}>Cargando…</div>;
+
+  const n = (x) => Number(x) || 0; // los SUM (bigint) llegan como string desde pg
+  const t = data.totals;
+  const revMonth = n(t.revenue_month);
+  const revPrev = n(t.revenue_prev_month);
+  const delta = revPrev > 0 ? Math.round(((revMonth - revPrev) / revPrev) * 100) : null;
+  const avgTicket = t.orders_month > 0 ? Math.round(revMonth / t.orders_month) : 0;
+
+  // Serie continua de 30 días: la API sólo trae días con ventas.
+  const byDay = Object.fromEntries(data.daily.map((d) => [d.day, d]));
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() - i);
+    const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+    days.push({ key, label: `${dt.getDate()}/${dt.getMonth() + 1}`, ...(byDay[key] || { orders: 0, revenue_cents: 0 }) });
+  }
+  const maxDay = Math.max(1, ...days.map((d) => n(d.revenue_cents)));
+
+  const METHOD = { mercadopago: "💳 MercadoPago", transfer: "🏦 Transferencia", monedas: "🪙 Monedas" };
+  const monthLabel = (m) => new Date(`${m}-01T00:00:00`).toLocaleDateString("es-AR", { month: "long", year: "numeric" });
+
+  const statCard = (label, value, sub, color) => (
+    <div style={{ ...styles.card, marginBottom: 0 }}>
+      <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.45)" }}>{label}</div>
+      <div style={{ fontWeight: 900, fontSize: 22, color: color || "var(--text)", marginTop: 4 }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: "rgba(90,102,117,.55)", marginTop: 2 }}>{sub}</div>}
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", gap: 12, marginBottom: 14 }}>
+        {statCard(
+          "Facturado este mes", formatARS(revMonth),
+          delta == null
+            ? `${t.orders_month} pedido${t.orders_month === 1 ? "" : "s"}`
+            : `${delta >= 0 ? "▲" : "▼"} ${Math.abs(delta)}% vs ${formatARS(revPrev)} el mes pasado`,
+          "var(--brand-primary, #3B82F6)"
+        )}
+        {statCard("Pedidos del mes", t.orders_month, `ticket promedio ${formatARS(avgTicket)}`)}
+        {statCard("Histórico", formatARS(n(t.revenue_all)), `${t.orders_all} pedidos cobrados`)}
+        {statCard("Pendiente de pago", formatARS(n(t.pending_cents)), `${t.pending_orders} pedido${t.pending_orders === 1 ? "" : "s"} sin cobrar`, "#f59e0b")}
+      </div>
+
+      <div style={styles.card}>
+        <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 12 }}>Últimos 30 días</div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 120 }}>
+          {days.map((d) => (
+            <div key={d.key} title={`${d.label} · ${formatARS(n(d.revenue_cents))} · ${d.orders} pedido${d.orders === 1 ? "" : "s"}`}
+              style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%", cursor: "default" }}>
+              <div style={{
+                height: `${Math.max(n(d.revenue_cents) > 0 ? 4 : 1, Math.round((n(d.revenue_cents) / maxDay) * 100))}%`,
+                background: n(d.revenue_cents) > 0 ? "var(--brand-primary, #3B82F6)" : "rgba(90,102,117,.15)",
+                borderRadius: "3px 3px 0 0",
+              }} />
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(90,102,117,.45)", marginTop: 6 }}>
+          <span>{days[0].label}</span><span>{days[14].label}</span><span>{days[29].label}</span>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+        <div style={{ ...styles.card, marginBottom: 0 }}>
+          <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 10 }}>Por mes</div>
+          <table style={styles.table}>
+            <thead><tr><th style={styles.th}>Mes</th><th style={styles.th}>Pedidos</th><th style={styles.th}>Facturado</th></tr></thead>
+            <tbody>
+              {data.monthly.length === 0 && <tr><td style={styles.td} colSpan={3}>(sin ventas todavía)</td></tr>}
+              {data.monthly.map((m) => (
+                <tr key={m.month}>
+                  <td style={{ ...styles.td, textTransform: "capitalize" }}>{monthLabel(m.month)}</td>
+                  <td style={styles.td}>{m.orders}</td>
+                  <td style={{ ...styles.td, fontWeight: 700 }}>{formatARS(n(m.revenue_cents))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{ ...styles.card, marginBottom: 0 }}>
+          <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 10 }}>Por medio de pago</div>
+          <table style={styles.table}>
+            <thead><tr><th style={styles.th}>Medio</th><th style={styles.th}>Pedidos</th><th style={styles.th}>Total</th></tr></thead>
+            <tbody>
+              {data.methods.length === 0 && <tr><td style={styles.td} colSpan={3}>(sin ventas todavía)</td></tr>}
+              {data.methods.map((m) => (
+                <tr key={m.payment_method}>
+                  <td style={styles.td}>{METHOD[m.payment_method] || m.payment_method}</td>
+                  <td style={styles.td}>{m.orders}</td>
+                  <td style={{ ...styles.td, fontWeight: 700 }}>{formatARS(n(m.revenue_cents))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {data.methods.some((m) => m.payment_method === "monedas") && (
+            <div style={{ fontSize: 11, color: "rgba(90,102,117,.45)", marginTop: 8 }}>
+              🪙 Los pedidos con monedas no suman a la facturación: la plata entró al comprarse el pack.
+            </div>
+          )}
+        </div>
+
+        <div style={{ ...styles.card, marginBottom: 0 }}>
+          <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 10 }}>Top productos</div>
+          <table style={styles.table}>
+            <thead><tr><th style={styles.th}>Producto</th><th style={styles.th}>Unid.</th><th style={styles.th}>Facturado</th></tr></thead>
+            <tbody>
+              {data.top_products.length === 0 && <tr><td style={styles.td} colSpan={3}>(sin ventas todavía)</td></tr>}
+              {data.top_products.map((p) => (
+                <tr key={p.name}>
+                  <td style={styles.td}>{p.name}</td>
+                  <td style={styles.td}>{p.units}</td>
+                  <td style={{ ...styles.td, fontWeight: 700 }}>{formatARS(n(p.revenue_cents))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }
 
