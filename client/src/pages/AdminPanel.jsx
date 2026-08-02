@@ -194,11 +194,15 @@ export default function AdminPanel() {
 // ── Tab: Puntos → Carga manual (panel Gaia) ──────────────────────────────────
 function PuntosManualTab() {
   const [code, setCode] = useState("");
-  const [customer, setCustomer] = useState(null);   // { id, name, email, customer_code, balance }
+  const [customer, setCustomer] = useState(null);   // { id, name, email, customer_code, balance, monedas_balance }
   const [earnPerPoint, setEarnPerPoint] = useState(12000);
+  const [buyPrice, setBuyPrice] = useState(3600);
   const [looking, setLooking] = useState(false);
   const [lookupErr, setLookupErr] = useState("");
 
+  // Qué saldo cargar: puntos (compra externa, tasa earn_per_point) o monedas
+  // (venta de monedas por fuera de la web, tasa buy_price del pack custom).
+  const [currency, setCurrency] = useState("puntos");
   const [amount, setAmount] = useState("");
   const [canal, setCanal] = useState("whatsapp");
   const [descripcion, setDescripcion] = useState("");
@@ -215,15 +219,18 @@ function PuntosManualTab() {
       const r = await fetch(`${API}/coins/lookup/${encodeURIComponent(c)}`, { headers: authHdr() });
       const d = await r.json();
       if (!r.ok) setLookupErr(d.error || "Cliente no encontrado");
-      else { setCustomer(d.user); setEarnPerPoint(d.earn_per_point || 12000); }
+      else { setCustomer(d.user); setEarnPerPoint(d.earn_per_point || 12000); setBuyPrice(d.buy_price || 3600); }
     } catch { setLookupErr("Error de conexión"); }
     setLooking(false);
   }
 
+  const esMonedas = currency === "monedas";
+  const unidad = esMonedas ? "monedas" : "pts";
+  const rate = esMonedas ? (buyPrice || 3600) : (earnPerPoint || 12000);
   const pesos = Math.max(0, Math.floor(Number(amount) || 0));
   const previewPoints = override !== ""
     ? Math.max(0, Math.floor(Number(override) || 0))
-    : Math.floor(pesos / (earnPerPoint || 12000));
+    : Math.floor(pesos / rate);
 
   async function submit() {
     if (!customer || previewPoints <= 0) return;
@@ -234,7 +241,7 @@ function PuntosManualTab() {
         body: JSON.stringify({
           customer_code: customer.customer_code,
           amount_pesos: pesos,
-          canal, descripcion,
+          canal, descripcion, currency,
           points_override: override === "" ? undefined : override,
         }),
       });
@@ -242,7 +249,7 @@ function PuntosManualTab() {
       if (!r.ok) setErr(d.error || "Error al acreditar");
       else {
         setResult(d);
-        setCustomer({ ...customer, balance: d.new_balance });
+        setCustomer({ ...customer, [esMonedas ? "monedas_balance" : "balance"]: d.new_balance });
         setAmount(""); setDescripcion(""); setOverride("");
       }
     } catch { setErr("Error de conexión"); }
@@ -252,7 +259,7 @@ function PuntosManualTab() {
   return (
     <div>
       <div style={styles.card}>
-        <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800 }}>Carga manual de puntos</h3>
+        <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800 }}>Carga manual de puntos y monedas</h3>
         <p style={{ margin: "0 0 12px", fontSize: 13, color: "rgba(90,102,117,.55)" }}>
           Compra externa (WhatsApp, ML, efectivo…). Buscá al cliente por su código, ingresá el monto y acreditá.
         </p>
@@ -280,9 +287,20 @@ function PuntosManualTab() {
               <div style={{ fontSize: 12, color: "rgba(90,102,117,.55)" }}>{customer.email} · {customer.customer_code}</div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.4)" }}>Saldo</div>
-              <div style={{ fontWeight: 900, fontSize: 20, color: "var(--brand-primary, #3B82F6)" }}>{customer.balance} pts</div>
+              <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.4)" }}>Saldos</div>
+              <div style={{ fontWeight: 900, fontSize: 18, color: "var(--brand-primary, #3B82F6)" }}>💎 {customer.balance} pts</div>
+              <div style={{ fontWeight: 900, fontSize: 18, color: "#f59e0b" }}>🪙 {customer.monedas_balance ?? 0} monedas</div>
             </div>
+          </div>
+
+          <label style={styles.label}>Qué cargar</label>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[["puntos", "💎 Puntos"], ["monedas", "🪙 Monedas"]].map(([val, lbl]) => (
+              <button key={val} onClick={() => setCurrency(val)}
+                style={{ ...styles.btn(currency === val), flex: 1 }}>
+                {lbl}
+              </button>
+            ))}
           </div>
 
           <label style={styles.label}>Monto de la compra ($)</label>
@@ -301,27 +319,29 @@ function PuntosManualTab() {
           <label style={styles.label}>Descripción (opcional)</label>
           <input style={styles.input} placeholder="2x Elite 500ml + Kit 100gr" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
 
-          <label style={styles.label}>Puntos a acreditar — override (opcional)</label>
+          <label style={styles.label}>{esMonedas ? "Monedas" : "Puntos"} a acreditar — override (opcional)</label>
           <input style={styles.input} type="number" min="0" placeholder={`auto: ${previewPoints}`} value={override} onChange={(e) => setOverride(e.target.value)} />
 
-          <div style={{ marginTop: 14, padding: "12px 14px", borderRadius: 8, background: "rgba(59,130,246,.12)", border: "1px solid rgba(59,130,246,.25)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ marginTop: 14, padding: "12px 14px", borderRadius: 8, background: esMonedas ? "rgba(245,158,11,.12)" : "rgba(59,130,246,.12)", border: `1px solid ${esMonedas ? "rgba(245,158,11,.3)" : "rgba(59,130,246,.25)"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 13, color: "rgba(90,102,117,.8)" }}>Se acreditarán</span>
-            <span style={{ fontWeight: 900, fontSize: 20, color: "var(--brand-primary, #3B82F6)" }}>+{previewPoints} pts</span>
+            <span style={{ fontWeight: 900, fontSize: 20, color: esMonedas ? "#f59e0b" : "var(--brand-primary, #3B82F6)" }}>+{previewPoints} {unidad}</span>
           </div>
           <div style={{ fontSize: 11, color: "rgba(90,102,117,.45)", marginTop: 6 }}>
-            1 punto cada ${earnPerPoint.toLocaleString("es-AR")} · redondeo hacia abajo.
+            {esMonedas
+              ? `1 moneda cada $${rate.toLocaleString("es-AR")} (precio del pack de monedas) · redondeo hacia abajo.`
+              : `1 punto cada $${rate.toLocaleString("es-AR")} · redondeo hacia abajo.`}
           </div>
 
           {err && <p style={{ color: "#fca5a5", fontSize: 13, marginTop: 10 }}>{err}</p>}
           <button style={{ ...styles.btn(true), marginTop: 14, width: "100%", padding: "11px" }} onClick={submit} disabled={submitting || previewPoints <= 0}>
-            {submitting ? "Acreditando…" : `Acreditar +${previewPoints} pts`}
+            {submitting ? "Acreditando…" : `Acreditar +${previewPoints} ${unidad}`}
           </button>
         </div>
       )}
 
       {result && (
         <div style={{ ...styles.card, borderColor: "rgba(34,197,94,.4)", background: "rgba(34,197,94,.06)" }}>
-          ✓ Acreditados <b>+{result.points_credited} pts</b> a <b>{result.user.name}</b>. Nuevo saldo: <b>{result.new_balance} pts</b>.
+          ✓ Acreditados <b>+{result.points_credited} {result.currency === "monedas" ? "monedas 🪙" : "pts 💎"}</b> a <b>{result.user.name}</b>. Nuevo saldo: <b>{result.new_balance} {result.currency === "monedas" ? "monedas" : "pts"}</b>.
         </div>
       )}
     </div>

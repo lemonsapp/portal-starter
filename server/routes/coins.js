@@ -25,15 +25,17 @@ function redemptionEmailHtml({ name, reward, couponCode }) {
     <p style="margin:0;font-size:14px">Te vamos a contactar para coordinar el envío. ¡Disfrutalo!</p>`);
 }
 
-// Email de puntos acreditados (compra externa cargada por el admin).
-function pointsCreditedEmailHtml({ name, points, newBalance, descripcion }) {
+// Email de puntos/monedas acreditados (compra externa cargada por el admin).
+function pointsCreditedEmailHtml({ name, points, newBalance, descripcion, currency = "puntos" }) {
   const hi = `Hola ${name || ""},`.trim();
+  const esMonedas = currency === "monedas";
+  const unidad = esMonedas ? "monedas" : "puntos";
   return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;padding:28px 24px;color:#15171c">
-    <h2 style="margin:0 0 12px;font-size:20px">Sumaste puntos 💎</h2>
+    <h2 style="margin:0 0 12px;font-size:20px">Sumaste ${unidad} ${esMonedas ? "🪙" : "💎"}</h2>
     <p style="margin:0 0 8px">${hi}</p>
-    <p style="margin:0 0 8px">Se acreditaron <b>+${points} puntos</b> a tu cuenta${descripcion ? ` por: ${descripcion}` : ""}.</p>
-    <p style="margin:0 0 8px">Tu nuevo saldo es de <b>${newBalance} puntos</b>.</p>
-    <p style="margin:0;font-size:14px">Entrá a "Mis puntos" para ver tus canjes disponibles.</p>
+    <p style="margin:0 0 8px">Se acreditaron <b>+${points} ${unidad}</b> a tu cuenta${descripcion ? ` por: ${descripcion}` : ""}.</p>
+    <p style="margin:0 0 8px">Tu nuevo saldo es de <b>${newBalance} ${unidad}</b>.</p>
+    <p style="margin:0;font-size:14px">${esMonedas ? "Usalas para pagar tus pedidos en la tienda." : 'Entrá a "Mis puntos" para ver tus canjes disponibles.'}</p>
     <p style="color:#64748b;font-size:12px;margin-top:24px">Gracias por ser parte de Holistic 🌱</p>
   </div>`;
 }
@@ -614,7 +616,8 @@ router.get("/lookup/:code", authRequired, requireRole(["operator", "admin"]), as
     const code = String(req.params.code || "").trim().toUpperCase();
     if (!code) return res.status(400).json({ error: "Falta el código" });
     const uq = await db.query(
-      `SELECT u.id, u.name, u.email, u.customer_code, COALESCE(c.balance, 0) AS balance
+      `SELECT u.id, u.name, u.email, u.customer_code, COALESCE(c.balance, 0) AS balance,
+              COALESCE(c.monedas_balance, 0) AS monedas_balance
        FROM users u LEFT JOIN coins c ON c.user_id = u.id
        WHERE u.customer_code = $1`,
       [code]
@@ -622,53 +625,73 @@ router.get("/lookup/:code", authRequired, requireRole(["operator", "admin"]), as
     if (!uq.rows[0]) return res.status(404).json({ error: "Cliente no encontrado" });
     // Tasa de ACUMULACIÓN (no la de canje): el panel previsualiza puntos por compra externa.
     const earnPerPoint = await getPointConfig("earn_per_point", 12000);
-    res.json({ user: uq.rows[0], earn_per_point: earnPerPoint });
+    // buy_price = $ por moneda comprada (misma tasa que el pack custom del shop):
+    // el panel previsualiza monedas cuando la carga manual es de monedas.
+    const buyPrice = await getPointConfig("buy_price", 3600);
+    res.json({ user: uq.rows[0], earn_per_point: earnPerPoint, buy_price: buyPrice });
   } catch (e) {
     console.error("COINS LOOKUP ERROR:", e);
     res.status(500).json({ error: e.message });
   }
 });
 
-// ── POST /coins/manual-credit — carga manual de puntos por compra externa ─────
-// Body: { customer_code, amount_pesos?, canal?, descripcion?, points_override? }
-// Puntos = floor(amount_pesos / earn_per_point), o points_override si se envía.
+// ── POST /coins/manual-credit — carga manual de puntos o monedas ──────────────
+// Body: { customer_code, amount_pesos?, canal?, descripcion?, points_override?, currency? }
+//   • puntos (default): floor(amount_pesos / earn_per_point) — compra externa (spec v9).
+//   • monedas: floor(amount_pesos / buy_price) — misma tasa que el pack custom del
+//     shop (venta de monedas por fuera de la web); acredita monedas_balance, que no
+//     tiene total_earned/peak_balance (eso es progresión de puntos/niveles).
+// points_override pisa la conversión en ambos casos.
 router.post("/manual-credit", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
   try {
-    const { customer_code, amount_pesos, canal, descripcion, points_override } = req.body;
+    const { customer_code, amount_pesos, canal, descripcion, points_override, currency } = req.body;
     const code = String(customer_code || "").trim().toUpperCase();
     if (!code) return res.status(400).json({ error: "Falta el código de cliente" });
+    const cur = currency === "monedas" ? "monedas" : "puntos";
 
     const uq = await db.query(`SELECT id, name, customer_code FROM users WHERE customer_code=$1`, [code]);
     const u = uq.rows[0];
     if (!u) return res.status(404).json({ error: "Cliente no encontrado" });
 
-    const earnPerPoint = await getPointConfig("earn_per_point", 12000);
+    const perUnit = cur === "monedas"
+      ? await getPointConfig("buy_price", 3600)
+      : await getPointConfig("earn_per_point", 12000);
     const pesos = Math.max(0, Math.floor(Number(amount_pesos) || 0));
     let points;
     if (points_override !== undefined && points_override !== null && points_override !== "") {
       points = Math.max(0, Math.floor(Number(points_override)));
     } else {
-      points = Math.floor(pesos / earnPerPoint); // 1 punto cada $12.000, redondeo hacia abajo (spec v9)
+      points = Math.floor(pesos / perUnit); // redondeo hacia abajo en ambas monedas
     }
-    if (points <= 0) return res.status(400).json({ error: "Los puntos a acreditar dan 0 — revisá el monto." });
+    if (points <= 0) return res.status(400).json({ error: `Las ${cur === "monedas" ? "monedas" : "puntos"} a acreditar dan 0 — revisá el monto.` });
 
     await getOrCreateCoins(u.id);
+    if (cur === "monedas") {
+      await db.query(
+        `UPDATE coins SET monedas_balance = monedas_balance + $1, updated_at = NOW() WHERE user_id = $2`,
+        [points, u.id]
+      );
+    } else {
+      await db.query(
+        `UPDATE coins
+           SET balance = balance + $1,
+               total_earned = total_earned + $1,
+               peak_balance = GREATEST(peak_balance, balance + $1),
+               updated_at = NOW()
+         WHERE user_id = $2`,
+        [points, u.id]
+      );
+    }
     await db.query(
-      `UPDATE coins
-         SET balance = balance + $1,
-             total_earned = total_earned + $1,
-             peak_balance = GREATEST(peak_balance, balance + $1),
-             updated_at = NOW()
-       WHERE user_id = $2`,
-      [points, u.id]
+      `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, amount_cents, currency)
+       VALUES ($1, 'compra_externa', $2, $3, $4, $5, $6, $7)`,
+      [u.id, points, descripcion || (cur === "monedas" ? "Compra externa de monedas" : "Compra externa"), canal || "admin",
+       req.user.email || "admin", pesos > 0 ? pesos * 100 : null, cur]
     );
-    await db.query(
-      `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador, amount_cents)
-       VALUES ($1, 'compra_externa', $2, $3, $4, $5, $6)`,
-      [u.id, points, descripcion || "Compra externa", canal || "admin",
-       req.user.email || "admin", pesos > 0 ? pesos * 100 : null]
+    const updQ = await db.query(
+      `SELECT balance, COALESCE(monedas_balance,0) AS monedas_balance FROM coins WHERE user_id=$1`, [u.id]
     );
-    const updQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [u.id]);
+    const newBalance = cur === "monedas" ? Number(updQ.rows[0].monedas_balance) : updQ.rows[0].balance;
 
     // Email de acreditación (no bloquea la respuesta).
     try {
@@ -676,8 +699,8 @@ router.post("/manual-credit", authRequired, requireRole(["operator", "admin"]), 
       if (eq.rows[0]?.email) {
         await sendEmail({
           to: eq.rows[0].email,
-          subject: "Puntos acreditados — Holistic",
-          html: pointsCreditedEmailHtml({ name: u.name, points, newBalance: updQ.rows[0].balance, descripcion }),
+          subject: cur === "monedas" ? "Monedas acreditadas — Holistic" : "Puntos acreditados — Holistic",
+          html: pointsCreditedEmailHtml({ name: u.name, points, newBalance, descripcion, currency: cur }),
         });
       }
     } catch (mailErr) { console.error("[credit email]", mailErr.message); }
@@ -685,8 +708,9 @@ router.post("/manual-credit", authRequired, requireRole(["operator", "admin"]), 
     res.json({
       success: true,
       user: { id: u.id, name: u.name, customer_code: u.customer_code },
+      currency: cur,
       points_credited: points,
-      new_balance: updQ.rows[0].balance,
+      new_balance: newBalance,
     });
   } catch (e) {
     console.error("COINS MANUAL-CREDIT ERROR:", e);
