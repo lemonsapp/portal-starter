@@ -6421,9 +6421,11 @@ html.is-loading body {
        flujo normal): cuando el selector escala la activa ~1.2× y desborda
        el stage, la botella quedaba pintada ENCIMA de esta fila y tapaba
        los formatos del medio (screenshot del cliente, 2026-08-02). La fila
-       se posiciona para ganar el orden de pintura — cero cambio de layout. */
+       se posiciona para ganar el orden de pintura — cero cambio de layout.
+       OJO: 20 y no 2 — product-detail.js (arrange) le pone zIndex:10 inline
+       a la card activa; con menos que eso la botella sigue ganando. */
     position: relative;
-    z-index: 2;
+    z-index: 20;
 }
 /* Notebooks bajitas: con el stage a 68vh el título, la botella y la fila
    no entraban juntos y la botella pisaba los formatos. Un stage más bajo
