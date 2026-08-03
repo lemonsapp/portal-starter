@@ -6357,6 +6357,11 @@ html.is-loading body {
     display: grid;
     place-items: center;
     perspective: 1200px;
+    /* Cuánto crece la card activa del selector. La lee product-detail.js
+       (arrange/goToFormat): así el "crece al seleccionar" se achica junto
+       con el stage en pantallas bajas, en vez de un 1.22 fijo que en
+       notebooks desbordaba sobre la fila de formatos. */
+    --pdd-active-scale: 1.22;
 }
 .pdd__format-card {
     position: absolute;
@@ -6375,10 +6380,18 @@ html.is-loading body {
     visibility: visible;
 }
 .pdd__format-card img {
-    max-width: 92%;
-    max-height: 96%;
-    width: auto;
-    height: auto;
+    /* Absoluta contra la card (caja definida 620×430) + object-fit, NADA de
+       max-% ni de grid: como grid item, el % de height se resolvía contra un
+       track dimensionado por el tamaño natural de la imagen (dependencia
+       circular) y las imágenes verticales quedaban al doble de lo diseñado
+       (cliente 2026-08-03: "los potes quedan gigantes al elegir la medida").
+       Así el layout no depende ni del tamaño natural ni del lazy-load, y el
+       sujeto siempre entra en la caja. */
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 92%;
+    height: 96%;
     object-fit: contain;
     filter: drop-shadow(0 36px 56px rgba(0, 0, 0, 0.20));
 }
@@ -6392,13 +6405,13 @@ html.is-loading body {
    y (2) la animación del selector escala la card activa ~1.2×. Por eso
    estos topes son bastante más bajos que el 92/96% genérico. */
 [data-slug="linea-elite"] .pdd__format-card img {
-    max-width: 54%;
-    max-height: 58%;
+    width: 54%;
+    height: 58%;
 }
 @media (max-width: 640px) {
     [data-slug="linea-elite"] .pdd__format-card img {
-        max-width: 58%;
-        max-height: 46%;
+        width: 58%;
+        height: 46%;
     }
 }
 /* Mobile: sin la sombra bajo los renders del selector de formato (pedido
@@ -6431,7 +6444,12 @@ html.is-loading body {
    no entraban juntos y la botella pisaba los formatos. Un stage más bajo
    devuelve el aire sin tocar el look en monitores grandes. */
 @media (max-height: 780px) {
-    .pdd__formats-stage { height: clamp(380px, 56vh, 540px); }
+    .pdd__formats-stage {
+        height: clamp(380px, 56vh, 540px);
+        /* Con el stage achicado, el 1.22 hacía que hasta un render bien
+           acotado (96% del stage) pisara la fila de formatos. */
+        --pdd-active-scale: 1.06;
+    }
 }
 .pdd__format-tab {
     background: transparent;

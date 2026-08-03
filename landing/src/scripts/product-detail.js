@@ -413,6 +413,13 @@ function initProductDetail() {
             // del cliente. Los demás cards se hacen autoAlpha 0 (no se
             // ven), el activo escala 1.22 + zIndex top. Cross-fade smooth
             // entre selecciones via Flip.
+            // La escala del activo vive en CSS (--pdd-active-scale): en
+            // notebooks bajas la media query la reduce para que el render
+            // escalado no desborde el stage. Se lee en cada uso (no una vez)
+            // por si el viewport cambia de categoría con un resize.
+            const activeScale = () =>
+                parseFloat(getComputedStyle(formatStage).getPropertyValue("--pdd-active-scale")) || 1.22;
+
             const arrange = (activeIdx) => {
                 const cards = Array.from(formatStage.children);
                 cards.forEach((c, i) => {
@@ -422,7 +429,7 @@ function initProductDetail() {
                         rotation: 0,
                         x: 0,
                         y: 0,
-                        scale: isActive ? 1.22 : 0.88,
+                        scale: isActive ? activeScale() : 0.88,
                         autoAlpha: isActive ? 1 : 0,
                         transformOrigin: "center center",
                     });
@@ -461,7 +468,7 @@ function initProductDetail() {
                     tl.fromTo(nextActive,
                         { autoAlpha: 0, scale: 0.88 },
                         {
-                            autoAlpha: 1, scale: 1.22,
+                            autoAlpha: 1, scale: activeScale(),
                             duration: 0.55, ease: "back.out(1.4)",
                         }, 0.20);
                     // 4) Sync clases
