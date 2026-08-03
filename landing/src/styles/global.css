@@ -411,6 +411,10 @@ button {
     padding: 6px 0;
     position: relative;
     transition: color 0.25s var(--ease);
+    /* Un label jamás se parte en dos líneas ("Línea/Elite", "Bio/
+       Estimulante" — foto del cliente 2026-08-03 en notebook). Si no
+       entra, el rango compacto/burger de abajo resuelve. */
+    white-space: nowrap;
 }
 
 .header__link::after {
@@ -4643,9 +4647,21 @@ html.is-loading body {
    Botón central — XL, glass, glow, hover lift
    ─────────────────────────────────────────────────────────────────────────── */
 .hs__cta {
+    /* Centrado por layout (inset+margin), NO por transform: GSAP le anima
+       x/y (entrance y:30→0 + magnetic quickTo) y cualquier translate(-50%)
+       del CSS se hornea a px al primer parseo y después queda pisado por
+       x:0/y:0 — el botón terminaba corrido medio ancho abajo-derecha del
+       centro del círculo (reporte 2026-08-03, se notaba en notebook). Con
+       margin:auto el reposo de GSAP (0,0) ES el centro.
+       Los -50% laterales: a 1920 el botón XL (~550px) supera el ancho del
+       wrap (520px) y con inset:0 el margin:auto sobre-restringido cae a
+       margin-left:0 (quedaba 15px a la derecha del círculo); con el área
+       de centrado más ancha que el botón, siempre centra. */
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+    inset: 0 -50%;
+    margin: auto;
+    width: fit-content;
+    height: fit-content;
     z-index: 3;
     border-radius: 999px;
     text-decoration: none;
@@ -6405,13 +6421,13 @@ html.is-loading body {
    y (2) la animación del selector escala la card activa ~1.2×. Por eso
    estos topes son bastante más bajos que el 92/96% genérico. */
 [data-slug="linea-elite"] .pdd__format-card img {
-    width: 54%;
-    height: 58%;
+    width: 57%;
+    height: 61%;
 }
 @media (max-width: 640px) {
     [data-slug="linea-elite"] .pdd__format-card img {
-        width: 58%;
-        height: 46%;
+        width: 61%;
+        height: 49%;
     }
 }
 /* Mobile: sin la sombra bajo los renders del selector de formato (pedido
@@ -6447,8 +6463,10 @@ html.is-loading body {
     .pdd__formats-stage {
         height: clamp(380px, 56vh, 540px);
         /* Con el stage achicado, el 1.22 hacía que hasta un render bien
-           acotado (96% del stage) pisara la fila de formatos. */
-        --pdd-active-scale: 1.06;
+           acotado pisara la fila de formatos. 1.06 quedó corto ("los potes
+           se ven muy chiquitos en notebook", 2026-08-03): 1.12 los devuelve
+           presentes sin pisar la fila — verificado con screenshots. */
+        --pdd-active-scale: 1.12;
     }
 }
 .pdd__format-tab {
@@ -7239,6 +7257,25 @@ html.is-loading body {
     }
     .header__icons {
         gap: 8px;
+    }
+}
+
+/* --- HEADER NAV · NOTEBOOK ANGOSTO (960–1279px) ---
+   El nav de 8 ítems a 13px/gap 26 no entra en notebooks (a 1366px con
+   escala Windows 125% el viewport CSS es ~1093px) y cada label se partía
+   en dos líneas. Acá se compacta; y en 960–1049, donde ni compacto entra,
+   se cae al header mobile (burger). Foto del cliente 2026-08-03. */
+@media (min-width: 960px) and (max-width: 1279px) {
+    .header__inner { gap: 12px; }
+    .header__nav { gap: 12px; }
+    .header__link { font-size: 12px; }
+}
+@media (min-width: 960px) and (max-width: 1049px) {
+    .header__nav { display: none; }
+    .header__burger { display: inline-flex; }
+    .header__inner {
+        grid-template-columns: auto auto;
+        justify-content: space-between;
     }
 }
 

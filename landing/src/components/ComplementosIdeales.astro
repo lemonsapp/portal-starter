@@ -498,7 +498,9 @@ const complementos = [
         position: relative;
         z-index: 2;
         max-width: 100%;
-        max-height: clamp(280px, 52vh, 520px);
+        /* Un paso más grande (pedido cliente 2026-08-03: "los potes del
+           home — day-0, bioestimulante — un poco más grandes"). */
+        max-height: clamp(320px, 60vh, 580px);
         width: auto;
         height: auto;
         object-fit: contain;
