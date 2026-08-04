@@ -63,6 +63,7 @@
   display: flex; flex-wrap: wrap; gap: 14px;
   align-items: center; justify-content: space-between;
   background: rgba(247, 246, 241, 0.82);
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--c-border);
 }
@@ -184,6 +185,7 @@
   position: absolute; top: 14px; z-index: 2;
   padding: 6px 12px; border-radius: 999px;
   font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 .cat-badge-featured {

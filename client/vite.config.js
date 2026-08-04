@@ -18,6 +18,17 @@ export default defineConfig(({ command }) => ({
     allowedHosts: true,
   },
   build: {
+    // Soporte de navegadores viejos (2026-08-04). Sin esto Vite usa el default
+    // 'modules' = safari14: por debajo de Safari 14 el bundle NI PARSEA
+    // (SyntaxError en ?? y ?.) y la app no monta — pantalla en blanco, sin
+    // ningun aviso. Es una tienda: un Mac o un iPhone viejo que no puede
+    // actualizarse es un cliente que no compra y del que nunca nos enteramos.
+    // Bajando a safari12 esbuild transpila nullish, optional chaining y
+    // logical assignment, y el piso pasa de 2020 a 2018.
+    // OJO: el target solo baja SINTAXIS, no poliyena APIs de runtime. Si algun
+    // dia entra Object.hasOwn / structuredClone / Array.at, hay que poliyenarlo
+    // aparte — auditar con el scan de scratchpad antes de asumir que alcanza.
+    target: ["es2019", "safari12", "chrome79", "firefox72", "edge79"],
     // Sprint 10: code splitting. Cada page va por su chunk via React.lazy()
     // (ver App.jsx); aca dividimos vendors pesados en chunks separados para
     // que el cache del browser los reuse entre deploys (cambia tu codigo
