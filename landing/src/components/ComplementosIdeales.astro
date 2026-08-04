@@ -62,6 +62,7 @@ const complementos = [
         ctaLabel: "VER BIO-ESTIMULANTE",
         // Producto PNG transparente (perspectiva grande)
         image: "/imagenes-web/productos/bio-estimulante/perspectiva-1-grande-rosa-sin-fondo.png",
+        alfaW: 0.492, alfaH: 0.731,   // canvas 1080x1080, producto 531x790
         // Identidad cromática del producto
         bgColor: "#f8b9d5",      // rosa pastel saturado
         haloColor: "#f8b9d5",    // halo del producto
@@ -77,6 +78,7 @@ const complementos = [
         href: "/cloner",
         ctaLabel: "VER CLONER",
         image: "/imagenes-web/ultimos-cambios/POTE-CLONER-HOME.png",
+        alfaW: 0.558, alfaH: 0.838,   // canvas 1270x1239, producto 709x1038
         bgColor: "#a78bfa",      // violeta pastel (intermedio entre rosa y amarillo)
         haloColor: "#c4b5fd",
         accentText: "#D6CAFB",
@@ -91,6 +93,7 @@ const complementos = [
         href: "/day-0",
         ctaLabel: "VER DAY-0",
         image: "/imagenes-web/productos/day-0/perspectiva-1-grande-amarillo-sin-fondo.png",
+        alfaW: 0.492, alfaH: 0.731,   // canvas 1080x1080, producto 531x790
         bgColor: "#e6d54a",
         haloColor: "#f5e89c",
         accentText: "#F5E89C",
@@ -197,6 +200,7 @@ const complementos = [
                     alt={`${c.nombre} — ${c.kicker}`}
                     loading="lazy"
                     draggable="false"
+                    style={`--pote-alfa-w:${c.alfaW};--pote-alfa-h:${c.alfaH};`}
                 />
             </div>
 
@@ -497,12 +501,25 @@ const complementos = [
     .cmp__panel-img {
         position: relative;
         z-index: 2;
-        max-width: 100%;
-        /* Un paso más grande (pedido cliente 2026-08-03: "los potes del
-           home — day-0, bioestimulante — un poco más grandes"). */
-        max-height: clamp(320px, 60vh, 580px);
+        /* --pote-alto = alto VISIBLE del producto, el MISMO para los seis
+           potes del home (pedido de Lemon 2026-08-04: "las proporciones son
+           distintas entre si, tiene que coincidir todo"). Tiene que ser el
+           mismo valor que en LineasEstrella.astro — ahi esta el bloque de
+           calibracion con la explicacion completa y las mediciones.
+           Reemplaza al max-height de un paso mas grande del 2026-08-03: ese
+           escalon era justamente lo que hacia que Complementos no coincidiera
+           con Lineas Estrella (CLONER 385px contra ELITE 289px a 1366). */
+        /* El min() por vw es el tope de PANTALLA ANGOSTA: en celu 41vh da
+           346px y el producto quedaba a 16px del borde. 62vw lo deja
+           respirando sin romper la igualdad — el max-width de abajo sigue
+           siendo el tope fino por producto. */
+        --pote-alto: min(clamp(230px, 41vh, 360px), 62vw);
+        --pote-alfa-w: 1;
+        --pote-alfa-h: 1;
+        max-width: calc(100% / var(--pote-alfa-w));
+        max-height: none;
         width: auto;
-        height: auto;
+        height: calc(var(--pote-alto) / var(--pote-alfa-h));
         object-fit: contain;
         filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.45));
         will-change: transform;

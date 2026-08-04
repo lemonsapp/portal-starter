@@ -29,6 +29,25 @@
 // VISUAL: cada panel usa el hero.png PNG transparente unified de la
 // línea (los mismos que alimentaban al slider horizontal). Igual que
 // los complementos, una sola imagen por panel.
+// ── Tamaño de los potes del home — calibrado por MEDICION (2026-08-04).
+//    Lee esto antes de tocar un numero.
+//
+// El problema: el tamaño se controlaba con `max-height` sobre el <img>, o sea
+// sobre el CANVAS del archivo. Pero el ojo ve el producto OPACO adentro, y
+// cada render trae distinta cantidad de aire transparente: el producto ocupa
+// entre el 72,3% y el 83,8% del alto del archivo, con canvas que van de
+// cuadrado (1200x1200) a apaisado (1448x1086). Limitar el archivo NO iguala
+// el producto → medido a 1366px, el frasco de CLONER (50 mL) se veia 385px de
+// alto y las botellas de ELITE 289px: un 33% mas grande el envase mas chico.
+//
+// La solucion: `alfaW`/`alfaH` = fraccion opaca del archivo, medida sobre el
+// canal alfa (scratchpad/medir-pngs.mjs). Con eso el CSS despeja el alto del
+// canvas para que el PRODUCTO mida `--pote-alto`, igual para los seis.
+// Y el tope de ancho pasa a aplicarse sobre el producto, no sobre el canvas:
+// limitar el canvas achicaba el producto por culpa del aire (PRO usa apenas
+// el 51,2% del ancho de su archivo).
+//
+// Si se cambia un render, hay que volver a medir su alfa.
 const lineas = [
     {
         slug: "linea-elite",
@@ -40,6 +59,7 @@ const lineas = [
         href: "/linea-elite",
         ctaLabel: "VER LÍNEA ELITE",
         image: "/imagenes-web/slider-spylt/linea-elite/hero.png",
+        alfaW: 0.733, alfaH: 0.723,   // canvas 1200x1200, producto 879x867
         bgColor: "#bd6ee6",
         haloColor: "#ecd6f8",
         accentText: "#E4C6FA",
@@ -57,6 +77,7 @@ const lineas = [
         // pote violeta como image simple (mismo modo que ELITE y PRO,
         // sin frame rounded ni stage layered).
         image: "/imagenes-web/ultimos-cambios/POTE-LINEA-RACE-HOME.png",
+        alfaW: 0.566, alfaH: 0.829,   // canvas 1448x1086, producto 819x900
         bgColor: "#c078e5",
         haloColor: "#edd9f7",
         accentText: "#E3C8F5",
@@ -74,6 +95,7 @@ const lineas = [
         // el pote vegetativo IMG_6296 sobre el halo + blob, modo simple
         // igual que ELITE (sin frame rounded ni base de fondo).
         image: "/imagenes-web/slider-spylt/linea-pro/sub/vegetativo/img-6296.png",
+        alfaW: 0.512, alfaH: 0.762,   // canvas 1448x1086, producto 742x828
         bgColor: "#9ad8f5",
         haloColor: "#e8f4fb",
         accentText: "#C9E9F7",
@@ -222,6 +244,7 @@ const lineas = [
                         alt={`${l.nombre} — ${l.kicker}`}
                         loading="lazy"
                         draggable="false"
+                        style={`--pote-alfa-w:${l.alfaW};--pote-alfa-h:${l.alfaH};`}
                     />
                 )}
             </div>
@@ -488,10 +511,26 @@ const lineas = [
     .le__panel-img {
         position: relative;
         z-index: 2;
-        max-width: 100%;
-        max-height: clamp(280px, 52vh, 520px);
+        /* --pote-alto = alto VISIBLE del producto, el MISMO para los seis
+           potes del home (pedido de Lemon 2026-08-04: "las proporciones son
+           distintas entre si, tiene que coincidir todo"). Vive tambien en
+           ComplementosIdeales.astro con el mismo valor — si se cambia uno,
+           cambiar el otro.
+           El alto del canvas se despeja dividiendo por la fraccion opaca, y
+           el tope de ancho se aplica sobre el PRODUCTO (100% / alfa-w), no
+           sobre el canvas: el aire transparente no tiene por que ocupar
+           lugar. Ver el bloque de calibracion arriba. */
+        /* El min() por vw es el tope de PANTALLA ANGOSTA: en celu 41vh da
+           346px y el producto quedaba a 16px del borde. 62vw lo deja
+           respirando sin romper la igualdad — el max-width de abajo sigue
+           siendo el tope fino por producto. */
+        --pote-alto: min(clamp(230px, 41vh, 360px), 62vw);
+        --pote-alfa-w: 1;
+        --pote-alfa-h: 1;
+        max-width: calc(100% / var(--pote-alfa-w));
+        max-height: none;
         width: auto;
-        height: auto;
+        height: calc(var(--pote-alto) / var(--pote-alfa-h));
         object-fit: contain;
         filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.18));
         will-change: transform;
