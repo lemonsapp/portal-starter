@@ -4581,10 +4581,26 @@ html.is-loading body {
    absolutos (halo, ring, particles, stem) alrededor del botón mismo.
    ─────────────────────────────────────────────────────────────────────────── */
 .hs__cta-wrap {
+    /* --hs-cta-ring = lo que MIDE de verdad el anillo punteado: el svg va al
+       92% del ancho del wrap y adentro el <circle> tiene r=110 sobre viewBox
+       240, o sea 0.92 * (110/120) = 0.8433 del ancho, de punta a punta.
+
+       El alto del wrap TIENE que ser ese diametro. Antes era
+       clamp(220px, 32vw, 320px) = 320px en escritorio, 118px MENOS que el
+       circulo: el anillo se desbordaba ~59px por arriba de su propia caja y
+       cruzaba las notas del timeline ("Ajustamos riego y nutricion" /
+       "Acompanamos la transicion") — reporte de Lemon con foto, 2026-08-04.
+       Medido a 960/1093/1366/1440/1920: invadia el pie del texto entre 1.6px
+       y 28.6px, y empeoraba cuanto mas baja la pantalla porque la separacion
+       de arriba es vh (gap 3.6vh + margin 4vh) y el circulo no.
+       Reservando el alto real el layout deja de mentir y el gap del stage
+       resuelve la separacion solo, en cualquier tamano de pantalla. */
+    --hs-cta-w: clamp(280px, 50vw, 520px);
+    --hs-cta-ring: calc(var(--hs-cta-w) * 0.8433);
     position: relative;
     display: inline-block;
-    width: clamp(280px, 50vw, 520px);
-    height: clamp(220px, 32vw, 320px);
+    width: var(--hs-cta-w);
+    height: var(--hs-cta-ring);
     margin: clamp(20px, 4vh, 32px) auto 0;
     isolation: isolate;
 }
