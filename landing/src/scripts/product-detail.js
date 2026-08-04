@@ -95,6 +95,7 @@ function initProductDetail() {
        MatchMedia: reduced-motion + breakpoints
        ----------------------------------------------------------------- */
     const splits = []; // tracking para revert
+    const cleanups = []; // listeners a soltar cuando matchMedia revierte
 
     mm.add(BREAKPOINTS, (ctx) => {
         const { isMobile, reduceMotion } = ctx.conditions;
@@ -420,6 +421,71 @@ function initProductDetail() {
             const activeScale = () =>
                 parseFloat(getComputedStyle(formatStage).getPropertyValue("--pdd-active-scale")) || 1.22;
 
+            // ── Normalizar el TAMAÑO VISIBLE de los renders ────────────────
+            // Solo actúa donde los datos traen data-img-target (hoy: Race).
+            // Sin esos atributos no hace nada → elite/pro/bio/day-0/cloner
+            // siguen exactamente igual con su imgScale estático.
+            //
+            // Por qué hace falta: el stage cambia de FORMA con el viewport
+            // (ancho por vw, alto por vh), así que object-fit:contain cambia
+            // de dimensión ligante entre notebook y monitor grande, y se
+            // invierte qué imágenes crecen. Una escala fija no puede valer en
+            // las dos formas (a 1920 el 1L se veía 35% más grande que el 10L).
+            //
+            // Se despeja la escala para que el alto del producto OPACO sea
+            // `target` × alto del stage. El alto visible es lineal con la
+            // escala, así que sale de una división. Tope por ancho para que
+            // el producto no se pase de los lados del stage.
+            const normalizarRenders = () => {
+                const cardH = parseFloat(getComputedStyle(formatStage).height);
+                const cardW = parseFloat(getComputedStyle(formatStage).width);
+                if (!cardH || !cardW) return;
+
+                formatCards.forEach((card) => {
+                    const img = card.querySelector("img");
+                    if (!img) return;
+                    const target = parseFloat(img.dataset.imgTarget);
+                    const alphaW = parseFloat(img.dataset.imgAlphaW);
+                    const alphaH = parseFloat(img.dataset.imgAlphaH);
+                    // Sin datos calibrados → no tocar (respeta el imgScale).
+                    if (!target || !alphaW || !alphaH) return;
+                    const NW = img.naturalWidth, NH = img.naturalHeight;
+                    if (!NW || !NH) return;   // todavía no cargó: lo reintenta el onload
+
+                    // Caja de layout del img (getComputedStyle NO incluye el
+                    // transform, así que es la caja a escala 1 — sin esto el
+                    // cálculo se muerde la cola).
+                    const cs = getComputedStyle(img);
+                    const boxW = parseFloat(cs.width), boxH = parseFloat(cs.height);
+                    if (!boxW || !boxH) return;
+
+                    const fit = Math.min(boxW / NW, boxH / NH);   // object-fit: contain
+                    const visW1 = alphaW * NW * fit;              // producto visible a escala 1
+                    const visH1 = alphaH * NH * fit;
+                    if (!visW1 || !visH1) return;
+
+                    // OJO: la CARD tambien se escala (activeScale) por encima
+                    // de esta escala, asi que el tope de ancho tiene que
+                    // descontarlo o el producto se sale igual (a 1920 el 10L
+                    // se pasaba 62px de los lados con el tope sin descontar).
+                    const A = activeScale();
+                    const porAlto  = (target * cardH) / visH1;
+                    const porAncho = (0.92 * cardW) / (visW1 * A);
+                    const s = Math.min(porAlto, porAncho, 2);
+
+                    img.style.transform = `scale(${s.toFixed(4)})`;
+                    img.style.transformOrigin = "center";
+                });
+            };
+
+            formatCards.forEach((card) => {
+                const img = card.querySelector("img");
+                if (img && !img.complete) img.addEventListener("load", normalizarRenders, { once: true });
+            });
+            normalizarRenders();
+            window.addEventListener("resize", normalizarRenders);
+            cleanups.push(() => window.removeEventListener("resize", normalizarRenders));
+
             const arrange = (activeIdx) => {
                 const cards = Array.from(formatStage.children);
                 cards.forEach((c, i) => {
@@ -559,9 +625,11 @@ function initProductDetail() {
             });
         }
 
-        // Cleanup matchMedia: revert SplitText
+        // Cleanup matchMedia: revert SplitText + soltar listeners propios
         return () => {
             splits.forEach((s) => s && s.revert());
+            cleanups.forEach((fn) => fn());
+            cleanups.length = 0;
         };
     });
 }

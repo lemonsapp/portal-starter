@@ -4656,9 +4656,17 @@ html.is-loading body {
        Los -50% laterales: a 1920 el botón XL (~550px) supera el ancho del
        wrap (520px) y con inset:0 el margin:auto sobre-restringido cae a
        margin-left:0 (quedaba 15px a la derecha del círculo); con el área
-       de centrado más ancha que el botón, siempre centra. */
+       de centrado más ancha que el botón, siempre centra.
+
+       --hs-cta-lift = CENTRADO OPTICO (2026-08-04). Medido: el botón cae
+       geométricamente exacto en el centro del círculo (dx=0 dy=0 a 1093,
+       1366 y 1920), pero se LEE bajo, porque el tallo que baja desde el
+       botón carga masa visual abajo y el ojo corre el centro percibido.
+       Se sube por layout (achicando el área de centrado desde abajo), NUNCA
+       por transform: GSAP le anima x/y con el magnetic y se lo comería. */
+    --hs-cta-lift: 10px;
     position: absolute;
-    inset: 0 -50%;
+    inset: 0 -50% calc(var(--hs-cta-lift) * 2);
     margin: auto;
     width: fit-content;
     height: fit-content;
@@ -6456,10 +6464,29 @@ html.is-loading body {
     position: relative;
     z-index: 20;
 }
+/* Race: stage con FORMA ESTABLE (2026-08-04). Scope por data-slug → no toca
+   elite/pro/bio/day-0/cloner, igual que el precedente de arriba.
+   El genérico crece en ancho por vw y en alto por vh con distinta pendiente,
+   así que a 1920 queda 620×680: MÁS ALTO QUE ANCHO. Y los bidones de Race son
+   más anchos que altos (el 10L visible mide 1.16:1), así que para llegar a su
+   altura necesitaba 685px de ancho y sólo había 620 → o se salía de los lados
+   o quedaba achatado por debajo del 5L. Ninguna escala lo arregla: falta lugar.
+   Atando el ancho al alto (AR 1.30) el stage siempre tiene el ancho que la
+   progresión necesita. El ALTO no se toca, y como los targets son fracción del
+   alto, el look aprobado a 1093px queda idéntico. */
+[data-slug="linea-race"] .pdd__formats-stage {
+    --pdd-race-h: clamp(480px, 68vh, 680px);
+    --pdd-race-ar: 1.30;
+    height: var(--pdd-race-h);
+    width: min(clamp(360px, 52vw, 900px), calc(var(--pdd-race-h) * var(--pdd-race-ar)));
+}
 /* Notebooks bajitas: con el stage a 68vh el título, la botella y la fila
    no entraban juntos y la botella pisaba los formatos. Un stage más bajo
    devuelve el aire sin tocar el look en monitores grandes. */
 @media (max-height: 780px) {
+    [data-slug="linea-race"] .pdd__formats-stage {
+        --pdd-race-h: clamp(380px, 56vh, 540px);
+    }
     .pdd__formats-stage {
         height: clamp(380px, 56vh, 540px);
         /* Con el stage achicado, el 1.22 hacía que hasta un render bien

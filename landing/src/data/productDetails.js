@@ -320,13 +320,40 @@ export const productDetails = {
         // render que usa el shop por medida (shopImageSet.js): tarro de costado
         // para 250/500/1L, bidón -f1 para 5/10/20L. Race 1 verde como
         // representativo; sublabel "Las 5 fórmulas" (son 5 sistemas).
+        // ── Tamaño de los renders del selector — calibrado por MEDICION
+        //    (2026-08-04), no a ojo. Lee esto antes de tocar un número.
+        //
+        // El problema: `imgScale` escala la CAJA del <img>, pero lo que el ojo
+        // ve es el producto OPACO adentro del archivo. Y eso varía muchísimo:
+        // la caja opaca va del 57% al 88% del ancho, y las relaciones de
+        // aspecto naturales van de apaisada (1448×1086) a vertical (1086×1448).
+        // Con object-fit:contain, una misma escala da tamaños visibles muy
+        // distintos → antes el 20L era el MAS CHICO de los seis (208px de alto
+        // real) y el 10L el mas grande (318px), al reves de la realidad.
+        //
+        // Peor: el stage cambia de FORMA con el viewport (ancho por vw, alto
+        // por vh, con distinta pendiente), así que pasa de apaisado en notebook
+        // a vertical en monitor grande. Cuando cambia de forma, `contain`
+        // cambia de dimension ligante y se invierte que imagenes crecen: a 1920
+        // la botella de 1L se veia 35% MAS GRANDE que el bidon de 10L.
+        // Ninguna escala fija por formato puede sobrevivir a eso.
+        //
+        // La solucion: `imgTarget` = alto del producto VISIBLE como fraccion
+        // del alto del stage. product-detail.js despeja la escala en runtime
+        // desde el tamaño natural + la caja alpha, así el resultado es el mismo
+        // en toda pantalla. `imgAlphaW/H` = fraccion opaca del archivo (medida
+        // por canvas; si se cambia un render, hay que volver a medirla con
+        // scratchpad/medir.js). `imgScale` queda solo como fallback sin JS.
+        //
+        // Los imgTarget salen de la progresion aprobada por el cliente a
+        // 1093px: 233 < 254 < 268 < 290 < 303 < 320 px de alto visible.
         formats: [
-            { name: "250 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp",        imgScale: 0.75 },
-            { name: "500 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp", imgScale: 0.75 },
-            { name: "1 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp",        imgScale: 0.75 },
-            { name: "5 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp",          imgScale: 0.85 },
-            { name: "10 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/10l/race-1-verde-10l-f1.webp",        imgScale: 0.85 },
-            { name: "20 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp",        imgScale: 0.6 },
+            { name: "250 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/250ml/race-1-verde-tarro.webp",        imgScale: 0.62, imgAlphaW: 0.87, imgAlphaH: 0.92, imgTarget: 0.549 },
+            { name: "500 ML", size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/500ml/race-1-verde-tarro-500ml.webp", imgScale: 0.75, imgAlphaW: 0.57, imgAlphaH: 0.83, imgTarget: 0.596 },
+            { name: "1 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/1l/race-1-verde-tarro-1l.webp",        imgScale: 0.73, imgAlphaW: 0.66, imgAlphaH: 0.90, imgTarget: 0.630 },
+            { name: "5 L",    size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/5l/race-1-verde-5l-f1.webp",          imgScale: 0.79, imgAlphaW: 0.75, imgAlphaH: 0.90, imgTarget: 0.682 },
+            { name: "10 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/10l/race-1-verde-10l-f1.webp",        imgScale: 0.81, imgAlphaW: 0.80, imgAlphaH: 0.92, imgTarget: 0.712 },
+            { name: "20 L",   size: "Las 5 fórmulas", color: "#3DA86E", image: "/imagenes-web/productos/linea-race/20l/race-1-verde-20l-f1.webp",        imgScale: 0.95, imgAlphaW: 0.88, imgAlphaH: 0.85, imgTarget: 0.775 },
         ],
         system: {
             title: "El motor del catálogo.",

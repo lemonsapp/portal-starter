@@ -419,6 +419,9 @@ const showCtas = !!(d.hero?.ctaPrimary || d.hero?.ctaSecondary);
                             src={f.image}
                             alt={f.name}
                             loading="lazy"
+                            data-img-target={f.imgTarget}
+                            data-img-alpha-w={f.imgAlphaW}
+                            data-img-alpha-h={f.imgAlphaH}
                             style={f.imgScale ? `transform: scale(${f.imgScale}); transform-origin: center;` : undefined}
                         />
                     </div>
