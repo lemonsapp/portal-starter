@@ -1,0 +1,25 @@
+# Fin de línea — normalizado el 2026-08-04.
+#
+# Por qué existe este archivo: el repo estaba 265 archivos en LF contra 3 en
+# CRLF, y esa mezcla hace que un mismo cambio de 19 líneas aparezca como un
+# diff de 869 según con qué editor se guarde. Con `text=auto` git guarda
+# siempre LF adentro del repo y entrega el fin de línea nativo al hacer
+# checkout: en Windows seguís viendo CRLF, pero el historial deja de ensuciarse.
+* text=auto
+
+# Estos DEBEN quedar en LF también en el disco: corren en Linux (Vercel los
+# ejecuta en el build). Un .sh con CRLF falla con "bad interpreter: \r".
+*.sh text eol=lf
+
+# Binarios: que git no los toque nunca.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.zip binary
