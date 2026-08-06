@@ -714,7 +714,21 @@ export default function ProfilePage() {
 
         /* ─── MOBILE FIXES ProfilePage ─── */
         @media(max-width:768px){
-          .pf-shell{padding:14px 10px 80px!important}
+          /* Guarda dura contra el desborde lateral: en la captura del cliente
+             (2026-08-06) la fila de stats empujaba la página a lo ancho y
+             quedaba media pantalla cortada. */
+          .pf-shell{padding:14px 10px 80px!important;overflow-x:clip}
+          .pf-stats{grid-template-columns:repeat(2,1fr)!important}
+          .pf-stat-card{padding:14px 12px!important;border-right:none!important}
+          .pf-stat-card:nth-child(odd){border-right:1px solid rgba(255,255,255,.05)!important}
+          .pf-stat-card:nth-child(n+3){border-top:1px solid rgba(255,255,255,.05)}
+          .pf-stat-num{font-size:26px!important}
+          .pf-stat-lbl{font-size:8px!important;letter-spacing:1px!important;line-height:1.3}
+          .pf-two-col{grid-template-columns:1fr!important;gap:16px!important}
+          /* Animaciones infinitas que repintan áreas grandes (box-shadow y
+             background-position): en el celu comían frames sin aportar nada.
+             En escritorio siguen. */
+          .pf-anim-heavy{animation:none!important}
           .pf-grid{grid-template-columns:1fr!important;gap:14px!important}
           .pf-banner{height:170px!important}
           .pf-banner-eyebrow{top:14px!important;left:14px!important}
@@ -732,9 +746,14 @@ export default function ProfilePage() {
           .pf-tabs{grid-template-columns:repeat(4,1fr)!important;font-size:10px!important}
           .pf-tabs button{padding:10px 4px!important;font-size:9px!important;letter-spacing:1px!important}
           .pf-panel{padding:18px 14px!important;border-radius:0 0 18px 18px!important}
-          .pf-dock{position:static!important;width:100%!important;flex-direction:row!important;flex-wrap:wrap!important;gap:6px!important;top:0!important}
+          /* El dock era flex 33% con nowrap+overflow:hidden y comía las
+             etiquetas ("LOGROS & CO…", "PERSONALIZA…"). Ahora es grilla de 2
+             columnas y el texto puede cortar en dos líneas. */
+          .pf-dock{position:static!important;width:100%!important;display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:8px!important;top:0!important}
           .pf-dock-toggle{display:none!important}
-          .pf-dock-item{flex:1 1 calc(33% - 6px)!important;min-width:96px!important}
+          .pf-dock-item{min-width:0!important}
+          .pf-dock-inner{white-space:normal!important;padding:11px 12px!important;gap:9px!important}
+          .pf-dock-label{font-size:9px!important;letter-spacing:.8px!important;line-height:1.25!important;overflow-wrap:anywhere}
           .pf-dock-item span:nth-child(2),.pf-dock-item span:nth-child(3){opacity:1!important;transform:none!important}
         }
         @media(max-width:420px){
@@ -756,14 +775,14 @@ export default function ProfilePage() {
               {profile?.profile?.banner_effect&&profile.profile.banner_effect!=="none"?(
                 <BannerCanvas effect={profile.profile.banner_effect} color1={profile.profile.banner_color1||"var(--brand-primary)"} color2={profile.profile.banner_color2||"var(--brand-accent)"} height={300}/>
               ):(
-                <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,#040110,#0a0820,#120605)",backgroundSize:"400% 400%",animation:"holographic 8s ease infinite"}}>
+                <div className="pf-anim-heavy" style={{position:"absolute",inset:0,background:"linear-gradient(135deg,#040110,#0a0820,#120605)",backgroundSize:"400% 400%",animation:"holographic 8s ease infinite"}}>
                   <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 30% 50%,var(--brand-primary)18 0%,transparent 60%)"}}/>
                   <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 70% 30%,#8b5cf618 0%,transparent 60%)"}}/>
                   <img src="/icons/icon.svg" alt="" style={{position:"absolute",right:-30,top:-30,width:340,height:340,opacity:.04,filter:"invert(1)",pointerEvents:"none",userSelect:"none"}}/>
                 </div>
               )}
               {/* Editorial bar top */}
-              <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--brand-primary),var(--brand-accent),var(--brand-primary))",backgroundSize:"200% 100%",animation:"borderSpin 4s linear infinite",zIndex:3}}/>
+              <div className="pf-anim-heavy" style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,var(--brand-primary),var(--brand-accent),var(--brand-primary))",backgroundSize:"200% 100%",animation:"borderSpin 4s linear infinite",zIndex:3}}/>
               {/* Grid sutil */}
               <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-primary-rgb),.018) 1px,transparent 1px)",backgroundSize:"56px 56px",pointerEvents:"none",zIndex:1}}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(3,4,12,.4) 0%,transparent 30%,rgba(3,4,12,.4) 60%,rgba(3,4,12,.98) 100%)",zIndex:2}}/>
@@ -889,8 +908,8 @@ export default function ProfilePage() {
 
               <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
                 {/* Coins card premium */}
-                <div style={{display:"inline-flex",alignItems:"center",gap:10,padding:"10px 16px",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.1),rgba(var(--brand-accent-rgb),.05))",border:"1px solid rgba(var(--brand-primary-rgb),.25)",position:"relative",overflow:"hidden",animation:"glowPulse 4s ease-in-out infinite"}}>
-                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,rgba(var(--brand-primary-rgb),.15),transparent)",backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",pointerEvents:"none"}}/>
+                <div style={{display:"inline-flex",alignItems:"center",gap:10,padding:"10px 16px",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.1),rgba(var(--brand-accent-rgb),.05))",border:"1px solid rgba(var(--brand-primary-rgb),.25)",position:"relative",overflow:"hidden",animation:"glowPulse 4s ease-in-out infinite"}} className="pf-anim-heavy">
+                  <div className="pf-anim-heavy" style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,rgba(var(--brand-primary-rgb),.15),transparent)",backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",pointerEvents:"none"}}/>
                   <span style={{fontSize:20,filter:"drop-shadow(0 0 8px rgba(var(--brand-primary-rgb),.5))",position:"relative",zIndex:1}}><CoinIcon size={20} /></span>
                   <div style={{position:"relative",zIndex:1}}>
                     <div style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(var(--brand-primary-rgb),.5)",lineHeight:1}}>Coins</div>
@@ -929,7 +948,7 @@ export default function ProfilePage() {
             </div>
 
             {/* STATS PREMIUM */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderTop:"1px solid rgba(255,255,255,.05)",borderBottom:"1px solid rgba(255,255,255,.05)",background:"linear-gradient(180deg,rgba(var(--brand-primary-rgb),.018),transparent)"}}>
+            <div className="pf-stats" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",borderTop:"1px solid rgba(255,255,255,.05)",borderBottom:"1px solid rgba(255,255,255,.05)",background:"linear-gradient(180deg,rgba(var(--brand-primary-rgb),.018),transparent)"}}>
               {[
                 // Sprint 11: stats sociales reales (privacy.envios reusado para
                 // posts/likes/friends; el flag es generico "actividad publica").
@@ -937,14 +956,17 @@ export default function ProfilePage() {
                 {ico:"❤️",lbl:"Likes recibidos",v:String(stats.likes||0),         c:"#ef4444", hide:privacyLoaded&&!privacy.envios},
                 {ico:"👥",lbl:"Amigos",        v:String(stats.friends||0),       c:"#60a5fa", hide:privacyLoaded&&!privacy.envios},
                 {ico:<CoinIcon size={18} />,lbl:"Coins ganados", v:coinsTotal.toLocaleString(),    c:"var(--brand-primary)", hide:privacyLoaded&&!privacy.coins},
+              // minWidth:0 en la tarjeta es obligatorio: sin eso el track del
+              // grid se agranda con el contenido (los números largos de "Coins
+              // ganados") y la fila entera desborda la pantalla en el celu.
               ].map((s,i)=>(
-                <div key={i} className="pf-stat-card" style={{padding:"22px 22px",borderRight:i<3?"1px solid rgba(255,255,255,.05)":"none",cursor:"pointer",position:"relative",overflow:"hidden",transition:"all .35s",animation:`slideUp .55s cubic-bezier(.2,.8,.2,1) ${i*70}ms both`}} onMouseEnter={e=>!s.hide&&(e.currentTarget.style.background=`${s.c}06`)} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                <div key={i} className="pf-stat-card" style={{padding:"22px 22px",minWidth:0,borderRight:i<3?"1px solid rgba(255,255,255,.05)":"none",cursor:"pointer",position:"relative",overflow:"hidden",transition:"all .35s",animation:`slideUp .55s cubic-bezier(.2,.8,.2,1) ${i*70}ms both`}} onMouseEnter={e=>!s.hide&&(e.currentTarget.style.background=`${s.c}06`)} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                   <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,${s.c},transparent)`,opacity:.4}}/>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                    <span style={{fontSize:18,filter:`drop-shadow(0 0 8px ${s.c}66)`,opacity:s.hide?.3:1}}>{s.ico}</span>
-                    <div style={{fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{s.lbl}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,minWidth:0}}>
+                    <span style={{fontSize:18,flexShrink:0,filter:`drop-shadow(0 0 8px ${s.c}66)`,opacity:s.hide?.3:1}}>{s.ico}</span>
+                    <div className="pf-stat-lbl" style={{fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.4)",minWidth:0,overflowWrap:"anywhere"}}>{s.lbl}</div>
                   </div>
-                  <div style={{fontFamily:"'Gotham', sans-serif",fontSize:36,letterSpacing:"1px",color:s.hide?"rgba(255,255,255,.12)":s.c,lineHeight:1,filter:s.hide?"blur(8px)":"none",transition:"filter .3s",textShadow:s.hide?"none":`0 0 20px ${s.c}33`}}>{s.v}</div>
+                  <div className="pf-stat-num" style={{fontFamily:"'Gotham', sans-serif",fontSize:36,letterSpacing:"1px",color:s.hide?"rgba(255,255,255,.12)":s.c,lineHeight:1,overflowWrap:"anywhere",filter:s.hide?"blur(8px)":"none",transition:"filter .3s",textShadow:s.hide?"none":`0 0 20px ${s.c}33`}}>{s.v}</div>
                   {s.hide&&<div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(3,4,12,.55)",backdropFilter:"blur(2px)"}}><span style={{fontSize:18}}>🔒</span><span style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",color:"rgba(255,255,255,.35)",textTransform:"uppercase"}}>Privado</span></div>}
                 </div>
               ))}
@@ -980,14 +1002,34 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {panel==="perfil"&&(
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
+              {panel==="perfil"&&(() => {
+                // El panel mostraba los títulos ("Avatar") aunque no hubiera un
+                // solo item comprado: quedaba un hueco negro de 400px que se
+                // leía como pantalla rota (captura de Lemon, 2026-08-06).
+                // Ahora: sección que no tiene items no se dibuja, y si no hay
+                // NADA equipable se explica por qué y adónde ir.
+                const misAvatares = allItems.filter(i=>i.type==="avatar"&&owned.includes(i.key));
+                const hayOtros = ["frame","title","badge"].some(t=>allItems.some(i=>i.type===t&&owned.includes(i.key)));
+                if (!misAvatares.length && !hayOtros) return (
+                  <div style={{padding:"36px 20px",textAlign:"center"}}>
+                    <div style={{fontSize:40,marginBottom:12,opacity:.55}}>🎨</div>
+                    <div style={{fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:17,color:"#fff",marginBottom:8}}>Todavía no tenés nada para equipar</div>
+                    <div style={{fontSize:13,color:"rgba(255,255,255,.45)",lineHeight:1.6,maxWidth:380,margin:"0 auto 18px"}}>
+                      Los avatares, marcos, títulos e insignias se consiguen en la Tienda. Cuando tengas alguno, lo vas a poder equipar desde acá.
+                    </div>
+                    {isOwn&&<button onClick={()=>setPanel("tienda")} style={{height:40,padding:"0 24px",border:"none",borderRadius:12,background:"linear-gradient(135deg,var(--brand-primary),var(--brand-accent))",color:"#000",fontWeight:900,fontSize:12,letterSpacing:"1.5px",textTransform:"uppercase",cursor:"pointer"}}>Ir a la tienda</button>}
+                  </div>
+                );
+                return (
+                <div className="pf-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
+                  {misAvatares.length>0&&(
                   <div>
                     <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:10}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>Avatar</div>
                     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:22}}>
-                      {allItems.filter(i=>i.type==="avatar"&&owned.includes(i.key)).map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={equip.avatar_key===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
+                      {misAvatares.map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={equip.avatar_key===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                     </div>
                   </div>
+                  )}
                   <div>
                     {["frame","title","badge"].map(type=>{
                       const its=allItems.filter(i=>i.type===type&&owned.includes(i.key)); if(!its.length)return null;
@@ -1000,7 +1042,8 @@ export default function ProfilePage() {
                     })}
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {panel==="logros"&&(
                 <div>
@@ -1041,7 +1084,7 @@ export default function ProfilePage() {
                     })}
                   </div>
                   {subPanel==="perfil"&&(
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
+                    <div className="pf-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
                       <div>
                         <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:10}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>Avatar</div>
                         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:22}}>
@@ -1199,9 +1242,9 @@ export default function ProfilePage() {
                 onMouseEnter={e=>{if(panel!==item.id){e.currentTarget.style.background="rgba(var(--brand-primary-rgb),.05)";e.currentTarget.style.borderColor="rgba(var(--brand-primary-rgb),.15)";}}} onMouseLeave={e=>{if(panel!==item.id){e.currentTarget.style.background="rgba(255,255,255,.04)";e.currentTarget.style.borderColor="rgba(255,255,255,.07)";}}}
               >
                 {panel===item.id&&<div style={{position:"absolute",left:0,top:0,bottom:0,width:3,background:"linear-gradient(180deg,var(--brand-primary),var(--brand-primary))",borderRadius:"0 2px 2px 0"}}/>}
-                <div style={{display:"flex",alignItems:"center",gap:12,padding:13,minHeight:48,whiteSpace:"nowrap",overflow:"hidden"}}>
+                <div className="pf-dock-inner" style={{display:"flex",alignItems:"center",gap:12,padding:13,minHeight:48,whiteSpace:"nowrap",overflow:"hidden"}}>
                   <span style={{fontSize:18,flexShrink:0,width:22,textAlign:"center",filter:panel===item.id?"drop-shadow(0 0 6px var(--brand-primary))":undefined}}>{item.icon}</span>
-                  <span style={{fontSize:10,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",color:panel===item.id?"var(--brand-primary)":"rgba(255,255,255,.45)",opacity:dockOpen?1:0,transform:dockOpen?"translateX(0)":"translateX(-8px)",transition:"all .25s",pointerEvents:"none",flex:1}}>{item.label}</span>
+                  <span className="pf-dock-label" style={{fontSize:10,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",color:panel===item.id?"var(--brand-primary)":"rgba(255,255,255,.45)",opacity:dockOpen?1:0,transform:dockOpen?"translateX(0)":"translateX(-8px)",transition:"all .25s",pointerEvents:"none",flex:1,minWidth:0}}>{item.label}</span>
                   {item.badge&&dockOpen&&<span style={{fontSize:9,fontWeight:900,background:"rgba(var(--brand-primary-rgb),.15)",border:"1px solid rgba(var(--brand-primary-rgb),.25)",borderRadius:100,padding:"1px 7px",color:"var(--brand-primary)",flexShrink:0,opacity:dockOpen?1:0,transition:"all .25s .1s"}}>{item.badge}</span>}
                 </div>
               </Pop>

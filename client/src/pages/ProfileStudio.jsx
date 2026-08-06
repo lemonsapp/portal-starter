@@ -33,7 +33,21 @@ export function BannerCanvas({ effect, color1, color2, height=120 }) {
     resize();
     const ro = new ResizeObserver(resize);
     if (canvas.parentElement) ro.observe(canvas.parentElement);
-    const count = effect==="none"?0:60;
+
+    // ── Costo del banner (2026-08-06) ──────────────────────────────────────
+    // Este canvas corría 60 partículas a 60 fps SIEMPRE: fuera de pantalla, con
+    // la pestaña en segundo plano y en cualquier teléfono. Varios efectos
+    // (aurora, pulse) pintan un gradiente del tamaño del canvas POR PARTÍCULA,
+    // o sea 60 rellenos de pantalla completa por frame. Era la causa principal
+    // de que el perfil se trabara en el celu (reporte de Lemon con captura).
+    // Tres frenos, ninguno cambia el aspecto en escritorio:
+    //   1. menos partículas y 30 fps en pantallas chicas,
+    //   2. se pausa cuando el banner no está visible o la pestaña está oculta,
+    //   3. con "reduzca el movimiento" activado dibuja un solo cuadro fijo.
+    const chico   = typeof window!=="undefined" && window.matchMedia("(max-width:768px)").matches;
+    const quieto  = typeof window!=="undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const minFrameMs = chico ? 1000/30 : 0;
+    const count = effect==="none" ? 0 : (chico ? 26 : 60);
     psRef.current = Array.from({length:count},()=>({
       x:Math.random()*(canvas.width||500), y:Math.random()*height,
       vx:(Math.random()-.5)*1.2,
@@ -84,10 +98,36 @@ export function BannerCanvas({ effect, color1, color2, height=120 }) {
         else if(effect==="vortex"){const angle=p.angle;const r=20+i*2;const x=w/2+Math.cos(angle+t*.008)*r,y=h/2+Math.sin(angle+t*.008)*r*.5;ctx.fillStyle=color1;ctx.shadowColor=color1;ctx.shadowBlur=4;ctx.beginPath();ctx.arc(x,y,1.5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
         ctx.globalAlpha=1;
       });
-      animRef.current=requestAnimationFrame(draw);
     }
-    draw();
-    return ()=>{if(animRef.current)cancelAnimationFrame(animRef.current);ro.disconnect();};
+
+    // Bucle con freno de fps y pausa por visibilidad.
+    let ultimo = 0, visible = true;
+    function frame(ts) {
+      animRef.current = requestAnimationFrame(frame);
+      if (!visible || document.hidden) return;
+      if (minFrameMs && ts - ultimo < minFrameMs) return;
+      ultimo = ts;
+      draw();
+    }
+
+    if (quieto) {
+      draw();  // un cuadro y nada más
+      return ()=>{ ro.disconnect(); };
+    }
+
+    // IntersectionObserver: scrolleaste y el banner salió de pantalla → no se
+    // dibuja. Es el caso normal mientras se usa el resto del perfil.
+    const io = new IntersectionObserver(([e])=>{ visible = e.isIntersecting; }, { threshold:0 });
+    io.observe(canvas);
+    const onVis = ()=>{ if(!document.hidden) ultimo = 0; };
+    document.addEventListener("visibilitychange", onVis);
+
+    animRef.current = requestAnimationFrame(frame);
+    return ()=>{
+      if(animRef.current)cancelAnimationFrame(animRef.current);
+      ro.disconnect(); io.disconnect();
+      document.removeEventListener("visibilitychange", onVis);
+    };
   },[effect,color1,color2,height]);
   return <canvas ref={canvasRef} style={{width:"100%",height:height+"px",display:"block",borderRadius:10}}/>;
 }
