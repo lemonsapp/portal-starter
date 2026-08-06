@@ -665,9 +665,112 @@ function Ranking() {
   );
 }
 
+// ── SELECTOR DE DESTINATARIO ───────────────────────────────────────────────────
+// 2026-08-06: antes Regalar pedía el "número de cliente" escrito a mano y no
+// había ningún lado de donde sacarlo — el usuario no tiene la lista de clientes.
+// Ahora se elige de la gente del portal (GET /profile/directory), buscando por
+// nombre, @usuario, apodo o #número. Escribir el número sigue funcionando: la
+// búsqueda también matchea contra client_number.
+function RecipientPicker({ value, onChange }) {
+  const [q, setQ] = useState("");
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
+
+  // Búsqueda contra el server con debounce: el portal puede tener más gente que
+  // el límite de la lista inicial, así que filtrar en el cliente no alcanza.
+  useEffect(() => {
+    let alive = true;
+    const t = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const url = `${API}/profile/directory?limit=50${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+        const d = await (await fetch(url, { headers: hdrs() })).json();
+        if (alive && d.ok) setList(d.users);
+      } catch { /* si falla la búsqueda dejamos la lista anterior, no rompemos el form */ }
+      if (alive) setLoading(false);
+    }, q ? 250 : 0);
+    return () => { alive = false; clearTimeout(t); };
+  }, [q]);
+
+  // Cerrar la lista al clickear afuera.
+  useEffect(() => {
+    const onDoc = e => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const label = (
+    <label style={{ color:"var(--brand-primary)",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>Para quién</label>
+  );
+
+  if (value) {
+    const ns = buildNameStyle(value);
+    return (
+      <div>
+        {label}
+        <div style={{ display:"flex",alignItems:"center",gap:14,background:"rgba(var(--brand-primary-rgb),0.06)",border:"2px solid rgba(var(--brand-primary-rgb),0.35)",borderRadius:14,padding:"12px 16px" }}>
+          <Avatar u={value} size={40} />
+          <div style={{ flex:1,minWidth:0 }}>
+            <div style={{ fontWeight:900,fontSize:16,...ns,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>{value.name}</div>
+            <div style={{ color:"rgba(237,233,224,.6)",fontSize:12 }}>
+              {value.username ? `@${value.username} · ` : ""}#{value.client_number}
+            </div>
+          </div>
+          <Pop as="button" onClick={()=>{ onChange(null); setQ(""); setOpen(true); }}
+            style={{ background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"8px 14px",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:800,flexShrink:0 }}>
+            Cambiar
+          </Pop>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={boxRef} style={{ position:"relative" }}>
+      {label}
+      <input value={q} onChange={e=>{ setQ(e.target.value); setOpen(true); }} onFocus={e=>{ setOpen(true); e.target.style.borderColor="var(--brand-primary)"; e.target.style.boxShadow="0 0 20px var(--brand-primary)22"; }}
+        placeholder="Buscá por nombre, @usuario o número"
+        style={{ width:"100%",background:"rgba(255,255,255,0.04)",border:"2px solid rgba(255,255,255,0.08)",borderRadius:14,color:"#fff",fontSize:16,padding:"15px 18px",outline:"none",boxSizing:"border-box",transition:"all .2s" }}
+        onBlur={e=>{ e.target.style.borderColor="rgba(255,255,255,0.08)"; e.target.style.boxShadow="none"; }} />
+
+      {open && (
+        <div style={{ position:"absolute",zIndex:30,top:"100%",left:0,right:0,marginTop:8,maxHeight:280,overflowY:"auto",background:"rgba(10,10,10,0.98)",border:"1px solid rgba(var(--brand-primary-rgb),0.25)",borderRadius:14,boxShadow:"0 18px 50px rgba(0,0,0,.6)" }}>
+          {loading && list.length===0 && (
+            <div style={{ padding:"16px 18px",color:"rgba(237,233,224,.5)",fontSize:13 }}>Buscando…</div>
+          )}
+          {!loading && list.length===0 && (
+            <div style={{ padding:"16px 18px",color:"rgba(237,233,224,.5)",fontSize:13 }}>
+              {q ? "Nadie con ese nombre o número." : "Todavía no hay a quién regalarle."}
+            </div>
+          )}
+          {list.map(u => {
+            const ns = buildNameStyle(u);
+            return (
+              <div key={u.id} onClick={()=>{ onChange(u); setOpen(false); }}
+                style={{ display:"flex",alignItems:"center",gap:12,padding:"10px 14px",cursor:"pointer",transition:"background .15s" }}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(var(--brand-primary-rgb),0.10)"}
+                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                <Avatar u={u} size={34} />
+                <div style={{ flex:1,minWidth:0 }}>
+                  <div style={{ fontWeight:800,fontSize:14,...ns,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>{u.name}</div>
+                  <div style={{ color:"rgba(237,233,224,.5)",fontSize:11 }}>
+                    {u.username ? `@${u.username} · ` : ""}#{u.client_number}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── GIFTING ─────────────────────────────────────────────────────────────────────
 function Gift({ balance, onGift }) {
-  const [clientNum, setClientNum] = useState("");
+  const [to, setTo] = useState(null);   // usuario elegido en el picker
   const [amount, setAmount] = useState(50);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -675,19 +778,23 @@ function Gift({ balance, onGift }) {
   const quick = [10,25,50,100,250,500];
 
   const send = async () => {
-    if (!clientNum||amount<10) return;
+    if (!to||amount<10) return;
     setSending(true); setResult(null);
-    const r = await fetch(`${API}/profile/gift`,{method:"POST",headers:hdrs(),body:JSON.stringify({to_client_number:parseInt(clientNum),amount,message})});
+    const r = await fetch(`${API}/profile/gift`,{method:"POST",headers:hdrs(),body:JSON.stringify({to_client_number:to.client_number,amount,message})});
     const d = await r.json();
-    if (d.ok) { setResult({ok:true,text:d.message}); setClientNum(""); setMessage(""); onGift?.(amount); }
+    if (d.ok) { setResult({ok:true,text:d.message}); setTo(null); setMessage(""); onGift?.(amount); }
     else setResult({ok:false,text:d.error});
     setSending(false);
   };
 
   return (
     <div style={{ maxWidth:560,margin:"0 auto" }}>
-      <div style={{ background:"linear-gradient(145deg,rgba(var(--brand-primary-rgb),0.06),rgba(0,0,0,0.95))",border:"2px solid rgba(var(--brand-primary-rgb),0.2)",borderRadius:28,padding:"36px 32px",boxShadow:"0 0 80px rgba(var(--brand-primary-rgb),0.06)",position:"relative",overflow:"hidden" }}>
-        <div style={{ position:"absolute",top:-40,right:-40,fontSize:180,opacity:0.03,userSelect:"none",pointerEvents:"none" }}>🎁</div>
+      {/* La tarjeta NO puede tener overflow:hidden: recortaría el desplegable
+          del selector de destinatario. El recorte vive ahora en el adorno. */}
+      <div style={{ background:"linear-gradient(145deg,rgba(var(--brand-primary-rgb),0.06),rgba(0,0,0,0.95))",border:"2px solid rgba(var(--brand-primary-rgb),0.2)",borderRadius:28,padding:"36px 32px",boxShadow:"0 0 80px rgba(var(--brand-primary-rgb),0.06)",position:"relative" }}>
+        <div style={{ position:"absolute",inset:0,borderRadius:28,overflow:"hidden",userSelect:"none",pointerEvents:"none" }}>
+          <div style={{ position:"absolute",top:-40,right:-40,fontSize:180,opacity:0.03 }}>🎁</div>
+        </div>
         <div style={{ textAlign:"center",marginBottom:32 }}>
           <div style={{ fontSize:64,marginBottom:12,filter:"drop-shadow(0 0 20px var(--brand-primary)66)",display:"inline-block",animation:"wiggle 3s ease-in-out infinite" }}>🎁</div>
           <div style={{ fontWeight:900,fontSize:26,color:"#fff",marginBottom:6 }}>Regalar Puntos</div>
@@ -698,13 +805,7 @@ function Gift({ balance, onGift }) {
         {result && <div style={{ background:result.ok?"linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05))":"linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05))",border:`1px solid ${result.ok?"rgba(34,197,94,0.4)":"rgba(239,68,68,0.4)"}`,borderRadius:14,padding:"14px 20px",color:result.ok?"#22c55e":"#ef4444",fontSize:15,fontWeight:800,marginBottom:24,textAlign:"center",animation:"popInBounce 0.5s ease" }}>{result.text}</div>}
 
         <div style={{ display:"flex",flexDirection:"column",gap:20 }}>
-          <div>
-            <label style={{ color:"var(--brand-primary)",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>Numero de cliente</label>
-            <input value={clientNum} onChange={e=>setClientNum(e.target.value)} placeholder="Ej: 42" type="number" min="1"
-              style={{ width:"100%",background:"rgba(255,255,255,0.04)",border:"2px solid rgba(255,255,255,0.08)",borderRadius:14,color:"#fff",fontSize:18,padding:"15px 18px",outline:"none",boxSizing:"border-box",transition:"all .2s" }}
-              onFocus={e=>{e.target.style.borderColor="var(--brand-primary)";e.target.style.boxShadow="0 0 20px var(--brand-primary)22";}}
-              onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.08)";e.target.style.boxShadow="none";}} />
-          </div>
+          <RecipientPicker value={to} onChange={setTo} />
 
           <div>
             <label style={{ color:"var(--brand-primary)",fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",display:"block",marginBottom:10 }}>
@@ -734,9 +835,9 @@ function Gift({ balance, onGift }) {
               onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.08)";e.target.style.boxShadow="none";}}/>
           </div>
 
-          <Pop as="button" onClick={send} disabled={sending||!clientNum||amount>balance||amount<10}
+          <Pop as="button" onClick={send} disabled={sending||!to||amount>balance||amount<10}
             hoverScale={1.02}
-            style={{ background:(!sending&&clientNum&&amount<=balance&&amount>=10)?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent))":"rgba(255,255,255,0.04)",color:(!sending&&clientNum&&amount<=balance&&amount>=10)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&clientNum&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&clientNum&&amount<=balance)?"0 8px 40px var(--brand-primary)55":"none",letterSpacing:1 }}>
+            style={{ background:(!sending&&to&&amount<=balance&&amount>=10)?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent))":"rgba(255,255,255,0.04)",color:(!sending&&to&&amount<=balance&&amount>=10)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&to&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&to&&amount<=balance)?"0 8px 40px var(--brand-primary)55":"none",letterSpacing:1 }}>
             {sending?"Enviando...":<>🎁 Regalar {amount.toLocaleString()} <Coin size={16} /></>}
           </Pop>
         </div>

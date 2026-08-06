@@ -568,6 +568,47 @@ router.get("/ranking", async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── GET /profile/directory — quiénes existen, para elegir destinatario ────────
+// Nació para la pestaña Regalar (2026-08-06): antes pedía el número de cliente
+// escrito a mano y el usuario no tiene de dónde sacarlo. Devuelve sólo datos
+// que el portal ya muestra en público (nombre, @usuario, #número, avatar) —
+// nunca email ni teléfono. Sin `q` trae la lista completa hasta el límite,
+// ordenada por actividad reciente; con `q` busca por nombre, @usuario, nick,
+// #número o código de cliente.
+// OJO: tiene que quedar ANTES de router.get("/:id"), o esa ruta se la come.
+router.get("/directory", authRequired, async (req, res) => {
+  try {
+    const meId  = req.user.id;
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 200);
+    const q     = String(req.query.q || "").trim().replace(/^[#@]/, "");
+    // ILIKE con comodines: el patrón se escapa para que % y _ del usuario no
+    // se interpreten como comodines de SQL.
+    const like  = q ? `%${q.replace(/[\\%_]/g, m => "\\" + m)}%` : null;
+    const rows = await db.query(`
+      SELECT u.id, u.name, u.username, u.client_number, u.customer_code, u.role,
+             up.avatar_url, up.avatar_key, up.nickname, up.icon_slug,
+             up.name_color, up.name_glow, up.name_glow_color,
+             up.name_grad_from, up.name_grad_to
+        FROM users u
+        LEFT JOIN user_profiles up ON up.user_id = u.id
+       WHERE u.id <> $1
+         AND u.active = TRUE
+         AND u.role <> 'operator'
+         AND u.client_number IS NOT NULL
+         AND ($2::text IS NULL OR (
+              u.name              ILIKE $2 ESCAPE '\\'
+           OR u.username          ILIKE $2 ESCAPE '\\'
+           OR up.nickname         ILIKE $2 ESCAPE '\\'
+           OR u.customer_code     ILIKE $2 ESCAPE '\\'
+           OR u.client_number::text LIKE $2 ESCAPE '\\'
+         ))
+       ORDER BY u.last_seen_at DESC NULLS LAST, u.name ASC
+       LIMIT $3
+    `, [meId, like, limit]);
+    res.json({ ok: true, users: rows.rows });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── GET /profile/spin ─────────────────────────────────────────────────────────
 router.get("/spin", authRequired, async (req, res) => {
   try {
@@ -774,12 +815,16 @@ router.get("/streak", authRequired, async (req, res) => {
 router.post("/gift", authRequired, async (req, res) => {
   try {
     const fromId = req.user.id;
-    const { to_client_number, message } = req.body;
+    const { message } = req.body;
     // Validar monto: entero positivo, mínimo 10, con tope defensivo (evita floats/negativos/gigantes).
     const amount = Number(req.body.amount);
     if (!Number.isInteger(amount) || amount < 10 || amount > 1000000) return res.status(400).json({ error: "Monto inválido (mínimo 10 puntos)" });
+    // El número de cliente entra como entero sí o sí: un string suelto hacía
+    // explotar el WHERE con un 500 en vez de un "elegí a alguien" (2026-08-06).
+    const toClientNumber = Number(req.body.to_client_number);
+    if (!Number.isInteger(toClientNumber) || toClientNumber < 1) return res.status(400).json({ error: "Elegí a quién le querés regalar" });
     const giftMsg = message ? sanitizeText(String(message), 200) : null;
-    const toQ = await db.query(`SELECT id, name FROM users WHERE client_number=$1`, [to_client_number]);
+    const toQ = await db.query(`SELECT id, name FROM users WHERE client_number=$1`, [toClientNumber]);
     if (!toQ.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
     const toUser = toQ.rows[0];
     if (toUser.id === fromId) return res.status(400).json({ error: "No podés regalarte a vos mismo" });
