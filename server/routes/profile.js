@@ -812,7 +812,21 @@ router.get("/streak", authRequired, async (req, res) => {
 });
 
 // ── POST /profile/gift ────────────────────────────────────────────────────────
+// 2026-08-06 — este endpoint estaba roto de antes y lo encontró Lemon probando:
+//
+//   1. INSERT contra coin_gifts (from_user_id, to_user_id): esas columnas NO
+//      existen, se llaman from_user y to_user. El INSERT tiraba 500 SIEMPRE.
+//   2. Y como no había transacción, para cuando explotaba el INSERT ya se había
+//      debitado al que regala y acreditado al que recibe: los puntos se movían
+//      igual, el usuario veía "error", y el regalo no quedaba registrado.
+//      (Pasó de verdad: coin_transactions 107/108 del 06/08 sin fila en
+//      coin_gifts — 1 punto de Holistic a fasito420.)
+//   3. El motivo del que recibe decía "Gift de undefined": el JWT sólo lleva
+//      { id, role }, así que req.user.name no existe. El nombre sale de la DB.
+//
+// Ahora todo el movimiento va en UNA transacción: o pasa entero o no pasa nada.
 router.post("/gift", authRequired, async (req, res) => {
+  const cli = await db.connect();
   try {
     const fromId = req.user.id;
     const { message } = req.body;
@@ -825,19 +839,34 @@ router.post("/gift", authRequired, async (req, res) => {
     const toClientNumber = Number(req.body.to_client_number);
     if (!Number.isInteger(toClientNumber) || toClientNumber < 1) return res.status(400).json({ error: "Elegí a quién le querés regalar" });
     const giftMsg = message ? sanitizeText(String(message), 200) : null;
-    const toQ = await db.query(`SELECT id, name FROM users WHERE client_number=$1`, [toClientNumber]);
-    if (!toQ.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    await cli.query("BEGIN");
+
+    const toQ = await cli.query(`SELECT id, name FROM users WHERE client_number=$1`, [toClientNumber]);
+    if (!toQ.rows[0]) { await cli.query("ROLLBACK"); return res.status(404).json({ error: "Usuario no encontrado" }); }
     const toUser = toQ.rows[0];
-    if (toUser.id === fromId) return res.status(400).json({ error: "No podés regalarte a vos mismo" });
+    if (toUser.id === fromId) { await cli.query("ROLLBACK"); return res.status(400).json({ error: "No podés regalarte a vos mismo" }); }
+
+    // El nombre del que regala sale de la DB: el JWT no lo trae.
+    const fromQ = await cli.query(`SELECT name FROM users WHERE id=$1`, [fromId]);
+    const fromName = fromQ.rows[0]?.name || "alguien";
+
     // Cobro atómico con guard (evita doble gasto / balance negativo por concurrencia).
-    const debit = await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`, [amount, fromId]);
-    if (!debit.rows[0]) return res.status(400).json({ error: "Puntos insuficientes" });
-    await db.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);
-    await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`, [fromId, amount, 'Gift a ' + toUser.name]);
-    await db.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [toUser.id, amount, 'Gift de ' + req.user.name]);
-    await db.query(`INSERT INTO coin_gifts (from_user_id, to_user_id, amount, message) VALUES ($1,$2,$3,$4)`, [fromId, toUser.id, amount, giftMsg]);
+    const debit = await cli.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`, [amount, fromId]);
+    if (!debit.rows[0]) { await cli.query("ROLLBACK"); return res.status(400).json({ error: "Puntos insuficientes" }); }
+
+    await cli.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);
+    await cli.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`, [fromId, amount, 'Gift a ' + toUser.name]);
+    await cli.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [toUser.id, amount, 'Gift de ' + fromName]);
+    await cli.query(`INSERT INTO coin_gifts (from_user, to_user, amount, message) VALUES ($1,$2,$3,$4)`, [fromId, toUser.id, amount, giftMsg]);
+
+    await cli.query("COMMIT");
     res.json({ ok: true, message: '🎁 Regalaste ' + amount + ' puntos a ' + toUser.name });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    try { await cli.query("ROLLBACK"); } catch {}
+    console.error("[/profile/gift]", e.message);
+    res.status(500).json({ error: "No se pudo completar el regalo" });
+  } finally { cli.release(); }
 });
 
 
