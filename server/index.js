@@ -2600,11 +2600,18 @@ httpServer.listen(PORT, () => {
 // Servir frontend (path ya declarado al tope para dotenv)
 const distPath = path.join(__dirname, "../client/dist");
 // ── POSTS / FEED ─────────────────────────────────────────────────────────────
+// 2026-08-06 — publicar un post tiraba error y la tabla estaba en CERO filas:
+// nunca se pudo publicar. La tabla user_posts tiene la columna `content`, y el
+// INSERT escribía en `body` y `category`, que no existen (mismo tipo de bug que
+// el de coin_gifts encontrado el mismo día). El front habla de `body`, así que
+// la API traduce: escribe en content y devuelve el alias body.
+// `category` no existe en la tabla y hoy el front la manda siempre igual
+// ("Texto"), así que se ignora a propósito en vez de inventar una columna.
 app.get("/api/posts/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
     const { rows } = await db.query(`
-      SELECT p.*, u.name as author_name,
+      SELECT p.*, p.content AS body, u.name as author_name,
         (SELECT COUNT(*) FROM post_likes WHERE post_id=p.id) as likes,
         (SELECT COUNT(*) FROM post_comments WHERE post_id=p.id) as comments,
         (SELECT EXISTS(SELECT 1 FROM post_likes WHERE post_id=p.id AND user_id=$2)) as liked
@@ -2617,16 +2624,18 @@ app.get("/api/posts/:userId", async (req, res) => {
 
 app.post("/api/posts", authRequired, async (req, res) => {
   try {
-    const { body, category } = req.body;
+    const { body } = req.body;
     const safeBody = sanitizeText(body, 2000);
     if (!safeBody) return res.status(400).json({ error: "Cuerpo vacío" });
-    const safeCat = sanitizeText(category || "Texto", 30);
     const { rows } = await db.query(
-      `INSERT INTO user_posts(user_id,body,category) VALUES($1,$2,$3) RETURNING *`,
-      [req.user.id, safeBody, safeCat]
+      `INSERT INTO user_posts(user_id,content) VALUES($1,$2) RETURNING *, content AS body`,
+      [req.user.id, safeBody]
     );
     res.json({ ok: true, post: rows[0] });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    console.error("[POST /api/posts]", e.message);
+    res.status(500).json({ error: "No se pudo publicar" });
+  }
 });
 
 app.delete("/api/post/:id", authRequired, async (req, res) => {

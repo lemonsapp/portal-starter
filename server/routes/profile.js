@@ -855,7 +855,14 @@ router.post("/gift", authRequired, async (req, res) => {
     const debit = await cli.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`, [amount, fromId]);
     if (!debit.rows[0]) { await cli.query("ROLLBACK"); return res.status(400).json({ error: "Puntos insuficientes" }); }
 
-    await cli.query(`UPDATE coins SET balance=balance+$1, total_earned=total_earned+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);
+    // OJO: el regalo suma al SALDO pero NO a total_earned. Antes sumaba a los
+    // dos, y como el ranking y el nivel se ordenan por total_earned, dos cuentas
+    // pasándose los mismos puntos de ida y vuelta subían las dos sin gastar nada
+    // (comprobado en vivo el 2026-08-06: dos regalos de 5 puntos entre Holistic
+    // y Lemon dejaron los saldos igual y le sumaron +5 de "ganados" a cada uno).
+    // "Ganados" queda significando lo que generó cada uno: compras, ruleta,
+    // misiones, acreditaciones del admin.
+    await cli.query(`UPDATE coins SET balance=balance+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);
     await cli.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'spend',$2,$3)`, [fromId, amount, 'Gift a ' + toUser.name]);
     await cli.query(`INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'earn',$2,$3)`, [toUser.id, amount, 'Gift de ' + fromName]);
     await cli.query(`INSERT INTO coin_gifts (from_user, to_user, amount, message) VALUES ($1,$2,$3,$4)`, [fromId, toUser.id, amount, giftMsg]);
