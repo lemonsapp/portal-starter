@@ -795,7 +795,7 @@ function Gift({ balance, onGift }) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
-  // Mínimo 1 (pedido de Lemon 2026-08-06): antes el piso era 10 y no se podían
+  // Mínimo 1 (pedido del dueño 2026-08-06): antes el piso era 10 y no se podían
   // mandar regalos chicos. Los chips arrancan en 1 y 5.
   const quick = [1,5,10,25,50,100,250,500];
 

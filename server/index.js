@@ -583,8 +583,8 @@ function trackingHtml(trackingRaw) {
 
 
 
-// Acá vivía SHIPMENT STATUS AUTOMATION, heredado del portal courier de
-// Lemon's. Se borró el 2026-08-06: era código MUERTO e IMPOSIBLE de
+// Acá vivía SHIPMENT STATUS AUTOMATION, heredado del portal de origen del que
+// salió este repo. Se borró el 2026-08-06: era código MUERTO e IMPOSIBLE de
 // ejecutar — nadie llamaba a applyShipmentStatusChange, consultaba las
 // tablas shipments y shipment_events (que no existen en esta base) y
 // llamaba a sendShipmentStatusEmail y notifyShipmentStatusWhatsapp, dos
@@ -704,7 +704,7 @@ async function checkMissions(userId, eventType, extraData = {}) {
 
     // Acá había una rama para eventType 'shipment_delivered' (misiones por kg
     // enviados) que consultaba la tabla shipments, inexistente en este portal.
-    // Nadie emite ese evento: era código muerto de Lemon's. Borrado 2026-08-06.
+    // Nadie emite ese evento: era código muerto del portal de origen. Borrado 2026-08-06.
 
   } catch(e) {
     console.error('[MISSIONS CHECK ERROR]', e.message);
@@ -1141,7 +1141,7 @@ app.delete("/admin/invite-codes/:id", authRequired, requireRole(["admin"]), asyn
 // ── ETZ AI — datos completos del negocio ────────────────────────────────────
 
 // GET /public/stats se borro el 2026-08-06: contaba envios entregados de la
-// tabla shipments (courier de Lemon's), inexistente aca. El catch lo tapaba
+// tabla shipments (del portal de origen), inexistente aca. El catch lo tapaba
 // devolviendo {ok:false, delivered:0} para siempre. No lo llamaba nadie:
 // ni el portal ni el landing.
 
@@ -1987,7 +1987,7 @@ app.get("/users", authRequired, requireRole(["operator", "admin"]), async (req, 
 });
 
 // GET /operator/clients/all se borro el 2026-08-06: agrupaba por la tabla
-// shipments (courier de Lemon's), que no existe en esta base, asi que
+// shipments (del portal de origen), que no existe en esta base, asi que
 // devolvia 500 siempre. Ninguna pantalla del portal lo llamaba.
 
 // ── PATCH /operator/clients/:id — editar datos del cliente ──

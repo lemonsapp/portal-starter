@@ -500,8 +500,8 @@ router.get("/:userId", authRequired, async (req, res) => {
 
 // ── POST /coins/earn — otorgar coins manual ───────────────────────────────────
 
-// POST /coins/redeem se borro el 2026-08-06. Era el canje del courier de
-// Lemon's: insertaba en coin_redemptions columnas que NO existen
+// POST /coins/redeem se borro el 2026-08-06. Era el canje de envios del portal de origen,
+// del portal de origen: insertaba en coin_redemptions columnas que NO existen
 // (reward_key, coins_spent, shipment_id, notes) contra un esquema que solo
 // tiene (item_key, cost), asi que devolvia 500 siempre. El canje real de
 // este portal es POST /coins/redeem-points, que usa point_redemptions.

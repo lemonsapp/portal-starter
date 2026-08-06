@@ -1005,7 +1005,7 @@ export default function ProfilePage() {
               {panel==="perfil"&&(() => {
                 // El panel mostraba los títulos ("Avatar") aunque no hubiera un
                 // solo item comprado: quedaba un hueco negro de 400px que se
-                // leía como pantalla rota (captura de Lemon, 2026-08-06).
+                // leía como pantalla rota (captura del dueño, 2026-08-06).
                 // Ahora: sección que no tiene items no se dibuja, y si no hay
                 // NADA equipable se explica por qué y adónde ir.
                 const misAvatares = allItems.filter(i=>i.type==="avatar"&&owned.includes(i.key));

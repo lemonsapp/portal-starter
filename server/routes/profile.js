@@ -812,7 +812,7 @@ router.get("/streak", authRequired, async (req, res) => {
 });
 
 // ── POST /profile/gift ────────────────────────────────────────────────────────
-// 2026-08-06 — este endpoint estaba roto de antes y lo encontró Lemon probando:
+// 2026-08-06 — este endpoint estaba roto de antes y lo encontro el dueno probando:
 //
 //   1. INSERT contra coin_gifts (from_user_id, to_user_id): esas columnas NO
 //      existen, se llaman from_user y to_user. El INSERT tiraba 500 SIEMPRE.
@@ -831,7 +831,7 @@ router.post("/gift", authRequired, async (req, res) => {
     const fromId = req.user.id;
     const { message } = req.body;
     // Validar monto: entero positivo, mínimo 1 (bajado de 10 el 2026-08-06 a
-    // pedido de Lemon), con tope defensivo (evita floats/negativos/gigantes).
+    // pedido del dueno), con tope defensivo (evita floats/negativos/gigantes).
     const amount = Number(req.body.amount);
     if (!Number.isInteger(amount) || amount < 1 || amount > 1000000) return res.status(400).json({ error: "Monto inválido (mínimo 1 punto)" });
     // El número de cliente entra como entero sí o sí: un string suelto hacía
@@ -858,8 +858,8 @@ router.post("/gift", authRequired, async (req, res) => {
     // OJO: el regalo suma al SALDO pero NO a total_earned. Antes sumaba a los
     // dos, y como el ranking y el nivel se ordenan por total_earned, dos cuentas
     // pasándose los mismos puntos de ida y vuelta subían las dos sin gastar nada
-    // (comprobado en vivo el 2026-08-06: dos regalos de 5 puntos entre Holistic
-    // y Lemon dejaron los saldos igual y le sumaron +5 de "ganados" a cada uno).
+    // (comprobado en vivo el 2026-08-06: dos regalos de 5 puntos entre dos cuentas
+    // y otra cuenta dejaron los saldos igual y le sumaron +5 de "ganados" a cada uno).
     // "Ganados" queda significando lo que generó cada uno: compras, ruleta,
     // misiones, acreditaciones del admin.
     await cli.query(`UPDATE coins SET balance=balance+$1, updated_at=NOW() WHERE user_id=$2`, [amount, toUser.id]);

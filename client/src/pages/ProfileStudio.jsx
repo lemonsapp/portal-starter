@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useUser } from "../context/UserContext.jsx";
 // La moneda del portal va SIEMPRE como imagen, nunca como emoji: ese emoji lo
-// dibuja cada sistema con su propio set y en iPhone/Android sale GRIS (Lemon
+// dibuja cada sistema con su propio set y en iPhone/Android sale GRIS (el dueño
 // lo vio plateado aca, 2026-08-06). Detalle en lib/coin.js.
 import { CoinIcon } from "../lib/coin.js";
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -43,7 +43,7 @@ export function BannerCanvas({ effect, color1, color2, height=120 }) {
     // la pestaña en segundo plano y en cualquier teléfono. Varios efectos
     // (aurora, pulse) pintan un gradiente del tamaño del canvas POR PARTÍCULA,
     // o sea 60 rellenos de pantalla completa por frame. Era la causa principal
-    // de que el perfil se trabara en el celu (reporte de Lemon con captura).
+    // de que el perfil se trabara en el celu (reporte del dueño con captura).
     // Tres frenos, ninguno cambia el aspecto en escritorio:
     //   1. menos partículas y 30 fps en pantallas chicas,
     //   2. se pausa cuando el banner no está visible o la pestaña está oculta,
