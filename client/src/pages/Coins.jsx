@@ -676,6 +676,7 @@ function RecipientPicker({ value, onChange }) {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [failed, setFailed] = useState(false);
   const boxRef = useRef(null);
 
   // Búsqueda contra el server con debounce: el portal puede tener más gente que
@@ -687,8 +688,10 @@ function RecipientPicker({ value, onChange }) {
       try {
         const url = `${API}/profile/directory?limit=50${q ? `&q=${encodeURIComponent(q)}` : ""}`;
         const d = await (await fetch(url, { headers: hdrs() })).json();
-        if (alive && d.ok) setList(d.users);
-      } catch { /* si falla la búsqueda dejamos la lista anterior, no rompemos el form */ }
+        if (!alive) return;
+        if (d.ok) { setList(d.users); setFailed(false); }
+        else setFailed(true);
+      } catch { if (alive) setFailed(true); }
       if (alive) setLoading(false);
     }, q ? 250 : 0);
     return () => { alive = false; clearTimeout(t); };
@@ -737,10 +740,27 @@ function RecipientPicker({ value, onChange }) {
 
       {open && (
         <div style={{ position:"absolute",zIndex:30,top:"100%",left:0,right:0,marginTop:8,maxHeight:280,overflowY:"auto",background:"rgba(10,10,10,0.98)",border:"1px solid rgba(var(--brand-primary-rgb),0.25)",borderRadius:14,boxShadow:"0 18px 50px rgba(0,0,0,.6)" }}>
-          {loading && list.length===0 && (
+          {/* Si el directorio no responde (API caída, o corriendo una versión
+              anterior a este endpoint) el regalo NO puede quedar bloqueado:
+              se habilita escribir el número de cliente a mano, como antes. */}
+          {failed && (
+            <div style={{ padding:"12px 14px",color:"#fca5a5",fontSize:12,borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+              No pude traer la lista. Escribí el número de cliente y elegilo abajo.
+            </div>
+          )}
+          {failed && /^\d+$/.test(q) && (
+            <div onClick={()=>{ onChange({ client_number:Number(q), name:`Cliente #${q}` }); setOpen(false); }}
+              style={{ display:"flex",alignItems:"center",gap:12,padding:"12px 14px",cursor:"pointer" }}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(var(--brand-primary-rgb),0.10)"}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              <Avatar u={{}} size={34} />
+              <div style={{ fontWeight:800,fontSize:14,color:"#fff" }}>Regalarle al cliente #{q}</div>
+            </div>
+          )}
+          {loading && list.length===0 && !failed && (
             <div style={{ padding:"16px 18px",color:"rgba(237,233,224,.5)",fontSize:13 }}>Buscando…</div>
           )}
-          {!loading && list.length===0 && (
+          {!loading && !failed && list.length===0 && (
             <div style={{ padding:"16px 18px",color:"rgba(237,233,224,.5)",fontSize:13 }}>
               {q ? "Nadie con ese nombre o número." : "Todavía no hay a quién regalarle."}
             </div>
