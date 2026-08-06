@@ -795,10 +795,12 @@ function Gift({ balance, onGift }) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
-  const quick = [10,25,50,100,250,500];
+  // Mínimo 1 (pedido de Lemon 2026-08-06): antes el piso era 10 y no se podían
+  // mandar regalos chicos. Los chips arrancan en 1 y 5.
+  const quick = [1,5,10,25,50,100,250,500];
 
   const send = async () => {
-    if (!to||amount<10) return;
+    if (!to||amount<1) return;
     setSending(true); setResult(null);
     const r = await fetch(`${API}/profile/gift`,{method:"POST",headers:hdrs(),body:JSON.stringify({to_client_number:to.client_number,amount,message})});
     const d = await r.json();
@@ -841,7 +843,7 @@ function Gift({ balance, onGift }) {
             </div>
             <div style={{ background:"rgba(255,255,255,0.04)",border:"2px solid rgba(var(--brand-primary-rgb),0.2)",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12 }}>
               <span style={{ fontSize:26,display:"inline-flex" }}><Coin size={26} /></span>
-              <input type="number" value={amount} onChange={e=>setAmount(Math.max(10,Math.min(balance,parseInt(e.target.value)||10)))} min={10} max={balance}
+              <input type="number" value={amount} onChange={e=>setAmount(Math.max(1,Math.min(balance,parseInt(e.target.value)||1)))} min={1} max={balance}
                 style={{ flex:1,background:"none",border:"none",color:"var(--brand-primary)",fontSize:28,fontWeight:900,outline:"none" }}/>
               <span style={{ color:"rgba(237,233,224,.6)",fontSize:12 }}>puntos</span>
             </div>
@@ -855,9 +857,9 @@ function Gift({ balance, onGift }) {
               onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,0.08)";e.target.style.boxShadow="none";}}/>
           </div>
 
-          <Pop as="button" onClick={send} disabled={sending||!to||amount>balance||amount<10}
+          <Pop as="button" onClick={send} disabled={sending||!to||amount>balance||amount<1}
             hoverScale={1.02}
-            style={{ background:(!sending&&to&&amount<=balance&&amount>=10)?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent))":"rgba(255,255,255,0.04)",color:(!sending&&to&&amount<=balance&&amount>=10)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&to&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&to&&amount<=balance)?"0 8px 40px var(--brand-primary)55":"none",letterSpacing:1 }}>
+            style={{ background:(!sending&&to&&amount<=balance&&amount>=1)?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary),var(--brand-accent))":"rgba(255,255,255,0.04)",color:(!sending&&to&&amount<=balance&&amount>=1)?"#000":"#333",border:"none",borderRadius:16,padding:"18px",fontWeight:900,fontSize:18,cursor:(!sending&&to&&amount<=balance)?"pointer":"not-allowed",boxShadow:(!sending&&to&&amount<=balance)?"0 8px 40px var(--brand-primary)55":"none",letterSpacing:1 }}>
             {sending?"Enviando...":<>🎁 Regalar {amount.toLocaleString()} <Coin size={16} /></>}
           </Pop>
         </div>
@@ -890,7 +892,7 @@ function ComoFunciona({ code }) {
   ];
   const reglas = [
     "Los puntos no vencen: quedan en tu cuenta hasta que los canjees.",
-    "Podés regalarle puntos a otro cliente desde la pestaña Regalar (mínimo 10 por regalo).",
+    "Podés regalarle puntos a otro cliente desde la pestaña Regalar (mínimo 1 por regalo).",
     "Los descuentos no son acumulables con otras promociones y aplican sobre el subtotal (sin envío).",
     "Una vez canjeados, los puntos no se revierten: el canje es definitivo.",
     "El código de cliente es único y permanente — no cambia aunque actualices tus datos.",

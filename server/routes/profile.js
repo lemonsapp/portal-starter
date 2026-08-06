@@ -816,9 +816,10 @@ router.post("/gift", authRequired, async (req, res) => {
   try {
     const fromId = req.user.id;
     const { message } = req.body;
-    // Validar monto: entero positivo, mínimo 10, con tope defensivo (evita floats/negativos/gigantes).
+    // Validar monto: entero positivo, mínimo 1 (bajado de 10 el 2026-08-06 a
+    // pedido de Lemon), con tope defensivo (evita floats/negativos/gigantes).
     const amount = Number(req.body.amount);
-    if (!Number.isInteger(amount) || amount < 10 || amount > 1000000) return res.status(400).json({ error: "Monto inválido (mínimo 10 puntos)" });
+    if (!Number.isInteger(amount) || amount < 1 || amount > 1000000) return res.status(400).json({ error: "Monto inválido (mínimo 1 punto)" });
     // El número de cliente entra como entero sí o sí: un string suelto hacía
     // explotar el WHERE con un 500 en vez de un "elegí a alguien" (2026-08-06).
     const toClientNumber = Number(req.body.to_client_number);
