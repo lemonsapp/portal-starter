@@ -4,6 +4,7 @@
 // Tabs: Coins / Feed / Settings (re-abre el wizard por sección).
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { CoinIcon } from "../lib/coin.js";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { useBranding, useRules } from "../lib/branding.js";
@@ -290,7 +291,7 @@ function PuntosManualTab() {
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: 10, letterSpacing: 1, textTransform: "uppercase", color: "rgba(90,102,117,.4)" }}>Saldos</div>
               <div style={{ fontWeight: 900, fontSize: 18, color: "var(--brand-primary, #3B82F6)" }}>💎 {customer.balance} pts</div>
-              <div style={{ fontWeight: 900, fontSize: 18, color: "#f59e0b" }}>🪙 {customer.monedas_balance ?? 0} monedas</div>
+              <div style={{ fontWeight: 900, fontSize: 18, color: "#f59e0b", display: "flex", alignItems: "center", gap: 5 }}><CoinIcon size={16} /> {customer.monedas_balance ?? 0} monedas</div>
             </div>
           </div>
 
@@ -633,7 +634,7 @@ function CoinsTab() {
               <th style={styles.th}>Email</th>
               <th style={styles.th}>Role</th>
               <th style={styles.th}>💎 Puntos</th>
-              <th style={styles.th}>🪙 Monedas</th>
+              <th style={styles.th}><CoinIcon size={13} /> Monedas</th>
               <th style={styles.th}>Total ganado</th>
               <th style={styles.th}></th>
             </tr>
@@ -803,7 +804,7 @@ function CoinModal({ modal, onClose, onSuccess }) {
       <div style={styles.modalCard} onClick={e => e.stopPropagation()}>
         <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{action === "gift" ? "Regalar coins" : "Ajustar saldo"}</div>
         <div style={{ color: "rgba(90,102,117,.55)", fontSize: 13, marginBottom: 16 }}>
-          {user.name} · {user.email} · 💎 <b>{user.balance}</b> puntos · 🪙 <b>{user.monedas_balance ?? 0}</b> monedas
+          {user.name} · {user.email} · 💎 <b>{user.balance}</b> puntos · <CoinIcon size={13} /> <b>{user.monedas_balance ?? 0}</b> monedas
         </div>
 
         <label style={styles.label}>Moneda</label>

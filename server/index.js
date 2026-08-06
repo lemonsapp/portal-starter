@@ -25,6 +25,7 @@ const {
 const coinsRouter         = require("./routes/coins");         // ✅ Coins
 const notificationsRouter = require("./routes/notifications"); // ✅ Notificaciones in-app (broadcast)
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
+const { getSocialStats }  = require("./routes/profile");         // stats sociales compartidas
 const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
 const adminConfig        = require("./routes/admin-config");    // 🪄 Setup wizard endpoints
@@ -582,59 +583,12 @@ function trackingHtml(trackingRaw) {
 
 
 
-// ==================== SHIPMENT STATUS AUTOMATION + WA ====================
-
-async function getShipmentWithClientById(shipmentId) {
-  const q = await db.query(
-    `SELECT
-       s.*,
-       u.name AS client_name,
-       u.client_number,
-       u.email AS client_email,
-       u.phone AS client_phone
-     FROM shipments s
-     JOIN users u ON u.id = s.user_id
-     WHERE s.id = $1
-     LIMIT 1`,
-    [shipmentId]
-  );
-  return q.rows[0] || null;
-}
-
-
-
-
-
-
-
-async function applyShipmentStatusChange({ shipmentId, oldStatus, newStatus, source = "auto" }) {
-  const upd = await db.query(
-    `UPDATE shipments
-     SET status = $1,
-         updated_at = NOW(),
-         delivered_at = CASE WHEN $1='Entregado' THEN NOW() ELSE delivered_at END
-     WHERE id = $2 AND status = $3
-     RETURNING *`,
-    [newStatus, shipmentId, oldStatus]
-  );
-
-  if (!upd.rows[0]) return null;
-
-  await db.query(
-    `INSERT INTO shipment_events (shipment_id, old_status, new_status) VALUES ($1,$2,$3)`,
-    [shipmentId, oldStatus, newStatus]
-  );
-
-  const fresh = await getShipmentWithClientById(shipmentId);
-  if (fresh) {
-    await sendShipmentStatusEmail(fresh, oldStatus, newStatus);
-    await notifyShipmentStatusWhatsapp({ shipment: fresh, oldStatus, newStatus });
-  }
-
-  console.log(`[AUTO STATUS] shipment ${shipmentId}: ${oldStatus} -> ${newStatus} (${source})`);
-  return fresh;
-}
-
+// Acá vivía SHIPMENT STATUS AUTOMATION, heredado del portal courier de
+// Lemon's. Se borró el 2026-08-06: era código MUERTO e IMPOSIBLE de
+// ejecutar — nadie llamaba a applyShipmentStatusChange, consultaba las
+// tablas shipments y shipment_events (que no existen en esta base) y
+// llamaba a sendShipmentStatusEmail y notifyShipmentStatusWhatsapp, dos
+// funciones que no están definidas en ningún lado. Historia en git.
 
 
 // ══ MISIONES AUTO-CHECK ═══════════════════════════════════════════════════════
@@ -748,30 +702,9 @@ async function checkMissions(userId, eventType, extraData = {}) {
       await completeMission('onetime_profile', 'forever');
     }
 
-    if (eventType === 'shipment_delivered') {
-      const { weight_kg, user_id } = extraData;
-      // Calcular kg totales del cliente
-      const kgQ = await db.query(
-        `SELECT COALESCE(SUM(weight_kg),0) AS total_kg FROM shipments WHERE user_id=$1 AND status='Entregado'`,
-        [user_id || userId]
-      );
-      const totalKg = Number(kgQ.rows[0]?.total_kg || 0);
-
-      // Primer envio
-      if (totalKg >= 1) await completeMission('onetime_ship1', 'forever');
-      // KG milestones
-      if (totalKg >= 5)   await completeMission('onetime_kg5',   'forever');
-      if (totalKg >= 10)  await completeMission('onetime_kg10',  'forever');
-      if (totalKg >= 50)  await completeMission('onetime_kg50',  'forever');
-      if (totalKg >= 100) {
-        await completeMission('onetime_kg100', 'forever');
-        // Dar badge 100KG
-        await db.query(
-          `INSERT INTO user_items (user_id, item_key) VALUES ($1,'badge_100kg') ON CONFLICT DO NOTHING`,
-          [user_id || userId]
-        );
-      }
-    }
+    // Acá había una rama para eventType 'shipment_delivered' (misiones por kg
+    // enviados) que consultaba la tabla shipments, inexistente en este portal.
+    // Nadie emite ese evento: era código muerto de Lemon's. Borrado 2026-08-06.
 
   } catch(e) {
     console.error('[MISSIONS CHECK ERROR]', e.message);
@@ -1207,24 +1140,10 @@ app.delete("/admin/invite-codes/:id", authRequired, requireRole(["admin"]), asyn
 
 // ── ETZ AI — datos completos del negocio ────────────────────────────────────
 
-// ── Public stats para landing ────────────────────────────────────────────────
-app.get("/public/stats", async (req, res) => {
-  try {
-    const sq = await db.query(`
-      SELECT
-        COUNT(*) FILTER (WHERE status = 'Entregado')::int AS delivered,
-        COUNT(DISTINCT user_id)::int AS active_clients
-      FROM shipments
-    `);
-    res.json({
-      ok: true,
-      delivered: sq.rows[0]?.delivered || 0,
-      active_clients: sq.rows[0]?.active_clients || 0,
-    });
-  } catch(e) {
-    res.json({ ok: false, delivered: 0, active_clients: 0 });
-  }
-});
+// GET /public/stats se borro el 2026-08-06: contaba envios entregados de la
+// tabla shipments (courier de Lemon's), inexistente aca. El catch lo tapaba
+// devolviendo {ok:false, delivered:0} para siempre. No lo llamaba nadie:
+// ni el portal ni el landing.
 
 // ── GET /public/operations-status — estado ON/OFF + nota de demora por línea ─
 const OP_LINE_FIELDS = ["usa_normal","usa_express","china_normal","china_express","europa_normal"];
@@ -2067,31 +1986,9 @@ app.get("/users", authRequired, requireRole(["operator", "admin"]), async (req, 
   }
 });
 
-// ── GET /operator/clients/all — listar todos los clientes con stats ──
-app.get("/operator/clients/all", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
-  try {
-    // Agregar columna active si no existe
-    await db.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE").catch(() => {});
-
-    const q = await db.query(`
-      SELECT
-        u.id, u.client_number, u.name, u.email, u.role,
-        COALESCE(u.active, true) AS active,
-        COUNT(s.id)                              AS shipment_count,
-        COALESCE(SUM(s.estimated_usd), 0)        AS total_billed,
-        MAX(s.date_in)                           AS last_shipment
-      FROM users u
-      LEFT JOIN shipments s ON s.user_id = u.id
-      WHERE u.role IN ('client', 'operator')
-      GROUP BY u.id, u.client_number, u.name, u.email, u.role, u.active
-      ORDER BY u.client_number ASC
-    `);
-    res.json({ clients: q.rows });
-  } catch (e) {
-    console.error("GET ALL CLIENTS ERROR", e);
-    res.status(500).json({ error: "Error interno" });
-  }
-});
+// GET /operator/clients/all se borro el 2026-08-06: agrupaba por la tabla
+// shipments (courier de Lemon's), que no existe en esta base, asi que
+// devolvia 500 siempre. Ninguna pantalla del portal lo llamaba.
 
 // ── PATCH /operator/clients/:id — editar datos del cliente ──
 app.patch("/operator/clients/:id", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
@@ -2746,12 +2643,11 @@ app.get("/profile/u/:username", async (req, res) => {
     `, [uid]);
     if (!profile.length) return res.status(404).json({ error: "Perfil no encontrado" });
     const p = profile[0];
-    const { rows: stats } = await db.query(`
-      SELECT COUNT(*)::int as total_shipments,
-        COUNT(*) FILTER (WHERE status='Entregado')::int as delivered,
-        COALESCE(SUM(estimated_usd),0)::float as total_usd
-      FROM shipments WHERE user_id=$1
-    `, [uid]);
+    // Las mismas stats que devuelve /profile para uno mismo (posts, likes,
+    // amigos, seguidores…). Antes acá se consultaba `shipments`, tabla que NO
+    // existe en este portal: ver el perfil de OTRA persona devolvía 500 y la
+    // pantalla no cargaba. Verificado en producción el 2026-08-06.
+    const stats = [await getSocialStats(uid)];
     const { rows: coins } = await db.query("SELECT COALESCE(balance,0) as balance, COALESCE(total_earned,0) as total_earned FROM coins WHERE user_id=$1", [uid]);
     const { rows: items } = await db.query("SELECT item_key FROM user_items WHERE user_id=$1", [uid]);
     const owned_items = items.map(i => i.item_key);

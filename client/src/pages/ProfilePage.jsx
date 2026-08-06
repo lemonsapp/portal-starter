@@ -10,7 +10,7 @@ import { UserNameHeader } from "../components/UserName.jsx";
 import ProfileStudio from "./ProfileStudio.jsx";
 import { BannerCanvas, BadgePreview } from "./ProfileStudio.jsx";
 import ConnectedDevicesPanel from "../components/ConnectedDevicesPanel";
-import { CoinIcon } from "../lib/coin.js";
+import { CoinIcon, conMoneda } from "../lib/coin.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -37,7 +37,7 @@ const ACHIEVEMENTS = [
   { key:"ach_likes100",   icon:"❤️", name:"Querido",      desc:"100 likes recibidos en tus posts",  condition:(s)=>s.likes>=100,      reward:200,  rarity:"rare"      },
   { key:"ach_loyal30",    icon:"💛", name:"Leal",         desc:"30 días en la comunidad",           condition:(s)=>s.days_active>=30, reward:0,    rarity:"common"    },
   { key:"ach_veteran365",  icon:"🏆", name:"Veterano",    desc:"1 año en la comunidad",             condition:(s)=>s.days_active>=365,reward:1000, rarity:"legendary" },
-  { key:"ach_coins500",    icon:"🪙", name:"Acumulador",  desc:"500+ Coins ganados en total",       condition:(s,c)=>c>=500,          reward:0,    rarity:"rare"      },
+  { key:"ach_coins500",    icon:<CoinIcon size={30} />, name:"Acumulador",  desc:"500+ Coins ganados en total",       condition:(s,c)=>c>=500,          reward:0,    rarity:"rare"      },
 ];
 
 const BADGE_CONFIG = {
@@ -826,7 +826,7 @@ export default function ProfilePage() {
                     </div>
                   ):(
                     <div className="pf-avatar" style={{width:124,height:124,borderRadius:"50%",background:allItems.find(i=>i.key===equip.avatar_key)?.data?.bg||"linear-gradient(135deg,#100820,#0a1825)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:54,position:"relative",zIndex:2,border:allItems.find(i=>i.key===equip.frame_key)?.data?.border||"3px solid rgba(var(--brand-primary-rgb),.25)",boxShadow:allItems.find(i=>i.key===equip.frame_key)?.data?.shadow||"0 16px 40px rgba(0,0,0,.5)"}}>
-                      {allItems.find(i=>i.key===equip.avatar_key)?.data?.emoji||"🪙"}
+                      {conMoneda(allItems.find(i=>i.key===equip.avatar_key)?.data?.emoji||"", 54)}
                       {allItems.find(i=>i.key===equip.frame_key)?.data?.pulse&&<div style={{position:"absolute",inset:-6,borderRadius:"50%",border:"2px solid rgba(167,139,250,.5)",animation:"glowPulse 2s ease-in-out infinite",pointerEvents:"none"}}/>}
                     </div>
                   )}
@@ -1154,7 +1154,7 @@ export default function ProfilePage() {
                     {[["all","⭐ Todo"],["avatar","🧑 Avatares"],["frame","🖼 Marcos"],["title","📛 Títulos"],["badge","⚡ Insignias"]].map(([v,l])=>(
                       <button key={v} onClick={()=>setTypeFilter(v)} style={{padding:"7px 16px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"2px",textTransform:"uppercase",cursor:"pointer",transition:"all .22s",border:typeFilter===v?"none":"1px solid rgba(255,255,255,.08)",background:typeFilter===v?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))":"rgba(255,255,255,.03)",color:typeFilter===v?"#000":"rgba(255,255,255,.35)",boxShadow:typeFilter===v?"0 4px 18px rgba(var(--brand-primary-rgb),.35)":"none"}}>{l}</button>
                     ))}
-                    <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700}}>🪙 {(profile?.coins?.balance||0).toLocaleString()} disp.</span>
+                    <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700,display:"inline-flex",alignItems:"center",gap:4}}><CoinIcon size={10} /> {(profile?.coins?.balance||0).toLocaleString()} disp.</span>
                   </div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
                     {filtered.map(item=><ItemCard key={item.key} item={item} owned={owned.includes(item.key)} equipped={item.type==="badge"?(equip.badges?.includes(item.key)):equip[item.type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
@@ -1215,7 +1215,7 @@ export default function ProfilePage() {
                       <div><div style={{fontSize:13,fontWeight:800,color:"#e2e8f0"}}>Visibilidad del perfil</div><div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:2}}>Controlá qué ven los demás cuando visitan tu perfil</div></div>
                     </div>
                     <PrivacyToggle label="Mis envíos" desc="Cantidad de envíos totales, entregados y monto USD importado" icon="📦" iconBg="rgba(96,165,250,.1)" iconBorder="rgba(96,165,250,.18)" value={privacy.envios} onChange={async()=>{const v=!privacy.envios;setPrivacy(p=>({...p,envios:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_envios:v})});}catch(e){console.error(e);}}}/>
-                    <PrivacyToggle label="Coins" desc="Balance actual y total de coins ganados" icon="🪙" iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.coins} onChange={async()=>{const v=!privacy.coins;setPrivacy(p=>({...p,coins:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_coins:v})});}catch(e){console.error(e);}}}/>
+                    <PrivacyToggle label="Coins" desc="Balance actual y total de coins ganados" icon={<CoinIcon size={18} />} iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.coins} onChange={async()=>{const v=!privacy.coins;setPrivacy(p=>({...p,coins:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_coins:v})});}catch(e){console.error(e);}}}/>
                     <PrivacyToggle label="Logros" desc="Insignias desbloqueadas y progreso de achievements" icon="🏆" iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.logros} onChange={async()=>{const v=!privacy.logros;setPrivacy(p=>({...p,logros:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_logros:v})});}catch(e){console.error(e);}}}/>
                     <PrivacyToggle label="Posts" desc="Feed de publicaciones y actividad reciente" icon="📝" iconBg="rgba(167,139,250,.1)" iconBorder="rgba(167,139,250,.18)" value={privacy.posts} onChange={async()=>{const v=!privacy.posts;setPrivacy(p=>({...p,posts:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_posts:v})});}catch(e){console.error(e);}}}/>
                     <PrivacyToggle label="Lista de amigos" desc="Quién puede ver tus conexiones y amigos" icon="👥" iconBg="rgba(34,197,94,.1)" iconBorder="rgba(34,197,94,.18)" value={privacy.amigos} onChange={async()=>{const v=!privacy.amigos;setPrivacy(p=>({...p,amigos:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_amigos:v})});}catch(e){console.error(e);}}}/>

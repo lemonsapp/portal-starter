@@ -500,55 +500,11 @@ router.get("/:userId", authRequired, async (req, res) => {
 
 // ── POST /coins/earn — otorgar coins manual ───────────────────────────────────
 
-// ── POST /coins/redeem — canjear coins ───────────────────────────────────────
-router.post("/redeem", authRequired, async (req, res) => {
-  try {
-    const { user_id, reward_key, shipment_id, notes } = req.body;
-    const reward = REWARDS[reward_key];
-    if (!reward) return res.status(400).json({ error: "Recompensa inválida" });
-
-    const isOwner = req.user.id === parseInt(user_id);
-    const isStaff = ["operator","admin"].includes(req.user.role);
-    if (!isOwner && !isStaff) return res.status(403).json({ error: "No autorizado" });
-
-    const coins = await getOrCreateCoins(user_id);
-    if (coins.balance < reward.coins) {
-      return res.status(400).json({
-        error: `Coins insuficientes. Tenés ${coins.balance}, necesitás ${reward.coins}`
-      });
-    }
-
-    // Cobro atómico con guard (previene doble gasto / balance negativo por concurrencia).
-    const debit = await db.query(
-      `UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`,
-      [reward.coins, user_id]
-    );
-    if (!debit.rows[0]) {
-      return res.status(400).json({ error: "Coins insuficientes." });
-    }
-    const newBalance = debit.rows[0].balance;
-    await db.query(
-      `INSERT INTO coin_transactions (user_id, type, amount, reason, shipment_id)
-       VALUES ($1,'redeem',$2,$3,$4)`,
-      [user_id, -reward.coins, `Canje: ${reward.label}`, shipment_id || null]
-    );
-    const redQ = await db.query(
-      `INSERT INTO coin_redemptions (user_id, reward_key, coins_spent, shipment_id, notes)
-       VALUES ($1,$2,$3,$4,$5) RETURNING *`,
-      [user_id, reward_key, reward.coins, shipment_id || null, notes || null]
-    );
-
-    res.json({
-      success:     true,
-      redemption:  redQ.rows[0],
-      new_balance: newBalance,
-      level:       getLevel(newBalance),
-    });
-  } catch (e) {
-    console.error("COINS REDEEM ERROR:", e);
-    res.status(500).json({ error: e.message });
-  }
-});
+// POST /coins/redeem se borro el 2026-08-06. Era el canje del courier de
+// Lemon's: insertaba en coin_redemptions columnas que NO existen
+// (reward_key, coins_spent, shipment_id, notes) contra un esquema que solo
+// tiene (item_key, cost), asi que devolvia 500 siempre. El canje real de
+// este portal es POST /coins/redeem-points, que usa point_redemptions.
 
 // ── POST /coins/adjust — ajuste manual ───────────────────────────────────────
 router.post("/adjust", authRequired, requireRole(["operator","admin"]), async (req, res) => {
@@ -577,37 +533,10 @@ router.post("/adjust", authRequired, requireRole(["operator","admin"]), async (r
   }
 });
 
-// ── PATCH /coins/redemptions/:id — aplicar o cancelar canje ─────────────────
-router.patch("/redemptions/:id", authRequired, requireRole(["operator","admin"]), async (req, res) => {
-  try {
-    const { status, shipment_id } = req.body;
-    if (!["applied","cancelled"].includes(status)) return res.status(400).json({ error: "Estado inválido" });
-
-    const redQ = await db.query(`SELECT * FROM coin_redemptions WHERE id=$1`, [req.params.id]);
-    const red  = redQ.rows[0];
-    if (!red) return res.status(404).json({ error: "Canje no encontrado" });
-
-    if (status === "cancelled" && red.status === "pending") {
-      await db.query(
-        `UPDATE coins SET balance=balance+$1, updated_at=NOW() WHERE user_id=$2`,
-        [red.coins_spent, red.user_id]
-      );
-      await db.query(
-        `INSERT INTO coin_transactions (user_id, type, amount, reason) VALUES ($1,'adjust',$2,'Devolución por canje cancelado')`,
-        [red.user_id, red.coins_spent]
-      );
-    }
-
-    await db.query(
-      `UPDATE coin_redemptions SET status=$1, shipment_id=COALESCE($2,shipment_id) WHERE id=$3`,
-      [status, shipment_id || null, req.params.id]
-    );
-    res.json({ success: true });
-  } catch (e) {
-    console.error("COINS REDEMPTION PATCH ERROR:", e);
-    res.status(500).json({ error: e.message });
-  }
-});
+// PATCH /coins/redemptions/:id se borro el 2026-08-06 por lo mismo: hacia
+// UPDATE coin_redemptions SET status/shipment_id, columnas que no existen.
+// El equivalente vivo es PATCH /coins/admin/redemptions/:id, que es el que
+// usa el panel de admin sobre point_redemptions.
 
 // ── GET /coins/lookup/:code — buscar cliente por código (panel Gaia) ──────────
 // 2 segmentos → no colisiona con GET /:userId. Solo staff.

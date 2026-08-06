@@ -9,6 +9,18 @@ export const COIN_IMG = `${import.meta.env.BASE_URL}imagenes-web/coins/moneda-ho
 // usa su propio set), la imagen se ve idéntica en todas las plataformas.
 // createElement (no JSX) porque este archivo es .js y Vite no transforma JSX acá.
 import { createElement } from "react";
+
+// El emoji de moneda que guardan algunos datos (el avatar "Coin Dorado" lo usa
+// como icono). Se compara por codepoint, no a ojo.
+export const EMOJI_MONEDA = "\u{1FA99}";
+
+// conMoneda(valor, size) — si el valor ES el emoji de moneda, devuelve la
+// imagen de la moneda Holistic; cualquier otro emoji vuelve tal cual. Sirve
+// para los iconos que vienen de la base (avatares) sin tener que migrar datos.
+export function conMoneda(valor, size = 20) {
+  return valor === EMOJI_MONEDA ? createElement(CoinIcon, { size }) : valor;
+}
+
 export function CoinIcon({ size = 16, style: extra }) {
   return createElement("img", {
     src: COIN_IMG,

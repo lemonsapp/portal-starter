@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { conMoneda, EMOJI_MONEDA } from "../lib/coin.js";
 import { useNavigate } from "react-router-dom";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
@@ -41,7 +42,7 @@ function nameStyleFromUser(u) {
 }
 
 function FriendCard({ f, onClick, online }) {
-  const emoji = AVATAR_EMOJI[f.avatar_key] || "🪙";
+  const emoji = conMoneda(AVATAR_EMOJI[f.avatar_key] || EMOJI_MONEDA, 26);
   const bg = AVATAR_BG[f.avatar_key] || "var(--brand-primary, #f5e03a)";
   const dotColor = online ? "#22c55e" : "#6b7280";
   const ring = online ? "rgba(34,197,94,.55)" : "rgba(255,255,255,.06)";

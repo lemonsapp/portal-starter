@@ -986,3 +986,8 @@ router.post("/avatar-upload", authRequired, upload.single("avatar"), async (req,
 });
 
 module.exports = router;
+// getSocialStats también lo usa /profile/u/:username en index.js (perfil
+// público de otro usuario). Antes ese endpoint calculaba stats de `shipments`
+// —tabla que no existe en este portal— y devolvía 500: ver el perfil de otra
+// persona estaba roto en producción (2026-08-06).
+module.exports.getSocialStats = getSocialStats;

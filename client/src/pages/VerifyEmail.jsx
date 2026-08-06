@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import RotatingAuthBg from "../components/RotatingAuthBg";
+import { CoinIcon } from "../lib/coin.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 
@@ -115,7 +116,7 @@ export default function VerifyEmail() {
         {msg && <div className="vf-msg">{msg}</div>}
 
         {status === "ok" && (
-          <div className="vf-coins">🪙 <b>+15</b> Coins acreditados</div>
+          <div className="vf-coins"><CoinIcon size={15} /> <b>+15</b> Coins acreditados</div>
         )}
 
         {status !== "loading" && (

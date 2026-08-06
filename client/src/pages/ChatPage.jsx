@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { buildNameStyle } from "../utils/nameStyles.js";
+import { CoinIcon } from "../lib/coin.js";
 import { io } from "socket.io-client";
 import { BannerCanvas } from "./ProfileStudio.jsx";
 import { Pop, Jumbo } from "../components/MotionPop.jsx";
@@ -1162,7 +1163,7 @@ export default function ChatPage() {
                 <span style={{ fontSize:14 }}>{meta.icon}</span>
                 <div style={{ flex:1,minWidth:0 }}>
                   <div style={{ fontSize:11,fontWeight:700,color:isActive?meta.accent:"#6e6b64",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{room.name}</div>
-                  {!hasAccess && <div style={{ fontSize:9,color:"#3a3833" }}>🔒 {room.coins_required} 🪙</div>}
+                  {!hasAccess && <div style={{ fontSize:9,color:"#3a3833",display:"inline-flex",alignItems:"center",gap:3 }}>🔒 {room.coins_required} <CoinIcon size={9} /></div>}
                 </div>
                 {joining===room.id && <span style={{ fontSize:9,color:"#3a3833" }}>...</span>}
               </div>
