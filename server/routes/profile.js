@@ -87,6 +87,9 @@ async function migrate() {
     "banner_effect TEXT",
     "banner_color1 TEXT",
     "banner_color2 TEXT",
+    // Banner con imagen propia subida por el cliente (2026-08-06). Si esta
+    // cargada, el perfil muestra la imagen en vez del canvas animado.
+    "banner_image TEXT",
     "features_unlocked TEXT[]",
   ]) {
     await db.query(`ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS ${col}`).catch(() => {});
@@ -344,14 +347,25 @@ router.patch("/", authRequired, async (req, res) => {
     if (frame_key  && !(await hasItem(frame_key)))  return res.status(403).json({ error: "No tenés ese marco" });
     if (title_key  && !(await hasItem(title_key)))  return res.status(403).json({ error: "No tenés ese título" });
 
+    // 2026-08-06 — frame_key y title_key se asignaban DIRECTO (`frame_key = $3`)
+    // en vez de con COALESCE. Como el front manda PATCH parciales (los
+    // interruptores de privacidad mandan sólo los privacy_*), cualquier guardado
+    // que no incluyera el marco lo BORRABA en silencio: tocabas un interruptor y
+    // perdías el marco y el título que tenías puestos.
+    //
+    // No alcanza con COALESCE, porque para estos dos el null tiene significado
+    // propio ("sacátelo"). Hay que distinguir "no vino el campo" de "vino en
+    // null", y eso el valor no lo dice: lo dice la PRESENCIA de la clave.
+    const vino = (k) => Object.prototype.hasOwnProperty.call(req.body, k);
+
     await db.query(`
       INSERT INTO user_profiles (user_id, avatar_key, frame_key, title_key, badges, bio,
         privacy_envios, privacy_coins, privacy_logros, privacy_posts, privacy_amigos, updated_at)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW())
       ON CONFLICT (user_id) DO UPDATE SET
         avatar_key      = COALESCE($2, user_profiles.avatar_key),
-        frame_key       = $3,
-        title_key       = $4,
+        frame_key       = CASE WHEN $12::boolean THEN $3 ELSE user_profiles.frame_key END,
+        title_key       = CASE WHEN $13::boolean THEN $4 ELSE user_profiles.title_key END,
         badges          = COALESCE($5, user_profiles.badges),
         bio             = COALESCE($6, user_profiles.bio),
         privacy_envios  = COALESCE($7, user_profiles.privacy_envios),
@@ -366,7 +380,8 @@ router.patch("/", authRequired, async (req, res) => {
         privacy_coins!=null?privacy_coins:null,
         privacy_logros!=null?privacy_logros:null,
         privacy_posts!=null?privacy_posts:null,
-        privacy_amigos!=null?privacy_amigos:null]);
+        privacy_amigos!=null?privacy_amigos:null,
+        vino("frame_key"), vino("title_key")]);
 
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -382,11 +397,11 @@ router.post("/studio", authRequired, async (req, res) => {
     console.log("[STUDIO] role:", me.rows[0]?.role);
     if (me.rows[0]?.role !== "admin") return res.status(403).json({ error: "Solo admin" });
 
-    const { name_color, name_glow_color, name_glow, custom_name, banner_effect, banner_color1, banner_color2 } = req.body;
+    const { name_color, name_glow_color, name_glow, custom_name, banner_effect, banner_color1, banner_color2, banner_image } = req.body;
 
     await db.query(`
-      INSERT INTO user_profiles (user_id, name_color, name_glow_color, name_glow, custom_name, banner_effect, banner_color1, banner_color2, updated_at)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW())
+      INSERT INTO user_profiles (user_id, name_color, name_glow_color, name_glow, custom_name, banner_effect, banner_color1, banner_color2, banner_image, updated_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW())
       ON CONFLICT (user_id) DO UPDATE SET
         name_color      = COALESCE($2, user_profiles.name_color),
         name_glow_color = COALESCE($3, user_profiles.name_glow_color),
@@ -395,9 +410,14 @@ router.post("/studio", authRequired, async (req, res) => {
         banner_effect   = COALESCE($6, user_profiles.banner_effect),
         banner_color1   = COALESCE($7, user_profiles.banner_color1),
         banner_color2   = COALESCE($8, user_profiles.banner_color2),
+        -- Se limpia mandando banner_image:"" (así se vuelve al banner animado).
+        -- Igual que frame_key: hay que distinguir "no vino" de "vino vacío".
+        banner_image    = CASE WHEN $10::boolean THEN NULLIF($9,'') ELSE user_profiles.banner_image END,
         updated_at      = NOW()
     `, [userId, name_color||null, name_glow_color||null, name_glow!=null?name_glow:null, custom_name||null,
-        banner_effect||null, banner_color1||null, banner_color2||null]);
+        banner_effect||null, banner_color1||null, banner_color2||null,
+        banner_image != null ? String(banner_image) : "",
+        Object.prototype.hasOwnProperty.call(req.body, "banner_image")]);
 
     // Actualizar nombre si viene
     if (custom_name) {

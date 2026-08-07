@@ -538,13 +538,35 @@ export default function ProfilePage() {
     setBuying(null);
   }
 
-  function handleEquip(item) {
+  // 2026-08-06 — equipar GUARDA SOLO. Antes esto sólo cambiaba el estado local
+  // y el guardado real vivía en el botón "Guardar" de la cabecera, arriba de
+  // todo: clickeabas un avatar acá abajo, se veía puesto, te ibas de la
+  // pantalla y se perdía. Nadie ata un click de acá con un botón que ni se ve.
+  // Ahora se pinta al instante (optimista), se manda, y si el server rechaza
+  // se vuelve atrás y se avisa.
+  async function handleEquip(item) {
+    const previo = equip;
     const e2={...equip};
     if(item.type==="avatar")e2.avatar_key=item.key;
     if(item.type==="frame") e2.frame_key=e2.frame_key===item.key?null:item.key;
     if(item.type==="title") e2.title_key=e2.title_key===item.key?null:item.key;
     if(item.type==="badge"){const idx=e2.badges.indexOf(item.key);if(idx>=0)e2.badges=e2.badges.filter(b=>b!==item.key);else if(e2.badges.length<4)e2.badges=[...e2.badges,item.key];else{showToast("Máximo 4 insignias","var(--brand-accent)");return;}}
     setEquip(e2);
+    try {
+      // Se mandan SÓLO los campos de equipamiento: la bio se guarda por su
+      // propio camino y no tiene por qué viajar (ni pisarse) en cada click.
+      const res = await fetch(API+"/profile", {
+        method:"PATCH",
+        headers:{...getHdrs(),"Content-Type":"application/json"},
+        body:JSON.stringify({ avatar_key:e2.avatar_key, frame_key:e2.frame_key, title_key:e2.title_key, badges:e2.badges }),
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error(data.error||"No se pudo guardar");
+      showToast("✓ Guardado","#22c55e");
+    } catch(e) {
+      setEquip(previo);
+      showToast(e.message||"No se pudo guardar","#ef4444");
+    }
   }
 
   async function handleSave() {
@@ -772,7 +794,12 @@ export default function ProfilePage() {
           <div style={{minWidth:0}}>
             {/* BANNER PREMIUM */}
             <div className="pf-banner" style={{height:300,borderRadius:"24px 24px 0 0",overflow:"hidden",position:"relative"}}>
-              {profile?.profile?.banner_effect&&profile.profile.banner_effect!=="none"?(
+              {profile?.profile?.banner_image?(
+                /* Diseno propio subido por el cliente. object-fit:cover garantiza
+                   que llene la franja sin deformarse en ningun ancho, y el
+                   servidor ya lo recorto a 1200x400 con recorte inteligente. */
+                <img src={profile.profile.banner_image} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center"}} />
+              ):profile?.profile?.banner_effect&&profile.profile.banner_effect!=="none"?(
                 <BannerCanvas effect={profile.profile.banner_effect} color1={profile.profile.banner_color1||"var(--brand-primary)"} color2={profile.profile.banner_color2||"var(--brand-accent)"} height={300}/>
               ):(
                 <div className="pf-anim-heavy" style={{position:"absolute",inset:0,background:"linear-gradient(135deg,#040110,#0a0820,#120605)",backgroundSize:"400% 400%",animation:"holographic 8s ease infinite"}}>
@@ -826,7 +853,10 @@ export default function ProfilePage() {
                     </div>
                   ):(
                     <div className="pf-avatar" style={{width:124,height:124,borderRadius:"50%",background:allItems.find(i=>i.key===equip.avatar_key)?.data?.bg||"linear-gradient(135deg,#100820,#0a1825)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:54,position:"relative",zIndex:2,border:allItems.find(i=>i.key===equip.frame_key)?.data?.border||"3px solid rgba(var(--brand-primary-rgb),.25)",boxShadow:allItems.find(i=>i.key===equip.frame_key)?.data?.shadow||"0 16px 40px rgba(0,0,0,.5)"}}>
-                      {conMoneda(allItems.find(i=>i.key===equip.avatar_key)?.data?.emoji||"", 54)}
+                      {(()=>{ const it=allItems.find(i=>i.key===equip.avatar_key);
+                        /* Prioridad: foto del socio > imagen del item > emoji. */
+                        if(it?.data?.image_url) return <img src={it.data.image_url} alt="" style={{width:"100%",height:"100%",objectFit:it.data.fit||"cover",borderRadius:"50%",padding:it.data.fit==="contain"?"14%":0,boxSizing:"border-box"}} />;
+                        return conMoneda(it?.data?.emoji||"", 54); })()}
                       {allItems.find(i=>i.key===equip.frame_key)?.data?.pulse&&<div style={{position:"absolute",inset:-6,borderRadius:"50%",border:"2px solid rgba(167,139,250,.5)",animation:"glowPulse 2s ease-in-out infinite",pointerEvents:"none"}}/>}
                     </div>
                   )}

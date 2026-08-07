@@ -191,6 +191,9 @@ export default function ProfileItemsTab() {
 function Vista({ item, chico }) {
   const d = item.data || {};
   const tam = chico ? 40 : 96;
+  if (item.type === "banner" && d.image_url) {
+    return <img src={d.image_url} alt="" style={{ width: chico ? 56 : "100%", height: chico ? 34 : 150, objectFit: "cover", borderRadius: 8, display: "block" }} />;
+  }
   if (item.type === "banner") {
     return <div style={{ width: chico ? 56 : "100%", borderRadius: 8, overflow: "hidden" }}>
       <BannerCanvas effect={d.effect || "stars"} color1={d.color1 || MENTA} color2={d.color2 || VERDE} height={chico ? 34 : 150} />
@@ -204,6 +207,9 @@ function Vista({ item, chico }) {
       animation: d.pulse ? "admPulse 2s ease-in-out infinite" : "none",
     }}>🙂</div>;
   }
+  if (item.type === "avatar" && d.image_url) {
+    return <img src={d.image_url} alt="" style={{ width: tam, height: tam, borderRadius: "50%", objectFit: d.fit || "cover", background: d.bg || "transparent", padding: d.fit === "contain" ? "14%" : 0, boxSizing: "border-box" }} />;
+  }
   if (item.type === "avatar") {
     return <div style={{
       width: tam, height: tam, borderRadius: "50%", display: "grid", placeItems: "center",
@@ -214,6 +220,46 @@ function Vista({ item, chico }) {
     return <span style={{ fontWeight: 800, fontSize: chico ? 12 : 20, color: d.color || MENTA }}>{item.name || "Título"}</span>;
   }
   return <span style={{ fontSize: chico ? 20 : 40 }}>{item.emoji || "⚡"}</span>;
+}
+
+// ── SUBIR UN DISEÑO PROPIO ───────────────────────────────────────────────────
+// El servidor recorta la imagen a la medida exacta del lugar donde se va a ver,
+// eligiendo solo qué parte conservar. El cliente sube lo que tenga.
+function SubirImagen({ tipo, valor, onSubida }) {
+  const [subiendo, setSubiendo] = useState(false);
+  const [error, setError] = useState(null);
+
+  const elegir = async (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setSubiendo(true); setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("imagen", file);
+      fd.append("tipo", tipo);
+      const r = await fetch(`${API}/admin/profile-items/imagen`, { method: "POST", headers: authHdr(), body: fd });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "No se pudo subir");
+      onSubida(d.url);
+    } catch (err) { setError(err.message); }
+    setSubiendo(false);
+    e.target.value = "";
+  };
+
+  return (
+    <Field label="Diseño propio (opcional)" hint="Subí una imagen y se acomoda sola al lugar donde va. Si cargás una, reemplaza al efecto/emoji.">
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <label style={{ padding: "8px 14px", borderRadius: 9, border: "1px solid var(--border-2)", background: "var(--surface-2)", cursor: "pointer", fontSize: 12.5, fontWeight: 700 }}>
+          {subiendo ? "Subiendo…" : valor ? "Cambiar imagen" : "Elegir imagen"}
+          <input type="file" accept="image/*" style={{ display: "none" }} onChange={elegir} disabled={subiendo} />
+        </label>
+        {valor && <>
+          <img src={valor} alt="" style={{ height: 44, borderRadius: 7, border: "1px solid var(--border-2)" }} />
+          <Btn size="sm" variant="danger" onClick={() => onSubida("")}>Quitar</Btn>
+        </>}
+      </div>
+      {error && <div style={{ color: "#b91c1c", fontSize: 12, marginTop: 7 }}>{error}</div>}
+    </Field>
+  );
 }
 
 // ── EDITOR ───────────────────────────────────────────────────────────────────
@@ -311,6 +357,7 @@ function Editor({ item, onClose, onSave }) {
               <Field label="Color 1"><input type="color" style={color} value={f.data?.color1 || MENTA} onChange={(e) => setData("color1", e.target.value)} /></Field>
               <Field label="Color 2"><input type="color" style={color} value={f.data?.color2 || VERDE} onChange={(e) => setData("color2", e.target.value)} /></Field>
             </div>
+            <SubirImagen tipo="banner" valor={f.data?.image_url} onSubida={(url) => setData("image_url", url)} />
           </>
         )}
 
@@ -346,6 +393,17 @@ function Editor({ item, onClose, onSave }) {
             </Field>
           </div>
         )}
+        {f.type === "avatar" && <>
+          <SubirImagen tipo="avatar" valor={f.data?.image_url} onSubida={(url) => setData("image_url", url)} />
+          {f.data?.image_url && (
+            <Field label="Cómo entra la imagen" hint="Recortada llena el círculo. Entera sirve para fotos de producto con fondo transparente.">
+              <select style={campo} value={f.data?.fit || "cover"} onChange={(e) => setData("fit", e.target.value)}>
+                <option value="cover">Recortada (llena el círculo)</option>
+                <option value="contain">Entera (se ve completa)</option>
+              </select>
+            </Field>
+          )}
+        </>}
 
         {f.type === "title" && (
           <Field label="Color del título">

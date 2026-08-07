@@ -13,7 +13,27 @@
 "use strict";
 
 const express = require("express");
+const multer = require("multer");
 const db = require("../db");
+const { configureCloudinary } = require("../lib/cloudinaryConfig");
+
+const subida = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 6 * 1024 * 1024 },
+  fileFilter: (req, file, cb) =>
+    file.mimetype.startsWith("image/") ? cb(null, true) : cb(new Error("Solo se permiten imágenes")),
+});
+
+// Cómo se acomoda sola cada imagen que sube el cliente. `crop:"fill"` recorta a
+// la medida exacta en vez de deformar, y `gravity:"auto"` deja que Cloudinary
+// elija QUÉ parte conservar analizando la imagen: así un diseño vertical o
+// cuadrado entra en el banner apaisado sin que nadie recorte a mano.
+const RECORTES = {
+  // El banner se ve a 300px de alto en compu y 170 en celular, a todo el ancho.
+  banner: [{ width: 1200, height: 400, crop: "fill", gravity: "auto" }, { quality: "auto", fetch_format: "auto" }],
+  // El avatar es un círculo: cuadrado sí o sí.
+  avatar: [{ width: 400, height: 400, crop: "fill", gravity: "auto" }, { quality: "auto", fetch_format: "auto" }],
+};
 
 const TIPOS     = ["avatar", "frame", "banner", "title", "badge"];
 const RAREZAS   = ["common", "rare", "epic", "legendary"];
@@ -56,6 +76,31 @@ function build({ authRequired, requireRole }) {
   // Catálogo de opciones, para que el panel no las tenga hardcodeadas de su lado.
   router.get("/profile-items/opciones", ...soloAdmin, (_req, res) => {
     res.json({ ok: true, tipos: TIPOS, rarezas: RAREZAS, efectos: EFECTOS });
+  });
+
+  // ── POST /admin/profile-items/imagen ───────────────────────────────────────
+  // Sube un diseño propio y devuelve la URL ya recortada a la medida del lugar
+  // donde se va a ver. El cliente sube lo que tenga (vertical, cuadrado, gigante)
+  // y sale acomodado solo: no hay que preparar la imagen antes.
+  router.post("/profile-items/imagen", ...soloAdmin, subida.single("imagen"), async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: "No llegó ninguna imagen" });
+      const tipo = RECORTES[req.body.tipo] ? req.body.tipo : "banner";
+      const cloudinary = await configureCloudinary();
+      const r = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "portal-items", transformation: RECORTES[tipo] },
+          (err, out) => (err ? reject(err) : resolve(out))
+        );
+        stream.end(req.file.buffer);
+      });
+      res.json({ ok: true, url: r.secure_url, ancho: r.width, alto: r.height });
+    } catch (e) {
+      console.error("[admin/profile-items/imagen]", e.message);
+      // El error de Cloudinary sirve: casi siempre es "faltan las API keys",
+      // que se cargan en el asistente de configuración del panel.
+      res.status(500).json({ error: `No se pudo subir la imagen: ${e.message}` });
+    }
   });
 
   // ── GET /admin/profile-items ───────────────────────────────────────────────
