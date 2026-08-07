@@ -34,7 +34,7 @@ const RAREZAS = [
 const EFECTOS = [
   { v: "stars",      label: "Estrellas",  peso: "liviano" },
   { v: "snow",       label: "Nieve",      peso: "liviano" },
-  { v: "lemon_rain", label: "Monedas",    peso: "liviano" },
+  { v: "lemon_rain", label: "Hojas",      peso: "liviano" },
   { v: "matrix",     label: "Matrix",     peso: "liviano" },
   { v: "rainbow",    label: "Arcoíris",   peso: "liviano" },
   { v: "lightning",  label: "Rayos",      peso: "medio" },

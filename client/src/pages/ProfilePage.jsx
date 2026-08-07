@@ -809,8 +809,12 @@ export default function ProfilePage() {
           .pf-avatar-wrap{margin-top:-46px!important}
           .pf-avatar{width:90px!important;height:90px!important;font-size:38px!important}
           .pf-name-row{font-size:30px!important}
-          .pf-coins-card{padding:8px 12px!important}
-          .pf-coins-num{font-size:20px!important}
+          /* Esta regla y la de .pf-coins-num existian desde antes pero la clase
+             no estaba puesta en ningun lado: CSS muerto. Puesta la clase, el
+             chip deja de quedar apretado (62px de caja para 69 de contenido). */
+          .pf-coins-card{padding:8px 10px!important;flex:0 0 auto!important}
+          .pf-coins-num{flex-shrink:0!important}
+          .pf-coins-num>*:last-child{font-size:20px!important}
           .pf-actions-row{flex-wrap:wrap!important;gap:6px!important;width:100%!important}
           .pf-actions-row button{flex:1 1 auto!important;font-size:9px!important;height:32px!important;padding:0 12px!important}
           .pf-tabs{grid-template-columns:repeat(4,1fr)!important;font-size:10px!important}
@@ -825,6 +829,9 @@ export default function ProfilePage() {
           .pf-dock-inner{white-space:normal!important;padding:11px 12px!important;gap:9px!important}
           .pf-dock-label{font-size:9px!important;letter-spacing:.8px!important;line-height:1.25!important;overflow-wrap:anywhere}
           .pf-dock-item span:nth-child(2),.pf-dock-item span:nth-child(3){opacity:1!important;transform:none!important}
+          /* El icono del dock tenia 22px de caja para un glifo de 25: se comia
+             un borde del emoji. */
+          .pf-dock-inner>span:first-child{width:26px!important}
         }
         @media(max-width:420px){
           .pf-tabs{grid-template-columns:repeat(2,1fr)!important}
@@ -986,10 +993,10 @@ export default function ProfilePage() {
 
               <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
                 {/* Coins card premium */}
-                <div style={{display:"inline-flex",alignItems:"center",gap:10,padding:"10px 16px",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.1),rgba(var(--brand-accent-rgb),.05))",border:"1px solid rgba(var(--brand-primary-rgb),.25)",position:"relative",overflow:"hidden",animation:"glowPulse 4s ease-in-out infinite"}} className="pf-anim-heavy">
+                <div style={{display:"inline-flex",alignItems:"center",gap:10,padding:"10px 16px",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.1),rgba(var(--brand-accent-rgb),.05))",border:"1px solid rgba(var(--brand-primary-rgb),.25)",position:"relative",overflow:"hidden",animation:"glowPulse 4s ease-in-out infinite"}} className="pf-anim-heavy pf-coins-card">
                   <div className="pf-anim-heavy" style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,rgba(var(--brand-primary-rgb),.15),transparent)",backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",pointerEvents:"none"}}/>
                   <span style={{fontSize:20,filter:"drop-shadow(0 0 8px rgba(var(--brand-primary-rgb),.5))",position:"relative",zIndex:1}}><CoinIcon size={20} /></span>
-                  <div style={{position:"relative",zIndex:1}}>
+                  <div className="pf-coins-num" style={{position:"relative",zIndex:1}}>
                     <div style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(var(--brand-primary-rgb),.5)",lineHeight:1}}>Coins</div>
                     <CountUp value={profile?.coins?.balance||0} style={{fontFamily:"'Gotham', sans-serif",fontSize:24,letterSpacing:"1px",color:"var(--brand-primary)",lineHeight:1.1,marginTop:2,display:"block"}}>{(profile?.coins?.balance||0).toLocaleString()}</CountUp>
                   </div>

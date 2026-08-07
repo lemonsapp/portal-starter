@@ -90,7 +90,7 @@ Rareza:      common
 |---|---|---|
 | `stars` | estrellas que flotan y titilan | liviano |
 | `snow` | nieve cayendo | liviano |
-| `lemon_rain` | monedas cayendo | liviano |
+| `lemon_rain` | hojas cayendo (se muestra como **Hojas**; la clave es heredada) | liviano |
 | `matrix` | caracteres cayendo, estilo hacker | liviano |
 | `rainbow` | puntos de colores que cambian | liviano |
 | `lightning` | rayos sobre el fondo | medio |

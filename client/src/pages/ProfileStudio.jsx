@@ -12,7 +12,12 @@ const PALETTE = ["var(--brand-primary, #f5e03a)","var(--brand-accent, #ff5500)",
 const EMOJIS  = ["⚡","🔥","🪙","💎","👑","🌟","🏆","💀","🐋","🌈","❄","🚀","🎯","💜","🖤","⭐","🌀","👾","🎮","🎪"];
 const BANNER_EFFECTS = [
   { id:"none",       name:"Ninguno",    icon:"⬜" },
-  { id:"lemon_rain", name:"Limones",    icon:"🪙" },
+  /* `lemon_rain` es la clave interna heredada del portal de origen: esta
+     guardada en la base (profiles.banner_effect y el item banner_lemon_rain) y
+     en la lista blanca del servidor, asi que renombrarla pide una migracion.
+     Lo que ve el socio si se corrige — antes decia "Limones" con monedas
+     cayendo, que no es de esta marca. */
+  { id:"lemon_rain", name:"Hojas",      icon:"🍃" },
   { id:"lightning",  name:"Tormenta",   icon:"⚡" },
   { id:"fire",       name:"Fuego",      icon:"🔥" },
   { id:"snow",       name:"Nieve",      icon:"❄"  },
@@ -88,7 +93,7 @@ export function BannerCanvas({ effect, color1, color2, height=120 }) {
         t++; p.x+=p.vx; p.y+=p.vy; p.phase+=p.speed; p.angle+=.02;
         if(p.y>h+16)p.y=-16; if(p.y<-16)p.y=h+16; if(p.x>w+16)p.x=-16; if(p.x<-16)p.x=w+16;
         const a=(Math.sin(p.phase)*.3+.7)*p.opacity; ctx.globalAlpha=a;
-        if(effect==="lemon_rain"){ctx.font=`${p.size}px serif`;ctx.fillText("🪙",p.x,p.y);}
+        if(effect==="lemon_rain"){ctx.font=`${p.size}px serif`;ctx.fillText("🍃",p.x,p.y);}
         else if(effect==="lightning"){ctx.strokeStyle=color1;ctx.lineWidth=Math.random()<.03?2:.5;ctx.shadowColor=color1;ctx.shadowBlur=6;ctx.beginPath();let lx=p.x,ly=0;for(let s=0;s<8;s++){const nx=lx+(Math.random()-.5)*28,ny=ly+h/8;ctx.moveTo(lx,ly);ctx.lineTo(nx,ny);lx=nx;ly=ny;}ctx.stroke();ctx.shadowBlur=0;}
         else if(effect==="fire"){const fr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,12+Math.sin(p.phase*3)*6);fr.addColorStop(0,"var(--brand-primary, #f5e03a)");fr.addColorStop(.5,"var(--brand-accent, #ff5500)");fr.addColorStop(1,"transparent");ctx.fillStyle=fr;ctx.beginPath();ctx.arc(p.x,p.y,14,0,Math.PI*2);ctx.fill();}
         else if(effect==="snow"){ctx.fillStyle="#bae6fd";ctx.beginPath();ctx.arc(p.x,p.y,p.size/5,0,Math.PI*2);ctx.fill();}
@@ -166,6 +171,13 @@ function LockOverlay({ cost, label, onUnlock, coins, loading }) {
   );
 }
 
+/* El panel de badges listaba las claves crudas del objeto de abajo, asi que al
+   admin le aparecia "lemon_rain" escrito tal cual en un boton. Estos son los
+   nombres que se muestran; la clave sigue siendo la de la base. */
+const BADGE_FX_LABEL = {
+  lightning:"Tormenta", fire:"Fuego", glow:"Resplandor", sparkle:"Destello",
+  rainbow:"Arcoíris", glitch:"Glitch", lemon_rain:"Hojas",
+};
 const BADGE_FX = {
   lightning:{css:(c)=>`@keyframes lb_${c.replace("#","")}{ 0%,100%{box-shadow:0 0 8px ${c},0 0 22px ${c}88}50%{box-shadow:0 0 4px ${c},0 0 10px ${c}44}}@keyframes lf{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.3}95%{opacity:1}}`,wrap:(c)=>({animation:`lb_${c.replace("#","")} 1.6s ease-in-out infinite`,background:`linear-gradient(135deg,${c}22,${c}08)`,border:`1.5px solid ${c}70`}),text:(c)=>({animation:"lf 3s linear infinite",color:c}),emoji:"none"},
   fire:{css:()=>`@keyframes fg{0%,100%{box-shadow:0 0 8px var(--brand-accent, #ff5500)aa,0 0 20px var(--brand-accent, #ff5500)55}50%{box-shadow:0 0 16px var(--brand-accent, #ff5500)cc}}@keyframes fw{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.08)}}`,wrap:()=>({animation:"fg 1.8s ease-in-out infinite",background:"linear-gradient(135deg,rgba(var(--brand-accent-rgb),.2),rgba(var(--brand-primary-rgb),.08))",border:"1.5px solid rgba(var(--brand-accent-rgb),.6)"}),text:()=>({background:"linear-gradient(90deg,var(--brand-primary, #f5e03a),var(--brand-accent, #ff5500))",backgroundClip:"text",WebkitBackgroundClip:"text",color:"transparent"}),emoji:"fw 1.5s ease-in-out infinite"},
@@ -265,15 +277,47 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
         input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--brand-primary, #f5e03a);cursor:pointer;box-shadow:0 0 8px rgba(var(--brand-primary-rgb),.5)}
         .eff-btn{transition:all .2s;cursor:pointer}.eff-btn:hover{transform:translateY(-2px)}
         .bp{transition:all .2s;cursor:pointer}.bp:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+
+        /* ─── MOBILE (2026-08-07) ───
+           Este archivo no tenia NINGUNA regla de mobile: las dos pantallas del
+           Studio son grillas de 2 columnas fijas (1fr 1fr y 1.2fr 1fr), asi que
+           en un celular la columna derecha —Preview, Estado, y el previo del
+           badge— quedaba fuera del ancho y no habia forma de llegar. Reportado
+           por Lemon con captura el 2026-08-07: "sigue viendose al costado".
+           Las reglas de ProfilePage no lo alcanzaban: son otras clases. */
+        @media(max-width:768px){
+          /* minmax(0,1fr) y no 1fr: una columna 1fr no baja del ancho MINIMO de
+             su contenido, asi que con las etiquetas largas ("ESTRELLAS",
+             "GERMINACIÓN") la tarjeta se quedaba clavada en 296px y a 320px de
+             pantalla volvia a salirse. Con minmax(0,·) la columna puede achicarse
+             y el texto envuelve. */
+          .st-two-col{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
+          .st-col2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+          .st-col2 > *{min-width:0}
+          /* La fila nombre + rareza del preset no envolvia: "GERMINACIÓN"
+             necesitaba 144px en una caja de 100. */
+          .st-preset-head{flex-wrap:wrap!important;gap:4px!important}
+          .st-preset-head > span:first-child{overflow-wrap:anywhere;min-width:0}
+          /* La cabecera PROFILE STUDIO + SALDO: el titulo a 22px con
+             letter-spacing 3 no entra al lado del saldo en un celular. */
+          .st-head{flex-wrap:wrap!important;padding:14px 16px!important;gap:10px!important}
+          .st-head-title{font-size:17px!important;letter-spacing:1.5px!important}
+          .st-head-saldo{text-align:left!important;margin-left:auto}
+          /* 12 efectos en 4 columnas dejan la etiqueta en 7px: ilegible. */
+          .st-eff-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+          .st-eff-grid > div{min-width:0!important;padding:10px 4px!important}
+          .st-eff-grid .eff-btn div:last-child{font-size:8px!important;letter-spacing:.3px!important;overflow-wrap:anywhere}
+          .st-emoji-grid > div{width:36px!important;height:36px!important;font-size:19px!important}
+        }
       `}</style>
 
-      <div style={{padding:"18px 22px",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.06),rgba(var(--brand-accent-rgb),.03))",border:"1px solid rgba(var(--brand-primary-rgb),.12)",borderRadius:14,marginBottom:20,display:"flex",alignItems:"center",gap:14,animation:"studioshine 3s ease-in-out infinite"}}>
+      <div className="st-head" style={{padding:"18px 22px",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.06),rgba(var(--brand-accent-rgb),.03))",border:"1px solid rgba(var(--brand-primary-rgb),.12)",borderRadius:14,marginBottom:20,display:"flex",alignItems:"center",gap:14,animation:"studioshine 3s ease-in-out infinite"}}>
         <div style={{fontSize:32}}>⚡</div>
-        <div style={{flex:1}}>
-          <div style={{fontSize:22,fontWeight:900,letterSpacing:3,color:"var(--brand-primary, #f5e03a)"}}>PROFILE STUDIO</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div className="st-head-title" style={{fontSize:22,fontWeight:900,letterSpacing:3,color:"var(--brand-primary, #f5e03a)"}}>PROFILE STUDIO</div>
           <div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.35)",marginTop:1}}>Personalizá tu perfil</div>
         </div>
-        <div style={{fontSize:10,color:"var(--brand-primary, #f5e03a)",textAlign:"right"}}>
+        <div className="st-head-saldo" style={{fontSize:10,color:"var(--brand-primary, #f5e03a)",textAlign:"right"}}>
           <div style={{fontSize:9,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(237,233,224,.35)",marginBottom:2}}>Saldo</div>
           <div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}><CoinIcon size={14} /> {balance.toLocaleString()}</div>
         </div>
@@ -288,12 +332,12 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
       {msg&&<div style={{marginBottom:16,padding:"11px 16px",borderRadius:10,background:msg.includes("Error")||msg.includes("error")?"rgba(var(--brand-accent-rgb),.1)":"rgba(34,197,94,.1)",border:"1px solid "+(msg.includes("Error")||msg.includes("error")?"rgba(var(--brand-accent-rgb),.25)":"rgba(34,197,94,.25)"),color:msg.includes("Error")||msg.includes("error")?"var(--brand-accent, #ff8c2a)":"#4ade80",fontSize:14,fontWeight:700}}>{msg}</div>}
 
       {tab==="banners"&&(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div className="st-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             <div style={{position:"relative",borderRadius:16,overflow:"hidden"}}>
               {card(<>
                 {lbl("Efecto del banner")}
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:14}}>
+                <div className="st-eff-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:14}}>
                   {BANNER_EFFECTS.map(ef=>(
                     <div key={ef.id} className="eff-btn" onClick={()=>setBannerFx(ef.id)} style={{padding:"10px 6px",borderRadius:8,border:`1px solid ${bannerFx===ef.id?"rgba(var(--brand-primary-rgb),.4)":"rgba(237,233,224,.07)"}`,background:bannerFx===ef.id?"rgba(var(--brand-primary-rgb),.08)":"rgba(255,255,255,.02)",textAlign:"center"}}>
                       <div style={{fontSize:18,marginBottom:3}}>{ef.icon}</div>
@@ -302,7 +346,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
                   ))}
                 </div>
                 {lbl("Colores")}
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+                <div className="st-col2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
                   <ColorPicker value={bannerC1} onChange={setBannerC1} label="Color 1"/>
                   <ColorPicker value={bannerC2} onChange={setBannerC2} label="Color 2"/>
                 </div>
@@ -315,13 +359,13 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
 
             {bannerPresets.length>0&&card(<>
               {lbl("Banners preset")}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              <div className="st-col2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                 {bannerPresets.map(banner=>{
                   const owned=ownedBanners.includes(banner.key); const data=banner.data||{};
                   return (<div key={banner.key} className="bp" style={{borderRadius:12,overflow:"hidden",border:`1px solid ${owned?"rgba(var(--brand-primary-rgb),.25)":"rgba(237,233,224,.07)"}`,background:owned?"rgba(var(--brand-primary-rgb),.04)":"rgba(255,255,255,.02)"}}>
                     <div style={{height:60,overflow:"hidden",position:"relative"}}><BannerCanvas effect={data.effect||"stars"} color1={data.color1||"var(--brand-primary, #f5e03a)"} color2={data.color2||"var(--brand-accent, #ff5500)"} height={60}/></div>
                     <div style={{padding:"10px 12px"}}>
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                      <div className="st-preset-head" style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                         <span style={{fontSize:12,fontWeight:800,letterSpacing:".5px",textTransform:"uppercase"}}>{banner.name}</span>
                         <span style={{fontSize:8,padding:"1px 6px",borderRadius:100,background:{legendary:"rgba(var(--brand-primary-rgb),.1)",epic:"rgba(167,139,250,.1)",rare:"rgba(96,165,250,.1)",common:"rgba(237,233,224,.05)"}[banner.rarity],color:{legendary:"var(--brand-primary, #f5e03a)",epic:"#a78bfa",rare:"#60a5fa",common:"#ede9e0"}[banner.rarity]}}>{banner.rarity}</span>
                       </div>
@@ -478,20 +522,20 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
       )}
 
       {tab==="badges"&&isAdmin&&(
-        <div style={{display:"grid",gridTemplateColumns:"1.2fr 1fr",gap:16}}>
+        <div className="st-two-col" style={{display:"grid",gridTemplateColumns:"1.2fr 1fr",gap:16}}>
           <div>
             {card(<>
               {lbl("Efecto")}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:18}}>
+              <div className="st-eff-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:18}}>
                 {Object.keys(BADGE_FX).map(id=>(
                   <div key={id} className="eff-btn" onClick={()=>setBadgeFx(id)} style={{padding:"10px 6px",borderRadius:10,border:`1px solid ${badgeFx===id?"rgba(var(--brand-primary-rgb),.4)":"rgba(237,233,224,.07)"}`,background:badgeFx===id?"rgba(var(--brand-primary-rgb),.08)":"rgba(255,255,255,.02)",textAlign:"center"}}>
-                    <div style={{fontSize:9,letterSpacing:"1px",textTransform:"uppercase",color:badgeFx===id?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.4)"}}>{id}</div>
+                    <div style={{fontSize:9,letterSpacing:"1px",textTransform:"uppercase",color:badgeFx===id?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.4)"}}>{BADGE_FX_LABEL[id]||id}</div>
                   </div>
                 ))}
               </div>
               {lbl("Color y emoji")}
               <div style={{marginBottom:14}}><ColorPicker value={badgeColor} onChange={setBadgeColor}/></div>
-              <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:18}}>
+              <div className="st-emoji-grid" style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:18}}>
                 {EMOJIS.map(e=><div key={e} onClick={()=>setBadgeEmoji(e)} style={{width:30,height:30,borderRadius:7,display:"grid",placeItems:"center",fontSize:16,cursor:"pointer",background:badgeEmoji===e?"rgba(var(--brand-primary-rgb),.12)":"rgba(255,255,255,.03)",border:`1px solid ${badgeEmoji===e?"rgba(var(--brand-primary-rgb),.3)":"rgba(237,233,224,.07)"}`,transition:"all .15s"}}>{e}</div>)}
               </div>
             </>)}
@@ -499,7 +543,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
               {lbl("Datos")}
               <div style={{display:"grid",gap:10}}>
                 <div><div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.4)",marginBottom:6}}>Texto visible</div><input value={badgeText} onChange={e=>setBadgeText(e.target.value.toUpperCase())} maxLength={12} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(237,233,224,.12)",borderRadius:8,color:"#ede9e0",fontSize:13,letterSpacing:"2px",padding:"9px 12px",outline:"none",textTransform:"uppercase"}}/></div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                <div className="st-col2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                   <div><div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.4)",marginBottom:6}}>Nombre</div><input value={badgeName} onChange={e=>setBadgeName(e.target.value)} maxLength={30} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(237,233,224,.12)",borderRadius:8,color:"#ede9e0",fontSize:13,padding:"9px 12px",outline:"none"}}/></div>
                   <div><div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.4)",marginBottom:6}}>Rareza</div><select value={badgeRarity} onChange={e=>setBadgeRarity(e.target.value)} style={{width:"100%",height:38,background:"rgba(255,255,255,.06)",border:"1px solid rgba(237,233,224,.12)",borderRadius:8,color:"#ede9e0",fontSize:13,padding:"0 12px",outline:"none"}}><option value="common">Común</option><option value="rare">Raro</option><option value="epic">Épico</option><option value="legendary">Legendario</option></select></div>
                 </div>
