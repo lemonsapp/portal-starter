@@ -103,11 +103,25 @@ export default function ProfileItemsTab() {
     cargar();
   };
 
+  // Un item vive en dos lados: la colección del socio y el slot donde lo tiene
+  // PUESTO. Por eso borrar uno que alguien tiene no es gratis — se lo saca del
+  // perfil. Antes el botón directamente no se dibujaba en ese caso, así que no
+  // había forma de saber por qué (reportado por Lemon el 2026-08-07). Ahora se
+  // dibuja siempre y lo que cambia es lo que te avisa antes.
   const borrar = async (item) => {
-    const r = await fetch(`${API}/admin/profile-items/${item.key}`, { method: "DELETE", headers: authHdr() });
+    const n = Number(item.lo_tienen) || 0;
+    const aviso = n
+      ? `"${item.name}" lo tienen ${n} socio${n > 1 ? "s" : ""}.\n\n` +
+        `Si lo borrás se lo saco del perfil y lo pierden. Esto NO se deshace.\n\n` +
+        `Si sólo querés que deje de aparecer en la tienda, cancelá y usá "Ocultar".`
+      : `¿Borrar "${item.name}"? No se deshace.`;
+    if (!confirm(aviso)) return;
+
+    const r = await fetch(`${API}/admin/profile-items/${item.key}${n ? "?forzar=1" : ""}`,
+      { method: "DELETE", headers: authHdr() });
     const d = await r.json();
     if (!r.ok) return setMsg({ ok: false, texto: d.error });
-    setMsg({ ok: true, texto: `Borrado: ${item.name}` });
+    setMsg({ ok: true, texto: d.aviso || `Borrado: ${item.name}` });
     cargar();
   };
 
@@ -166,7 +180,12 @@ export default function ProfileItemsTab() {
                     <td style={{ whiteSpace: "nowrap" }}>
                       <Btn size="sm" onClick={() => setEdit({ ...i, data: i.data || {} })}>Editar</Btn>{" "}
                       <Btn size="sm" onClick={() => alternarActivo(i)}>{i.active ? "Ocultar" : "Mostrar"}</Btn>{" "}
-                      {!i.lo_tienen && <Btn size="sm" variant="danger" onClick={() => borrar(i)}>Borrar</Btn>}
+                      <Btn size="sm" variant="danger" onClick={() => borrar(i)}
+                        title={i.lo_tienen
+                          ? `${i.lo_tienen} socio(s) lo tienen. Si lo borrás se lo saco del perfil. Para sacarlo sólo de la tienda, usá Ocultar.`
+                          : "Nadie lo tiene todavía: se borra sin afectar a ningún socio."}>
+                        {i.lo_tienen ? "Borrar igual" : "Borrar"}
+                      </Btn>
                     </td>
                   </tr>
                 ))}

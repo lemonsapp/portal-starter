@@ -189,21 +189,70 @@ function build({ authRequired, requireRole }) {
   // ── DELETE /admin/profile-items/:key ───────────────────────────────────────
   // Borrar un item que alguien tiene equipado lo dejaría con un item fantasma,
   // así que se bloquea y se ofrece ocultarlo, que es reversible.
+  // Borrar un item. Si alguien lo tiene, por defecto NO se borra: se responde 409
+  // y el panel ofrece Ocultar, que lo saca de la tienda sin quitárselo a nadie.
+  //
+  // Con ?forzar=1 se borra igual (pedido de Lemon 2026-08-07: 9 de 73 items
+  // quedaban imposibles de sacar del catálogo). Forzar NO es sólo un DELETE más:
+  // hay que despuntarlo primero. Un item vive en dos lados —la colección
+  // (user_items) y el slot donde está PUESTO (user_profiles)— y si se borra la
+  // fila sin limpiar el slot, el perfil queda apuntando a un item que ya no
+  // existe. Son cinco slots: avatar, marco, título, banner e insignias (array).
+  // avatar_key vuelve a 'default', que es su valor por defecto en el esquema;
+  // los demás a NULL. Todo en una transacción: o se limpia y se borra, o no
+  // pasa nada.
   router.delete("/profile-items/:key", ...soloAdmin, async (req, res) => {
+    const forzar = req.query.forzar === "1" || req.query.forzar === "true";
+    const cli = await db.connect();
     try {
       const key = normalizarKey(req.params.key);
-      const due = await db.query(`SELECT COUNT(*)::int AS n FROM user_items WHERE item_key=$1`, [key]);
-      if (due.rows[0].n) {
+
+      const existe = await cli.query(`SELECT key, name FROM profile_items WHERE key=$1`, [key]);
+      if (!existe.rows[0]) return res.status(404).json({ error: "No existe ese item" });
+
+      const due = await cli.query(`SELECT COUNT(*)::int AS n FROM user_items WHERE item_key=$1`, [key]);
+      const cuantos = due.rows[0].n;
+
+      if (cuantos && !forzar) {
         return res.status(409).json({
-          error: `No se puede borrar: ${due.rows[0].n} usuario(s) ya lo tienen. Ocultalo en vez de borrarlo.`,
+          error: `No se puede borrar: ${cuantos} socio(s) ya lo tienen. Ocultalo, o borralo igual y se lo saco a esos ${cuantos}.`,
+          lo_tienen: cuantos,
+          se_puede_forzar: true,
         });
       }
-      const q = await db.query(`DELETE FROM profile_items WHERE key=$1 RETURNING key`, [key]);
-      if (!q.rows[0]) return res.status(404).json({ error: "No existe ese item" });
-      res.json({ ok: true });
+
+      await cli.query("BEGIN");
+
+      let despuntados = 0;
+      if (cuantos) {
+        const r1 = await cli.query(`UPDATE user_profiles SET avatar_key='default', updated_at=NOW() WHERE avatar_key=$1`, [key]);
+        const r2 = await cli.query(`UPDATE user_profiles SET frame_key=NULL,      updated_at=NOW() WHERE frame_key=$1`,  [key]);
+        const r3 = await cli.query(`UPDATE user_profiles SET title_key=NULL,      updated_at=NOW() WHERE title_key=$1`,  [key]);
+        const r4 = await cli.query(`UPDATE user_profiles SET banner_key=NULL,     updated_at=NOW() WHERE banner_key=$1`, [key]);
+        const r5 = await cli.query(`UPDATE user_profiles SET badges=array_remove(badges,$1), updated_at=NOW() WHERE $1 = ANY(badges)`, [key]);
+        despuntados = r1.rowCount + r2.rowCount + r3.rowCount + r4.rowCount + r5.rowCount;
+        await cli.query(`DELETE FROM user_items WHERE item_key=$1`, [key]);
+      }
+
+      const q = await cli.query(`DELETE FROM profile_items WHERE key=$1 RETURNING key`, [key]);
+      if (!q.rows[0]) { await cli.query("ROLLBACK"); return res.status(404).json({ error: "No existe ese item" }); }
+
+      await cli.query("COMMIT");
+      res.json({
+        ok: true,
+        forzado: !!cuantos,
+        se_lo_saque_a: cuantos,
+        slots_despuntados: despuntados,
+        aviso: cuantos
+          ? `Borrado. Se lo saqué a ${cuantos} socio(s)${despuntados ? ` y lo despunté de ${despuntados} lugar(es) donde estaba puesto` : ""}.`
+          : undefined,
+      });
     } catch (e) {
+      try { await cli.query("ROLLBACK"); } catch {}
       console.error("[admin/profile-items DELETE]", e.message);
       res.status(500).json({ error: "No se pudo borrar el item" });
+    } finally {
+      cli.release();
     }
   });
 
