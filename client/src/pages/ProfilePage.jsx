@@ -182,10 +182,10 @@ function ItemCard({ item, owned, equipped, onBuy, onEquip, loading, readOnly }) 
   const r = RARITY[item.rarity] || RARITY.common;
   const d = item.data || {};
   return (
-    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{ background:owned?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${owned?r.border:"rgba(var(--c-text-rgb),.07)"}`,borderRadius:15,padding:"14px 13px",position:"relative",overflow:"hidden",transition:"all .25s",transform:hover?"translateY(-4px)":"none",boxShadow:hover?`0 14px 42px rgba(0,0,0,.45)`:owned?`0 0 20px ${r.border}22`:"none",opacity:owned?1:0.65 }}>
+    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} className="pf-item-card" style={{ minWidth:0,overflowWrap:"anywhere",background:owned?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${owned?r.border:"rgba(var(--c-text-rgb),.07)"}`,borderRadius:15,padding:"14px 13px",position:"relative",overflow:"hidden",transition:"all .25s",transform:hover?"translateY(-4px)":"none",boxShadow:hover?`0 14px 42px rgba(0,0,0,.45)`:owned?`0 0 20px ${r.border}22`:"none",opacity:owned?1:0.65 }}>
       {owned && <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${r.color},transparent)` }} />}
-      <div style={{ position:"absolute",top:9,right:9,fontSize:7,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",padding:"2px 7px",borderRadius:100,background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
-      <div style={{ fontSize:30,display:"block",margin:"6px 0 9px",textAlign:"center",animation:"float 3s ease-in-out infinite" }}>{d.emoji||item.emoji||"⭐"}</div>
+      <div className="pf-item-rare" style={{ position:"absolute",top:9,right:9,fontSize:7,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",padding:"2px 7px",borderRadius:100,background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
+      <div className="pf-item-emoji" style={{ fontSize:30,display:"block",margin:"6px 0 9px",textAlign:"center",animation:"float 3s ease-in-out infinite" }}>{d.emoji||item.emoji||"⭐"}</div>
       <div style={{ fontSize:11,fontWeight:800,color:"#e2e8f0",marginBottom:2,letterSpacing:".3px" }}>{item.name}</div>
       {item.description && <div style={{ fontSize:9,color:"rgba(255,255,255,.3)",lineHeight:1.4,marginBottom:10 }}>{item.description}</div>}
       {item.type==="title"&&d.color&&<div style={{ fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:d.color,marginBottom:10 }}>— {item.name} —</div>}
@@ -747,6 +747,20 @@ export default function ProfilePage() {
           .pf-stat-num{font-size:26px!important}
           .pf-stat-lbl{font-size:8px!important;letter-spacing:1px!important;line-height:1.3}
           .pf-two-col{grid-template-columns:1fr!important;gap:16px!important}
+          /* Las grillas de items eran de 3 columnas fijas (o de 155-162px de
+             minimo): en un celular angosto el contenido de la tarjeta no podia
+             achicarse y empujaba la fila fuera de la pantalla — habia que girar
+             el telefono para verla. Ahora las columnas se calculan sobre el
+             ancho real. */
+          .pf-item-grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))!important;gap:8px!important}
+          .pf-item-card{padding:11px 9px!important}
+          .pf-item-emoji{font-size:26px!important;margin:2px 0 7px!important;
+            /* Cada tarjeta animaba su emoji en bucle infinito. Con el catalogo
+               completo son 40+ animaciones corriendo a la vez en un telefono,
+               por un movimiento de 5 pixeles que nadie mira. */
+            animation:none!important}
+          /* El cartelito de rareza se encima al titulo en tarjetas angostas */
+          .pf-item-rare{display:none!important}
           /* Animaciones infinitas que repintan áreas grandes (box-shadow y
              background-position): en el celu comían frames sin aportar nada.
              En escritorio siguen. */
@@ -1055,7 +1069,7 @@ export default function ProfilePage() {
                   {misAvatares.length>0&&(
                   <div>
                     <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:10}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>Avatar</div>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:22}}>
+                    <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:22}}>
                       {misAvatares.map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={equip.avatar_key===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                     </div>
                   </div>
@@ -1065,7 +1079,7 @@ export default function ProfilePage() {
                       const its=allItems.filter(i=>i.type===type&&owned.includes(i.key)); if(!its.length)return null;
                       return <div key={type} style={{marginBottom:20}}>
                         <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>{type==="frame"?"Marcos":type==="title"?"Títulos":"Insignias"}{type==="badge"&&<span style={{color:"rgba(255,255,255,.2)",fontSize:7}}>({equip.badges?.length||0}/4)</span>}</div>
-                        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
+                        <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
                           {its.map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={type==="badge"?(equip.badges?.includes(item.key)):equip[type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                         </div>
                       </div>;
@@ -1081,7 +1095,7 @@ export default function ProfilePage() {
                     <span style={{fontSize:9,color:"rgba(255,255,255,.25)",fontWeight:900,letterSpacing:"2px"}}>{unlockedAchs.length} DE {ACHIEVEMENTS.length} · {achPct}%</span>
                     <div style={{width:180,height:4,background:"rgba(255,255,255,.07)",borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",width:`${achPct}%`,background:"linear-gradient(90deg,var(--brand-primary),var(--brand-primary))",boxShadow:"0 0 10px var(--brand-primary)55",transition:"width 1.5s ease"}}/></div>
                   </div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(162px,1fr))",gap:10}}>
+                  <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(162px,1fr))",gap:10}}>
                     {ACHIEVEMENTS.map(ach=><AchievementCard key={ach.key} ach={ach} unlocked={unlockedAchs.some(a=>a.key===ach.key)} stats={stats}/>)}
                   </div>
                   {/* Colección integrada dentro de Logros */}
@@ -1092,7 +1106,7 @@ export default function ProfilePage() {
                         const its=allItems.filter(i=>i.type===type&&owned.includes(i.key)); if(!its.length)return null;
                         return <div key={type} style={{marginBottom:20}}>
                           <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>{icon} {label} <span style={{color:"rgba(255,255,255,.18)",fontSize:7}}>({its.length})</span></div>
-                          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:9}}>
+                          <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:9}}>
                             {its.map(item=><ItemCard key={item.key} item={item} owned equipped={type==="badge"?(equip.badges?.includes(item.key)):equip[type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                           </div>
                         </div>;
@@ -1117,7 +1131,7 @@ export default function ProfilePage() {
                     <div className="pf-two-col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
                       <div>
                         <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:10}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>Avatar</div>
-                        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:22}}>
+                        <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:22}}>
                           {allItems.filter(i=>i.type==="avatar"&&owned.includes(i.key)).map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={equip.avatar_key===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                         </div>
                       </div>
@@ -1126,7 +1140,7 @@ export default function ProfilePage() {
                           const its=allItems.filter(i=>i.type===type&&owned.includes(i.key)); if(!its.length)return null;
                           return <div key={type} style={{marginBottom:20}}>
                             <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>{type==="frame"?"Marcos":type==="title"?"Títulos":"Insignias"}{type==="badge"&&<span style={{color:"rgba(255,255,255,.2)",fontSize:7}}>({equip.badges?.length||0}/4)</span>}</div>
-                            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
+                            <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
                               {its.map(item=><ItemCard key={item.key} item={item} owned readOnly={!isOwn} equipped={type==="badge"?(equip.badges?.includes(item.key)):equip[type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                             </div>
                           </div>;
@@ -1170,7 +1184,7 @@ export default function ProfilePage() {
                         ))}
                         <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700}}><CoinIcon size={10} /> {(profile?.coins?.balance||0).toLocaleString()} disp.</span>
                       </div>
-                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
+                      <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
                         {filtered.map(item=><ItemCard key={item.key} item={item} owned={owned.includes(item.key)} equipped={item.type==="badge"?(equip.badges?.includes(item.key)):equip[item.type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                       </div>
                     </div>
@@ -1186,7 +1200,7 @@ export default function ProfilePage() {
                     ))}
                     <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700,display:"inline-flex",alignItems:"center",gap:4}}><CoinIcon size={10} /> {(profile?.coins?.balance||0).toLocaleString()} disp.</span>
                   </div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
+                  <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
                     {filtered.map(item=><ItemCard key={item.key} item={item} owned={owned.includes(item.key)} equipped={item.type==="badge"?(equip.badges?.includes(item.key)):equip[item.type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                   </div>
                 </div>
@@ -1227,7 +1241,7 @@ export default function ProfilePage() {
                     const its=allItems.filter(i=>i.type===type&&owned.includes(i.key)); if(!its.length)return null;
                     return <div key={type} style={{marginBottom:24}}>
                       <div style={{fontSize:8,fontWeight:900,letterSpacing:"4px",textTransform:"uppercase",color:"rgba(var(--brand-accent-rgb),.65)",marginBottom:13,display:"flex",alignItems:"center",gap:8}}><span style={{width:18,height:1,background:"linear-gradient(90deg,var(--brand-accent),transparent)"}}/>{icon} {label} <span style={{color:"rgba(255,255,255,.18)",fontSize:7}}>({its.length})</span></div>
-                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:9}}>
+                      <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:9}}>
                         {its.map(item=><ItemCard key={item.key} item={item} owned equipped={type==="badge"?(equip.badges?.includes(item.key)):equip[type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
                       </div>
                     </div>;
