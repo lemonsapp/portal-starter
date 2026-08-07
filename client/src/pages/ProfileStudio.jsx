@@ -162,10 +162,10 @@ function LockOverlay({ cost, label, onUnlock, coins, loading }) {
     <div style={{position:"absolute",inset:0,borderRadius:"inherit",background:"rgba(4,6,13,.85)",backdropFilter:"blur(4px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:10,gap:12}}>
       <div style={{fontSize:32}}>🔒</div>
       <div style={{fontSize:18,fontWeight:800,color:"#ede9e0",textAlign:"center"}}>{label}</div>
-      <div style={{fontSize:11,color:ok?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.35)"}}><CoinIcon size={12} style={{verticalAlign:"-2px"}} /> {cost} coins</div>
-      {!ok&&<div style={{fontSize:9,color:"rgba(var(--brand-accent-rgb),.7)"}}>Te faltan {cost-coins} coins</div>}
+      <div style={{fontSize:11,color:ok?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.35)"}}><CoinIcon size={12} style={{verticalAlign:"-2px"}} /> {cost} puntos</div>
+      {!ok&&<div style={{fontSize:9,color:"rgba(var(--brand-accent-rgb),.7)"}}>Te faltan {cost-coins} puntos</div>}
       <button onClick={onUnlock} disabled={!ok||loading} style={{fontSize:12,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",padding:"10px 24px",borderRadius:8,border:"none",background:ok?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.1)",color:ok?"#04060d":"rgba(237,233,224,.3)",cursor:ok?"pointer":"not-allowed",opacity:loading?.7:1}}>
-        {loading?"Desbloqueando...":ok?"⚡ Desbloquear":"Sin coins"}
+        {loading?"Desbloqueando...":ok?"⚡ Desbloquear":"Sin puntos"}
       </button>
     </div>
   );
@@ -254,7 +254,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
     setSaving(false);
   }
   async function buyBannerPreset(item){
-    if(!confirm("Comprar "+item.name+" por "+item.cost_coins+" coins?"))return;
+    if(!confirm("Comprar "+item.name+" por "+item.cost_coins+" puntos?"))return;
     setSaving(true); setMsg("");
     try{const res=await fetch(API+"/profile/unlock",{method:"POST",headers:hdrs(),body:JSON.stringify({item_key:item.key})});const d=await res.json();if(res.ok){setMsg(item.name+" desbloqueado!");onSave&&onSave();}else setMsg(d.error||"Error");}catch{setMsg("Error de red");}
     setSaving(false);
@@ -318,7 +318,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
           <div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.35)",marginTop:1}}>Personalizá tu perfil</div>
         </div>
         <div className="st-head-saldo" style={{fontSize:10,color:"var(--brand-primary, #f5e03a)",textAlign:"right"}}>
-          <div style={{fontSize:9,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(237,233,224,.35)",marginBottom:2}}>Saldo</div>
+          <div style={{fontSize:9,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(237,233,224,.35)",marginBottom:2}}>Tus puntos</div>
           <div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}><CoinIcon size={14} /> {balance.toLocaleString()}</div>
         </div>
       </div>
@@ -548,7 +548,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
                   <div><div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.4)",marginBottom:6}}>Rareza</div><select value={badgeRarity} onChange={e=>setBadgeRarity(e.target.value)} style={{width:"100%",height:38,background:"rgba(255,255,255,.06)",border:"1px solid rgba(237,233,224,.12)",borderRadius:8,color:"#ede9e0",fontSize:13,padding:"0 12px",outline:"none"}}><option value="common">Común</option><option value="rare">Raro</option><option value="epic">Épico</option><option value="legendary">Legendario</option></select></div>
                 </div>
                 <div><div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.4)",marginBottom:6}}>Descripción</div><input value={badgeDesc} onChange={e=>setBadgeDesc(e.target.value)} maxLength={60} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(237,233,224,.12)",borderRadius:8,color:"#ede9e0",fontSize:13,padding:"9px 12px",outline:"none"}}/></div>
-                <div><div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.4)",marginBottom:6}}>Costo (coins)</div><input type="number" value={badgeCost} onChange={e=>setBadgeCost(Math.max(0,parseInt(e.target.value)||0))} min={0} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(237,233,224,.12)",borderRadius:8,color:"var(--brand-primary, #f5e03a)",fontSize:22,padding:"7px 12px",outline:"none"}}/></div>
+                <div><div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.4)",marginBottom:6}}>Costo (puntos)</div><input type="number" value={badgeCost} onChange={e=>setBadgeCost(Math.max(0,parseInt(e.target.value)||0))} min={0} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(237,233,224,.12)",borderRadius:8,color:"var(--brand-primary, #f5e03a)",fontSize:22,padding:"7px 12px",outline:"none"}}/></div>
               </div>
             </>)}
           </div>

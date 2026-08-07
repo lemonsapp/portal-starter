@@ -246,7 +246,7 @@ router.get("/shop", authRequired, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── POST /profile/buy — comprar item con coins ────────────────────────────────
+// ── POST /profile/buy — comprar item con PUNTOS (coins.balance) ────────────────────────────────
 router.post("/buy", authRequired, async (req, res) => {
   try {
     const userId  = req.user.id;
@@ -268,11 +268,11 @@ router.post("/buy", authRequired, async (req, res) => {
       const coinsQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId]);
       const balance = Number(coinsQ.rows[0]?.balance || 0);
       if (balance < item.cost_coins) {
-        return res.status(400).json({ error: `Coins insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
+        return res.status(400).json({ error: `Puntos insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
       }
       // Descontar coins — atómico con guard (evita doble gasto por concurrencia).
       const debit = await db.query(`UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`, [item.cost_coins, userId]);
-      if (!debit.rows[0]) return res.status(400).json({ error: "Coins insuficientes." });
+      if (!debit.rows[0]) return res.status(400).json({ error: "Puntos insuficientes." });
       await db.query(`INSERT INTO coin_transactions (user_id,type,amount,reason) VALUES ($1,'redeem',$2,$3)`,
         [userId, -item.cost_coins, `Compra de perfil: ${item.name}`]);
     }
@@ -483,7 +483,7 @@ router.post("/unlock", authRequired, async (req, res) => {
     const coinsQ = await db.query(`SELECT balance FROM coins WHERE user_id=$1`, [userId]);
     const balance = Number(coinsQ.rows[0]?.balance || 0);
     if (balance < item.cost_coins) {
-      return res.status(400).json({ error: `Coins insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
+      return res.status(400).json({ error: `Puntos insuficientes. Tenés ${balance}, necesitás ${item.cost_coins}` });
     }
 
     // Cobro atómico con guard (evita doble gasto / balance negativo por concurrencia).
@@ -491,7 +491,7 @@ router.post("/unlock", authRequired, async (req, res) => {
       `UPDATE coins SET balance=balance-$1, updated_at=NOW() WHERE user_id=$2 AND balance>=$1 RETURNING balance`,
       [item.cost_coins, userId]
     );
-    if (!debit.rows[0]) return res.status(400).json({ error: "Coins insuficientes." });
+    if (!debit.rows[0]) return res.status(400).json({ error: "Puntos insuficientes." });
 
     // Dar item
     await db.query(`INSERT INTO user_items (user_id, item_key) VALUES ($1, $2)`, [userId, item_key]);
