@@ -31,6 +31,7 @@ const webauthnRouter     = require("./routes/webauthn");
 const adminConfig        = require("./routes/admin-config");    // 🪄 Setup wizard endpoints
 const adminFeed          = require("./routes/admin-feed");      // 📰 Feed editor del admin
 const adminUsers         = require("./routes/admin-users");     // 👥 Coins manager + lista users
+const adminItems         = require("./routes/admin-items");     // 🎨 ABM de items del perfil
 const shop               = require("./routes/shop");             // 🛒 Shop fase 1: catálogo + admin productos
 const checkout           = require("./routes/checkout");          // 💳 Shop fase 2: checkout + MercadoPago + orders
 const { requireFeature } = require("./lib/featureFlags");        // 🚦 Toggle de features
@@ -2192,6 +2193,9 @@ app.use("/", adminFeed.build({ authRequired, requireRole }));
 
 // ── Admin users + coins manager (Sprint 3) ────────────────────────────────────
 app.use("/admin", adminUsers.build({ authRequired, requireRole }));
+// ABM de items del perfil (avatares, marcos, banners, títulos, insignias):
+// el cliente los carga solo desde el panel. Sólo admin.
+app.use("/admin", adminItems.build({ authRequired, requireRole }));
 
 // ── Shop fase 1 (Sprint 14, 2026-05-23) ───────────────────────────────────────
 // Catálogo público + CRUD admin. Feature flag features.shop (default true).

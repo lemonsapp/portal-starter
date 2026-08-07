@@ -10,6 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useBranding, useRules } from "../lib/branding.js";
 // Kit de UI del admin — tema claro estilo Tiendanube (scopeado bajo `.adm`).
 import { useAdmCss, Btn, Card, Field, Badge } from "./admin/ui.jsx";
+import ProfileItemsTab from "./admin/ProfileItemsTab.jsx";
 // Contenido por línea (sincronizado desde las internas) para pre-cargar los
 // editores del producto con lo que HOY se muestra en la ficha del shop.
 import { lineDetails, lineKeyFor } from "../data/lineDetails.js";
@@ -123,6 +124,7 @@ const ADMIN_NAV = [
       { key: "ranking",  label: "Saldos",       Comp: CoinsTab },
     ],
   },
+  { key: "items",     label: "🎨 Perfil",       Comp: ProfileItemsTab },
   { key: "clientes",  label: "👥 Clientes",     Comp: CustomersTab },
   { key: "campaigns", label: "📧 Campañas",     Comp: CampaignsTab },
   { key: "promos",    label: "🎟️ Códigos",      Comp: PromoCodesTab },
