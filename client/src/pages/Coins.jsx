@@ -665,12 +665,35 @@ function Ranking() {
   );
 }
 
+// El código de cliente es HST-XXXX-XX (ver ensureCustomerCode en el server).
+// Se compara flojo: sin guiones, sin espacios y sin distinguir mayúsculas, para
+// que pegarlo de cualquier lado funcione igual.
+const normCode = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+const looksLikeCode = s => /^HST/.test(normCode(s)) && normCode(s).length >= 4;
+const isCodeMatch = (q, code) => !!code && normCode(q).length >= 4 && normCode(code) === normCode(q);
+// En la base el código vive CON guiones, y la búsqueda es un ILIKE literal: si
+// alguien lo escribe de memoria sin guiones no encuentra nada (comprobado contra
+// la API real el 2026-08-07 — "HST-DFAL-UH" devuelve a la persona, "HSTDFALUH"
+// devuelve cero). Se le reponen antes de consultar. Es idempotente: un código ya
+// bien escrito sale igual, y uno a medio tipear sigue matcheando parcial.
+const codeForQuery = s => {
+  const n = normCode(s);
+  if (!/^HST[A-Z0-9]*$/.test(n) || n.length <= 3) return null;
+  const r = n.slice(3);
+  return "HST-" + r.slice(0, 4) + (r.length > 4 ? "-" + r.slice(4, 6) : "");
+};
+
 // ── SELECTOR DE DESTINATARIO ───────────────────────────────────────────────────
 // 2026-08-06: antes Regalar pedía el "número de cliente" escrito a mano y no
 // había ningún lado de donde sacarlo — el usuario no tiene la lista de clientes.
 // Ahora se elige de la gente del portal (GET /profile/directory), buscando por
 // nombre, @usuario, apodo o #número. Escribir el número sigue funcionando: la
 // búsqueda también matchea contra client_number.
+// 2026-08-07 (pedido de Lemon): el CÓDIGO de cliente —el que cada uno ve en
+// Puntos → "Tu código"— también sirve para elegir destinatario. El servidor ya
+// lo matcheaba desde el día uno; lo que faltaba era que se notara: el campo no
+// lo nombraba y la fila no mostraba el código, así que no había forma de
+// confirmar que habías elegido a la persona correcta.
 function RecipientPicker({ value, onChange }) {
   const [q, setQ] = useState("");
   const [list, setList] = useState([]);
@@ -686,7 +709,8 @@ function RecipientPicker({ value, onChange }) {
     const t = setTimeout(async () => {
       setLoading(true);
       try {
-        const url = `${API}/profile/directory?limit=50${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+        const term = codeForQuery(q) || q;
+        const url = `${API}/profile/directory?limit=50${q ? `&q=${encodeURIComponent(term)}` : ""}`;
         const d = await (await fetch(url, { headers: hdrs() })).json();
         if (!alive) return;
         if (d.ok) { setList(d.users); setFailed(false); }
@@ -717,7 +741,7 @@ function RecipientPicker({ value, onChange }) {
           <Avatar u={value} size={40} />
           <div style={{ flex:1,minWidth:0 }}>
             <div style={{ fontWeight:900,fontSize:16,...ns,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>{value.name}</div>
-            <div style={{ color:"rgba(237,233,224,.6)",fontSize:12 }}>
+            <div style={{ color:"rgba(237,233,224,.6)",fontSize:12,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>
               {value.username ? `@${value.username} · ` : ""}#{value.client_number}
             </div>
           </div>
@@ -734,9 +758,12 @@ function RecipientPicker({ value, onChange }) {
     <div ref={boxRef} style={{ position:"relative" }}>
       {label}
       <input value={q} onChange={e=>{ setQ(e.target.value); setOpen(true); }} onFocus={e=>{ setOpen(true); e.target.style.borderColor="var(--brand-primary)"; e.target.style.boxShadow="0 0 20px var(--brand-primary)22"; }}
-        placeholder="Buscá por nombre, @usuario o número"
+        placeholder="Nombre, @usuario, código HST-… o #número"
         style={{ width:"100%",background:"rgba(255,255,255,0.04)",border:"2px solid rgba(255,255,255,0.08)",borderRadius:14,color:"#fff",fontSize:16,padding:"15px 18px",outline:"none",boxSizing:"border-box",transition:"all .2s" }}
         onBlur={e=>{ e.target.style.borderColor="rgba(255,255,255,0.08)"; e.target.style.boxShadow="none"; }} />
+      <div style={{ fontSize:11,color:"rgba(237,233,224,.4)",marginTop:7,lineHeight:1.45 }}>
+        El código es el que cada uno ve en <b style={{color:"rgba(237,233,224,.6)"}}>Puntos → Tu código</b> (tipo <span style={{fontFamily:"'Gotham', monospace"}}>HST-AB12-CD</span>). Pedíselo y pegalo acá.
+      </div>
 
       {open && (
         <div style={{ position:"absolute",zIndex:30,top:"100%",left:0,right:0,marginTop:8,maxHeight:280,overflowY:"auto",background:"rgba(10,10,10,0.98)",border:"1px solid rgba(var(--brand-primary-rgb),0.25)",borderRadius:14,boxShadow:"0 18px 50px rgba(0,0,0,.6)" }}>
@@ -746,6 +773,15 @@ function RecipientPicker({ value, onChange }) {
           {failed && (
             <div style={{ padding:"12px 14px",color:"#fca5a5",fontSize:12,borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
               No pude traer la lista. Escribí el número de cliente y elegilo abajo.
+            </div>
+          )}
+          {/* El código se resuelve contra el directorio; si el directorio no
+              responde, no hay con qué traducirlo a un número de cliente, que es
+              lo único que acepta POST /profile/gift. Se dice de frente en vez de
+              dejar el campo mudo. */}
+          {failed && looksLikeCode(q) && (
+            <div style={{ padding:"12px 14px",color:"rgba(237,233,224,.55)",fontSize:12,borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+              Con la lista caída no puedo resolver un código. Pedile el <b>#número</b> de cliente y escribilo acá.
             </div>
           )}
           {failed && /^\d+$/.test(q) && (
@@ -762,23 +798,35 @@ function RecipientPicker({ value, onChange }) {
           )}
           {!loading && !failed && list.length===0 && (
             <div style={{ padding:"16px 18px",color:"rgba(237,233,224,.5)",fontSize:13 }}>
-              {q ? "Nadie con ese nombre o número." : "Todavía no hay a quién regalarle."}
+              {!q ? "Todavía no hay a quién regalarle."
+                 : looksLikeCode(q) ? "Ese código no es de nadie. Revisá que esté completo (HST-XXXX-XX) y sin cambiar ninguna letra."
+                 : "Nadie con ese nombre, código o número."}
             </div>
           )}
           {list.map(u => {
             const ns = buildNameStyle(u);
+            // Si lo que escribió coincide con el código de esta persona, se marca:
+            // asi sabe POR QUE aparecio y confirma que es a quien le quiere regalar.
+            const porCodigo = isCodeMatch(q, u.customer_code);
             return (
               <div key={u.id} onClick={()=>{ onChange(u); setOpen(false); }}
-                style={{ display:"flex",alignItems:"center",gap:12,padding:"10px 14px",cursor:"pointer",transition:"background .15s" }}
+                style={{ display:"flex",alignItems:"center",gap:12,padding:"10px 14px",cursor:"pointer",transition:"background .15s",background:porCodigo?"rgba(var(--brand-primary-rgb),0.07)":"transparent" }}
                 onMouseEnter={e=>e.currentTarget.style.background="rgba(var(--brand-primary-rgb),0.10)"}
-                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                onMouseLeave={e=>e.currentTarget.style.background=porCodigo?"rgba(var(--brand-primary-rgb),0.07)":"transparent"}>
                 <Avatar u={u} size={34} />
                 <div style={{ flex:1,minWidth:0 }}>
                   <div style={{ fontWeight:800,fontSize:14,...ns,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>{u.name}</div>
-                  <div style={{ color:"rgba(237,233,224,.5)",fontSize:11 }}>
+                  <div style={{ color:"rgba(237,233,224,.5)",fontSize:11,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>
                     {u.username ? `@${u.username} · ` : ""}#{u.client_number}
+                    {/* El código se muestra SOLO cuando fue lo que hizo aparecer
+                        a esta persona: listarlo en todas las filas le daria el
+                        codigo de cada cliente a cualquiera que abra el selector. */}
+                    {porCodigo ? <> · <span style={{ fontFamily:"'Gotham', monospace",color:"var(--brand-primary)",fontWeight:800 }}>{u.customer_code}</span></> : null}
                   </div>
                 </div>
+                {porCodigo && (
+                  <span style={{ flexShrink:0,fontSize:9,fontWeight:900,letterSpacing:1,textTransform:"uppercase",color:"var(--brand-primary)",border:"1px solid rgba(var(--brand-primary-rgb),.35)",borderRadius:100,padding:"3px 8px" }}>código</span>
+                )}
               </div>
             );
           })}
