@@ -1,8 +1,8 @@
 # Guía: los items del perfil (avatares, banners, marcos, títulos e insignias)
 
 Para el equipo de Holistic. Explica **qué se puede personalizar en el perfil de
-un socio, qué pueden crear ustedes solos y qué hay que pedirnos**, y con qué
-datos exactos pedirlo para que salga a la primera.
+un socio y como lo cargan ustedes mismos desde el panel**, con los datos que
+pide cada tipo.
 
 ---
 
@@ -11,7 +11,7 @@ datos exactos pedirlo para que salga a la primera.
 | Tipo | Dónde se ve | Qué es |
 |---|---|---|
 | **Avatar** | la foto redonda del perfil | un emoji sobre un color de fondo (si el socio sube una foto propia, la foto gana) |
-| **Marco** | el borde de esa foto | un borde de color, con brillo o degradado |
+| **Marco** | el borde de esa foto | un borde de color, con brillo opcional y opcion de que "lata" |
 | **Banner** | la franja grande de arriba del perfil | un fondo **animado** (partículas, lluvia, aurora…) con dos colores |
 | **Título** | debajo del nombre | una palabra de color: "Pro", "Leyenda"… |
 | **Insignia** | al lado del nombre | un emoji chiquito con efecto; se pueden llevar hasta 4 |
@@ -21,28 +21,24 @@ Personalizar → Tienda** y los equipa en **Perfil → Personalizar → Perfil**
 
 ---
 
-## 2. Qué pueden crear ustedes, hoy, sin pedirnos nada
+## 2. Los cargan ustedes, sin pedirnos nada
 
-### Insignias ✅
+Desde el panel de administración:
 
-Hay un creador dentro del portal. Con la cuenta de administrador:
+> **Panel admin → pestaña "🎨 Perfil" → "+ Nuevo item"**
 
-> **Perfil → Personalizar → Studio → pestaña "⚡ Crear Badge"**
+Sirve para **los cinco tipos**. El formulario cambia según lo que elijas (un
+banner pide efecto y dos colores; un marco pide color de borde y brillo; un
+avatar pide emoji y fondo) y tiene **vista previa en vivo**: ves el item
+terminado —el banner incluso animado, igual que se va a ver en el perfil—
+antes de guardar.
 
-Ahí eligen nombre, descripción, emoji, color, efecto, rareza y costo, y la
-insignia queda creada y disponible al instante. Es la única que es
-autoservicio.
+Desde la misma pantalla podés **editar**, **ocultar/mostrar** y **borrar**, y
+ver **cuánta gente tiene cada item**.
 
-### Banners, marcos, avatares y títulos ⏳
-
-Hoy **no tienen pantalla para crearlos**: se cargan del lado del sistema.
-Pídanlos con el formato de la sección 4 y los dejamos andando.
-
-> Si esto les va a pasar seguido, se puede construir una pantalla de
-> administración para los cinco tipos. Es trabajo aparte: avísennos y lo
-> presupuestamos.
-
----
+> Las insignias también se pueden crear desde **Perfil → Personalizar → Studio
+> → "⚡ Crear Badge"**. Es el camino viejo y sigue funcionando; el del panel es
+> más completo.
 
 ## 3. Lo que hay que decidir en cada item
 
@@ -70,7 +66,10 @@ valores: `common` · `rare` · `epic` · `legendary`.
 
 ---
 
-## 4. Qué mandarnos para pedir uno nuevo
+## 4. Los datos de cada tipo
+
+Esto es lo que pide el formulario. Sirve también como plantilla para pedirle
+los diseños a quien los haga.
 
 ### Para un **banner**
 
@@ -114,10 +113,9 @@ Rareza:      common
 Tipo:        frame
 Nombre:      Marco Holistic
 Descripción: El marco de la casa
-Borde:       2px sólido, color #A7F5C8
-Brillo:      sí, verde menta suave     (o "no")
-Degradado:   no                        (o los colores, ej: menta → verde)
-Late:        no                        (el borde puede pulsar, tipo "premium")
+Borde:       color #A7F5C8
+Brillo:      sí     (o no)
+Late:        no     (el borde pulsa — dejalo para los caros)
 Costo:       0
 Rareza:      common
 ```
@@ -170,5 +168,6 @@ de la marca, gratis).
 
 ---
 
-*¿Dudas o quieren pedir varios de una? Manden la lista con el formato de la
-sección 4 y los cargamos juntos.*
+*Si algo de esto se queda corto para lo que quieren hacer, díganlo: varias de
+estas limitaciones se pueden levantar con desarrollo — por ejemplo, subir
+imágenes propias como banner, que hoy no se puede.*
