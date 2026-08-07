@@ -184,12 +184,16 @@ function ItemCard({ item, owned, equipped, onBuy, onEquip, loading, readOnly }) 
   return (
     <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} className="pf-item-card" style={{ minWidth:0,overflowWrap:"anywhere",background:owned?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${owned?r.border:"rgba(var(--c-text-rgb),.07)"}`,borderRadius:15,padding:"14px 13px",position:"relative",overflow:"hidden",transition:"all .25s",transform:hover?"translateY(-4px)":"none",boxShadow:hover?`0 14px 42px rgba(0,0,0,.45)`:owned?`0 0 20px ${r.border}22`:"none",opacity:owned?1:0.65 }}>
       {owned && <div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${r.color},transparent)` }} />}
-      <div className="pf-item-rare" style={{ position:"absolute",top:9,right:9,fontSize:7,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",padding:"2px 7px",borderRadius:100,background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
       <div className="pf-item-emoji" style={{ fontSize:30,display:"block",margin:"6px 0 9px",textAlign:"center",animation:"float 3s ease-in-out infinite" }}>{d.emoji||item.emoji||"⭐"}</div>
-      <div style={{ fontSize:11,fontWeight:800,color:"#e2e8f0",marginBottom:2,letterSpacing:".3px" }}>{item.name}</div>
-      {item.description && <div style={{ fontSize:9,color:"rgba(255,255,255,.3)",lineHeight:1.4,marginBottom:10 }}>{item.description}</div>}
-      {item.type==="title"&&d.color&&<div style={{ fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:d.color,marginBottom:10 }}>— {item.name} —</div>}
-      {!readOnly && (owned ? (
+      {/* El cuerpo va envuelto para poder pasar la tarjeta a fila horizontal en
+          mobile (emoji a la izquierda, texto a la derecha) sin tocar el diseño
+          de escritorio: en desktop este div es un bloque comun. */}
+      <div className="pf-item-body" style={{ minWidth:0,overflowWrap:"anywhere" }}>
+        <div className="pf-item-rare" style={{ position:"absolute",top:9,right:9,fontSize:7,fontWeight:900,letterSpacing:"1.5px",textTransform:"uppercase",padding:"2px 7px",borderRadius:100,background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
+        <div style={{ fontSize:11,fontWeight:800,color:"#e2e8f0",marginBottom:2,letterSpacing:".3px" }}>{item.name}</div>
+        {item.description && <div style={{ fontSize:9,color:"rgba(255,255,255,.3)",lineHeight:1.4,marginBottom:10 }}>{item.description}</div>}
+        {item.type==="title"&&d.color&&<div style={{ fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:d.color,marginBottom:10 }}>— {item.name} —</div>}
+        {!readOnly && (owned ? (
         <button onClick={()=>onEquip(item)} style={{ width:"100%",height:28,fontSize:8,fontWeight:900,letterSpacing:"1px",textTransform:"uppercase",background:equipped?"rgba(var(--brand-accent-rgb),.12)":"rgba(255,255,255,.05)",border:`1px solid ${equipped?"rgba(var(--brand-accent-rgb),.28)":"rgba(255,255,255,.1)"}`,color:equipped?"var(--brand-accent)":"rgba(255,255,255,.45)",borderRadius:8,cursor:"pointer",transition:"all .2s" }}>
           {equipped?"Desequipar":"Equipar"}
         </button>
@@ -197,7 +201,8 @@ function ItemCard({ item, owned, equipped, onBuy, onEquip, loading, readOnly }) 
         <button onClick={()=>onBuy(item)} disabled={loading===item.key} style={{ width:"100%",height:28,fontSize:8,fontWeight:900,letterSpacing:"1px",textTransform:"uppercase",background:item.cost_coins===0?"rgba(34,197,94,.1)":"var(--brand-primary)",border:"none",color:item.cost_coins===0?"#22c55e":"#04060d",borderRadius:8,cursor:"pointer",opacity:loading===item.key?.6:1 }}>
           {loading===item.key?"...":item.cost_coins===0?"🎁 Gratis":<><CoinIcon size={12} /> {item.cost_coins.toLocaleString()}</>}
         </button>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -212,17 +217,23 @@ function AchievementCard({ ach, unlocked, stats }) {
             : ach.key==="ach_veteran365"? Math.min(100, ((stats?.days_active||0)/365)*100)
             : null;
   return (
-    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{ background:unlocked?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${unlocked?r.border:"rgba(var(--c-text-rgb),.06)"}`,padding:18,position:"relative",overflow:"hidden",transition:"all .35s cubic-bezier(.2,.8,.2,1)",transform:hover?"translateY(-6px) scale(1.015)":"none",boxShadow:hover?(unlocked?`0 24px 60px rgba(0,0,0,.5),0 0 0 1px ${r.color}40,0 0 32px ${r.color}26`:"0 18px 48px rgba(0,0,0,.5)"):"none",opacity:unlocked?1:.6 }}>
+    <div onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} className="pf-ach-card" style={{ background:unlocked?r.bg:"rgba(255,255,255,.02)",border:`1px solid ${unlocked?r.border:"rgba(var(--c-text-rgb),.06)"}`,padding:18,position:"relative",overflow:"hidden",transition:"all .35s cubic-bezier(.2,.8,.2,1)",transform:hover?"translateY(-6px) scale(1.015)":"none",boxShadow:hover?(unlocked?`0 24px 60px rgba(0,0,0,.5),0 0 0 1px ${r.color}40,0 0 32px ${r.color}26`:"0 18px 48px rgba(0,0,0,.5)"):"none",opacity:unlocked?1:.6 }}>
       {unlocked&&<div style={{ position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${r.color},${r.color}40,transparent)`,backgroundSize:"200% 100%",animation:hover?"shimmerBg 2s linear infinite":"none" }} />}
       {unlocked&&hover&&<div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse 60% 100% at 50% 100%,${r.color}14,transparent 70%)`,pointerEvents:"none"}}/>}
-      <div style={{ position:"absolute",top:10,right:10,fontFamily:"'Gotham', monospace",fontSize:8,fontWeight:500,letterSpacing:"1.5px",textTransform:"uppercase",padding:"3px 8px",background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
-      <div style={{ fontSize:32,marginBottom:10,display:"inline-block",animation:unlocked?(hover?"iconSpin .9s ease,iconPop 4s ease-in-out infinite":"iconPop 4s ease-in-out infinite"):"float 4s ease-in-out infinite",filter:unlocked?`drop-shadow(0 0 12px ${r.color}55)`:"grayscale(.6) opacity(.5)",transition:"transform .3s" }}>{unlocked?ach.icon:"🔒"}</div>
-      <div style={{ fontFamily:"'Gotham', sans-serif",fontSize:14,fontWeight:800,color:"#e2e8f0",marginBottom:5,letterSpacing:".5px",textTransform:"uppercase" }}>{ach.name}</div>
-      <div style={{ fontSize:11,color:"rgba(255,255,255,.4)",lineHeight:1.55,marginBottom:12 }}>{ach.desc}</div>
-      <div style={{ fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",color:unlocked?r.color:"rgba(255,255,255,.2)",textTransform:"uppercase",display:"flex",alignItems:"center",gap:6 }}>
-        {unlocked?<>✦ Desbloqueado</>:<>{ach.reward>0?<><CoinIcon size={12} /> +{ach.reward}</>:"Bloqueado"}{pct!==null&&<span style={{marginLeft:"auto",color:"rgba(255,255,255,.45)"}}>{Math.floor(pct)}%</span>}</>}
+      <div className="pf-ach-icon" style={{ fontSize:32,marginBottom:10,display:"inline-block",animation:unlocked?(hover?"iconSpin .9s ease,iconPop 4s ease-in-out infinite":"iconPop 4s ease-in-out infinite"):"float 4s ease-in-out infinite",filter:unlocked?`drop-shadow(0 0 12px ${r.color}55)`:"grayscale(.6) opacity(.5)",transition:"transform .3s" }}>{unlocked?ach.icon:"🔒"}</div>
+      {/* Igual que en ItemCard: el cuerpo envuelto permite la fila horizontal en
+          mobile. overflowWrap es la red de seguridad — sin él, un nombre largo
+          de una sola palabra ("COMUNICADOR") no puede cortar y el overflow:hidden
+          de la tarjeta se lo come. */}
+      <div className="pf-ach-body" style={{ minWidth:0,overflowWrap:"anywhere" }}>
+        <div className="pf-ach-rare" style={{ position:"absolute",top:10,right:10,fontFamily:"'Gotham', monospace",fontSize:8,fontWeight:500,letterSpacing:"1.5px",textTransform:"uppercase",padding:"3px 8px",background:r.bg,border:`1px solid ${r.border}`,color:r.color }}>{r.label}</div>
+        <div className="pf-ach-name" style={{ fontFamily:"'Gotham', sans-serif",fontSize:14,fontWeight:800,color:"#e2e8f0",marginBottom:5,letterSpacing:".5px",textTransform:"uppercase" }}>{ach.name}</div>
+        <div className="pf-ach-desc" style={{ fontSize:11,color:"rgba(255,255,255,.4)",lineHeight:1.55,marginBottom:12 }}>{ach.desc}</div>
+        <div style={{ fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",color:unlocked?r.color:"rgba(255,255,255,.2)",textTransform:"uppercase",display:"flex",alignItems:"center",flexWrap:"wrap",gap:6 }}>
+          {unlocked?<>✦ Desbloqueado</>:<>{ach.reward>0?<><CoinIcon size={12} /> +{ach.reward}</>:"Bloqueado"}{pct!==null&&<span style={{marginLeft:"auto",color:"rgba(255,255,255,.45)"}}>{Math.floor(pct)}%</span>}</>}
+        </div>
+        {!unlocked&&pct!==null&&<div style={{ height:3,background:"rgba(255,255,255,.07)",overflow:"hidden",marginTop:10,position:"relative" }}><div style={{ height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${r.color},${r.color}88)`,boxShadow:`0 0 8px ${r.color}66`,transition:"width 1s cubic-bezier(.2,.8,.2,1)" }} /></div>}
       </div>
-      {!unlocked&&pct!==null&&<div style={{ height:3,background:"rgba(255,255,255,.07)",overflow:"hidden",marginTop:10,position:"relative" }}><div style={{ height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${r.color},${r.color}88)`,boxShadow:`0 0 8px ${r.color}66`,transition:"width 1s cubic-bezier(.2,.8,.2,1)" }} /></div>}
     </div>
   );
 }
@@ -747,20 +758,43 @@ export default function ProfilePage() {
           .pf-stat-num{font-size:26px!important}
           .pf-stat-lbl{font-size:8px!important;letter-spacing:1px!important;line-height:1.3}
           .pf-two-col{grid-template-columns:1fr!important;gap:16px!important}
-          /* Las grillas de items eran de 3 columnas fijas (o de 155-162px de
-             minimo): en un celular angosto el contenido de la tarjeta no podia
-             achicarse y empujaba la fila fuera de la pantalla — habia que girar
-             el telefono para verla. Ahora las columnas se calculan sobre el
-             ancho real. */
-          .pf-item-grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))!important;gap:8px!important}
-          .pf-item-card{padding:11px 9px!important}
-          .pf-item-emoji{font-size:26px!important;margin:2px 0 7px!important;
-            /* Cada tarjeta animaba su emoji en bucle infinito. Con el catalogo
+          /* ── UNA SOLA COLUMNA, TARJETA EN FILA (2026-08-07) ──
+             Reporte de Lemon: "se sigue poniendo todo en el mismo lugar, no me
+             deja ver como corresponde, me obliga a voltear el celular".
+
+             MEDIDO en produccion a 320/360/375/390/414px: la pagina NO desborda
+             (por eso la correccion de ayer daba limpia al medir el ancho del
+             documento). El recorte pasa ADENTRO de la tarjeta: con 3 columnas
+             de 97px, descontando el padding quedan 59px utiles y el titulo
+             necesita hasta 119px. 17 textos cortados en el panel de Logros:
+             "COMUNICA…", "CONECTO…", "INFLUENC…", "✦ DESBLOQUE…". Girando el
+             telefono la tarjeta se ensancha y entra — de ahi el sintoma.
+
+             La forma correcta a este ancho no es achicar mas la columna sino
+             sacarla: una sola columna, y la tarjeta acostada — icono a la
+             izquierda, texto a la derecha, a todo el ancho. El texto pasa de
+             59px a ~250px sin que la pagina crezca a lo ancho. */
+          .pf-item-grid{grid-template-columns:1fr!important;gap:9px!important}
+          .pf-item-card,.pf-ach-card{display:flex!important;align-items:flex-start!important;
+            gap:13px!important;text-align:left!important;padding:12px 14px!important}
+          .pf-item-emoji,.pf-ach-icon{width:44px!important;min-width:44px!important;
+            height:44px!important;margin:0!important;font-size:27px!important;
+            display:flex!important;align-items:center;justify-content:center;
+            /* Cada tarjeta animaba su icono en bucle infinito. Con el catalogo
                completo son 40+ animaciones corriendo a la vez en un telefono,
                por un movimiento de 5 pixeles que nadie mira. */
             animation:none!important}
-          /* El cartelito de rareza se encima al titulo en tarjetas angostas */
-          .pf-item-rare{display:none!important}
+          .pf-item-body,.pf-ach-body{flex:1 1 auto!important;min-width:0!important;
+            overflow-wrap:anywhere!important}
+          /* El cartelito de rareza estaba absoluto arriba a la derecha: encima
+             del titulo apenas la tarjeta se acuesta. Pasa a la linea, arriba
+             del nombre, y se deja de perder el dato. */
+          .pf-item-rare,.pf-ach-rare{position:static!important;display:inline-block!important;
+            margin:0 0 5px!important}
+          .pf-ach-name{font-size:12px!important;margin-bottom:3px!important}
+          .pf-ach-desc{font-size:10px!important;line-height:1.45!important;margin-bottom:9px!important}
+          /* 28px de alto es un blanco de toque chico para un dedo */
+          .pf-item-body button{height:36px!important;font-size:9px!important}
           /* Animaciones infinitas que repintan áreas grandes (box-shadow y
              background-position): en el celu comían frames sin aportar nada.
              En escritorio siguen. */
