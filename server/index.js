@@ -27,6 +27,7 @@ const notificationsRouter = require("./routes/notifications"); // ✅ Notificaci
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
 const { getSocialStats }  = require("./routes/profile");         // stats sociales compartidas
 const { armarPerfilPublico } = require("./lib/perfil-publico");   // 🔒 C1: qué ve un anónimo en un perfil público
+const { puedeActuarSobreObjetivo } = require("./lib/permisos-objetivo"); // 🔒 H4: no dejar que un operador toque a un admin/operador
 const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
 const adminConfig        = require("./routes/admin-config");    // 🪄 Setup wizard endpoints
@@ -1998,6 +1999,13 @@ app.patch("/operator/clients/:id", authRequired, requireRole(["operator", "admin
     const id = parseInt(req.params.id, 10);
     if (Number.isNaN(id)) return res.status(400).json({ error: "ID inválido" });
 
+    // H4 — no dejar que un operador edite (email/nombre/nro) a un admin u operador.
+    // Mismo criterio que el DELETE hermano, afinado por rol del que llama.
+    const tgt = await db.query("SELECT role FROM users WHERE id=$1", [id]);
+    if (!tgt.rows[0]) return res.status(404).json({ error: "Cliente no existe" });
+    if (!puedeActuarSobreObjetivo(req.user.role, tgt.rows[0].role))
+      return res.status(403).json({ error: "No autorizado a modificar este usuario" });
+
     const schema = z.object({
       name:          z.string().min(1).optional(),
       email:         z.string().email().optional(),
@@ -2038,6 +2046,13 @@ app.patch("/operator/clients/:id/password", authRequired, requireRole(["operator
     if (!new_password || String(new_password).length < 6)
       return res.status(400).json({ error: "Contraseña debe tener mínimo 6 caracteres" });
 
+    // H4 — un operador NO puede resetear la contraseña de un admin/operador
+    // (era la vía directa de escalación operador→admin). Sólo un admin puede.
+    const tgt = await db.query("SELECT role FROM users WHERE id=$1", [id]);
+    if (!tgt.rows[0]) return res.status(404).json({ error: "Cliente no existe" });
+    if (!puedeActuarSobreObjetivo(req.user.role, tgt.rows[0].role))
+      return res.status(403).json({ error: "No autorizado a modificar este usuario" });
+
     const hash = await bcrypt.hash(new_password, 10);
     const r = await db.query(
       "UPDATE users SET password_hash=$1 WHERE id=$2 RETURNING id",
@@ -2060,6 +2075,12 @@ app.patch("/operator/clients/:id/status", authRequired, requireRole(["operator",
     const schema = z.object({ active: z.boolean() });
     const p = schema.safeParse(req.body);
     if (!p.success) return res.status(400).json({ error: "Datos inválidos" });
+
+    // H4 — un operador no puede suspender/activar a un admin u operador.
+    const tgt = await db.query("SELECT role FROM users WHERE id=$1", [id]);
+    if (!tgt.rows[0]) return res.status(404).json({ error: "Cliente no existe" });
+    if (!puedeActuarSobreObjetivo(req.user.role, tgt.rows[0].role))
+      return res.status(403).json({ error: "No autorizado a modificar este usuario" });
 
     // Asegurarse de que la columna exista (add IF NOT EXISTS en runtime si falta)
     try {

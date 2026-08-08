@@ -10,6 +10,8 @@ const { REFERRAL_MAX_PER_USER } = require("../lib/referrals");
 // se lee para derivar y no sale nunca por una ruta anónima.
 const { armarRankingPublico, normalizarLimite } = require("../lib/ranking-publico");
 const { chapitaStaff } = require("../lib/perfil-publico");
+// 🔒 H5: sólo se equipan las insignias que el usuario realmente posee.
+const { filtrarBadgesPropias } = require("../lib/badges-propias");
 const multer = require('multer');
 // Sprint 14 fix: el SDK de Cloudinary se configura por request leyendo
 // las API keys de configStore (DB encriptada via wizard /admin/setup),
@@ -355,6 +357,17 @@ router.patch("/", authRequired, async (req, res) => {
     if (frame_key  && !(await hasItem(frame_key)))  return res.status(403).json({ error: "No tenés ese marco" });
     if (title_key  && !(await hasItem(title_key)))  return res.status(403).json({ error: "No tenés ese título" });
 
+    // H5 — las insignias también tienen que ser propiedad del usuario. Antes se
+    // escribía `badges` del body tal cual y cualquiera se ponía las de staff
+    // (grantOnly: CREATOR/MOD/BOT) o las pagas (VIP) sin tenerlas. Se intersecta
+    // contra user_items (la misma fuente que owned_items) y se descartan en
+    // silencio las que no posee — sin romper la elección entre las que sí tiene.
+    let badgesFiltradas = null;
+    if (Array.isArray(badges)) {
+      const ownedQ = await db.query(`SELECT item_key FROM user_items WHERE user_id=$1`, [userId]);
+      badgesFiltradas = filtrarBadgesPropias(badges, ownedQ.rows.map(r => r.item_key));
+    }
+
     // 2026-08-06 — frame_key y title_key se asignaban DIRECTO (`frame_key = $3`)
     // en vez de con COALESCE. Como el front manda PATCH parciales (los
     // interruptores de privacidad mandan sólo los privacy_*), cualquier guardado
@@ -383,7 +396,7 @@ router.patch("/", authRequired, async (req, res) => {
         privacy_amigos  = COALESCE($11, user_profiles.privacy_amigos),
         updated_at      = NOW()
     `, [userId, avatar_key||null, frame_key||null, title_key||null,
-        badges ? `{${badges.join(",")}}` : null, bio||null,
+        badgesFiltradas ? `{${badgesFiltradas.join(",")}}` : null, bio||null,
         privacy_envios!=null?privacy_envios:null,
         privacy_coins!=null?privacy_coins:null,
         privacy_logros!=null?privacy_logros:null,
