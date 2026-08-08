@@ -5,6 +5,9 @@ const db      = require("../db");
 const { authRequired, requireRole } = require("../auth");
 const { sendEmail } = require("../mailer");
 const { sanitizeText } = require("../security");
+// H2 (auditoría 2026-08-08): máquina de estados del canje; H6: compuerta atómica.
+const { planearTransicionCanje } = require("../lib/canje-estados");
+const { acreditarSiGana } = require("../lib/credito-atomico");
 
 // Template HTML simple para emails de canje (descuento con cupón / premio físico).
 function redemptionEmailHtml({ name, reward, couponCode }) {
@@ -145,6 +148,10 @@ function pointsCreditedEmailHtml({ name, points, newBalance, descripcion, curren
       )`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_point_redemptions_user ON point_redemptions(user_id, created_at DESC)`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_point_redemptions_status ON point_redemptions(status, created_at DESC)`);
+    // H2 (auditoría 2026-08-08): sella el reembolso a UNA sola vez por canje. El
+    // UPDATE guardado del PATCH exige refunded_at IS NULL, así que aunque el
+    // estado se toque de nuevo, los puntos vuelven una única vez.
+    await db.query(`ALTER TABLE point_redemptions ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMPTZ`);
 
     // Seed del catálogo (valores del documento Holistic v1.0). Idempotente por slug.
     // Descuentos: §5.2 — 5%=150 … 40%=1.250. Premios: §5.1 — Pack/Tensores/Gel=200,
@@ -725,40 +732,80 @@ router.get("/admin/redemptions", authRequired, requireRole(["operator", "admin"]
   }
 });
 
+// H2 + H6: máquina de estados con reembolso una-sola-vez, y la escritura como
+// compuerta (UPDATE condicional atómico), todo en una transacción. Sin esto, el
+// ciclo cancelled→fulfilled→cancelled reembolsaba en cada vuelta, y dos requests
+// concurrentes doble-reembolsaban. Las transiciones legales viven en
+// lib/canje-estados.js (probado ahí); acá el WHERE del UPDATE las hace cumplir.
 router.patch("/admin/redemptions/:id", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
+  const { status } = req.body;
+  if (!["fulfilled", "cancelled"].includes(status)) return res.status(400).json({ error: "Estado inválido" });
+  const id = req.params.id;
+  const client = await db.connect();
   try {
-    const { status } = req.body;
-    if (!["fulfilled", "cancelled"].includes(status)) return res.status(400).json({ error: "Estado inválido" });
-    const rq = await db.query(`SELECT * FROM point_redemptions WHERE id=$1`, [req.params.id]);
-    const rd = rq.rows[0];
-    if (!rd) return res.status(404).json({ error: "Canje no encontrado" });
+    await client.query("BEGIN");
 
-    if (status === "cancelled" && rd.status !== "cancelled") {
-      // Devolver puntos + stock + desactivar cupón.
-      await db.query(`UPDATE coins SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2`, [rd.cost_points, rd.user_id]);
-      await db.query(
-        `INSERT INTO coin_transactions (user_id, type, amount, reason, operador)
-         VALUES ($1, 'correccion', $2, $3, $4)`,
-        [rd.user_id, rd.cost_points, `Cancelación de canje: ${rd.label || rd.reward_slug}`, req.user.email || "admin"]
+    let updated = null;
+    if (status === "cancelled") {
+      // Compuerta: cancela (y marca refunded_at) SÓLO desde pending/fulfilled y
+      // sólo si no se reembolsó antes. Gana un único request; el resto no matchea.
+      const g = await client.query(
+        `UPDATE point_redemptions SET status = 'cancelled', refunded_at = NOW()
+          WHERE id = $1 AND status IN ('pending','fulfilled') AND refunded_at IS NULL
+          RETURNING *`,
+        [id]
       );
-      if (rd.kind === "premio") {
-        await db.query(`UPDATE point_rewards SET stock = stock + 1 WHERE slug = $1 AND stock IS NOT NULL`, [rd.reward_slug]);
+      updated = g.rows[0] || null;
+      if (updated) {
+        // Reembolso exactamente una vez (lo garantiza la compuerta de arriba).
+        await client.query(
+          `UPDATE coins SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2`,
+          [updated.cost_points, updated.user_id]
+        );
+        await client.query(
+          `INSERT INTO coin_transactions (user_id, type, amount, reason, operador)
+           VALUES ($1, 'correccion', $2, $3, $4)`,
+          [updated.user_id, updated.cost_points, `Cancelación de canje: ${updated.label || updated.reward_slug}`, req.user.email || "admin"]
+        );
+        if (updated.kind === "premio") {
+          await client.query(`UPDATE point_rewards SET stock = stock + 1 WHERE slug = $1 AND stock IS NOT NULL`, [updated.reward_slug]);
+        }
+        if (updated.coupon_code) {
+          await client.query(`UPDATE promo_codes SET active = FALSE WHERE code = $1`, [updated.coupon_code]);
+        }
       }
-      if (rd.coupon_code) {
-        await db.query(`UPDATE promo_codes SET active = FALSE WHERE code = $1`, [rd.coupon_code]);
-      }
+    } else {
+      // fulfilled: sólo desde pending. No mueve puntos. Idempotente por el WHERE.
+      const g = await client.query(
+        `UPDATE point_redemptions SET status = 'fulfilled', fulfilled_at = COALESCE(fulfilled_at, NOW())
+          WHERE id = $1 AND status = 'pending'
+          RETURNING *`,
+        [id]
+      );
+      updated = g.rows[0] || null;
     }
 
-    await db.query(
-      `UPDATE point_redemptions SET status = $1,
-         fulfilled_at = CASE WHEN $1 = 'fulfilled' THEN NOW() ELSE fulfilled_at END
-       WHERE id = $2`,
-      [status, req.params.id]
-    );
+    if (!updated) {
+      // No ganó la compuerta: distinguir 404 de transición ilegal para el panel.
+      await client.query("ROLLBACK");
+      const ex = await db.query(`SELECT status FROM point_redemptions WHERE id = $1`, [id]);
+      if (!ex.rows[0]) return res.status(404).json({ error: "Canje no encontrado" });
+      const plan = planearTransicionCanje(ex.rows[0].status, status);
+      if (!plan.permitido) {
+        return res.status(409).json({ error: `No se puede pasar de '${ex.rows[0].status}' a '${status}'` });
+      }
+      // Transición legal pero ya aplicada por otro request (carrera): idempotente.
+      return res.json({ success: true, already: true });
+    }
+
+    await client.query("COMMIT");
     res.json({ success: true });
   } catch (e) {
+    await client.query("ROLLBACK").catch(() => {});
     console.error("REDEMPTION PATCH ERROR:", e);
     res.status(500).json({ error: e.message });
+  } finally {
+    client.release();
   }
 });
 
@@ -841,33 +888,53 @@ router.get("/admin/ig", authRequired, requireRole(["operator", "admin"]), async 
   }
 });
 
+// H6: la escritura es la compuerta. El UPDATE condicional (… WHERE status=
+// 'pending' RETURNING) transiciona a lo sumo una vez; se acredita SÓLO si esa
+// transición devolvió fila. Dos aprobaciones concurrentes de la misma evidencia
+// (full_cycle = 167 pts) acreditan una sola vez, no 167×N. Mismo patrón que el
+// débito atómico de /redeem-points; probado en lib/credito-atomico.test.js.
 router.patch("/admin/ig/:id", authRequired, requireRole(["operator", "admin"]), async (req, res) => {
   try {
     const { status } = req.body;
     if (!["approved", "rejected"].includes(status)) return res.status(400).json({ error: "Estado inválido" });
-    const sq = await db.query(`SELECT * FROM ig_submissions WHERE id=$1`, [req.params.id]);
-    const sub = sq.rows[0];
-    if (!sub) return res.status(404).json({ error: "Evidencia no encontrada" });
-    if (sub.status !== "pending") return res.status(400).json({ error: "Esta evidencia ya fue revisada" });
+    const id = req.params.id;
 
-    if (status === "approved") {
-      await getOrCreateCoins(sub.user_id);
-      await db.query(
-        `UPDATE coins SET balance = balance + $1, total_earned = total_earned + $1,
-           peak_balance = GREATEST(peak_balance, balance + $1), updated_at = NOW()
-         WHERE user_id = $2`,
-        [sub.points, sub.user_id]
-      );
-      await db.query(
-        `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador)
-         VALUES ($1, 'accion_ig', $2, $3, 'instagram', $4)`,
-        [sub.user_id, sub.points, `Instagram: ${sub.label}`, req.user.email || "admin"]
-      );
-    }
-    await db.query(
-      `UPDATE ig_submissions SET status=$1, reviewed_by=$2, reviewed_at=NOW() WHERE id=$3`,
-      [status, req.user.email || "admin", req.params.id]
+    let sub = null;
+    const gano = await acreditarSiGana(
+      // reclamar: transición atómica pending → status. Devuelve fila sólo el ganador.
+      async () => {
+        const upd = await db.query(
+          `UPDATE ig_submissions SET status = $1, reviewed_by = $2, reviewed_at = NOW()
+            WHERE id = $3 AND status = 'pending'
+            RETURNING *`,
+          [status, req.user.email || "admin", id]
+        );
+        sub = upd.rows[0] || null;
+        return !!sub;
+      },
+      // acreditar: sólo el ganador, y sólo si aprobó, mueve el saldo.
+      async () => {
+        if (status !== "approved") return;
+        await getOrCreateCoins(sub.user_id);
+        await db.query(
+          `UPDATE coins SET balance = balance + $1, total_earned = total_earned + $1,
+             peak_balance = GREATEST(peak_balance, balance + $1), updated_at = NOW()
+           WHERE user_id = $2`,
+          [sub.points, sub.user_id]
+        );
+        await db.query(
+          `INSERT INTO coin_transactions (user_id, type, amount, reason, canal, operador)
+           VALUES ($1, 'accion_ig', $2, $3, 'instagram', $4)`,
+          [sub.user_id, sub.points, `Instagram: ${sub.label}`, req.user.email || "admin"]
+        );
+      }
     );
+
+    if (!gano) {
+      const ex = await db.query(`SELECT status FROM ig_submissions WHERE id = $1`, [id]);
+      if (!ex.rows[0]) return res.status(404).json({ error: "Evidencia no encontrada" });
+      return res.status(409).json({ error: "Esta evidencia ya fue revisada" });
+    }
     res.json({ success: true });
   } catch (e) {
     console.error("IG ADMIN PATCH ERROR:", e);

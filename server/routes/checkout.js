@@ -32,6 +32,11 @@ const { configureCloudinary } = require("../lib/cloudinaryConfig");
 const { uploadLimiter } = require("../security");
 const { authOptional } = require("../auth");
 const rateLimit = require("express-rate-limit");
+// H1 (auditoría 2026-08-08): los packs de monedas nunca entran en la base
+// descontable, y una orden gratis con pack no se auto-marca pagada.
+const {
+  esLineaPack, centavosDescontables, calcularDescuento, estadoInicialOrden,
+} = require("../lib/descuento-packs");
 
 // Limita el sondeo de códigos promo (validate-code es público): 20/min por IP.
 const codeLimiter = rateLimit({
@@ -106,8 +111,15 @@ function esc(str) {
  *   { ok: false, reason: "not_found" | "inactive" | "expired" | "max_uses" | "min_subtotal" }
  *
  * NO incrementa current_uses — eso lo hace finalizeCheckoutCode al checkout.
+ *
+ * `descontableCents` = subtotal SIN los packs de monedas (H1). El mínimo de
+ * compra (min_subtotal) se mide contra el subtotal entero, pero el descuento se
+ * calcula SÓLO sobre la base descontable: un pack no se descuenta nunca. Cuando
+ * no se pasa (preview público de validate-code, que no tiene el detalle de
+ * líneas), cae al subtotal — es sólo un preview y no acredita nada; el checkout
+ * real recomputa con los packs afuera.
  */
-async function validatePromoCode(code, subtotalCents) {
+async function validatePromoCode(code, subtotalCents, descontableCents = subtotalCents) {
   if (!code || typeof code !== "string") return { ok: false, reason: "not_found" };
   const { rows } = await db.query(
     `SELECT * FROM promo_codes WHERE UPPER(code) = UPPER($1) LIMIT 1`,
@@ -121,9 +133,7 @@ async function validatePromoCode(code, subtotalCents) {
   if (subtotalCents < row.min_subtotal_cents) {
     return { ok: false, reason: "min_subtotal", min_subtotal_cents: row.min_subtotal_cents };
   }
-  const discount = row.kind === "percent"
-    ? Math.floor((subtotalCents * row.value) / 100)
-    : Math.min(row.value, subtotalCents);  // fixed cents — capped al subtotal
+  const discount = calcularDescuento({ kind: row.kind, value: row.value, descontableCents });
   return { ok: true, promo: row, discount_cents: discount };
 }
 
@@ -449,11 +459,22 @@ function publicRouter({ authRequired } = {}) {
         });
       }
 
+      // H1: base descontable = subtotal SIN los packs de monedas. Un código de
+      // descuento no puede tocar un pack (comprar saldo a $3.600 y gastarlo a
+      // $4.000 con un cupón encima imprime dinero). Mismo criterio que ya existe
+      // para "no pagar packs con monedas", ahora también en el descuento.
+      const descontableCents = centavosDescontables(
+        lineItems.map((li) => ({
+          line_total_cents: li.line_total_cents,
+          es_pack: esLineaPack(productMap.get(li.product_id)?.meta),
+        }))
+      );
+
       // F5: validar + aplicar promo_code si vino
       let discountCents = 0;
       let appliedPromoCode = null;
       if (body.promo_code) {
-        const promoResult = await validatePromoCode(body.promo_code, subtotalCents);
+        const promoResult = await validatePromoCode(body.promo_code, subtotalCents, descontableCents);
         if (!promoResult.ok) {
           await client.query("ROLLBACK");
           return res.status(400).json({
@@ -471,10 +492,8 @@ function publicRouter({ authRequired } = {}) {
       //  • Código que cubre todo el subtotal (comp/giveaway 100% off): la
       //    orden es una cortesía — cobrar sólo el envío dejaría un pago
       //    residual en MP y rompería la auto-aprobación (total=0 → paid).
-      const cartAllPacks = lineItems.every((li) => {
-        const meta = productMap.get(li.product_id)?.meta;
-        return !!(meta && (meta.points_pack || meta.points_custom));
-      });
+      const cartAllPacks = lineItems.every((li) => esLineaPack(productMap.get(li.product_id)?.meta));
+      const hayPack = lineItems.some((li) => esLineaPack(productMap.get(li.product_id)?.meta));
       const isFullComp = subtotalCents > 0 && discountCents >= subtotalCents;
       const shippingCents = (cartAllPacks || isFullComp)
         ? 0
@@ -491,11 +510,7 @@ function publicRouter({ authRequired } = {}) {
       if (isMonedasOrder) {
         // Los packs de monedas no se pueden pagar con monedas: comprarlas a
         // $3.600 y gastarlas a $4.000 imprimiría saldo infinito (9 → 10).
-        const hasPack = lineItems.some((li) => {
-          const meta = productMap.get(li.product_id)?.meta;
-          return !!(meta && (meta.points_pack || meta.points_custom));
-        });
-        if (hasPack) {
+        if (hayPack) {
           await client.query("ROLLBACK");
           return res.status(400).json({ error: "Los packs de monedas no se pueden pagar con monedas" });
         }
@@ -511,8 +526,12 @@ function publicRouter({ authRequired } = {}) {
       // F5+: si el descuento cubre el 100% (total=0), la orden se marca
       // directamente como pagada — no hay nada que cobrar via MP.
       // Caso de uso: códigos 100% off (giveaways, comp tester, etc.)
+      // H1: pero una orden gratis CON un pack no se auto-paga — el pack acredita
+      // monedas reales, así que total=0 + pack sería minteo gratis. Queda
+      // pendiente para revisión manual (post-exclusión de packs esto es casi
+      // imposible: el valor del pack sobrevive al descuento).
       const isFreeOrder = totalCents === 0;
-      const initialStatus = (isFreeOrder || isMonedasOrder) ? "paid" : "pending_payment";
+      const initialStatus = estadoInicialOrden({ totalCents, isMonedasOrder, hayPack });
 
       // 2. Crear orden con public_id único.
       let publicId;
@@ -629,7 +648,9 @@ function publicRouter({ authRequired } = {}) {
       //     directamente al INSERT (sin pasar por MP). Disparar el flow
       //     de "pago confirmado" — email + broadcast — y devolver al
       //     frontend que vaya directo al success page.
-      if (isFreeOrder) {
+      // H1: sólo dispara el flow de "pagada" si de verdad nació paid. Una orden
+      // gratis con pack quedó en pending_payment y NO debe acreditar nada.
+      if (isFreeOrder && initialStatus === "paid") {
         shopNotify.onOrderPaid(inserted, lineItems).catch(() => {});
         return res.json({
           public_id: inserted.public_id,
