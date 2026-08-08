@@ -6,6 +6,10 @@ const db      = require("../db");
 const { authRequired } = require("../auth");
 const { sanitizeText } = require("../security");
 const { REFERRAL_MAX_PER_USER } = require("../lib/referrals");
+// 🔒 C1: el armado del ranking público y la chapita de staff derivada. El rol
+// se lee para derivar y no sale nunca por una ruta anónima.
+const { armarRankingPublico, normalizarLimite } = require("../lib/ranking-publico");
+const { chapitaStaff } = require("../lib/perfil-publico");
 const multer = require('multer');
 // Sprint 14 fix: el SDK de Cloudinary se configura por request leyendo
 // las API keys de configStore (DB encriptada via wizard /admin/setup),
@@ -223,7 +227,11 @@ router.get("/", authRequired, async (req, res) => {
     const allItems = items;
 
     res.json({
-      user:    { ...user, level },
+      // staff_badge: la chapita YA DIBUJADA (mismo formato que el perfil
+      // público) para que ProfilePage la pinte sin ramificar sobre el rol. Ésta
+      // es la ruta del PROPIO perfil (autenticada), así que el rol sigue estando
+      // — pero el cliente ya no lo usa: pinta staff_badge y listo.
+      user:    { ...user, level, staff_badge: chapitaStaff(user.role) },
       profile: { ...profile, owned_items: allItems },
       coins:   { balance, total_earned: Number(coins.total_earned), peak_balance: peak },
       stats,
@@ -563,28 +571,41 @@ router.patch("/banner", authRequired, async (req, res) => {
 });
 
 // ── GET /profile/ranking ──────────────────────────────────────────────────────
+// Ruta PÚBLICA: no pide login porque es la tabla de posiciones y tiene que poder
+// mirarse. Por eso NO puede devolver datos de cuenta (email, role,
+// client_number) ni pasar por alto las banderas privacy_*. Quién sale y con qué
+// campos lo decide armarRankingPublico() — testeado en lib/ranking-publico.test.js.
+// Cierra el hallazgo C1 de la auditoría 2026-08-08.
 router.get("/ranking", async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit)||20, 50);
+    const limit = normalizarLimite(req.query.limit);
     // Sprint 11: ranking incluye posts_count + friends_count reales en lugar
     // de total_shipments/delivered legacy. Subqueries son baratas (count(*)
     // sobre indexed cols) y limit es <= 50.
+    // `client_number` NO se selecciona más. `u.role` se lee para DERIVAR el
+    // booleano is_staff (el 💎 y la chapita STAFF) y muere en
+    // armarRankingPublico(): no se copia a la respuesta.
+    // El filtro `privacy_coins IS NOT FALSE` se repite acá SÓLO para que el LIMIT
+    // devuelva la cantidad pedida (si se filtrara únicamente en JS, pedir 20
+    // podría dar menos). La autoridad sigue siendo la lib.
     const q = await db.query(`
-      SELECT u.id, u.name, u.client_number, u.role,
+      SELECT u.id, u.name, u.role,
         lc.balance, lc.total_earned, COALESCE(lc.monedas_balance, 0) AS monedas_balance,
         up.name_color, up.name_glow, up.name_glow_color, up.name_grad_from, up.name_grad_to,
         up.nickname, up.nick_color, up.nick_glow, up.icon_slug, up.avatar_url, up.avatar_key,
         up.frame_key, up.badges,
+        up.privacy_coins, up.privacy_envios,
         (SELECT COUNT(*)::int FROM user_posts      WHERE user_id = u.id) AS posts_count,
         (SELECT COUNT(*)::int FROM chat_friendships WHERE status='accepted' AND (user_id=u.id OR friend_id=u.id)) AS friends_count
       FROM users u
       JOIN coins lc ON lc.user_id = u.id
       LEFT JOIN user_profiles up ON up.user_id = u.id
       WHERE u.role != 'operator'
+        AND up.privacy_coins IS NOT FALSE
       ORDER BY lc.total_earned DESC
       LIMIT $1
     `, [limit]);
-    res.json({ ok: true, ranking: q.rows });
+    res.json({ ok: true, ranking: armarRankingPublico(q.rows) });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 

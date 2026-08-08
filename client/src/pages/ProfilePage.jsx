@@ -710,6 +710,12 @@ export default function ProfilePage() {
 
   const allItems=shop||[]; const owned=profile?.profile?.owned_items||[];
   const level=profile?.user?.level||"bronze"; const lc=LEVEL[level];
+  // La chapita de staff llega YA DIBUJADA (icon/label/title/color/text_color/
+  // color_dark) por las dos rutas que alimentan esta pantalla: /profile (el
+  // propio) y /profile/u/:username (el de otro, público). El rol NO viaja por la
+  // ruta pública — es un dato de cuenta — así que esta pantalla no ramifica
+  // sobre el rol: pinta lo que llegó en staff_badge.
+  const staffBadge=profile?.user?.staff_badge||null;
   const titleItem=allItems.find(i=>i.key===equip.title_key);
   const PRIVATE_BADGES=["badge_creator","badge_mod","badge_bot","badge_beta"];
   const shopItems=allItems.filter(i=>!PRIVATE_BADGES.includes(i.key));
@@ -872,7 +878,7 @@ export default function ProfilePage() {
               <div className="pf-banner-eyebrow" style={{position:"absolute",top:24,left:28,zIndex:4}}>
                 <div style={{fontFamily:"'Gotham', monospace",fontSize:10,letterSpacing:"3.5px",textTransform:"uppercase",color:"var(--brand-accent)",display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
                   <span style={{width:28,height:1,background:"var(--brand-accent)",display:"inline-block"}}/>
-                  {isOwn?"Tu perfil":"Perfil"}{profile?.user?.role==="admin"?" · admin":profile?.user?.role==="operator"?" · operador":""}
+                  {isOwn?"Tu perfil":"Perfil"}{staffBadge?" · "+staffBadge.title.toLowerCase():""}
                 </div>
                 <div className="pf-banner-eyebrow-name" style={{fontFamily:"'Gotham', sans-serif",fontWeight:900,fontSize:"clamp(48px,6.4vw,76px)",lineHeight:.92,letterSpacing:"-0.04em",color:"rgba(240,236,227,.18)",textShadow:"0 4px 24px rgba(0,0,0,.5)",userSelect:"none"}}>
                   @{username||(profile?.user?.name||"").toUpperCase().replace(/\s+/g,"")}
@@ -916,8 +922,8 @@ export default function ProfilePage() {
                     </div>
                   )}
                   {/* Pawn de rango xat-style */}
-                  <div title={profile?.user?.role==="admin"?"ADMIN":profile?.user?.role==="operator"?"OPERADOR":lc.label} style={{position:"absolute",top:-2,right:-2,width:36,height:36,borderRadius:"50%",background:profile?.user?.role==="admin"?"linear-gradient(135deg,#ef4444,#dc2626)":profile?.user?.role==="operator"?"linear-gradient(135deg,#fb923c,#f97316)":`linear-gradient(135deg,${lc.color},${lc.color}cc)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,zIndex:5,border:"2.5px solid #03040c",boxShadow:`0 0 14px ${profile?.user?.role==="admin"?"#ef4444":profile?.user?.role==="operator"?"#fb923c":lc.color}66`}}>
-                    {profile?.user?.role==="admin"?"👑":profile?.user?.role==="operator"?"🛡":lc.icon}
+                  <div title={staffBadge?staffBadge.title:lc.label} style={{position:"absolute",top:-2,right:-2,width:36,height:36,borderRadius:"50%",background:staffBadge?`linear-gradient(135deg,${staffBadge.color},${staffBadge.color_dark})`:`linear-gradient(135deg,${lc.color},${lc.color}cc)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,zIndex:5,border:"2.5px solid #03040c",boxShadow:`0 0 14px ${staffBadge?staffBadge.color:lc.color}66`}}>
+                    {staffBadge?staffBadge.icon:lc.icon}
                   </div>
                   {/* Online indicator (siempre online si es own) */}
                   {isOwn&&<div title="Online" style={{position:"absolute",bottom:4,right:4,width:18,height:18,borderRadius:"50%",background:"#22c55e",border:"3px solid #03040c",zIndex:5,boxShadow:"0 0 12px #22c55e",animation:"glowPulse 2s ease-in-out infinite"}}/>}
@@ -937,13 +943,12 @@ export default function ProfilePage() {
               </div>
 
               <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",marginBottom:8,filter:"drop-shadow(0 4px 24px rgba(var(--brand-primary-rgb),.15))"}}>
-                {isOwn?<UserNameHeader size={38}/>:<UserNameHeader className="pf-name-row" own={false} name={profile?.profile?.custom_name||(profile?.user?.name||"")} color={profile?.profile?.name_color||(profile?.user?.role==="admin"?"#ef4444":profile?.user?.role==="operator"?"#fb923c":null)} glowColor={profile?.profile?.name_glow_color} glowInt={profile?.profile?.name_glow||0} size={38}/>}
-                {!["admin","operator"].includes(profile?.user?.role) && <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:`${lc.color}14`,border:`1px solid ${lc.color}38`,color:lc.color}}>{lc.icon} {lc.label}</span>}
-                {profile?.user?.role==="admin"&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.3)",color:"#fca5a5"}}>👑 ADMIN</span>}
-                {profile?.user?.role==="operator"&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:"rgba(251,146,60,.08)",border:"1px solid rgba(251,146,60,.3)",color:"#fb923c"}}>🛡 OP</span>}
+                {isOwn?<UserNameHeader size={38}/>:<UserNameHeader className="pf-name-row" own={false} name={profile?.profile?.custom_name||(profile?.user?.name||"")} color={profile?.profile?.name_color||staffBadge?.color||null} glowColor={profile?.profile?.name_glow_color} glowInt={profile?.profile?.name_glow||0} size={38}/>}
+                {!staffBadge && <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:`${lc.color}14`,border:`1px solid ${lc.color}38`,color:lc.color}}>{lc.icon} {lc.label}</span>}
+                {staffBadge && <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 14px",fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2.5px",textTransform:"uppercase",background:`${staffBadge.color}14`,border:`1px solid ${staffBadge.color}4d`,color:staffBadge.text_color}}>{staffBadge.icon} {staffBadge.label}</span>}
               </div>
               <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:4}}>
-                <span style={{fontSize:10,color:"rgba(255,255,255,.2)"}}>#{profile?.user?.client_number}</span>
+                {profile?.user?.client_number != null && <span style={{fontSize:10,color:"rgba(255,255,255,.2)"}}>#{profile?.user?.client_number}</span>}
                 {equip.title_key && allItems.find(i=>i.key===equip.title_key) && (()=>{
                   const ti=allItems.find(i=>i.key===equip.title_key); const td=ti.data||{};
                   return <span style={{fontSize:10,fontWeight:800,letterSpacing:"2px",textTransform:"uppercase",color:td.color||"var(--brand-primary)",background:`${td.color||"var(--brand-primary)"}15`,border:`1px solid ${td.color||"var(--brand-primary)"}30`,padding:"2px 10px",borderRadius:100}}>— {ti.name} —</span>;
@@ -1002,7 +1007,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 {/* Level progress (oculto para staff) */}
-                {!["admin","operator"].includes(profile?.user?.role) && (
+                {!staffBadge && (
                 <div style={{flex:1,minWidth:200,maxWidth:280}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                     <span style={{fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>Nivel <b style={{color:lc.color,fontWeight:500}}>{lc.label}</b></span>

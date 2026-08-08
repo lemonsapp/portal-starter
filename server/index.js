@@ -26,6 +26,7 @@ const coinsRouter         = require("./routes/coins");         // ✅ Coins
 const notificationsRouter = require("./routes/notifications"); // ✅ Notificaciones in-app (broadcast)
 const profileRouter       = require("./routes/profile");         // 👤 Perfil de usuario
 const { getSocialStats }  = require("./routes/profile");         // stats sociales compartidas
+const { armarPerfilPublico } = require("./lib/perfil-publico");   // 🔒 C1: qué ve un anónimo en un perfil público
 const chatRouter         = require("./routes/chat");
 const webauthnRouter     = require("./routes/webauthn");
 const adminConfig        = require("./routes/admin-config");    // 🪄 Setup wizard endpoints
@@ -2630,13 +2631,22 @@ app.patch("/profile/username", authRequired, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// Ruta PÚBLICA: no pide login porque es la que dibuja la página de perfil de
+// cualquiera. Por eso NO puede devolver datos de cuenta (email, role,
+// client_number) ni pasar por alto las banderas privacy_*. Quién ve qué lo
+// decide armarPerfilPublico() — un solo lugar, testeado en lib/perfil-publico.test.js.
+// Cierra el hallazgo C1 de la auditoría 2026-08-08.
 app.get("/profile/u/:username", async (req, res) => {
   try {
     const { rows } = await db.query("SELECT id FROM users WHERE username=$1", [req.params.username.toLowerCase()]);
     if (!rows.length) return res.status(404).json({ error: "Usuario no encontrado" });
     const uid = rows[0].id;
+    // `u.role` se lee para DERIVAR la chapita de la casa (la corona del admin,
+    // el escudo del operador) y muere en armarPerfilPublico(): lo que sale es
+    // `staff_badge` ya dibujada, nunca el rol. `email` y `client_number` NO se
+    // seleccionan más: no tienen por qué salir de una ruta anónima.
     const { rows: profile } = await db.query(`
-      SELECT u.id, u.name, u.email, u.role, u.client_number, u.username,
+      SELECT u.id, u.name, u.role, u.username,
         up.bio, up.avatar_key, up.frame_key, up.title_key, up.badges, up.avatar_url,
         up.banner_effect, up.banner_color1, up.banner_color2,
         up.custom_name, up.name_color, up.name_glow_color, up.name_glow,
@@ -2651,11 +2661,13 @@ app.get("/profile/u/:username", async (req, res) => {
     // amigos, seguidores…). Antes acá se consultaba `shipments`, tabla que NO
     // existe en este portal: ver el perfil de OTRA persona devolvía 500 y la
     // pantalla no cargaba. Verificado en producción el 2026-08-06.
-    const stats = [await getSocialStats(uid)];
+    const stats = await getSocialStats(uid);
     const { rows: coins } = await db.query("SELECT COALESCE(balance,0) as balance, COALESCE(total_earned,0) as total_earned FROM coins WHERE user_id=$1", [uid]);
     const { rows: items } = await db.query("SELECT item_key FROM user_items WHERE user_id=$1", [uid]);
     const owned_items = items.map(i => i.item_key);
-    res.json({ user: p, profile: { ...p, owned_items }, stats: stats[0], coins: coins[0] });
+    // armarPerfilPublico aplica las banderas privacy_* y borra los campos de
+    // cuenta antes de responder.
+    res.json(armarPerfilPublico({ perfil: p, stats, coins: coins[0], ownedItems: owned_items }));
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 

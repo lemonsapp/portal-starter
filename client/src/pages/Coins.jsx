@@ -611,7 +611,9 @@ function Ranking() {
     <div style={{ display:"flex",flexDirection:"column",gap:10 }}>
       {data.map((u, i) => {
         const ns = buildNameStyle(u);
-        const isStaff = ["admin","operator"].includes(u.role);
+        // el ranking es público (la ruta no pide login), así que el server NO
+        // manda el rol: manda este booleano ya derivado. La chapita es la misma.
+        const isStaff = u.is_staff === true;
         const isPod = i<3;
         return (
           <div key={u.id}
@@ -636,8 +638,10 @@ function Ranking() {
                 {isStaff && <span style={{ background:"#ef444418",border:"1px solid #ef444430",borderRadius:6,padding:"2px 8px",fontSize:9,color:"#ef4444",fontWeight:900,letterSpacing:1 }}>STAFF</span>}
               </div>
               {u.nickname && <div style={{ fontSize:12,color:u.nick_color||"#555",textShadow:u.nick_glow?`0 0 ${u.nick_glow}px ${u.nick_color||"#555"}`:"none",marginBottom:4 }}>{u.nickname}</div>}
+              {/* el número de cliente NO se muestra más: el ranking es público
+                  (la ruta no pide login) y ese número identifica la cuenta.
+                  Los adornos sociales pueden no venir si la persona los ocultó. */}
               <div style={{ display:"flex",gap:12 }}>
-                <span style={{ color:"rgba(237,233,224,.6)",fontSize:11 }}>#{u.client_number}</span>
                 {/* Sprint 11: stats sociales reales en el ranking. */}
                 {u.posts_count>0   && <span style={{ color:"rgba(237,233,224,.6)",fontSize:11 }}>📰 {u.posts_count}</span>}
                 {u.friends_count>0 && <span style={{ color:"rgba(237,233,224,.6)",fontSize:11 }}>👥 {u.friends_count}</span>}
