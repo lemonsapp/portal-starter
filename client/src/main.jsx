@@ -15,6 +15,16 @@ import App from "./App.jsx";
 import "./styles.css";
 import "./styles/premium-fx.css";
 
+// El _r lo agrega ChunkErrorBoundary para reventar cachés de HTML viejo
+// tras un deploy. Cumplido su trabajo, se borra de la barra de direcciones.
+try {
+  const u = new URL(window.location.href);
+  if (u.searchParams.has("_r")) {
+    u.searchParams.delete("_r");
+    window.history.replaceState(null, "", u.toString());
+  }
+} catch { /* sin URL API no hay nada que limpiar */ }
+
 // Limpiar Service Worker para evitar problemas de caché
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(regs => {
