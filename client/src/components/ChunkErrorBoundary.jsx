@@ -109,14 +109,16 @@ export default class ChunkErrorBoundary extends Component {
             const wrap = {
                 minHeight: "100vh",
                 display: "grid", placeItems: "center",
-                background: "#080808", color: "#A7F5C8",
+                background: "var(--brand-bg, #080808)",
+                color: "var(--brand-primary, #A7F5C8)",
                 fontFamily: "system-ui, sans-serif",
                 padding: 24, textAlign: "center",
             };
             const btn = {
                 marginTop: 14, padding: "10px 22px", borderRadius: 999,
-                border: "1px solid #A7F5C855", background: "transparent",
-                color: "#A7F5C8", fontSize: 13, fontWeight: 700,
+                border: "1px solid rgba(var(--brand-primary-rgb, 167,245,200), .33)",
+                background: "transparent",
+                color: "var(--brand-primary, #A7F5C8)", fontSize: 13, fontWeight: 700,
                 cursor: "pointer", fontFamily: "inherit",
             };
 
