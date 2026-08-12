@@ -338,7 +338,12 @@ a:focus-visible {
 }
 @keyframes fxPageIn {
   from { opacity: 0; transform: translate3d(0, 10px, 0) scale(.995); filter: blur(4px); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0)   scale(1);     filter: blur(0); }
+  /* `none` y no la identidad (translate3d(0,0,0)): con fill-mode both el valor
+     final queda pegado para siempre, y CUALQUIER transform/filter distinto de
+     none convierte a .fxPage en containing block de position:fixed — los
+     modales de las páginas quedaban anclados al contenido en vez de a la
+     pantalla (cortados/inalcanzables en mobile, 2026-08-12). */
+  to   { opacity: 1; transform: none; filter: none; }
 }
 
 /* =========================================================

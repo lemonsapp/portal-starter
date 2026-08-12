@@ -272,6 +272,32 @@ const CSS = `
   .adm-editor__title { order:-1; flex:1 1 100%; }
   .adm-editor__top .adm-hide-mobile { display:none; }
 }
+
+/* ---- mobile ----
+   iOS Safari hace ZOOM automático al enfocar cualquier campo con fuente
+   menor a 16px, y esa pantalla agrandada y corrida es el "no me deja
+   moverme para editar" clásico. En táctil los campos van a 16px. */
+@media (max-width:700px){
+  .adm-input, .adm-textarea, .adm-select { font-size:16px; }
+  .adm-only-desktop { display:none !important; }
+}
+
+/* ---- lista de tarjetas: la cara mobile de una tabla ----
+   Una tabla ancha en el celu esconde las acciones tras un scroll horizontal
+   que nadie descubre. En pantallas chicas se muestra esta lista en su lugar
+   (la tabla lleva .adm-only-desktop y la lista sólo existe bajo 700px). */
+.adm-cardlist { display:none; }
+@media (max-width:700px){
+  .adm-cardlist { display:flex; flex-direction:column; gap:10px; }
+}
+.adm-icard { border:1px solid var(--border); border-radius:var(--r-sm); background:var(--surface); padding:12px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--sh-sm); }
+.adm-icard__top { display:flex; gap:12px; align-items:center; min-width:0; }
+.adm-icard__body { flex:1; min-width:0; }
+.adm-icard__name { font-weight:800; font-size:14px; }
+.adm-icard__desc { font-size:12px; color:var(--text-2); margin-top:1px; overflow:hidden; text-overflow:ellipsis; }
+.adm-icard__meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12px; color:var(--text-2); }
+.adm-icard__acts { display:flex; gap:8px; }
+.adm-icard__acts > .adm-btn { flex:1; }
 `;
 
 let injected = false;

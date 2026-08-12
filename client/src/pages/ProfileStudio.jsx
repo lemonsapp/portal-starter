@@ -8,6 +8,32 @@ import { CoinIcon } from "../lib/coin.js";
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 const hdrs = () => ({ Authorization: "Bearer " + getToken(), "Content-Type": "application/json" });
+
+// ── Colores para el canvas ───────────────────────────────────────────────────
+// El canvas 2D NO entiende var(--...): addColorStop con una variable CSS tira
+// SyntaxError. Con "reducir movimiento" activado el dibujo corre sincrónico
+// dentro del useEffect, el error lo atrapa el ErrorBoundary y TUMBA la página
+// entera — así se rompió admin → Perfil para el dueño (2026-08-12). Todo color
+// que toque el canvas pasa por acá: var() se resuelve al valor real de la
+// variable, y cualquier cosa que no sea #rrggbb cae al fallback (el dibujo
+// concatena alpha, c+"22", así que necesita hex de 6 sí o sí).
+const HEX6 = /^#[0-9a-fA-F]{6}$/;
+function colorCanvas(c, fb) {
+  if (typeof c === "string") {
+    const m = c.match(/^var\((--[\w-]+)\s*(?:,\s*([^)]+))?\)$/);
+    if (m) {
+      try {
+        const v = getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim();
+        if (HEX6.test(v)) return v;
+      } catch { /* sin DOM o var inexistente: cae al fallback del var() */ }
+      c = (m[2] || "").trim();
+    }
+    if (HEX6.test(c)) return c;
+  }
+  return fb;
+}
+const brandPrimary = () => colorCanvas("var(--brand-primary)", "#f5e03a");
+const brandAccent  = () => colorCanvas("var(--brand-accent)",  "#ff5500");
 const PALETTE = ["var(--brand-primary, #f5e03a)","var(--brand-accent, #ff5500)","#ff3300","#22c55e","#60a5fa","#a78bfa","#f472b6","#e11d48","#0ea5e9","#14b8a6","#06b6d4","#ffffff","#ede9e0","#000000"];
 const EMOJIS  = ["⚡","🔥","🪙","💎","👑","🌟","🏆","💀","🐋","🌈","❄","🚀","🎯","💜","🖤","⭐","🌀","👾","🎮","🎪"];
 const BANNER_EFFECTS = [
@@ -31,14 +57,29 @@ const BANNER_EFFECTS = [
   { id:"vortex",     name:"Vórtice",    icon:"🌀" },
 ];
 
-export function BannerCanvas({ effect, color1, color2, height=120 }) {
+export function BannerCanvas({ effect, color1: rawC1, color2: rawC2, height=120 }) {
   const canvasRef = useRef(null);
   const animRef   = useRef(null);
   const psRef     = useRef([]);
   useEffect(() => {
     const canvas = canvasRef.current; if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const resize = () => { canvas.width = canvas.parentElement?.offsetWidth||500; canvas.height = height; };
+    // Saneado obligatorio: los colores guardados pueden traer "var(--...)"
+    // (la paleta vieja los ofrecía tal cual) y el canvas no los parsea.
+    const color1 = colorCanvas(rawC1, "#f5e03a");
+    const color2 = colorCanvas(rawC2, "#ff5500");
+    const brand1 = brandPrimary();
+    // Tocar canvas.width BORRA el bitmap. El ResizeObserver dispara siempre
+    // una vez al observar (async, después del primer draw), así que sin el
+    // redibujo el modo "reducir movimiento" quedaba con el banner en blanco:
+    // dibujaba su único cuadro y el RO se lo limpiaba.
+    let redibujar = null;
+    const resize = () => {
+      const w = canvas.parentElement?.offsetWidth || 500;
+      if (canvas.width === w && canvas.height === height) return;
+      canvas.width = w; canvas.height = height;
+      redibujar?.();
+    };
     resize();
     const ro = new ResizeObserver(resize);
     if (canvas.parentElement) ro.observe(canvas.parentElement);
@@ -72,7 +113,7 @@ export function BannerCanvas({ effect, color1, color2, height=120 }) {
       // background
       if(effect==="aurora"){
         const bg=ctx.createLinearGradient(0,0,w,h); bg.addColorStop(0,"#040110"); bg.addColorStop(1,"#0a0820"); ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
-        [[w*.1,h*.3,color1,.14],[w*.5,h*.2,"#8b5cf6",.11],[w*.8,h*.5,color2,.09],[w*.3,h*.7,"var(--brand-primary, #f5e03a)",.07]].forEach(([x,y,c,a])=>{
+        [[w*.1,h*.3,color1,.14],[w*.5,h*.2,"#8b5cf6",.11],[w*.8,h*.5,color2,.09],[w*.3,h*.7,brand1,.07]].forEach(([x,y,c,a])=>{
           const g=ctx.createRadialGradient(x,y,0,x,y,w*.28); g.addColorStop(0,c+(Math.round(a*255).toString(16).padStart(2,"0"))); g.addColorStop(1,"transparent"); ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
         });
       } else if(effect==="cyber"){
@@ -95,7 +136,11 @@ export function BannerCanvas({ effect, color1, color2, height=120 }) {
         const a=(Math.sin(p.phase)*.3+.7)*p.opacity; ctx.globalAlpha=a;
         if(effect==="lemon_rain"){ctx.font=`${p.size}px serif`;ctx.fillText("🍃",p.x,p.y);}
         else if(effect==="lightning"){ctx.strokeStyle=color1;ctx.lineWidth=Math.random()<.03?2:.5;ctx.shadowColor=color1;ctx.shadowBlur=6;ctx.beginPath();let lx=p.x,ly=0;for(let s=0;s<8;s++){const nx=lx+(Math.random()-.5)*28,ny=ly+h/8;ctx.moveTo(lx,ly);ctx.lineTo(nx,ny);lx=nx;ly=ny;}ctx.stroke();ctx.shadowBlur=0;}
-        else if(effect==="fire"){const fr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,12+Math.sin(p.phase*3)*6);fr.addColorStop(0,"var(--brand-primary, #f5e03a)");fr.addColorStop(.5,"var(--brand-accent, #ff5500)");fr.addColorStop(1,"transparent");ctx.fillStyle=fr;ctx.beginPath();ctx.arc(p.x,p.y,14,0,Math.PI*2);ctx.fill();}
+        /* Las llamas usan los colores del ITEM (naranja→amarillo en "Llamas"),
+           no los de la marca: el rebranding las había apuntado a var(--brand-*)
+           — verde acá — y nadie lo notó porque este código crasheaba antes de
+           dibujar (addColorStop no parsea var()). */
+        else if(effect==="fire"){const fr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,12+Math.sin(p.phase*3)*6);fr.addColorStop(0,color1);fr.addColorStop(.5,color2);fr.addColorStop(1,"transparent");ctx.fillStyle=fr;ctx.beginPath();ctx.arc(p.x,p.y,14,0,Math.PI*2);ctx.fill();}
         else if(effect==="snow"){ctx.fillStyle="#bae6fd";ctx.beginPath();ctx.arc(p.x,p.y,p.size/5,0,Math.PI*2);ctx.fill();}
         else if(effect==="stars"){ctx.fillStyle=color1;ctx.shadowColor=color1;ctx.shadowBlur=6;ctx.beginPath();ctx.arc(p.x,p.y,p.size/3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
         else if(effect==="matrix"){ctx.fillStyle="#22c55e";ctx.font=`${p.size*.75}px monospace`;if(Math.random()<.01)p.char=String.fromCharCode(0x30A0+Math.random()*96);ctx.fillText(p.char||"0",p.x,p.y);}
@@ -112,15 +157,30 @@ export function BannerCanvas({ effect, color1, color2, height=120 }) {
     // Bucle con freno de fps y pausa por visibilidad.
     let ultimo = 0, visible = true;
     function frame(ts) {
+      if (drawRoto) return;  // dibujo roto: no re-agendar (nada de 60 errores/s)
       animRef.current = requestAnimationFrame(frame);
       if (!visible || document.hidden) return;
       if (minFrameMs && ts - ultimo < minFrameMs) return;
       ultimo = ts;
-      draw();
+      drawSeguro();
     }
 
+    // Un banner con datos rotos NO puede tumbar la página que lo muestra:
+    // si draw() tira, se avisa una vez por consola y se frena el bucle
+    // (sin esto, el error sincrónico sube al ErrorBoundary y mata la ruta).
+    let drawRoto = false;
+    const drawSeguro = () => {
+      try { draw(); }
+      catch (e) {
+        drawRoto = true;
+        console.warn(`[BannerCanvas] efecto "${effect}" no se pudo dibujar:`, e?.message);
+      }
+    };
+
+    redibujar = quieto ? drawSeguro : null;  // animado redibuja solo en el próximo frame
+
     if (quieto) {
-      draw();  // un cuadro y nada más
+      drawSeguro();  // un cuadro y nada más (más el redibujo si cambia el ancho)
       return ()=>{ ro.disconnect(); };
     }
 
@@ -137,7 +197,7 @@ export function BannerCanvas({ effect, color1, color2, height=120 }) {
       ro.disconnect(); io.disconnect();
       document.removeEventListener("visibilitychange", onVis);
     };
-  },[effect,color1,color2,height]);
+  },[effect,rawC1,rawC2,height]);
   return <canvas ref={canvasRef} style={{width:"100%",height:height+"px",display:"block",borderRadius:10}}/>;
 }
 
@@ -146,7 +206,10 @@ function ColorPicker({ value, onChange, label }) {
     <div>
       {label&&<div style={{fontSize:9,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(237,233,224,.4)",marginBottom:8}}>{label}</div>}
       <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:8}}>
-        {PALETTE.map(c=><div key={c} onClick={()=>onChange(c)} style={{width:22,height:22,borderRadius:"50%",background:c,cursor:"pointer",border:value===c?"2px solid #fff":"2px solid transparent",boxShadow:value===c?"0 0 6px "+c:"none",transition:"all .15s",flexShrink:0}}/>)}
+        {/* colorCanvas al elegir: el swatch puede ser var(--...) (se ve bien en
+            CSS), pero lo que se GUARDA tiene que ser hex — el canvas no parsea
+            var() y c+"22" con var() es inválido hasta para CSS. */}
+        {PALETTE.map(cRaw=>{const c=colorCanvas(cRaw,"#f5e03a");return <div key={cRaw} onClick={()=>onChange(c)} style={{width:22,height:22,borderRadius:"50%",background:cRaw,cursor:"pointer",border:value===c?"2px solid #fff":"2px solid transparent",boxShadow:value===c?"0 0 6px "+c:"none",transition:"all .15s",flexShrink:0}}/>;})}
       </div>
       <div style={{display:"flex",gap:8}}>
         <input type="color" value={value} onChange={e=>onChange(e.target.value)} style={{width:32,height:32,borderRadius:8,border:"1px solid rgba(237,233,224,.15)",background:"none",cursor:"pointer",padding:2}}/>
@@ -216,17 +279,20 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
   },[]);
 
   const [bannerFx,  setBannerFx]  = useState(profile?.banner_effect||"none");
-  const [bannerC1,  setBannerC1]  = useState(profile?.banner_color1||"var(--brand-primary, #f5e03a)");
-  const [bannerC2,  setBannerC2]  = useState(profile?.banner_color2||"var(--brand-accent, #ff5500)");
+  // colorCanvas: los perfiles guardados pueden traer "var(--...)" de la paleta
+  // vieja — se resuelven al hex real para el canvas, el <input type=color> y
+  // para no volver a guardarlos rotos.
+  const [bannerC1,  setBannerC1]  = useState(colorCanvas(profile?.banner_color1, brandPrimary()));
+  const [bannerC2,  setBannerC2]  = useState(colorCanvas(profile?.banner_color2, brandAccent()));
 
   // Sincronizar estados cuando profile cambia desde el padre
   useEffect(()=>{
     if(profile?.banner_effect) setBannerFx(profile.banner_effect);
-    if(profile?.banner_color1) setBannerC1(profile.banner_color1);
-    if(profile?.banner_color2) setBannerC2(profile.banner_color2);
+    if(profile?.banner_color1) setBannerC1(colorCanvas(profile.banner_color1, brandPrimary()));
+    if(profile?.banner_color2) setBannerC2(colorCanvas(profile.banner_color2, brandAccent()));
   },[profile?.banner_effect, profile?.banner_color1, profile?.banner_color2]);
   const [badgeFx,   setBadgeFx]   = useState("lightning");
-  const [badgeColor,setBadgeColor]= useState("var(--brand-primary, #f5e03a)");
+  const [badgeColor,setBadgeColor]= useState(brandPrimary);
   const [badgeEmoji,setBadgeEmoji]= useState("⚡");
   const [badgeText, setBadgeText] = useState("CUSTOM");
   const [badgeName, setBadgeName] = useState("Mi Badge");
