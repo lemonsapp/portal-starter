@@ -5,6 +5,9 @@ import { useUser } from "../context/UserContext.jsx";
 // dibuja cada sistema con su propio set y en iPhone/Android sale GRIS (el dueño
 // lo vio plateado aca, 2026-08-06). Detalle en lib/coin.js.
 import { CoinIcon } from "../lib/coin.js";
+// Los desbloqueos del studio se cobran contra coins.balance = PUNTOS, así que
+// van con la gema y no con la moneda dorada. Ver lib/points.js.
+import { PointsIcon } from "../lib/points.js";
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 const hdrs = () => ({ Authorization: "Bearer " + getToken(), "Content-Type": "application/json" });
@@ -225,7 +228,7 @@ function LockOverlay({ cost, label, onUnlock, coins, loading }) {
     <div style={{position:"absolute",inset:0,borderRadius:"inherit",background:"rgba(4,6,13,.85)",backdropFilter:"blur(4px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:10,gap:12}}>
       <div style={{fontSize:32}}>🔒</div>
       <div style={{fontSize:18,fontWeight:800,color:"#ede9e0",textAlign:"center"}}>{label}</div>
-      <div style={{fontSize:11,color:ok?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.35)"}}><CoinIcon size={12} style={{verticalAlign:"-2px"}} /> {cost} puntos</div>
+      <div style={{fontSize:11,color:ok?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.35)"}}><PointsIcon size={12} style={{verticalAlign:"-2px"}} /> {cost} puntos</div>
       {!ok&&<div style={{fontSize:9,color:"rgba(var(--brand-accent-rgb),.7)"}}>Te faltan {cost-coins} puntos</div>}
       <button onClick={onUnlock} disabled={!ok||loading} style={{fontSize:12,fontWeight:800,letterSpacing:"1.5px",textTransform:"uppercase",padding:"10px 24px",borderRadius:8,border:"none",background:ok?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.1)",color:ok?"#04060d":"rgba(237,233,224,.3)",cursor:ok?"pointer":"not-allowed",opacity:loading?.7:1}}>
         {loading?"Desbloqueando...":ok?"⚡ Desbloquear":"Sin puntos"}
@@ -385,7 +388,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
         </div>
         <div className="st-head-saldo" style={{fontSize:10,color:"var(--brand-primary, #f5e03a)",textAlign:"right"}}>
           <div style={{fontSize:9,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(237,233,224,.35)",marginBottom:2}}>Tus puntos</div>
-          <div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}><CoinIcon size={14} /> {balance.toLocaleString()}</div>
+          <div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}><PointsIcon size={14} /> {balance.toLocaleString()}</div>
         </div>
       </div>
 
@@ -436,7 +439,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
                         <span style={{fontSize:8,padding:"1px 6px",borderRadius:100,background:{legendary:"rgba(var(--brand-primary-rgb),.1)",epic:"rgba(167,139,250,.1)",rare:"rgba(96,165,250,.1)",common:"rgba(237,233,224,.05)"}[banner.rarity],color:{legendary:"var(--brand-primary, #f5e03a)",epic:"#a78bfa",rare:"#60a5fa",common:"#ede9e0"}[banner.rarity]}}>{banner.rarity}</span>
                       </div>
                       {owned?(<button onClick={()=>equipBanner(banner.key)} disabled={saving} style={{width:"100%",height:28,fontSize:10,fontWeight:800,letterSpacing:"1px",textTransform:"uppercase",background:"rgba(var(--brand-primary-rgb),.12)",border:"1px solid rgba(var(--brand-primary-rgb),.28)",color:"var(--brand-primary, #f5e03a)",borderRadius:6,cursor:"pointer"}}>✓ Equipar</button>):(
-                        <button onClick={()=>buyBannerPreset(banner)} disabled={saving||balance<banner.cost_coins} style={{width:"100%",height:28,fontSize:10,fontWeight:800,letterSpacing:"1px",textTransform:"uppercase",background:balance>=banner.cost_coins?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.05)",border:"none",color:balance>=banner.cost_coins?"#04060d":"rgba(237,233,224,.3)",borderRadius:6,cursor:balance>=banner.cost_coins?"pointer":"not-allowed"}}><CoinIcon size={12} style={{verticalAlign:"-2px"}} /> {banner.cost_coins}</button>
+                        <button onClick={()=>buyBannerPreset(banner)} disabled={saving||balance<banner.cost_coins} style={{width:"100%",height:28,fontSize:10,fontWeight:800,letterSpacing:"1px",textTransform:"uppercase",background:balance>=banner.cost_coins?"var(--brand-primary, #f5e03a)":"rgba(237,233,224,.05)",border:"none",color:balance>=banner.cost_coins?"#04060d":"rgba(237,233,224,.3)",borderRadius:6,cursor:balance>=banner.cost_coins?"pointer":"not-allowed"}}><PointsIcon size={12} style={{verticalAlign:"-2px"}} /> {banner.cost_coins}</button>
                       )}
                     </div>
                   </div>);
@@ -466,7 +469,7 @@ export default function ProfileStudio({ me, profile, coins, onSave, shopItems=[]
                 ].map(f=>(
                   <div key={f.label} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 12px",borderRadius:8,background:f.has?"rgba(34,197,94,.06)":"rgba(255,255,255,.02)",border:`1px solid ${f.has?"rgba(34,197,94,.18)":"rgba(237,233,224,.06)"}`,marginBottom:6}}>
                     <span style={{fontSize:12,fontWeight:700,color:f.has?"#4ade80":"rgba(237,233,224,.45)"}}>{f.has?"✅":"🔒"} {f.label}</span>
-                    {!f.has&&f.cost>0&&<span style={{fontSize:10,color:"var(--brand-primary, #f5e03a)"}}><CoinIcon size={11} style={{verticalAlign:"-2px"}} /> {f.cost}</span>}
+                    {!f.has&&f.cost>0&&<span style={{fontSize:10,color:"var(--brand-primary, #f5e03a)"}}><PointsIcon size={11} style={{verticalAlign:"-2px"}} /> {f.cost}</span>}
                   </div>
                 ))}
               </div>

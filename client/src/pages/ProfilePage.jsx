@@ -11,6 +11,10 @@ import ProfileStudio from "./ProfileStudio.jsx";
 import { BannerCanvas, BadgePreview } from "./ProfileStudio.jsx";
 import ConnectedDevicesPanel from "../components/ConnectedDevicesPanel";
 import { CoinIcon, conMoneda } from "../lib/coin.js";
+// Todo lo que se compra desde el perfil se paga con PUNTOS (coins.balance), no
+// con monedas: los precios y los saldos van con la gema. La moneda dorada sólo
+// queda como avatar por defecto de la marca. Ver lib/points.js.
+import { PointsIcon } from "../lib/points.js";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
 const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -37,7 +41,7 @@ const ACHIEVEMENTS = [
   { key:"ach_likes100",   icon:"❤️", name:"Querido",      desc:"100 likes recibidos en tus posts",  condition:(s)=>s.likes>=100,      reward:200,  rarity:"rare"      },
   { key:"ach_loyal30",    icon:"💛", name:"Leal",         desc:"30 días en la comunidad",           condition:(s)=>s.days_active>=30, reward:0,    rarity:"common"    },
   { key:"ach_veteran365",  icon:"🏆", name:"Veterano",    desc:"1 año en la comunidad",             condition:(s)=>s.days_active>=365,reward:1000, rarity:"legendary" },
-  { key:"ach_coins500",    icon:<CoinIcon size={30} />, name:"Acumulador",  desc:"500+ puntos ganados en total",      condition:(s,c)=>c>=500,          reward:0,    rarity:"rare"      },
+  { key:"ach_coins500",    icon:<PointsIcon size={30} />, name:"Acumulador",  desc:"500+ puntos ganados en total",      condition:(s,c)=>c>=500,          reward:0,    rarity:"rare"      },
 ];
 
 const BADGE_CONFIG = {
@@ -199,7 +203,7 @@ function ItemCard({ item, owned, equipped, onBuy, onEquip, loading, readOnly }) 
         </button>
       ) : (
         <button onClick={()=>onBuy(item)} disabled={loading===item.key} style={{ width:"100%",height:28,fontSize:8,fontWeight:900,letterSpacing:"1px",textTransform:"uppercase",background:item.cost_coins===0?"rgba(34,197,94,.1)":"var(--brand-primary)",border:"none",color:item.cost_coins===0?"#22c55e":"#04060d",borderRadius:8,cursor:"pointer",opacity:loading===item.key?.6:1 }}>
-          {loading===item.key?"...":item.cost_coins===0?"🎁 Gratis":<><CoinIcon size={12} /> {item.cost_coins.toLocaleString()}</>}
+          {loading===item.key?"...":item.cost_coins===0?"🎁 Gratis":<><PointsIcon size={12} /> {item.cost_coins.toLocaleString()}</>}
         </button>
         ))}
       </div>
@@ -230,7 +234,7 @@ function AchievementCard({ ach, unlocked, stats }) {
         <div className="pf-ach-name" style={{ fontFamily:"'Gotham', sans-serif",fontSize:14,fontWeight:800,color:"#e2e8f0",marginBottom:5,letterSpacing:".5px",textTransform:"uppercase" }}>{ach.name}</div>
         <div className="pf-ach-desc" style={{ fontSize:11,color:"rgba(255,255,255,.4)",lineHeight:1.55,marginBottom:12 }}>{ach.desc}</div>
         <div style={{ fontFamily:"'Gotham', monospace",fontSize:9,fontWeight:500,letterSpacing:"2px",color:unlocked?r.color:"rgba(255,255,255,.2)",textTransform:"uppercase",display:"flex",alignItems:"center",flexWrap:"wrap",gap:6 }}>
-          {unlocked?<>✦ Desbloqueado</>:<>{ach.reward>0?<><CoinIcon size={12} /> +{ach.reward}</>:"Bloqueado"}{pct!==null&&<span style={{marginLeft:"auto",color:"rgba(255,255,255,.45)"}}>{Math.floor(pct)}%</span>}</>}
+          {unlocked?<>✦ Desbloqueado</>:<>{ach.reward>0?<><PointsIcon size={12} /> +{ach.reward}</>:"Bloqueado"}{pct!==null&&<span style={{marginLeft:"auto",color:"rgba(255,255,255,.45)"}}>{Math.floor(pct)}%</span>}</>}
         </div>
         {!unlocked&&pct!==null&&<div style={{ height:3,background:"rgba(255,255,255,.07)",overflow:"hidden",marginTop:10,position:"relative" }}><div style={{ height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${r.color},${r.color}88)`,boxShadow:`0 0 8px ${r.color}66`,transition:"width 1s cubic-bezier(.2,.8,.2,1)" }} /></div>}
       </div>
@@ -1000,7 +1004,7 @@ export default function ProfilePage() {
                 {/* Coins card premium */}
                 <div style={{display:"inline-flex",alignItems:"center",gap:10,padding:"10px 16px",background:"linear-gradient(135deg,rgba(var(--brand-primary-rgb),.1),rgba(var(--brand-accent-rgb),.05))",border:"1px solid rgba(var(--brand-primary-rgb),.25)",position:"relative",overflow:"hidden",animation:"glowPulse 4s ease-in-out infinite"}} className="pf-anim-heavy pf-coins-card">
                   <div className="pf-anim-heavy" style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,rgba(var(--brand-primary-rgb),.15),transparent)",backgroundSize:"200% 100%",animation:"shimmerBg 3s linear infinite",pointerEvents:"none"}}/>
-                  <span style={{fontSize:20,filter:"drop-shadow(0 0 8px rgba(var(--brand-primary-rgb),.5))",position:"relative",zIndex:1}}><CoinIcon size={20} /></span>
+                  <span style={{fontSize:20,color:"var(--brand-primary, #f5e03a)",filter:"drop-shadow(0 0 8px rgba(var(--brand-primary-rgb),.5))",position:"relative",zIndex:1}}><PointsIcon size={20} /></span>
                   <div className="pf-coins-num" style={{position:"relative",zIndex:1}}>
                     <div style={{fontFamily:"'Gotham', monospace",fontSize:8,letterSpacing:"2px",textTransform:"uppercase",color:"rgba(var(--brand-primary-rgb),.5)",lineHeight:1}}>Puntos</div>
                     <CountUp value={profile?.coins?.balance||0} style={{fontFamily:"'Gotham', sans-serif",fontSize:24,letterSpacing:"1px",color:"var(--brand-primary)",lineHeight:1.1,marginTop:2,display:"block"}}>{(profile?.coins?.balance||0).toLocaleString()}</CountUp>
@@ -1045,7 +1049,7 @@ export default function ProfilePage() {
                 {ico:"📰",lbl:"Posts",         v:String(stats.posts||0),         c:"var(--brand-primary)", hide:privacyLoaded&&!privacy.envios},
                 {ico:"❤️",lbl:"Likes recibidos",v:String(stats.likes||0),         c:"#ef4444", hide:privacyLoaded&&!privacy.envios},
                 {ico:"👥",lbl:"Amigos",        v:String(stats.friends||0),       c:"#60a5fa", hide:privacyLoaded&&!privacy.envios},
-                {ico:<CoinIcon size={18} />,lbl:"Puntos ganados", v:coinsTotal.toLocaleString(),    c:"var(--brand-primary)", hide:privacyLoaded&&!privacy.coins},
+                {ico:<PointsIcon size={18} style={{color:"var(--brand-primary, #f5e03a)"}} />,lbl:"Puntos ganados", v:coinsTotal.toLocaleString(),    c:"var(--brand-primary)", hide:privacyLoaded&&!privacy.coins},
               // minWidth:0 en la tarjeta es obligatorio: sin eso el track del
               // grid se agranda con el contenido (los números largos de "Coins
               // ganados") y la fila entera desborda la pantalla en el celu.
@@ -1228,7 +1232,7 @@ export default function ProfilePage() {
                         {[["all","⭐ Todo"],["avatar","🧑 Avatares"],["frame","🖼 Marcos"],["title","📛 Títulos"],["badge","⚡ Insignias"]].map(([v,l])=>(
                           <button key={v} onClick={()=>setTypeFilter(v)} style={{padding:"7px 16px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"2px",textTransform:"uppercase",cursor:"pointer",transition:"all .22s",border:typeFilter===v?"none":"1px solid rgba(255,255,255,.08)",background:typeFilter===v?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))":"rgba(255,255,255,.03)",color:typeFilter===v?"#000":"rgba(255,255,255,.35)",boxShadow:typeFilter===v?"0 4px 18px rgba(var(--brand-primary-rgb),.35)":"none"}}>{l}</button>
                         ))}
-                        <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700}}><CoinIcon size={10} /> {(profile?.coins?.balance||0).toLocaleString()} puntos disp.</span>
+                        <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700,display:"inline-flex",alignItems:"center",gap:4}}><PointsIcon size={10} style={{color:"var(--brand-primary, #f5e03a)"}} /> {(profile?.coins?.balance||0).toLocaleString()} puntos disp.</span>
                       </div>
                       <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
                         {filtered.map(item=><ItemCard key={item.key} item={item} owned={owned.includes(item.key)} equipped={item.type==="badge"?(equip.badges?.includes(item.key)):equip[item.type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
@@ -1244,7 +1248,7 @@ export default function ProfilePage() {
                     {[["all","⭐ Todo"],["avatar","🧑 Avatares"],["frame","🖼 Marcos"],["title","📛 Títulos"],["badge","⚡ Insignias"]].map(([v,l])=>(
                       <button key={v} onClick={()=>setTypeFilter(v)} style={{padding:"7px 16px",borderRadius:100,fontSize:8,fontWeight:900,letterSpacing:"2px",textTransform:"uppercase",cursor:"pointer",transition:"all .22s",border:typeFilter===v?"none":"1px solid rgba(255,255,255,.08)",background:typeFilter===v?"linear-gradient(135deg,var(--brand-primary),var(--brand-primary))":"rgba(255,255,255,.03)",color:typeFilter===v?"#000":"rgba(255,255,255,.35)",boxShadow:typeFilter===v?"0 4px 18px rgba(var(--brand-primary-rgb),.35)":"none"}}>{l}</button>
                     ))}
-                    <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700,display:"inline-flex",alignItems:"center",gap:4}}><CoinIcon size={10} /> {(profile?.coins?.balance||0).toLocaleString()} puntos disp.</span>
+                    <span style={{marginLeft:"auto",fontSize:9,color:"rgba(255,255,255,.22)",fontWeight:700,display:"inline-flex",alignItems:"center",gap:4}}><PointsIcon size={10} style={{color:"var(--brand-primary, #f5e03a)"}} /> {(profile?.coins?.balance||0).toLocaleString()} puntos disp.</span>
                   </div>
                   <div className="pf-item-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
                     {filtered.map(item=><ItemCard key={item.key} item={item} owned={owned.includes(item.key)} equipped={item.type==="badge"?(equip.badges?.includes(item.key)):equip[item.type+"_key"]===item.key} onBuy={handleBuy} onEquip={handleEquip} loading={buying}/>)}
@@ -1305,7 +1309,7 @@ export default function ProfilePage() {
                       <div><div style={{fontSize:13,fontWeight:800,color:"#e2e8f0"}}>Visibilidad del perfil</div><div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:2}}>Controlá qué ven los demás cuando visitan tu perfil</div></div>
                     </div>
                     <PrivacyToggle label="Mis envíos" desc="Cantidad de envíos totales, entregados y monto USD importado" icon="📦" iconBg="rgba(96,165,250,.1)" iconBorder="rgba(96,165,250,.18)" value={privacy.envios} onChange={async()=>{const v=!privacy.envios;setPrivacy(p=>({...p,envios:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_envios:v})});}catch(e){console.error(e);}}}/>
-                    <PrivacyToggle label="Puntos" desc="Balance actual y total de puntos ganados" icon={<CoinIcon size={18} />} iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.coins} onChange={async()=>{const v=!privacy.coins;setPrivacy(p=>({...p,coins:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_coins:v})});}catch(e){console.error(e);}}}/>
+                    <PrivacyToggle label="Puntos" desc="Balance actual y total de puntos ganados" icon={<PointsIcon size={18} style={{color:"var(--brand-primary, #f5e03a)"}} />} iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.coins} onChange={async()=>{const v=!privacy.coins;setPrivacy(p=>({...p,coins:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_coins:v})});}catch(e){console.error(e);}}}/>
                     <PrivacyToggle label="Logros" desc="Insignias desbloqueadas y progreso de achievements" icon="🏆" iconBg="rgba(var(--brand-primary-rgb),.1)" iconBorder="rgba(var(--brand-primary-rgb),.18)" value={privacy.logros} onChange={async()=>{const v=!privacy.logros;setPrivacy(p=>({...p,logros:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_logros:v})});}catch(e){console.error(e);}}}/>
                     <PrivacyToggle label="Posts" desc="Feed de publicaciones y actividad reciente" icon="📝" iconBg="rgba(167,139,250,.1)" iconBorder="rgba(167,139,250,.18)" value={privacy.posts} onChange={async()=>{const v=!privacy.posts;setPrivacy(p=>({...p,posts:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_posts:v})});}catch(e){console.error(e);}}}/>
                     <PrivacyToggle label="Lista de amigos" desc="Quién puede ver tus conexiones y amigos" icon="👥" iconBg="rgba(34,197,94,.1)" iconBorder="rgba(34,197,94,.18)" value={privacy.amigos} onChange={async()=>{const v=!privacy.amigos;setPrivacy(p=>({...p,amigos:v}));showToast(v?"👁 Visible":"🔒 Oculto",v?"#22c55e":"var(--brand-primary)");try{const tok=localStorage.getItem("token")||sessionStorage.getItem("token");await fetch(API+"/profile",{method:"PATCH",headers:{"Authorization":"Bearer "+getToken(),"Content-Type":"application/json"},body:JSON.stringify({privacy_amigos:v})});}catch(e){console.error(e);}}}/>
