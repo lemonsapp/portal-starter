@@ -355,10 +355,15 @@ async function onOrderCreated(order, items) {
     html: emailOrderCreated(order, items),
   }).catch(() => {});
 
-  // Admin email (a la propia from_email del seller — recibe en su inbox)
+  // Admin email. Prioridad: configStore (resend.admin_notify_email, editable
+  // sin redeploy) → env ADMIN_NOTIFY_EMAIL → from_email. OJO: el último
+  // fallback solo sirve si el from es una casilla real — si es un remitente
+  // puro (pedidos@...) el aviso rebota.
   const cfg = await getResendConfig();
   if (cfg.from) {
-    const adminTo = process.env.ADMIN_NOTIFY_EMAIL || (cfg.from.match(/<([^>]+)>/)?.[1]) || null;
+    const adminTo = (await cs.getConfig("resend.admin_notify_email").catch(() => null))
+      || process.env.ADMIN_NOTIFY_EMAIL
+      || (cfg.from.match(/<([^>]+)>/)?.[1]) || null;
     if (adminTo) {
       sendResendEmail({
         to: adminTo,
