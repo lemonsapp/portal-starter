@@ -112,6 +112,10 @@ const KEY_CATALOG = {
   "resend.api_key":     { type: "string", isSecret: true  },
   "resend.from_email":  { type: "string", isSecret: false },
   "resend.from_name":   { type: "string", isSecret: false },
+  // Casilla que recibe los avisos de "nuevo pedido". Tiene que ser una
+  // casilla REAL: si queda vacía se usa from_email, y si ese es un
+  // remitente puro (pedidos@...) el aviso rebota.
+  "resend.admin_notify_email": { type: "string", isSecret: false },
 
   // Telegram
   "telegram.bot_token": { type: "string", isSecret: true },
