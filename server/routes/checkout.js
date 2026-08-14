@@ -1284,6 +1284,8 @@ function adminRouter({ authRequired, requireRole }) {
           shopNotify.onOrderPaid(data.order, data.items).catch(() => {});
         } else if (body.status === "dispatched") {
           shopNotify.onOrderDispatched(data.order, data.items).catch(() => {});
+        } else if (body.status === "completed") {
+          shopNotify.onOrderCompleted(data.order, data.items).catch(() => {});
         } else if (body.status === "cancelled" || body.status === "failed") {
           // Orden pagada con monedas → devolver el saldo (idempotente).
           shopNotify.refundOrderMonedas(data.order).catch(() => {});

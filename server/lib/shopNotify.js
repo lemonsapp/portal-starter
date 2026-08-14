@@ -140,7 +140,7 @@ function emailShell({ heading, intro, body, footer }) {
       ${body || ""}
     </td></tr>
     <tr><td style="padding:20px 32px;background:#f9f6f0;border-top:1px solid #ece8e0;font-size:12px;line-height:1.5;color:#666;">
-      ${footer || `<strong>Holistic</strong> · Soporte: <a href="https://wa.me/" style="color:${BRAND_CTA};">WhatsApp</a><br>
+      ${footer || `<strong>Holistic</strong> · Soporte: <a href="https://wa.me/5491124759002" style="color:${BRAND_CTA};">WhatsApp</a><br>
       Si no esperabas este email, ignoralo o respondé y lo revisamos.`}
     </td></tr>
   </table>
@@ -244,6 +244,26 @@ function emailOrderDispatched(order, items) {
     ${renderAddress(order.shipping_address)}
   `;
   return emailShell({ heading: "Tu pedido está en camino", intro, body });
+}
+
+function emailOrderCompleted(order, items) {
+  const intro = `<strong>${esc(order.customer_first_name)}</strong>, tu pedido <strong>${esc(order.public_id)}</strong> ya fue entregado. ¡Gracias por comprar en Holistic!`;
+  const body = `
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px 18px;margin:8px 0 16px;text-align:center;">
+      <div style="font-size:28px;line-height:1;margin-bottom:4px;">📬</div>
+      <div style="font-size:14px;font-weight:600;color:#15803d;">Pedido entregado · Orden ${esc(order.public_id)}</div>
+    </div>
+    ${renderItemsTable(items)}
+    <p style="margin:18px 0 6px;font-size:15px;line-height:1.55;color:#333;">
+      Si algo llegó mal o tenés cualquier duda con el pedido, escribinos por
+      <a href="https://wa.me/5491124759002" style="color:${BRAND_CTA};font-weight:700;">WhatsApp</a>
+      y lo resolvemos.
+    </p>
+    <p style="margin:14px 0 0;font-size:14px;line-height:1.55;color:#666;">
+      Con tu cuenta en <a href="${appUrlSafe()}" style="color:${BRAND_CTA};">hgrowshop.com</a> acumulás puntos con cada compra. 🌱
+    </p>
+  `;
+  return emailShell({ heading: "¡Tu pedido llegó!", intro, body });
 }
 
 function emailAdminNewOrder(order, items, statusLabel) {
@@ -533,6 +553,17 @@ async function onOrderDispatched(order, items) {
   }).catch(() => {});
 }
 
+/**
+ * Disparado por admin cuando marca la orden como completada (entregada).
+ */
+async function onOrderCompleted(order, items) {
+  sendResendEmail({
+    to: order.customer_email,
+    subject: `¡Tu pedido llegó! · ${order.public_id}`,
+    html: emailOrderCompleted(order, items),
+  }).catch(() => {});
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // F4: Email campaigns (broadcast a base de customers opt-in)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -776,6 +807,7 @@ module.exports = {
   onOrderCreated,
   onOrderPaid,
   onOrderDispatched,
+  onOrderCompleted,
   refundOrderMonedas,
   notifyAdminInApp,
   // F4 exports
@@ -784,6 +816,7 @@ module.exports = {
   buildUnsubscribeToken,
   parseUnsubscribeToken,
   // helpers exportados por si otro módulo los necesita
+  emailOrderCompleted,
   sendResendEmail,
   getResendConfig,
   formatARS,
