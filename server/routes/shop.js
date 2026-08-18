@@ -23,6 +23,7 @@ const { migrateImagesToCloudinary } = require("./shopImageMigrate");
 // y chat.js (emojis) — multer en memoria + Cloudinary configurado por request
 // leyendo las creds de configStore (DB encriptada via wizard /admin/setup).
 const { configureCloudinary } = require("../lib/cloudinaryConfig");
+const { optimizarEntrega } = require("../lib/entregaCloudinary");
 
 const MAX_IMAGE_MB = 20;
 const uploadImage = multer({
@@ -1696,16 +1697,20 @@ function serializeProduct(row, images = [], category = null) {
     featured: row.featured,
     sort_order: row.sort_order,
     meta: row.meta || {},
+    // optimizarEntrega: los PNG crudos de hasta 5 MB salen como webp/avif de
+    // ~90 KB — la DB guarda la URL original, la transformación es de entrega.
     images: images.map((img) => ({
       id: img.id,
-      url: img.url,
+      url: optimizarEntrega(img.url),
       alt: img.alt,
       sort_order: img.sort_order,
       is_primary: img.is_primary,
     })),
-    primary_image: images.find((img) => img.is_primary)?.url
+    primary_image: optimizarEntrega(
+      images.find((img) => img.is_primary)?.url
       || images[0]?.url
-      || null,
+      || null
+    ),
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
