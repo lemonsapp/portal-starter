@@ -1021,6 +1021,46 @@ function webhookRouter() {
         return res.status(200).send("ignored");
       }
 
+      // Seguridad: validar la firma HMAC oficial de MercadoPago (x-signature).
+      // Sólo cuando MP manda x-signature + x-request-id Y hay secret configurado.
+      const sigHeader = req.headers["x-signature"];
+      const reqId = req.headers["x-request-id"];
+      if (sigHeader && reqId) {
+        const hmacSecret = await cs.getConfig("mercadopago.webhook_secret");
+        if (hmacSecret) {
+          const parts = {};
+          String(sigHeader).split(",").forEach((kv) => {
+            const idx = kv.indexOf("=");
+            if (idx > 0) parts[kv.slice(0, idx).trim()] = kv.slice(idx + 1).trim();
+          });
+          const ts = parts.ts;
+          const v1 = parts.v1;
+          if (ts && v1) {
+            // Manifest oficial de MP: id:<data.id>;request-id:<x-request-id>;ts:<ts>;
+            const manifestId = String(paymentId).toLowerCase();
+            const manifest = `id:${manifestId};request-id:${reqId};ts:${ts};`;
+            const computed = crypto.createHmac("sha256", hmacSecret).update(manifest).digest("hex");
+            let valid = false;
+            try {
+              valid = crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(v1));
+            } catch (_) { valid = false; }
+            if (!valid) {
+              // OJO: hoy `mercadopago.webhook_secret` se usa TAMBIÉN como secreto
+              // de query (más abajo, ~línea 1000). Hasta que Lemon confirme que
+              // este valor es la "clave secreta" OFICIAL de firma de MP (y no el
+              // secreto de query), NO se rechaza el pago por firma inválida: sólo
+              // se loguea, para no romper cobros legítimos.
+              console.warn(`[mp webhook] x-signature inválida (log-only) payment=${paymentId}`);
+              // TODO seguridad: una vez confirmado en Render que webhook_secret es
+              // la clave secreta de firma de MP, cambiar este warn por rechazo:
+              //   return res.status(401).send("invalid signature");
+            }
+          }
+        }
+        // else: secret no seteado → NO cambiamos el comportamiento actual.
+        // TODO seguridad: hacer el secret obligatorio una vez confirmado en Render.
+      }
+
       // Lookup del payment en MP API.
       const payment = await fetchMpPayment(paymentId);
       if (!payment) {
@@ -1047,10 +1087,30 @@ function webhookRouter() {
 
       // Idempotencia: MP reintenta webhooks. Guardamos el estado previo para no
       // reprocesar (email/broadcast duplicados, paid_at pisado) una orden ya pagada.
-      const prevQ = await db.query(`SELECT status FROM orders WHERE public_id = $1`, [externalRef]);
+      const prevQ = await db.query(`SELECT status, total_cents FROM orders WHERE public_id = $1`, [externalRef]);
       const prevStatus = prevQ.rows[0]?.status;
+      const orderTotalCents = Number(prevQ.rows[0]?.total_cents);
 
       if (newStatus === "paid") {
+        // Seguridad (defensa en profundidad, auditoría 2026-08-21): no acreditar
+        // si el monto realmente pagado no cubre el total de la orden. Un pago
+        // aprobado por el monto correcto pasa sin problema; sólo se bloquea un
+        // "approved" por menos plata que el total (manipulación de la preferencia).
+        // Sólo actúa cuando AMBOS datos son numéricos: nunca fail-closed por dato
+        // faltante, para no rechazar un pago legítimo.
+        const rawAmt = Number(payment.transaction_amount);
+        const paidCents = Number.isFinite(rawAmt) ? Math.round(rawAmt * 100) : null;
+        if (paidCents != null && Number.isFinite(orderTotalCents) && paidCents < orderTotalCents) {
+          console.warn(
+            `[mp webhook] monto insuficiente — NO se acredita. pagado=${paidCents}c total=${orderTotalCents}c order=${externalRef} payment=${paymentId}`
+          );
+          // Persistimos el estado crudo de MP para auditoría, pero NO marcamos paid.
+          await db.query(
+            `UPDATE orders SET mp_payment_id = $1, mp_status_raw = $2, updated_at = NOW() WHERE public_id = $3`,
+            [String(paymentId), String(payment.status), externalRef]
+          );
+          return res.status(200).send("amount mismatch");
+        }
         updateCols.push("status = 'paid'", "paid_at = COALESCE(paid_at, NOW())");
       } else if (newStatus === "failed") {
         updateCols.push("status = 'failed'");
