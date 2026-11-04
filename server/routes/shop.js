@@ -1626,14 +1626,14 @@ async function migrate() {
   // Puntos (F3): flag idempotente para no acreditar dos veces al pagar.
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS points_credited BOOLEAN NOT NULL DEFAULT FALSE`);
 
-  // Seed de códigos TEST para que el admin pueda probar el flow inmediato.
-  await db.query(`
-    INSERT INTO promo_codes (code, kind, value, max_uses, notes, active)
-    VALUES
-      ('TEST10',  'percent', 10,  NULL, 'Código de prueba seed — 10% off, ilimitado', TRUE),
-      ('FULLOFF', 'percent', 100, NULL, 'Código test 100% off — compra gratis (skip MercadoPago, marca paid directo)', TRUE)
-    ON CONFLICT (code) DO NOTHING
-  `);
+  // Antes se sembraban acá dos códigos de prueba (TEST10 = 10 % y FULLOFF =
+  // 100 %, compra gratis marcada pagada), activos e ilimitados, y se volvían a
+  // crear en cada arranque aunque el admin los borrara. Con "TEST10" de
+  // placeholder en el checkout, los clientes lo tipeaban: ~40 pedidos con 10 %
+  // que nadie había autorizado (jul–nov 2026). Ya no se siembran, y si alguna
+  // base vieja todavía los tiene, quedan desactivados al arrancar.
+  await db.query(`UPDATE promo_codes SET active = FALSE, updated_at = NOW()
+                   WHERE UPPER(code) IN ('TEST10', 'FULLOFF') AND active = TRUE`);
 
   // ── Race 3 — PK 2ª parte 20L (2026-07-08) ──────────────────────────────────
   // Única familia Race sin 20L: el kit linea-race en 20L quedaba con 4/5 potes
