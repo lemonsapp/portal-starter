@@ -37,6 +37,7 @@ const rateLimit = require("express-rate-limit");
 const {
   esLineaPack, centavosDescontables, calcularDescuento, estadoInicialOrden,
 } = require("../lib/descuento-packs");
+const { itemsParaMp } = require("../lib/items-mp");
 
 // Limita el sondeo de códigos promo (validate-code es público): 20/min por IP.
 const codeLimiter = rateLimit({
@@ -208,16 +209,8 @@ async function createMpPreference({ order, items, appUrl, webhookSecret }) {
     return null;
   }
 
-  const mpItems = items.map((it) => ({
-    id: String(it.product_id || it.product_slug),
-    title: it.name_snapshot,
-    quantity: it.quantity,
-    currency_id: "ARS",
-    unit_price: it.price_cents_snapshot / 100,
-    picture_url: it.image_url_snapshot
-      ? (it.image_url_snapshot.startsWith("http") ? it.image_url_snapshot : `${appUrl}${it.image_url_snapshot}`)
-      : undefined,
-  }));
+  // Lo que cobra MP = total_cents de la orden (descuento y envío incluidos).
+  const mpItems = itemsParaMp({ order, items, appUrl });
 
   // El webhook tiene que pegarle a la API (Render), no al sitio (Vercel):
   // el dominio público no tiene rewrite /api/* → Render, así que un
