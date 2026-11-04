@@ -767,7 +767,7 @@ a{color:${color};text-decoration:underline dotted;}
 
   // ── POST /api/shop/checkout/validate-code — preview de descuento
   // Permite al cliente probar un código antes de finalizar checkout.
-  // Body: { code: "TEST10", subtotal_cents: 1000000 }
+  // Body: { code: "CODIGO", subtotal_cents: 1000000 }
   router.post("/checkout/validate-code", codeLimiter, async (req, res) => {
     const { code, subtotal_cents } = req.body || {};
     const subtotal = parseInt(subtotal_cents, 10) || 0;

@@ -415,7 +415,7 @@ export default function ShopCheckout() {
                         value={promoInput}
                         onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
                         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyPromoCode(); } }}
-                        placeholder="TEST10"
+                        placeholder="Ingresá tu código"
                       />
                       <button
                         type="button"
