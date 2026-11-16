@@ -1435,16 +1435,30 @@ async function migrate() {
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS carrier         TEXT`);
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number TEXT`);
 
-  // Pago por transferencia (2026-07-10): payment_method ∈ mercadopago | transfer.
+  // Pago por transferencia (2026-07-10): payment_method ∈ mercadopago | transfer | monedas.
   // transfer_receipt_url = comprobante (Cloudinary) que sube el comprador;
   // el admin lo revisa desde Pedidos y aprueba con "Marcar pagado".
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method       TEXT NOT NULL DEFAULT 'mercadopago'`);
   await db.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_receipt_url TEXT`);
+  // 2026-11-15: el pago con monedas (2026-07-14) nunca amplió este CHECK, así
+  // que todo INSERT con payment_method='monedas' tiraba check_violation y el
+  // checkout respondía 500 "Error al procesar la orden". Si la restricción
+  // existe sin 'monedas', se reemplaza; si no existe, se crea ya completa.
   await db.query(`
     DO $$ BEGIN
-      ALTER TABLE orders ADD CONSTRAINT orders_payment_method_chk
-        CHECK (payment_method IN ('mercadopago', 'transfer'));
-    EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+      IF EXISTS (
+        SELECT 1 FROM pg_constraint
+         WHERE conname = 'orders_payment_method_chk'
+           AND conrelid = 'orders'::regclass
+           AND pg_get_constraintdef(oid) NOT LIKE '%monedas%'
+      ) THEN
+        ALTER TABLE orders DROP CONSTRAINT orders_payment_method_chk;
+      END IF;
+      BEGIN
+        ALTER TABLE orders ADD CONSTRAINT orders_payment_method_chk
+          CHECK (payment_method IN ('mercadopago', 'transfer', 'monedas'));
+      EXCEPTION WHEN duplicate_object THEN NULL; END;
+    END $$;
   `);
 
   // Seed one-shot de los datos bancarios del cliente (Banco Galicia) en
